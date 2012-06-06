@@ -10,6 +10,7 @@
 
 /******************************* Forward Declarations *************************/
 
+static int blendEnv(MprCmd *cmd, cchar **env, int flags);
 static void closeFiles(MprCmd *cmd);
 static ssize cmdCallback(MprCmd *cmd, int channel, void *data);
 static int makeChannel(MprCmd *cmd, int index);
@@ -18,15 +19,14 @@ static void manageCmdService(MprCmdService *cmd, int flags);
 static void manageCmd(MprCmd *cmd, int flags);
 static void reapCmd(MprCmd *cmd, MprSignal *sp);
 static void resetCmd(MprCmd *cmd);
-static int sanitizeArgs(MprCmd *cmd, int argc, char **argv, char **env);
+static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int flags);
 static int startProcess(MprCmd *cmd);
 static void stdinCallback(MprCmd *cmd, MprEvent *event);
 static void stdoutCallback(MprCmd *cmd, MprEvent *event);
 static void stderrCallback(MprCmd *cmd, MprEvent *event);
 static void vxCmdManager(MprCmd *cmd);
-
-#if BLD_UNIX_LIKE
-static char **fixenv(MprCmd *cmd);
+#if BIT_WIN_LIKE
+static cchar *makeWinEnvBlock(MprCmd *cmd);
 #endif
 
 #if VXWORKS
@@ -38,11 +38,11 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg);
     Cygwin process creation is not thread-safe (1.7)
  */
 #if CYGWIN
-#define slock(cmd) mprLock(MPR->cmdService->mutex)
-#define sunlock(cmd) mprUnlock(MPR->cmdService->mutex)
+    #define slock(cmd) mprLock(MPR->cmdService->mutex)
+    #define sunlock(cmd) mprUnlock(MPR->cmdService->mutex)
 #else
-#define slock(cmd) 
-#define sunlock(cmd) 
+    #define slock(cmd) 
+    #define sunlock(cmd) 
 #endif
 
 /************************************* Code ***********************************/
@@ -88,8 +88,10 @@ MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     if ((cmd = mprAllocObj(MprCmd, manageCmd)) == 0) {
         return 0;
     }
+#if UNUSED && KEEP
     cmd->timeoutPeriod = MPR_TIMEOUT_CMD;
     cmd->timestamp = mprGetTime();
+#endif
     cmd->forkCallback = (MprForkCallback) closeFiles;
     cmd->dispatcher = dispatcher ? dispatcher : MPR->dispatcher;
     cmd->status = -1;
@@ -118,13 +120,6 @@ static void manageCmd(MprCmd *cmd, int flags)
         mprMark(cmd->makeArgv);
         mprMark(cmd->defaultEnv);
         mprMark(cmd->env);
-#if BLD_UNIX_LIKE
-        if (cmd->env) {
-            for (i = 0; cmd->env[i]; i++) {
-                mprMark(cmd->env);
-            }
-        }
-#endif
         mprMark(cmd->dir);
         for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
             mprMark(cmd->files[i].name);
@@ -141,7 +136,7 @@ static void manageCmd(MprCmd *cmd, int flags)
         mprMark(cmd->userData);
         mprMark(cmd->mutex);
         mprMark(cmd->searchPath);
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         mprMark(cmd->command);
         mprMark(cmd->arg0);
 #endif
@@ -262,13 +257,18 @@ void mprCloseCmdFd(MprCmd *cmd, int channel)
     if (cmd->files[channel].fd != -1) {
         close(cmd->files[channel].fd);
         cmd->files[channel].fd = -1;
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         cmd->files[channel].handle = 0;
 #endif
         if (channel != MPR_CMD_STDIN) {
             cmd->eofCount++;
-            if (cmd->eofCount >= cmd->requiredEof && cmd->pid == 0) {
-                cmd->complete = 1;
+            if (cmd->eofCount >= cmd->requiredEof) {
+#if VXWORKS
+                reapCmd(cmd, 0);
+#endif
+                if (cmd->pid == 0) {
+                    cmd->complete = 1;
+                }
             }
         }
     }
@@ -293,9 +293,9 @@ int mprIsCmdComplete(MprCmd *cmd)
 /*
     Run a simple blocking command. See arg usage below in mprRunCmdV.
  */
-int mprRunCmd(MprCmd *cmd, cchar *command, char **out, char **err, MprTime timeout, int flags)
+int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)
 {
-    char    **argv;
+    cchar   **argv;
     int     argc;
 
     mprAssert(cmd);
@@ -303,16 +303,17 @@ int mprRunCmd(MprCmd *cmd, cchar *command, char **out, char **err, MprTime timeo
         return 0;
     }
     cmd->makeArgv = argv;
-    return mprRunCmdV(cmd, argc, argv, out, err, timeout, flags);
+    return mprRunCmdV(cmd, argc, argv, envp, out, err, timeout, flags);
 }
 
 
 /*
     Env is an array of "KEY=VALUE" strings. Null terminated
+    The user must preserve the environment. This module does not clone the environment and uses the supplied reference.
  */
 void mprSetCmdDefaultEnv(MprCmd *cmd, cchar **env)
 {
-    /* WARNING: defaultEnv is not cloned */
+    /* WARNING: defaultEnv is not cloned, but is marked */
     cmd->defaultEnv = env;
 }
 
@@ -331,7 +332,7 @@ void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
  */
-int mprRunCmdV(MprCmd *cmd, int argc, char **argv, char **out, char **err, MprTime timeout, int flags)
+int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)
 {
     int     rc, status;
 
@@ -355,7 +356,7 @@ int mprRunCmdV(MprCmd *cmd, int argc, char **argv, char **out, char **err, MprTi
         cmd->stderrBuf = mprCreateBuf(MPR_BUFSIZE, -1);
     }
     mprSetCmdCallback(cmd, cmdCallback, NULL);
-    rc = mprStartCmd(cmd, argc, argv, 0, flags);
+    rc = mprStartCmd(cmd, argc, argv, envp, flags);
 
     /*
         Close the pipe connected to the client's stdin
@@ -419,11 +420,11 @@ static void addCmdHandlers(MprCmd *cmd)
     run a command. The caller needs to do code like mprRunCmd() themselves to wait for completion and to send/receive data.
     The routine does not wait. Callers must call mprWaitForCmd to wait for the command to complete.
  */
-int mprStartCmd(MprCmd *cmd, int argc, char **argv, char **envp, int flags)
+int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags)
 {
     MprPath     info;
-    char        *program, *search;
-    int         rc;
+    cchar       *program, *search, *pair;
+    int         rc, next, i;
 
     mprAssert(cmd);
     mprAssert(argv);
@@ -437,11 +438,13 @@ int mprStartCmd(MprCmd *cmd, int argc, char **argv, char **envp, int flags)
     cmd->program = sclone(program);
     cmd->flags = flags;
 
-    if (envp == 0) {
-        envp = (char**) cmd->defaultEnv;
+    if (sanitizeArgs(cmd, argc, argv, envp, flags) < 0) {
+        return MPR_ERR_MEMORY;
     }
-    if (sanitizeArgs(cmd, argc, argv, envp) < 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+    if (envp == 0) {
+        envp = cmd->defaultEnv;
+    }
+    if (blendEnv(cmd, envp, flags) < 0) {
         return MPR_ERR_MEMORY;
     }
     search = cmd->searchPath ? cmd->searchPath : MPR->pathEnv;
@@ -455,7 +458,13 @@ int mprStartCmd(MprCmd *cmd, int argc, char **argv, char **envp, int flags)
         mprLog(1, "cmd: program \"%s\", is a directory", program);
         return MPR_ERR_CANT_ACCESS;
     }
-
+    mprLog(4, "mprStartCmd %s", cmd->program);
+    for (i = 0; i < cmd->argc; i++) {
+        mprLog(4, "    arg[%d]: %s", i, cmd->argv[i]);
+    }
+    for (ITERATE_ITEMS(cmd->env, pair, next)) {
+        mprLog(4, "    env[%d]: %s", next, pair);
+    }
     slock(cmd);
     if (makeCmdIO(cmd) < 0) {
         sunlock(cmd);
@@ -508,7 +517,7 @@ int mprStopCmd(MprCmd *cmd, int signal)
     }
     cmd->stopped = 1;
     if (cmd->pid) {
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         return TerminateProcess(cmd->process, 2) == 0;
 #elif VXWORKS
         return taskDelete(cmd->pid);
@@ -525,8 +534,7 @@ int mprStopCmd(MprCmd *cmd, int signal)
  */
 ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 {
-#if BLD_WIN_LIKE
-{
+#if BIT_WIN_LIKE
     int     rc, count;
     /*
         Need to detect EOF in windows. Pipe always in blocking mode, but reads block even with no one on the other end.
@@ -543,7 +551,28 @@ ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
     /* This maps to EAGAIN */
     SetLastError(WSAEWOULDBLOCK);
     return -1;
-}
+
+#elif VXWORKS
+    /*
+        Only needed when using non-blocking I/O
+     */
+    int     rc;
+
+    rc = read(cmd->files[channel].fd, buf, bufsize);
+
+    /*
+        VxWorks can't signal EOF on non-blocking pipes. Need a pattern indicator.
+     */
+    if (rc == MPR_CMD_VXWORKS_EOF_LEN && strncmp(buf, MPR_CMD_VXWORKS_EOF, MPR_CMD_VXWORKS_EOF_LEN) == 0) {
+        /* EOF */
+        return 0;
+
+    } else if (rc == 0) {
+        rc = -1;
+        errno = EAGAIN;
+    }
+    return rc;
+
 #else
     mprAssert(cmd->files[channel].fd >= 0);
     return read(cmd->files[channel].fd, buf, bufsize);
@@ -556,7 +585,7 @@ ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
  */
 ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 {
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     /*
         No waiting. Use this just to check if the process has exited and thus EOF on the pipe.
      */
@@ -585,7 +614,7 @@ void mprDisableCmdEvents(MprCmd *cmd, int channel)
 }
 
 
-#if BLD_WIN_LIKE && !WINCE
+#if BIT_WIN_LIKE && !WINCE
 /*
     Windows only routine to wait for I/O on the channels to the gateway and the child process.
     NamedPipes can't use WaitForMultipleEvents (can use overlapped I/O)
@@ -672,7 +701,7 @@ int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
         if (mprShouldAbortRequests()) {
             break;
         }
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         waitForWinEvent(cmd, remaining);
 #else
         mprWaitForEvent(cmd->dispatcher, remaining);
@@ -704,7 +733,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     if (cmd->pid == 0) {
         return;
     }
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     if ((rc = waitpid(cmd->pid, &status, WNOHANG | __WALL)) < 0) {
         mprLog(6, "waitpid failed for pid %d, errno %d", cmd->pid, errno);
 
@@ -734,16 +763,18 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     /*
         The command exit status (cmd->status) is set in cmdTaskEntry
      */
-    if (semTake(cmd->exitCond, MPR_TIMEOUT_STOP_TASK) != OK) {
-        mprError("cmd: child %s did not exit, errno %d", cmd->program);
-        return;
+    if (!cmd->stopped) {
+        if (semTake(cmd->exitCond, MPR_TIMEOUT_STOP_TASK) != OK) {
+            mprError("cmd: child %s did not exit, errno %d", cmd->program);
+            return;
+        }
     }
     semDelete(cmd->exitCond);
     cmd->exitCond = 0;
     cmd->pid = 0;
     rc = 0;
 #endif
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     if (GetExitCodeProcess(cmd->process, (ulong*) &status) == 0) {
         mprLog(3, "cmd: GetExitProcess error");
         return;
@@ -794,9 +825,6 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
             if (cmd->files[MPR_CMD_STDOUT].fd >= 0) {
                 mprCloseCmdFd(cmd, MPR_CMD_STDOUT);
             }
-            /*
-                May not close stdin/stdout if command times out
-             */
 #if UNUSED && DONT_USE && KEEP
             if (cmd->eofCount != cmd->requiredEof) {
                 mprLog(0, "reapCmd: insufficient EOFs %d %d, complete %d", cmd->eofCount, cmd->requiredEof, cmd->complete);
@@ -919,7 +947,10 @@ bool mprIsCmdRunning(MprCmd *cmd)
 
 void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
 {
+    mprAssert(0);
+#if UNUSED
     cmd->timeoutPeriod = timeout;
+#endif
 }
 
 
@@ -937,71 +968,141 @@ MprBuf *mprGetCmdBuf(MprCmd *cmd, int channel)
 
 void mprSetCmdDir(MprCmd *cmd, cchar *dir)
 {
+#if VXWORKS
+    mprError("WARNING: Setting working directory on VxWorks is global: %s", dir);
+#else
     mprAssert(dir && *dir);
 
     cmd->dir = sclone(dir);
+#endif
 }
+
+
+#if BIT_WIN_LIKE
+static int sortEnv(char **str1, char **str2)
+{
+    cchar    *s1, *s2;
+    int     c1, c2;
+
+    for (s1 = *str1, s2 = *str2; *s1 && *s2; s1++, s2++) {
+        c1 = tolower((uchar) *s1);
+        c2 = tolower((uchar) *s2);
+        if (c1 < c2) {
+            return -1;
+        } else if (c1 > c2) {
+            return 1;
+        }
+    }
+    if (*s2) {
+        return -1;
+    } else if (*s1) {
+        return 1;
+    }
+    return 0;
+}
+#endif
+
+
+/*
+    Match two environment keys up to the '='
+ */
+static bool matchEnvKey(cchar *s1, cchar *s2) 
+{
+    for (; *s1 && *s2; s1++, s2++) {
+        if (*s1 != *s2) {
+            break;
+        } else if (*s1 == '=') {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+static int blendEnv(MprCmd *cmd, cchar **env, int flags)
+{
+    cchar       **ep, *prior;
+    int         next;
+
+    cmd->env = 0;
+
+    if ((cmd->env = mprCreateList(128, MPR_LIST_STATIC_VALUES)) == 0) {
+        return MPR_ERR_MEMORY;
+    }
+#if !VXWORKS
+    /*
+        Add prior environment to the list
+     */
+    if (!(flags & MPR_CMD_EXACT_ENV)) {
+        for (ep = (cchar**) environ; ep && *ep; ep++) {
+            mprAddItem(cmd->env, *ep);
+        }
+    }
+#endif
+    /*
+        Add new env keys. Detect and overwrite duplicates
+     */
+    for (ep = env; ep && *ep; ep++) {
+        for (ITERATE_ITEMS(cmd->env, prior, next)) {
+            if (matchEnvKey(*ep, prior)) {
+                mprSetItem(cmd->env, next - 1, *ep);
+                break;
+            }
+        }
+        if (prior == 0) {
+            mprAddItem(cmd->env, *ep);
+        }
+    }
+#if BIT_WIN_LIKE
+    /*
+        Windows requires a caseless sort with two trailing nulls
+     */
+    mprSortList(cmd->env, sortEnv);
+#endif
+    mprAddItem(cmd->env, NULL);
+    return 0;
+}
+
+
+#if BIT_WIN_LIKE
+static cchar *makeWinEnvBlock(MprCmd *cmd)
+{
+    char    *item, *dp, *ep, *env;
+    ssize   len;
+    int     next;
+
+    for (len = 2, ITERATE_ITEMS(cmd->env, item, next)) {
+        len += slen(item) + 1;
+    }
+    if ((env = mprAlloc(len)) == 0) {
+        return 0;
+    }
+    ep = &env[len];
+    dp = env;
+    for (ITERATE_ITEMS(cmd->env, item, next)) {
+        strcpy(dp, item);
+        dp += slen(item) + 1;
+    }
+    /* Windows requires two nulls */
+    *dp++ = '\0';
+    *dp++ = '\0';
+    mprAssert(dp <= ep);
+    return env;
+}
+#endif
 
 
 /*
     Sanitize args. Convert "/" to "\" and converting '\r' and '\n' to spaces, quote all args and put the program as argv[0].
  */
-static int sanitizeArgs(MprCmd *cmd, int argc, char **argv, char **env)
+static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int flags)
 {
-#if VXWORKS
+#if BIT_UNIX_LIKE || VXWORKS
     cmd->argv = argv;
     cmd->argc = argc;
-    cmd->env = 0;
 #endif
 
-#if BLD_UNIX_LIKE
-    char    *cp, **envp;
-    int     ecount, index, i, hasPath, hasLibPath;
-
-    cmd->argv = argv;
-    cmd->argc = argc;
-    cmd->env = 0;
-
-    if (env) {
-        for (ecount = 0; env && env[ecount]; ecount++) ;
-        if ((envp = mprAlloc((ecount + 3) * sizeof(char*))) == NULL) {
-            mprAssert(!MPR_ERR_MEMORY);
-            return MPR_ERR_MEMORY;
-        }
-        cmd->env = envp;
-        hasPath = hasLibPath = 0;
-
-        for (index = i = 0; env && env[i]; i++) {
-            mprLog(6, "cmd: env[%d]: %s", i, env[i]);
-            if (strncmp(env[i], "PATH=", 5) == 0) {
-                hasPath++;
-            } else if  (strncmp(env[i], LD_LIBRARY_PATH "=", 16) == 0) {
-                hasLibPath++;
-            }
-            envp[index++] = sclone(env[i]);
-        }
-
-        /*
-            Add PATH and LD_LIBRARY_PATH 
-         */
-        if (!hasPath && (cp = getenv("PATH")) != 0) {
-            envp[index++] = sfmt("PATH=%s", cp);
-        }
-        if (!hasLibPath && (cp = getenv(LD_LIBRARY_PATH)) != 0) {
-            envp[index++] = sfmt("%s=%s", LD_LIBRARY_PATH, cp);
-        }
-        envp[index++] = '\0';
-        mprLog(4, "mprStartCmd %s", cmd->program);
-        for (i = 0; i < argc; i++) {
-            mprLog(4, "    arg[%d]: %s", i, argv[i]);
-        }
-        for (i = 0; envp[i]; i++) {
-            mprLog(4, "    env[%d]: %s", i, envp[i]);
-        }
-    }
-#endif
-
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     /*
         WARNING: If starting a program compiled with Cygwin, there is a bug in Cygwin's parsing of the command
         string where embedded quotes are parsed incorrectly by the Cygwin CRT runtime. If an arg starts with a 
@@ -1011,9 +1112,10 @@ static int sanitizeArgs(MprCmd *cmd, int argc, char **argv, char **env)
             Cygwin will parse as  argv[1] == c:/path \a \b
             Windows will parse as argv[1] == c:/path "a b"
      */
-    char        *program, *SYSTEMROOT, **ep, **ap, *dp, *cp, *localArgv[2], *saveArg0, *PATH, *endp, *start;
+    cchar       *saveArg0, **ap, *start, *cp;
+    char        *pp, *program, *dp, *localArgv[2];
     ssize       len;
-    int         i, hasPath, hasSystemRoot, quote;
+    int         quote;
 
     mprAssert(argc > 0 && argv[0] != NULL);
 
@@ -1023,16 +1125,16 @@ static int sanitizeArgs(MprCmd *cmd, int argc, char **argv, char **env)
     program = cmd->arg0 = mprAlloc(slen(argv[0]) * 2 + 1);
     strcpy(program, argv[0]);
 
-    for (cp = program; *cp; cp++) {
-        if (*cp == '/') {
-            *cp = '\\';
-        } else if (*cp == '\r' || *cp == '\n') {
-            *cp = ' ';
+    for (pp = program; *pp; pp++) {
+        if (*pp == '/') {
+            *pp = '\\';
+        } else if (*pp == '\r' || *pp == '\n') {
+            *pp = ' ';
         }
     }
     if (*program == '\"') {
-        if ((cp = strrchr(++program, '"')) != 0) {
-            *cp = '\0';
+        if ((pp = strrchr(++program, '"')) != 0) {
+            *pp = '\0';
         }
     }
     if (argv == 0) {
@@ -1080,67 +1182,19 @@ static int sanitizeArgs(MprCmd *cmd, int argc, char **argv, char **env)
         }
     }
     *dp = '\0';
-
     argv[0] = saveArg0;
-
-    mprLog(4, "mprStartCmd %s", cmd->command);
-    for (i = 0; i < argc; i++) {
-        mprLog(5, "    arg[%d]: %s", i, argv[i]);
-    }
-
-    /*
-        Now work on the environment. Windows has a block of null separated strings with a trailing null.
-     */
-    cmd->env = 0;
-    if (env) {
-        len = 0;
-        for (hasSystemRoot = hasPath = 0, ep = env; ep && *ep; ep++) {
-            len += slen(*ep) + 1;
-            if (strncmp(*ep, "PATH=", 5) == 0) {
-                hasPath++;
-            } else if (strncmp(*ep, "SYSTEMROOT=", 11) == 0) {
-                hasSystemRoot++;
-            }
-        }
-        if (!hasSystemRoot && (SYSTEMROOT = getenv("SYSTEMROOT")) != 0) {
-            len += 11 + slen(SYSTEMROOT) + 1;
-        }
-        if (!hasPath && (PATH = getenv("PATH")) != 0) {
-            len += 5 + slen(PATH) + 1;
-        }
-        len += 2;       /* Windows requires 2 nulls for the block end */
-
-        dp = (char*) mprAlloc(len);
-        endp = &dp[len];
-        cmd->env = (char**) dp;
-        for (ep = env, i = 0; ep && *ep; ep++, i++) {
-            mprLog(4, "    env[%d]: %s", i, *ep);
-            strcpy(dp, *ep);
-            dp += slen(*ep) + 1;
-        }
-        if (!hasSystemRoot) {
-            mprSprintf(dp, (endp - dp - 1), "SYSTEMROOT=%s", SYSTEMROOT);
-            dp += 12 + slen(SYSTEMROOT);
-        }
-        if (!hasPath) {
-            mprSprintf(dp, (endp - dp - 1), "PATH=%s", PATH);
-            dp += 6 + slen(PATH);
-        }
-        *dp++ = '\0';
-        *dp++ = '\0';                        /* Windows requires two nulls */
-        mprAssert(dp <= endp);
-    }
     mprLog(5, "Windows command line: %s", cmd->command);
-#endif /* BLD_WIN_LIKE */
+#endif /* BIT_WIN_LIKE */
     return 0;
 }
 
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
 static int startProcess(MprCmd *cmd)
 {
     PROCESS_INFORMATION procInfo;
     STARTUPINFO         startInfo;
+    cchar               *envBlock;
     int                 err;
 
     memset(&startInfo, 0, sizeof(startInfo));
@@ -1175,8 +1229,8 @@ static int startProcess(MprCmd *cmd)
     } else {
         startInfo.hStdError = (HANDLE) _get_osfhandle((int) fileno(stderr));
     }
-
-    if (! CreateProcess(0, cmd->command, 0, 0, 1, 0, cmd->env, cmd->dir, &startInfo, &procInfo)) {
+    envBlock = makeWinEnvBlock(cmd);
+    if (! CreateProcess(0, cmd->command, 0, 0, 1, 0, (char*) envBlock, cmd->dir, &startInfo, &procInfo)) {
         err = mprGetOsError();
         if (err == ERROR_DIRECTORY) {
             mprError("Can't create process: %s, directory %s is invalid", cmd->program, cmd->dir);
@@ -1313,7 +1367,7 @@ static int makeChannel(MprCmd *cmd, int index)
 #endif /* WINCE */
 
 
-#elif BLD_UNIX_LIKE
+#elif BIT_UNIX_LIKE
 static int makeChannel(MprCmd *cmd, int index)
 {
     MprCmdFile      *file;
@@ -1333,7 +1387,7 @@ static int makeChannel(MprCmd *cmd, int index)
         file->fd = fds[0];              /* read fd */
     }
     fcntl(file->fd, F_SETFL, fcntl(file->fd, F_GETFL) | O_NONBLOCK);
-    mprLog(7, "makeCmdIO: pipe handles[%d] read %d, write %d", index, fds[0], fds[1]);
+    mprLog(7, "makeChannel: pipe handles[%d] read %d, write %d", index, fds[0], fds[1]);
     return 0;
 }
 
@@ -1345,7 +1399,7 @@ static int makeChannel(MprCmd *cmd, int index)
     static int      tempSeed = 0;
 
     file = &cmd->files[index];
-    file->name = sfmt("/pipe/%s_%d_%d", BLD_PRODUCT, taskIdSelf(), tempSeed++);
+    file->name = sfmt("/pipe/%s_%d_%d", BIT_PRODUCT, taskIdSelf(), tempSeed++);
 
     if (pipeDevCreate(file->name, 5, MPR_BUFSIZE) < 0) {
         mprError("Can't create pipes to run %s", cmd->program);
@@ -1370,7 +1424,7 @@ static int makeChannel(MprCmd *cmd, int index)
 #endif
 
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
 static int startProcess(MprCmd *cmd)
 {
     MprCmdFile      *files;
@@ -1429,9 +1483,9 @@ static int startProcess(MprCmd *cmd)
         }
         cmd->forkCallback(cmd->forkData);
         if (cmd->env) {
-            rc = execve(cmd->program, cmd->argv, fixenv(cmd));
+            rc = execve(cmd->program, (char**) cmd->argv, (char**) &cmd->env->items[0]);
         } else {
-            rc = execv(cmd->program, cmd->argv);
+            rc = execv(cmd->program, (char**) cmd->argv);
         }
         err = errno;
         printf("Can't exec %s, rc %d, err %d\n", cmd->program, rc, err);
@@ -1465,30 +1519,26 @@ int startProcess(MprCmd *cmd)
     MprCmdTaskFn    entryFn;
     MprModule       *mp;
     SYM_TYPE        symType;
-    char            *entryPoint, *program;
-    int             i, pri;
+    char            *entryPoint, *program, *pair;
+    int             pri, next;
 
     mprLog(4, "cmd: start %s", cmd->program);
 
     entryPoint = 0;
     if (cmd->env) {
-        for (i = 0; cmd->env[i]; i++) {
-            if (strncmp(cmd->env[i], "entryPoint=", 11) == 0) {
-                entryPoint = sclone(cmd->env[i]);
+        for (ITERATE_ITEMS(cmd->env, pair, next)) {
+            if (sncmp(pair, "entryPoint=", 11) == 0) {
+                entryPoint = sclone(&pair[11]);
             }
         }
     }
     program = mprGetPathBase(cmd->program);
     if (entryPoint == 0) {
         program = mprTrimPathExt(program);
-#if BLD_HOST_CPU_ARCH == MPR_CPU_IX86 || BLD_HOST_CPU_ARCH == MPR_CPU_IX64
-        entryPoint = sjoin("_", program, "Main", NULL);
-#else
-        entryPoint = sjoin(program, "Main", NULL);
-#endif
+        entryPoint = program;
     }
     if (symFindByName(sysSymTbl, entryPoint, (char**) &entryFn, &symType) < 0) {
-        if ((mp = mprCreateModule(cmd->program, cmd->program, entryPoint, NULL)) == 0) {
+        if ((mp = mprCreateModule(cmd->program, cmd->program, NULL, NULL)) == 0) {
             mprError("start: can't create module");
             return MPR_ERR_CANT_CREATE;
         }
@@ -1503,10 +1553,7 @@ int startProcess(MprCmd *cmd)
     }
     taskPriorityGet(taskIdSelf(), &pri);
 
-    /*
-        Pass the server output file to become the client stdin.
-     */
-    cmd->pid = taskSpawn(entryPoint, pri, VX_FP_TASK, MPR_DEFAULT_STACK, (FUNCPTR) cmdTaskEntry, 
+    cmd->pid = taskSpawn(entryPoint, pri, VX_FP_TASK | VX_PRIVATE_ENV, MPR_DEFAULT_STACK, (FUNCPTR) cmdTaskEntry, 
         (int) cmd->program, (int) entryFn, (int) cmd, 0, 0, 0, 0, 0, 0, 0);
 
     if (cmd->pid < 0) {
@@ -1533,8 +1580,8 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg)
     MprCmd          *cmd;
     MprCmdFile      *files;
     WIND_TCB        *tcb;
-    char            **ep, *dir;
-    int             inFd, outFd, errFd, id, rc;
+    char            *item;
+    int             inFd, outFd, errFd, id, next;
 
     cmd = (MprCmd*) cmdArg;
 
@@ -1565,12 +1612,18 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg)
     if (envPrivateCreate(id, -1) < 0) {
         exit(254);
     }
-    for (ep = cmd->env; ep && *ep; ep++) {
-        putenv(*ep);
+    for (ITERATE_ITEMS(cmd->env, item, next)) {
+        putenv(item);
     }
+
+#if !VXWORKS
+{
+    char    *dir;
+    int     rc;
 
     /*
         Set current directory if required
+        WARNING: Setting working directory on VxWorks is global
      */
     if (cmd->dir) {
         rc = chdir(cmd->dir);
@@ -1582,11 +1635,13 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg)
         mprError("cmd: Can't change directory to %s", cmd->dir);
         exit(255);
     }
+}
+#endif
 
     /*
         Call the user's entry point
      */
-    (entry)(cmd->argc, cmd->argv, cmd->env);
+    (entry)(cmd->argc, (char**) cmd->argv, (char**) cmd->env);
 
     tcb = taskTcb(id);
     cmd->status = tcb->exitCode;
@@ -1614,44 +1669,11 @@ static void closeFiles(MprCmd *cmd)
 }
 
 
-#if BLD_UNIX_LIKE
-/*
-    CYGWIN requires a PATH or else execve hangs in cygwin 1.7
- */
-static char **fixenv(MprCmd *cmd)
-{
-    char    **env;
-
-    env = cmd->env;
-#if CYGWIN
-    if (env) {
-        int     i, envc;
-
-        for (envc = 0; cmd->env[envc]; envc++) {
-            if (strstr(cmd->env[envc], "PATH=") != 0) {
-                return cmd->env;
-            }
-        }
-        if ((env = mprAlloc(sizeof(void*) * (envc + 2))) == NULL) {
-            return NULL;
-        }
-        i = 0;
-        env[i++] = sjoin("PATH=", getenv("PATH"), NULL);
-        for (envc = 0; cmd->env[envc]; envc++) {
-            env[i++] = cmd->env[envc];
-        }
-        env[i++] = 0;
-    }
-#endif /* CYGWIN */
-    return env;
-}
-#endif
-
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

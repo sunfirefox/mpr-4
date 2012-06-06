@@ -132,7 +132,7 @@ static signed char decodeMap[] = {
 
 static void decode(uint *output, uchar *input, uint len);
 static void encode(uchar *output, uint *input, uint len);
-static void finalize(uchar digest[16], MD5CONTEXT *context);
+static void finalizeMD5(uchar digest[16], MD5CONTEXT *context);
 static void initMD5(MD5CONTEXT *context);
 static void transform(uint state[4], uchar block[64]);
 static void update(MD5CONTEXT *context, uchar *input, uint inputLen);
@@ -141,7 +141,7 @@ static void update(MD5CONTEXT *context, uchar *input, uint inputLen);
 
 int mprRandom()
 {
-#if WIN || VXWORKS
+#if WINDOWS || VXWORKS
     return rand();
 #else
     return (int) random();
@@ -149,23 +149,39 @@ int mprRandom()
 }
 
 
+/*
+    Decode a null terminated string and returns a null terminated string.
+    Stops decoding at the end of string or '='
+ */
 char *mprDecode64(cchar *s)
+{
+    return mprDecode64Block(s, NULL, MPR_DECODE_TOKEQ);
+}
+
+
+/*
+    Decode a null terminated string and return a block with length.
+    Stops decoding at the end of the block or '=' if MPR_DECODE_TOKEQ is specified.
+ */
+char *mprDecode64Block(cchar *s, ssize *len, int flags)
 {
     uint    bitBuf;
     char    *buffer, *bp;
-    ssize   len;
+    cchar   *end;
+    ssize   size;
     int     c, i, j, shift;
 
-    len = slen(s);
-    if ((buffer = mprAlloc(len + 1)) == 0) {
+    size = slen(s);
+    if ((buffer = mprAlloc(size + 1)) == 0) {
         return NULL;
     }
     bp = buffer;
     *bp = '\0';
-    while (*s && *s != '=') {
+    end = &s[size];
+    while (s < end && (*s != '=' || !(flags & MPR_DECODE_TOKEQ))) {
         bitBuf = 0;
         shift = 18;
-        for (i = 0; i < 4 && *s && *s != '='; i++, s++) {
+        for (i = 0; i < 4 && (s < end && (*s != '=' || !(flags & MPR_DECODE_TOKEQ))); i++, s++) {
             c = decodeMap[*s & 0xff];
             if (c == -1) {
                 return NULL;
@@ -174,36 +190,55 @@ char *mprDecode64(cchar *s)
             shift -= 6;
         }
         --i;
-        mprAssert((bp + i) < &buffer[len]);
+        mprAssert((bp + i) < &buffer[size]);
         for (j = 0; j < i; j++) {
             *bp++ = (char) ((bitBuf >> (8 * (2 - j))) & 0xff);
         }
         *bp = '\0';
     }
+    if (len) {
+        *len = bp - buffer;
+    }
     return buffer;
 }
 
 
+/*
+    Encode a null terminated string.
+    Returns a null terminated block
+ */
 char *mprEncode64(cchar *s)
+{
+    return mprEncode64Block(s, slen(s));
+}
+
+
+/*
+    Encode a block of a given length
+    Returns a null terminated block
+ */
+char *mprEncode64Block(cchar *s, ssize len)
 {
     uint    shiftbuf;
     char    *buffer, *bp;
-    ssize   len;
+    cchar   *end;
+    ssize   size;
     int     i, j, shift;
 
-    len = slen(s) * 2;
-    if ((buffer = mprAlloc(len + 1)) == 0) {
+    size = len * 2;
+    if ((buffer = mprAlloc(size + 1)) == 0) {
         return NULL;
     }
     bp = buffer;
     *bp = '\0';
-    while (*s) {
+    end = &s[len];
+    while (s < end) {
         shiftbuf = 0;
         for (j = 2; j >= 0 && *s; j--, s++) {
             shiftbuf |= ((*s & 0xff) << (j * 8));
         }
         shift = 18;
-        for (i = ++j; i < 4 && bp < &buffer[len] ; i++) {
+        for (i = ++j; i < 4 && bp < &buffer[size] ; i++) {
             *bp++ = encodeMap[(shiftbuf >> shift) & 0x3f];
             shift -= 6;
         }
@@ -240,7 +275,7 @@ char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
     }
     initMD5(&context);
     update(&context, (uchar*) buf, (uint) length);
-    finalize(hash, &context);
+    finalizeMD5(hash, &context);
 
     for (i = 0, r = result; i < 16; i++) {
         *r++ = hex[hash[i] >> 4];
@@ -311,7 +346,7 @@ static void update(MD5CONTEXT *context, uchar *input, uint inputLen)
 /*
     MD5 finalization. Ends an MD5 message-digest operation, writing the message digest and zeroizing the context.
  */ 
-static void finalize(uchar digest[16], MD5CONTEXT *context)
+static void finalizeMD5(uchar digest[16], MD5CONTEXT *context)
 {
     uchar   bits[8];
     uint    index, padLen;
@@ -459,8 +494,8 @@ static void decode(uint *output, uchar *input, uint len)
 /*
     @copy   custom
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1994-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1994-2012. All Rights Reserved.
     Portions Copyright (C) 1991-2, RSA Data Security, Inc. All rights reserved. 
     
     RSA License:

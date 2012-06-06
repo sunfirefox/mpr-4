@@ -8,13 +8,13 @@
 
 #include    "mpr.h"
 
-#if BLD_CC_EDITLINE
+#if BIT_CC_EDITLINE
     #include <histedit.h>
 #endif
 
 /*********************************** Locals ***********************************/
 
-#if BLD_CC_EDITLINE
+#if BIT_CC_EDITLINE
 static History *cmdHistory;
 static EditLine *eh; 
 static cchar *prompt;
@@ -24,7 +24,7 @@ static cchar *prompt;
 
 /************************************* Code ***********************************/
 
-#if BLD_CC_EDITLINE
+#if BIT_CC_EDITLINE
 
 
 EditLine *mprReadlineOpen(MprCtx ctx)
@@ -72,7 +72,7 @@ char *mprReadline(MprCtx ctx, cchar *msg)
     return NULL; 
 } 
 
-#else /* BLD_CC_EDITLINE */
+#else /* BIT_CC_EDITLINE */
 
 char *mprReadline(MprCtx ctx, cchar *msg)
 {
@@ -84,13 +84,13 @@ char *mprReadline(MprCtx ctx, cchar *msg)
     }
     return strdup(buf);
 }
-#endif /* BLD_CC_EDITLINE */
+#endif /* BIT_CC_EDITLINE */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

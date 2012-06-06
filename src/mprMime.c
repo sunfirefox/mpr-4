@@ -89,7 +89,7 @@ MprHash *mprCreateMimeTypes(cchar *path)
         line = 0;
         while ((buf = mprReadLine(file, 0, NULL)) != 0) {
             line++;
-            if (buf[0] == '#' || isspace((int) buf[0])) {
+            if (buf[0] == '#' || isspace((uchar) buf[0])) {
                 continue;
             }
             type = stok(buf, " \t\n\r", &tok);
@@ -210,8 +210,8 @@ cchar *mprLookupMime(MprHash *table, cchar *ext)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

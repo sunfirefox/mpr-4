@@ -40,13 +40,13 @@ int mprCreateNotifierService(MprWaitService *ws)
         if (breakSock < 0) {
             mprLog(MPR_WARN, "Can't open port %d to use for select. Retrying.\n");
         }
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
         fcntl(breakSock, F_SETFD, FD_CLOEXEC);
 #endif
         ws->breakAddress.sin_family = AF_INET;
-#if CYGWIN
+#if CYGWIN || VXWORKS
         /*
-            Cygwin doesn't work with INADDR_ANY
+            Cygwin & VxWorks don't work with INADDR_ANY
          */
         ws->breakAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
 #else
@@ -88,10 +88,9 @@ void mprManageSelect(MprWaitService *ws, int flags)
 }
 
 
-static int growFds(MprWaitService *ws)
+static int growFds(MprWaitService *ws, int fd)
 {
-    growFds(ws);
-    ws->handlerMax *= 2;
+    ws->handlerMax = max(ws->handlerMax * 2, fd);
     if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
         mprAssert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
@@ -124,7 +123,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             FD_SET(fd, &ws->writeMask);
         }
         if (mask) {
-            if (fd >= ws->handlerMax && growFds(ws) < 0) {
+            if (fd >= ws->handlerMax && growFds(ws, fd) < 0) {
                 unlock(ws);
                 mprAssert(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
@@ -201,7 +200,7 @@ void mprWaitForIO(MprWaitService *ws, MprTime timeout)
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
     }
-#if BLD_DEBUG
+#if BIT_DEBUG
     if (mprGetDebugMode() && timeout > 30000) {
         timeout = 30000;
     }
@@ -312,8 +311,8 @@ void stubMprSelectWait() {}
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

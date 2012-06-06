@@ -104,14 +104,14 @@ char *scamel(cchar *str)
         memcpy(ptr, str, len);
         ptr[len] = '\0';
     }
-    ptr[0] = (char) tolower((int) ptr[0]);
+    ptr[0] = (char) tolower((uchar) ptr[0]);
     return ptr;
 }
 
 
 /*
     Case insensitive string comparison. Limited by length
-    MOB TODO - name is not great. scaselesscmp, sncaselesscmp
+    MOB rename sacasecmp
  */
 int scasecmp(cchar *s1, cchar *s2)
 {
@@ -126,6 +126,7 @@ int scasecmp(cchar *s1, cchar *s2)
 }
 
 
+// MOB rename sacasematch
 bool scasematch(cchar *s1, cchar *s2)
 {
     return scasecmp(s1, s2) == 0;
@@ -141,6 +142,7 @@ char *schr(cchar *s, int c)
 }
 
 
+//  MOB - this should have no limit and then provide sncontains
 char *scontains(cchar *str, cchar *pattern, ssize limit)
 {
     cchar   *cp, *s1, *s2;
@@ -255,7 +257,7 @@ char *sfmtv(cchar *fmt, va_list arg)
 
 /*
     Compute a hash for a C string
-    (Based on work by Paul Hsieh (c) 2004-2008, see http://www.azillionmonkeys.com/qed/hash.html)
+    Inspired by Paul Hsieh (c) 2004-2008, see http://www.azillionmonkeys.com/qed/hash.html)
  */
 uint shash(cchar *cname, ssize len)
 {
@@ -422,7 +424,7 @@ char *slower(cchar *str)
         s = sclone(str);
         for (cp = s; *cp; cp++) {
             if (isupper((int) *cp)) {
-                *cp = (char) tolower((int) *cp);
+                *cp = (char) tolower((uchar) *cp);
             }
         }
         str = s;
@@ -436,6 +438,8 @@ bool smatch(cchar *s1, cchar *s2)
     return scmp(s1, s2) == 0;
 }
 
+
+// MOB rename snacasecmp
 
 int sncasecmp(cchar *s1, cchar *s2, ssize n)
 {
@@ -451,7 +455,7 @@ int sncasecmp(cchar *s1, cchar *s2, ssize n)
         return 1;
     }
     for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower((int) *s1) - tolower((int) *s2);
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -576,7 +580,7 @@ char *spascal(cchar *str)
         memcpy(ptr, str, len);
         ptr[len] = '\0';
     }
-    ptr[0] = (char) toupper((int) ptr[0]);
+    ptr[0] = (char) toupper((uchar) ptr[0]);
     return ptr;
 }
 
@@ -745,7 +749,7 @@ int64 stoiradix(cchar *str, int radix, int *err)
         }
         return 0;
     }
-    while (isspace((int) *str)) {
+    while (isspace((uchar) *str)) {
         str++;
     }
     val = 0;
@@ -759,7 +763,7 @@ int64 stoiradix(cchar *str, int radix, int *err)
     if (radix <= 0) {
         radix = 10;
         if (*str == '0') {
-            if (tolower((int) str[1]) == 'x') {
+            if (tolower((uchar) str[1]) == 'x') {
                 radix = 16;
                 str += 2;
             } else {
@@ -769,7 +773,7 @@ int64 stoiradix(cchar *str, int radix, int *err)
         }
 
     } else if (radix == 16) {
-        if (*str == '0' && tolower((int) str[1]) == 'x') {
+        if (*str == '0' && tolower((uchar) str[1]) == 'x') {
             str += 2;
         }
 
@@ -778,8 +782,8 @@ int64 stoiradix(cchar *str, int radix, int *err)
     }
     if (radix == 16) {
         while (*str) {
-            c = tolower((int) *str);
-            if (isdigit(c)) {
+            c = tolower((uchar) *str);
+            if (isdigit((uchar) c)) {
                 val = (val * radix) + c - '0';
             } else if (c >= 'a' && c <= 'f') {
                 val = (val * radix) + c - 'a' + 10;
@@ -789,7 +793,7 @@ int64 stoiradix(cchar *str, int radix, int *err)
             str++;
         }
     } else {
-        while (*str && isdigit((int) *str)) {
+        while (*str && isdigit((uchar) *str)) {
             n = *str - '0';
             if (n >= radix) {
                 break;
@@ -811,7 +815,7 @@ int64 stoiradix(cchar *str, int radix, int *err)
 
 /*
     Note "str" is modifed as per strtok()
-    MOB - warning this does not allocate - should it?
+    WARNING:  this does not allocate
  */
 char *stok(char *str, cchar *delim, char **last)
 {
@@ -902,8 +906,8 @@ char *supper(cchar *str)
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
-            if (islower((int) *cp)) {
-                *cp = (char) toupper((int) *cp);
+            if (islower((uchar) *cp)) {
+                *cp = (char) toupper((uchar) *cp);
             }
         }
         str = s;
@@ -932,7 +936,7 @@ char *stemplate(cchar *str, MprHash *keys)
                     for (cp = ++src; *cp && *cp != '}'; cp++) ;
                     tok = snclone(src, cp - src);
                 } else {
-                    for (cp = src; *cp && (isalnum((int) *cp) || *cp == '_'); cp++) ;
+                    for (cp = src; *cp && (isalnum((uchar) *cp) || *cp == '_'); cp++) ;
                     tok = snclone(src, cp - src);
                 }
                 if ((value = mprLookupKey(keys, tok)) != 0) {
@@ -965,8 +969,8 @@ char *stemplate(cchar *str, MprHash *keys)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

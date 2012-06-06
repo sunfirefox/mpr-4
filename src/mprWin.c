@@ -1,5 +1,5 @@
 /**
-    mprWin.c - Windows specific adaptions. Used by BLD_WIN_LIKE and CYGWIN
+    mprWin.c - Windows specific adaptions. Used by BIT_WIN_LIKE and CYGWIN
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -12,7 +12,7 @@
  #include "w32api/windows.h"
 #endif
 
-#if BLD_WIN_LIKE && !WINCE
+#if BIT_WIN_LIKE && !WINCE
 /*********************************** Code *************************************/
 /*
     Initialize the O/S platform layer
@@ -73,16 +73,35 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
 int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
-    char            *baseName;
+    MprPath         info;
+    char            *at, *baseName;
     void            *handle;
 
     mprAssert(mp);
-    baseName = mprGetPathBase(mp->path);
-    if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
-        mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
-        return MPR_ERR_CANT_READ;
-    } 
-    mp->handle = handle;
+
+    if ((handle = (HANDLE) MPR->appInstance) == 0) {
+        handle = GetModuleHandle(NULL);
+    }
+    if (!handle || !mp->entry || !GetProcAddress(handle, mp->entry)) {
+        if ((at = mprSearchForModule(mp->path)) == 0) {
+            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+                mprGetModuleSearchPath());
+            return 0;
+        }
+        mp->path = at;
+        mprGetPathInfo(mp->path, &info);
+        mp->modified = info.mtime;
+        mprLog(2, "Loading native module %s", mp->name);
+        baseName = mprGetPathBase(mp->path);
+        if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
+            mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
+            return MPR_ERR_CANT_READ;
+        } 
+        mp->handle = handle;
+
+    } else if (mp->entry) {
+        mprLog(2, "Activating native module %s", mp->name);
+    }
     if (mp->entry) {
         if ((fn = (MprModuleEntry) GetProcAddress((HINSTANCE) handle, mp->entry)) == 0) {
             mprError("Can't load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
@@ -110,7 +129,7 @@ int mprUnloadNativeModule(MprModule *mp)
 }
 
 
-void mprSetInst(long inst)
+void mprSetInst(HINSTANCE inst)
 {
     MPR->appInstance = inst;
 }
@@ -198,10 +217,10 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
 }
 
 
-#endif /* BLD_WIN_LIKE */
+#endif /* BIT_WIN_LIKE */
 
 
-#if (BLD_WIN_LIKE && !WINCE) || CYGWIN
+#if (BIT_WIN_LIKE && !WINCE) || CYGWIN
 /*
     Determine the registry hive by the first portion of the path. Return 
     a pointer to the rest of key path after the hive portion.
@@ -290,7 +309,6 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
     ulong   disposition;
 
     mprAssert(key && *key);
-    mprAssert(name && *name);
     mprAssert(value && *value);
 
     /*
@@ -299,7 +317,7 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
     if ((key = getHive(key, &top)) == 0) {
         return MPR_ERR_CANT_ACCESS;
     }
-    if (name) {
+    if (name && *name) {
         /*
             Write a registry string value
          */
@@ -318,8 +336,8 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
         if (RegOpenKeyEx(top, key, 0, KEY_CREATE_SUB_KEY, &h) != ERROR_SUCCESS){
             return MPR_ERR_CANT_ACCESS;
         }
-        if (RegCreateKeyEx(h, name, 0, NULL, REG_OPTION_NON_VOLATILE,
-            KEY_ALL_ACCESS, NULL, &subHandle, &disposition) != ERROR_SUCCESS) {
+        if (RegCreateKeyEx(h, value, 0, NULL, REG_OPTION_NON_VOLATILE,
+                KEY_ALL_ACCESS, NULL, &subHandle, &disposition) != ERROR_SUCCESS) {
             return MPR_ERR_CANT_ACCESS;
         }
         RegCloseKey(subHandle);
@@ -329,13 +347,13 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 }
 
 
-#endif /* (BLD_WIN_LIKE && !WINCE) || CYGWIN */
+#endif /* (BIT_WIN_LIKE && !WINCE) || CYGWIN */
 
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

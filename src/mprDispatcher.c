@@ -406,15 +406,16 @@ int mprDispatchersAreIdle()
  */
 void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
 {
-#if BLD_DEBUG
+#if BIT_DEBUG
     MprThread   *tp = mprGetCurrentThread();
     mprNop(tp);
 #endif
-    mprAssert(!isRunning(dispatcher));
-    mprAssert(dispatcher->owner == 0);
     mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     mprAssert(!dispatcher->destroyed);
 
+    if (isRunning(dispatcher) && dispatcher->owner != mprGetCurrentOsThread()) {
+        mprError("Relay to a running dispatcher owned by another thread");
+    }
     if (event) {
         event->timestamp = dispatcher->service->now;
     }
@@ -541,14 +542,8 @@ static bool serviceDispatcher(MprDispatcher *dispatcher)
     } else if (dispatcher->requiredWorker) {
         mprActivateWorker(dispatcher->requiredWorker, (MprWorkerProc) serviceDispatcherMain, dispatcher);
 
-    } else {
-        if (mprStartWorker((MprWorkerProc) serviceDispatcherMain, dispatcher) < 0) {
-#if UNUSED
-            /* Can't start a worker thread, run using the current thread */
-            serviceDispatcherMain(dispatcher);
-#endif
-            return 0;
-        } 
+    } else if (mprStartWorker((MprWorkerProc) serviceDispatcherMain, dispatcher) < 0) {
+        return 0;
     }
     return 1;
 }
@@ -796,7 +791,7 @@ static int makeRunnable(MprDispatcher *dispatcher)
 }
 
 
-#if UNUSED
+#if UNUSED && KEEP
 /*
     Designate the required worker thread to run the event
  */
@@ -823,6 +818,7 @@ void mprSignalDispatcher(MprDispatcher *dispatcher)
     mprSignalCond(dispatcher->cond);
 }
 
+
 bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
 {
     if (dispatcher == 0) {
@@ -835,8 +831,8 @@ bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

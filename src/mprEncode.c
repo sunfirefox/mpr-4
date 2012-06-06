@@ -98,11 +98,11 @@ char *mprUriDecode(cchar *inbuf)
         if (*ip == '+') {
             *op = ' ';
 
-        } else if (*ip == '%' && isxdigit((int) ip[1]) && isxdigit((int) ip[2])) {
+        } else if (*ip == '%' && isxdigit((uchar) ip[1]) && isxdigit((uchar) ip[2])) {
             ip++;
             num = 0;
             for (i = 0; i < 2; i++, ip++) {
-                c = tolower((int) *ip);
+                c = tolower((uchar) *ip);
                 if (c >= 'a' && c <= 'f') {
                     num = (num * 16) + 10 + c - 'a';
                 } else if (c >= '0' && c <= '9') {
@@ -150,7 +150,7 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
     }
     op = result;
     while ((c = (uchar) *cmd++) != 0) {
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         //  TODO - should use fs->newline
         if ((c == '\r' || c == '\n') && *cmd != '\0') {
             c = ' ';
@@ -233,8 +233,8 @@ char *mprEscapeHtml(cchar *html)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

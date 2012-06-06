@@ -1,0 +1,116 @@
+/*
+    main.bit -- Main Bit File for the Multithreaded Portable Runtime (MPR)
+ */
+
+Bit.load({
+    blend: [
+        '${BITS}/embedthis.bit',
+        'test/test.bit',
+        'doc/doc.bit',
+    ],
+
+    customize: [
+        /* Optionally load this if present. Feel free to create and customize */
+        'custom.bit',
+    ],
+
+    settings: {
+        product: 'mpr',
+        title: 'Multithreaded Portable Runtime',
+        company: 'Embedthis',
+        version: '4.0.0',
+        buildNumber: 'B0',
+        manager: 'manager',
+        '+optional': [ 'doxygen', 'dsi', 'ejs', 'http', 'man', 'man2html', 'md5', 'matrixssl', 'openssl', 'ssl', 'utest' ],
+        'without-all': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl'],
+    },
+
+    usage: {
+        assert: 'Enable program assertions',
+    },
+
+    targets: {
+        libmpr: {
+            type: 'lib',
+            headers: [ 'src/*.h' ],
+            sources: [ 'src/*.c' ],
+            exclude: [ /manager.c|ssl|Ssl|\/utils\// ],
+        },
+
+        libmprssl: {
+            type: 'lib',
+            depends: [ 'libmpr', 'openssl', 'matrixssl' ],
+            sources: [ 'src/mprMatrixssl.c', 'src/mprOpenssl.c', 'src/MprSsl.c' ],
+        },
+
+        manager: {
+            type: 'exe',
+            rule: 'gui',
+            depends: [ 'libmpr' ],
+            sources: [ 'src/manager.c' ],
+        },
+
+        makerom: {
+            type: 'exe',
+            depends: [ 'libmpr', ],
+            sources: ['src/utils/makerom.c'],
+            platforms: [ 'local' ],
+        },
+
+        chargen: {
+            type: 'exe',
+            depends: [ 'libmpr', ],
+            sources: [ 'src/utils/charGen.c' ],
+            platforms: [ 'local' ],
+        },
+
+        package: {
+            depends: ['packageCombo'],
+        },
+
+        packageSource: { },
+
+        packageCombo: {
+            depends: ['build'],
+            action: "
+                /* This is a combo/flat distribution only */
+                let d = bit.dir.pkg.join('${settings.product}-${settings.version}')
+                safeRemove(bit.dir.pkg)
+                install('package/mpr.bit', d.join('src/deps/mpr/mpr.bit'), {hidden: true})
+                install(['src/utils/makerom.c', 'src/manager.c'], d.join('src/deps/mpr'))
+                install(['doc/api/mpr.html', 'doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], 
+                    d.join('doc/api'))
+                install('doc/man/*.1', d.join('doc/man'))
+                install('src/mpr.h', d.join('src/deps/mpr/mpr.h'))
+                install(['src/mprMem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
+                    cat: true,
+                    filter: /^#inc.*mpr.*$/mg, 
+                    exclude: /manager|makerom|Ssl|ssl/,
+                    header: '#include \"mpr.h\"',
+                    title: bit.settings.title + ' Library Source',
+                })
+                install(['src/mprMatrixssl.c', 'src/mprOpenSsl.c', 'src/mprSsl.c'], d.join('src/deps/mpr/mprSsl.c'), {
+                    cat: true,
+                    title: bit.settings.title + ' SSL Source',
+                })
+                package(bit.dir.pkg, ['combo', 'flat'])
+            ",
+        },
+
+        gendh: {
+            action: "
+                let cmd = run('openssl dhparam -out dh512.pem -C -2 512', {})
+                Path('dh.new').write(cmd.response)
+                cmd = run('openssl dhparam -out dh1024.pem -C -2 1024', {})
+                Path('dh.new').append(cmd.response)
+            ",
+        },
+
+        api: {
+            action: "
+                apidoc('${SRC}/doc/api/mpr.dox', '${SRC}/src/mpr.h', 'MPR API')
+                apiwrap('${SRC}/doc/api/mpr.html')
+            ",
+        },
+    },
+})

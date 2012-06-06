@@ -35,13 +35,51 @@
 #define STATE_TYPE      7               /* Data type */
 #define STATE_COUNT     8
 
+char stateMap[] = {
+    /*     STATES:  Normal Percent Modifier Width  Dot  Prec Bits Type */
+    /* CLASS           0      1       2       3     4     5    6    7  */
+    /* Normal   0 */   0,     0,      0,      0,    0,    0,   0,   0,
+    /* Percent  1 */   1,     0,      1,      1,    1,    1,   1,   1,
+    /* Modifier 2 */   0,     2,      2,      0,    0,    0,   0,   0,
+    /* Zero     3 */   0,     2,      2,      3,    5,    5,   0,   0,
+    /* Star     4 */   0,     3,      3,      0,    5,    0,   0,   0,
+    /* Digit    5 */   0,     3,      3,      3,    5,    5,   0,   0,
+    /* Dot      6 */   0,     4,      4,      4,    0,    0,   0,   0,
+    /* Bits     7 */   0,     6,      6,      6,    6,    6,   6,   0,
+    /* Types    8 */   0,     7,      7,      7,    7,    7,   7,   0,
+};
+
 /*
     Format:         %[modifier][width][precision][bits][type]
-
-    [-+ #,]         Modifiers
-    [hlL]           Length bits
+  
+    The Class map will map from a specifier letter to a state.
  */
-
+char classMap[] = {
+    /*   0  ' '    !     "     #     $     %     &     ' */
+             2,    0,    0,    2,    0,    1,    0,    0,
+    /*  07   (     )     *     +     ,     -     .     / */
+             0,    0,    4,    2,    2,    2,    6,    0,
+    /*  10   0     1     2     3     4     5     6     7 */
+             3,    5,    5,    5,    5,    5,    5,    5,
+    /*  17   8     9     :     ;     <     =     >     ? */
+             5,    5,    0,    0,    0,    0,    0,    0,
+    /*  20   @     A     B     C     D     E     F     G */
+             8,    0,    0,    0,    0,    0,    0,    0,
+    /*  27   H     I     J     K     L     M     N     O */
+             0,    0,    0,    0,    7,    0,    8,    0,
+    /*  30   P     Q     R     S     T     U     V     W */
+             0,    0,    0,    8,    0,    0,    0,    0,
+    /*  37   X     Y     Z     [     \     ]     ^     _ */
+             8,    0,    0,    0,    0,    0,    0,    0,
+    /*  40   '     a     b     c     d     e     f     g */
+             0,    0,    0,    8,    8,    8,    8,    8,
+    /*  47   h     i     j     k     l     m     n     o */
+             7,    8,    0,    0,    7,    0,    8,    8,
+    /*  50   p     q     r     s     t     u     v     w */
+             8,    0,    0,    8,    0,    8,    0,    8,
+    /*  57   x     y     z  */
+             8,    0,    0,
+};
 
 /*
     Flags
@@ -99,7 +137,7 @@ typedef struct Format {
  */
 typedef struct MprEjsString {
     void            *xtype;
-#if BLD_DEBUG
+#if BIT_DEBUG
     char            *kind;
     void            *type;
     MprMem          *mem;
@@ -122,10 +160,10 @@ static int  growBuf(Format *fmt);
 static char *sprintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
 static void outNum(Format *fmt, cchar *prefix, uint64 val);
 static void outString(Format *fmt, cchar *str, ssize len);
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
 static void outWideString(Format *fmt, MprChar *str, ssize len);
 #endif
-#if BLD_FEATURE_FLOAT
+#if BIT_FEATURE_FLOAT
 static void outFloat(Format *fmt, char specChar, double value);
 #endif
 
@@ -279,55 +317,6 @@ char *mprAsprintfv(cchar *fmt, va_list arg)
 
 static int getState(char c, int state)
 {
-    /*
-     *  Declared here for Brew which can't handle globals.
-     */
-    char stateMap[] = {
-    /*     STATES:  Normal Percent Modifier Width  Dot  Prec Bits Type */
-    /* CLASS           0      1       2       3     4     5    6    7  */
-    /* Normal   0 */   0,     0,      0,      0,    0,    0,   0,   0,
-    /* Percent  1 */   1,     0,      1,      1,    1,    1,   1,   1,
-    /* Modifier 2 */   0,     2,      2,      0,    0,    0,   0,   0,
-    /* Zero     3 */   0,     2,      2,      3,    5,    5,   0,   0,
-    /* Star     4 */   0,     3,      3,      0,    5,    0,   0,   0,
-    /* Digit    5 */   0,     3,      3,      3,    5,    5,   0,   0,
-    /* Dot      6 */   0,     4,      4,      4,    0,    0,   0,   0,
-    /* Bits     7 */   0,     6,      6,      6,    6,    6,   6,   0,
-    /* Types    8 */   0,     7,      7,      7,    7,    7,   7,   0,
-    };
-
-    /*
-     *  Format:         %[modifier][width][precision][bits][type]
-     *
-     *  The Class map will map from a specifier letter to a state.
-     */
-    char classMap[] = {
-        /*   0  ' '    !     "     #     $     %     &     ' */
-                 2,    0,    0,    2,    0,    1,    0,    0,
-        /*  07   (     )     *     +     ,     -     .     / */
-                 0,    0,    4,    2,    2,    2,    6,    0,
-        /*  10   0     1     2     3     4     5     6     7 */
-                 3,    5,    5,    5,    5,    5,    5,    5,
-        /*  17   8     9     :     ;     <     =     >     ? */
-                 5,    5,    0,    0,    0,    0,    0,    0,
-        /*  20   @     A     B     C     D     E     F     G */
-                 8,    0,    0,    0,    0,    0,    0,    0,
-        /*  27   H     I     J     K     L     M     N     O */
-                 0,    0,    0,    0,    7,    0,    8,    0,
-        /*  30   P     Q     R     S     T     U     V     W */
-                 0,    0,    0,    8,    0,    0,    0,    0,
-        /*  37   X     Y     Z     [     \     ]     ^     _ */
-                 8,    0,    0,    0,    0,    0,    0,    0,
-        /*  40   '     a     b     c     d     e     f     g */
-                 0,    0,    0,    8,    8,    8,    8,    8,
-        /*  47   h     i     j     k     l     m     n     o */
-                 7,    8,    0,    0,    7,    0,    8,    8,
-        /*  50   p     q     r     s     t     u     v     w */
-                 8,    0,    0,    8,    0,    8,    0,    8,
-        /*  57   x     y     z  */
-                 8,    0,    0,
-    };
-
     int     chrClass;
 
     if (c < ' ' || c > 'z') {
@@ -342,7 +331,7 @@ static int getState(char c, int state)
 }
 
 
-static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
+static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 {
     Format        fmt;
     MprEjsString  *es;
@@ -365,14 +354,14 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
         if (maxsize <= 0) {
             maxsize = MAXINT;
         }
-        len = min(MPR_DEFAULT_ALLOC, maxsize);
+        len = min(MPR_SMALL_ALLOC, maxsize);
         buf = mprAlloc(len);
         if (buf == 0) {
             return 0;
         }
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[len];
-        fmt.growBy = min(MPR_DEFAULT_ALLOC * 2, maxsize - len);
+        fmt.growBy = min(MPR_SMALL_ALLOC * 2, maxsize - len);
     }
     fmt.maxsize = maxsize;
     fmt.start = fmt.buf;
@@ -421,13 +410,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
 
         case STATE_WIDTH:
             if (c == '*') {
-                fmt.width = va_arg(arg, int);
+                fmt.width = va_arg(args, int);
                 if (fmt.width < 0) {
                     fmt.width = -fmt.width;
                     fmt.flags |= SPRINTF_LEFT;
                 }
             } else {
-                while (isdigit((int) c)) {
+                while (isdigit((uchar) c)) {
                     fmt.width = fmt.width * 10 + (c - '0');
                     c = *spec++;
                 }
@@ -441,9 +430,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
 
         case STATE_PRECISION:
             if (c == '*') {
-                fmt.precision = va_arg(arg, int);
+                fmt.precision = va_arg(args, int);
             } else {
-                while (isdigit((int) c)) {
+                while (isdigit((uchar) c)) {
                     fmt.precision = fmt.precision * 10 + (c - '0');
                     c = *spec++;
                 }
@@ -470,32 +459,32 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
         case STATE_TYPE:
             switch (c) {
             case 'e':
-#if BLD_FEATURE_FLOAT
+#if BIT_FEATURE_FLOAT
             case 'g':
             case 'f':
                 fmt.radix = 10;
-                outFloat(&fmt, c, (double) va_arg(arg, double));
+                outFloat(&fmt, c, (double) va_arg(args, double));
                 break;
-#endif /* BLD_FEATURE_FLOAT */
+#endif /* BIT_FEATURE_FLOAT */
 
             case 'c':
-                BPUT(&fmt, (char) va_arg(arg, int));
+                BPUT(&fmt, (char) va_arg(args, int));
                 break;
 
             case 'N':
                 /* Name */
-                qname = va_arg(arg, MprEjsName);
+                qname = va_arg(args, MprEjsName);
                 if (qname.name) {
-#if BLD_CHAR_LEN == 1
-                    outString(&fmt, qname.space->value, qname.space->length);
+#if BIT_CHAR_LEN == 1
+                    outString(&fmt, (char*) qname.space->value, qname.space->length);
                     BPUT(&fmt, ':');
                     BPUT(&fmt, ':');
-                    outString(&fmt, qname.name->value, qname.name->length);
+                    outString(&fmt, (char*) qname.name->value, qname.name->length);
 #else
-                    outWideString(&fmt, qname.space->value, qname.space->length);
+                    outWideString(&fmt, (MprChar*) qname.space->value, qname.space->length);
                     BPUT(&fmt, ':');
                     BPUT(&fmt, ':');
-                    outWideString(&fmt, qname.name->value, qname.name->length);
+                    outWideString(&fmt, (MprChar*) qname.name->value, qname.name->length);
 #endif
                 } else {
                     outString(&fmt, NULL, 0);
@@ -504,24 +493,25 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
 
             case 'S':
                 /* Safe string */
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
                 if (fmt.flags & SPRINTF_LONG) {
-                    safe = mprEscapeHtml(va_arg(arg, MprChar*));
+                    //  MOB - not right MprChar
+                    safe = mprEscapeHtml(va_arg(args, MprChar*));
                     outWideString(&fmt, safe, -1);
                 } else
 #endif
                 {
-                    safe = mprEscapeHtml(va_arg(arg, MprChar*));
+                    safe = mprEscapeHtml(va_arg(args, char*));
                     outString(&fmt, safe, -1);
                 }
                 break;
 
             case '@':
                 /* MprEjsString */
-                es = va_arg(arg, MprEjsString*);
+                es = va_arg(args, MprEjsString*);
                 if (es) {
-#if BLD_CHAR_LEN == 1
-                    outString(&fmt, es->value, es->length);
+#if BIT_CHAR_LEN == 1
+                    outString(&fmt, (char*) es->value, es->length);
 #else
                     outWideString(&fmt, es->value, es->length);
 #endif
@@ -532,8 +522,8 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
 
             case 'w':
                 /* Wide string of MprChar characters (Same as %ls"). Null terminated. */
-#if BLD_CHAR_LEN > 1
-                outWideString(&fmt, va_arg(arg, MprChar*), -1);
+#if BIT_CHAR_LEN > 1
+                outWideString(&fmt, va_arg(args, MprChar*), -1);
                 break;
 #else
                 /* Fall through */
@@ -541,12 +531,12 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
 
             case 's':
                 /* Standard string */
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
                 if (fmt.flags & SPRINTF_LONG) {
-                    outWideString(&fmt, va_arg(arg, MprChar*), -1);
+                    outWideString(&fmt, va_arg(args, MprChar*), -1);
                 } else
 #endif
-                    outString(&fmt, va_arg(arg, char*), -1);
+                    outString(&fmt, va_arg(args, char*), -1);
                 break;
 
             case 'i':
@@ -555,13 +545,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
             case 'd':
                 fmt.radix = 10;
                 if (fmt.flags & SPRINTF_SHORT) {
-                    iValue = (short) va_arg(arg, int);
+                    iValue = (short) va_arg(args, int);
                 } else if (fmt.flags & SPRINTF_LONG) {
-                    iValue = (long) va_arg(arg, long);
+                    iValue = (long) va_arg(args, long);
                 } else if (fmt.flags & SPRINTF_INT64) {
-                    iValue = (int64) va_arg(arg, int64);
+                    iValue = (int64) va_arg(args, int64);
                 } else {
-                    iValue = (int) va_arg(arg, int);
+                    iValue = (int) va_arg(args, int);
                 }
                 if (iValue >= 0) {
                     if (fmt.flags & SPRINTF_LEAD_SPACE) {
@@ -589,13 +579,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
             case 'x':
             case 'u':
                 if (fmt.flags & SPRINTF_SHORT) {
-                    uValue = (ushort) va_arg(arg, uint);
+                    uValue = (ushort) va_arg(args, uint);
                 } else if (fmt.flags & SPRINTF_LONG) {
-                    uValue = (ulong) va_arg(arg, ulong);
+                    uValue = (ulong) va_arg(args, ulong);
                 } else if (fmt.flags & SPRINTF_INT64) {
-                    uValue = (uint64) va_arg(arg, uint64);
+                    uValue = (uint64) va_arg(args, uint64);
                 } else {
-                    uValue = va_arg(arg, uint);
+                    uValue = va_arg(args, uint);
                 }
                 if (c == 'u') {
                     fmt.radix = 10;
@@ -623,22 +613,22 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list arg)
 
             case 'n':       /* Count of chars seen thus far */
                 if (fmt.flags & SPRINTF_SHORT) {
-                    short *count = va_arg(arg, short*);
+                    short *count = va_arg(args, short*);
                     *count = (int) (fmt.end - fmt.start);
                 } else if (fmt.flags & SPRINTF_LONG) {
-                    long *count = va_arg(arg, long*);
+                    long *count = va_arg(args, long*);
                     *count = (int) (fmt.end - fmt.start);
                 } else {
-                    int *count = va_arg(arg, int *);
+                    int *count = va_arg(args, int *);
                     *count = (int) (fmt.end - fmt.start);
                 }
                 break;
 
             case 'p':       /* Pointer */
 #if MPR_64_BIT
-                uValue = (uint64) va_arg(arg, void*);
+                uValue = (uint64) va_arg(args, void*);
 #else
-                uValue = (uint) PTOI(va_arg(arg, void*));
+                uValue = (uint) PTOI(va_arg(args, void*));
 #endif
                 fmt.radix = 16;
                 outNum(&fmt, "0x", uValue);
@@ -690,7 +680,7 @@ static void outString(Format *fmt, cchar *str, ssize len)
 }
 
 
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
 static void outWideString(Format *fmt, MprChar *str, ssize len)
 {
     MprChar     *cp;
@@ -813,7 +803,7 @@ static void outNum(Format *fmt, cchar *prefix, uint64 value)
 }
 
 
-#if BLD_FEATURE_FLOAT
+#if BIT_FEATURE_FLOAT
 static void outFloat(Format *fmt, char specChar, double value)
 {
     char    result[MPR_MAX_STRING], *cp;
@@ -871,7 +861,7 @@ static void outFloat(Format *fmt, char specChar, double value)
 }
 
 int mprIsNan(double value) {
-#if WIN
+#if WINDOWS
     return _fpclass(value) & (_FPCLASS_SNAN | _FPCLASS_QNAN);
 #elif VXWORKS
     return value == (0.0 / 0.0);
@@ -882,7 +872,7 @@ int mprIsNan(double value) {
 
 
 int mprIsInfinite(double value) {
-#if WIN
+#if WINDOWS
     return _fpclass(value) & (_FPCLASS_PINF | _FPCLASS_NINF);
 #elif VXWORKS
     return value == (1.0 / 0.0) || value == (-1.0 / 0.0);
@@ -892,7 +882,7 @@ int mprIsInfinite(double value) {
 }
 
 int mprIsZero(double value) {
-#if WIN
+#if WINDOWS
     return _fpclass(value) & (_FPCLASS_NZ | _FPCLASS_PZ);
 #elif VXWORKS
     return value == 0.0 || value == -0.0;
@@ -1039,7 +1029,7 @@ char *mprDtoa(double value, int ndigits, int mode, int flags)
     }
     return sclone(mprGetBufStart(buf));
 }
-#endif /* BLD_FEATURE_FLOAT */
+#endif /* BIT_FEATURE_FLOAT */
 
 
 /*
@@ -1101,8 +1091,8 @@ int print(cchar *fmt, ...)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

@@ -42,7 +42,7 @@ MprHash *mprCreateHash(int hashSize, int flags)
     hash->flags = flags;
     hash->length = 0;
     hash->mutex = mprCreateLock();
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
     if (hash->flags & MPR_HASH_UNICODE) {
         if (hash->flags & MPR_HASH_CASELESS) {
             hash->fn = (MprHashProc) whashlower;
@@ -337,7 +337,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
     prev = 0;
 
     while (sp) {
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
         if (hash->flags & MPR_HASH_UNICODE) {
             MprChar *u1, *u2;
             u1 = (MprChar*) sp->key;
@@ -422,7 +422,7 @@ MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 
 static void *dupKey(MprHash *hash, MprKey *sp, cvoid *key)
 {
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
     if (hash->flags & MPR_HASH_UNICODE) {
         return wclone(sp, (MprChar*) key, -1);
     } else
@@ -449,8 +449,8 @@ MprHash *mprCreateHashFromWords(cchar *str)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

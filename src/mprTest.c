@@ -76,7 +76,7 @@ int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser e
     outputVersion = 0;
 
     programName = mprGetPathBase(argv[0]);
-    sp->name = sclone(BLD_PRODUCT);
+    sp->name = sclone(BIT_PRODUCT);
 
     /*
         Save the command line
@@ -228,7 +228,7 @@ int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser e
         return MPR_ERR_BAD_ARGS;
     }
     if (outputVersion) {
-        mprPrintfError("%s: Version: %s\n", BLD_NAME, BLD_VERSION);
+        mprPrintfError("%s: Version: %s\n", BIT_NAME, BIT_VERSION);
         return MPR_ERR_BAD_ARGS;
     }
     sp->argc = argc;
@@ -280,9 +280,9 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
     }
     mprSprintf(entry, sizeof(entry), "%sInit", base);
     if (fileName[0] == '/' || (*fileName && fileName[1] == ':')) {
-        mprSprintf(path, sizeof(path), "%s%s", fileName, BLD_SHOBJ);
+        mprSprintf(path, sizeof(path), "%s%s", fileName, BIT_SHOBJ);
     } else {
-        mprSprintf(path, sizeof(path), "./%s%s", fileName, BLD_SHOBJ);
+        mprSprintf(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
     }
     if ((mp = mprCreateModule(base, path, entry, sp)) == 0) {
         mprError("Can't create module %s", path);
@@ -439,7 +439,7 @@ void mprReportTestResults(MprTestService *sp)
             "[DETAILS]", sp->totalTestCount, sp->totalFailedCount);
         mprPrintf("%12s Elapsed time: %5.2f seconds.\n", "[BENCHMARK]", elapsed);
     }
-    if (MPR->heap.track) {
+    if (MPR->heap->track) {
         mprPrintMem("Memory Results", 1);
     }
 }
@@ -1004,8 +1004,8 @@ static int setLogging(char *logSpec)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

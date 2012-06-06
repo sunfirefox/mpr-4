@@ -25,7 +25,7 @@ MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
     MprBuf      *bp;
     
     if (initialSize <= 0) {
-        initialSize = MPR_DEFAULT_ALLOC;
+        initialSize = MPR_BUFSIZE;
     }
     if ((bp = mprAllocObj(MprBuf, manageBuf)) == 0) {
         return 0;
@@ -516,7 +516,7 @@ void mprResetBufIfEmpty(MprBuf *bp)
 }
 
 
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
 void mprAddNullToWideBuf(MprBuf *bp)
 {
     ssize      space;
@@ -592,13 +592,13 @@ int mprPutStringToWideBuf(MprBuf *bp, cchar *str)
     return 0;
 }
 
-#endif /* BLD_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN > 1 */
 
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

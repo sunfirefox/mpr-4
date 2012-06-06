@@ -8,7 +8,7 @@
 
 #include    "mpr.h"
 
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
 /*********************************** Code *************************************/
 
 int mprCreateOsService()
@@ -47,8 +47,7 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
     ssize   sofar, rc;
     int     fd;
 
-    fd = open((block) ? "/dev/random" : "/dev/urandom", O_RDONLY, 0666);
-    if (fd < 0) {
+    if ((fd = open((block) ? "/dev/random" : "/dev/urandom", O_RDONLY, 0666)) < 0) {
         return MPR_ERR_CANT_OPEN;
     }
     sofar = 0;
@@ -66,20 +65,47 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-#if BLD_CC_DYN_LOAD
+#if BIT_CC_DYN_LOAD
 int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
+    MprPath         info;
+    char            *at;
     void            *handle;
 
     mprAssert(mp);
 
-    if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
-        mprError("Can't load module %s\nReason: \"%s\"", mp->path, dlerror());
-        return MPR_ERR_CANT_OPEN;
-    } 
-    mp->handle = handle;
+    /*
+        Search the image incase the module has been statically linked
+     */
+#ifdef RTLD_DEFAULT
+    handle = RTLD_DEFAULT;
+#else
+#ifdef RTLD_MAIN_ONLY
+    handle = RTLD_MAIN_ONLY;
+#else
+    handle = 0;
+#endif
+#endif
+    if (!mp->entry || !dlsym(handle, mp->entry)) {
+        if ((at = mprSearchForModule(mp->path)) == 0) {
+            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+                mprGetModuleSearchPath());
+            return 0;
+        }
+        mp->path = at;
+        mprGetPathInfo(mp->path, &info);
+        mp->modified = info.mtime;
+        mprLog(2, "Loading native module %s", mp->name);
+        if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
+            mprError("Can't load module %s\nReason: \"%s\"", mp->path, dlerror());
+            return MPR_ERR_CANT_OPEN;
+        } 
+        mp->handle = handle;
 
+    } else if (mp->entry) {
+        mprLog(2, "Activating native module %s", mp->name);
+    }
     if (mp->entry) {
         if ((fn = (MprModuleEntry) dlsym(handle, mp->entry)) != 0) {
             if ((fn)(mp->moduleData, mp) < 0) {
@@ -165,13 +191,13 @@ int mprInitWindow()
 
 #else
 void stubMprUnix() {}
-#endif /* BLD_UNIX_LIKE */
+#endif /* BIT_UNIX_LIKE */
 
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 
