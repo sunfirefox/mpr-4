@@ -8,7 +8,7 @@
 
 #include    "mpr.h"
 
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
 /********************************** Forwards **********************************/
 
 int mcasecmp(MprChar *str1, cchar *str2)
@@ -195,7 +195,7 @@ int mncasecmp(MprChar *s1, cchar *s2, ssize n)
         return 1;
     }
     for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower((int) *s1) - tolower((int) (uchar) *s2);
+        rc = tolower(*s1) - tolower(*s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -408,13 +408,13 @@ MprChar *mtrim(MprChar *str, cchar *set, int where)
 
 #else
 void dummyWide() {}
-#endif /* BLD_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN > 1 */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

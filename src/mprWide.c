@@ -8,7 +8,7 @@
 
 #include    "mpr.h"
 
-#if BLD_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1
 /************************************ Code ************************************/
 /*
     Format a number as a string. Support radix 10 and 16.
@@ -375,7 +375,7 @@ MprChar *wlower(MprChar *str)
         s = wclone(str);
         for (cp = s; *cp; cp++) {
             if (isupper((int) *cp)) {
-                *cp = (MprChar) tolower((int) *cp);
+                *cp = (MprChar) tolower(*cp);
             }
         }
         str = s;
@@ -398,7 +398,7 @@ int wncasecmp(MprChar *s1, MprChar *s2, ssize n)
         return 1;
     }
     for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower((int) *s1) - tolower((int) *s2);
+        rc = tolower(*s1) - tolower(*s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -697,8 +697,8 @@ char *wupper(MprChar *str)
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (islower((int) *cp)) {
-                *cp = (char) toupper((int) *cp);
+            if (islower(*cp)) {
+                *cp = (MprChar) toupper(*cp);
             }
         }
         str = s;
@@ -728,13 +728,13 @@ ssize wtom(char *dest, ssize destCount, MprChar *src, ssize len)
     }
     size = min(destCount, len + 1);
     if (size > 0) {
-#if BLD_CHAR_LEN == 1
+#if BIT_CHAR_LEN == 1
         if (dest) {
             scopy(dest, size, src);
         } else {
             len = min(slen(src), size - 1);
         }
-#elif BLD_WIN_LIKE
+#elif BIT_WIN_LIKE
         //  TODO -- use destCount
         len = WideCharToMultiByte(CP_ACP, 0, src, -1, dest, (DWORD) size, NULL, NULL);
 #else
@@ -769,13 +769,13 @@ ssize mtow(MprChar *dest, ssize destCount, cchar *src, ssize len)
     }
     size = min(destCount, len + 1);
     if (size > 0) {
-#if BLD_CHAR_LEN == 1
+#if BIT_CHAR_LEN == 1
         if (dest) {
             scopy(dest, size, src);
         } else {
             len = min(slen(src), size - 1);
         }
-#elif BLD_WIN_LIKE
+#elif BIT_WIN_LIKE
         len = MultiByteToWideChar(CP_ACP, 0, src, -1, dest, size);
 #else
         len = mbstowcs(dest, src, size);
@@ -811,6 +811,7 @@ MprChar *amtow(cchar *src, ssize *lenp)
 }
 
 
+//  MOB - need a version that can supply a length
 char *awtom(MprChar *src, ssize *lenp)
 {
     char    *dest;
@@ -1052,33 +1053,33 @@ ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
 
 #endif /* FUTURE */
 
-#else /* BLD_CHAR_LEN == 1 */
+#else /* BIT_CHAR_LEN == 1 */
 
 MprChar *amtow(cchar *src, ssize *len)
 {
     if (len) {
         *len = slen(src);
     }
-    return sclone(src);
+    return (MprChar*) sclone(src);
 }
 
 
 char *awtom(MprChar *src, ssize *len)
 {
     if (len) {
-        *len = slen(src);
+        *len = slen((char*) src);
     }
-    return sclone(src);
+    return sclone((char*) src);
 }
 
 
-#endif /* BLD_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN > 1 */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

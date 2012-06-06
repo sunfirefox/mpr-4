@@ -31,7 +31,6 @@ void mprStopOsService()
 int access(const char *path, int mode)
 {
     struct stat sbuf;
-
     return stat((char*) path, &sbuf);
 }
 
@@ -51,42 +50,50 @@ int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     SYM_TYPE        symType;
+    MprPath         info;
+    char            *at;
     void            *handle;
-    char            entryPoint[MPR_MAX_FNAME];
     int             fd;
 
     mprAssert(mp);
+    fn = 0;
+    handle = 0;
 
-    if (moduleFindByName(mp->path) != 0) {
-        return 0;
-    }
-    if ((fd = open(mp->path, O_RDONLY, 0664)) < 0) {
-        mprError("Can't open module \"%s\"", mp->path);
-        return MPR_ERR_CANT_OPEN;
-    }
-    errno = 0;
-    handle = loadModule(fd, LOAD_GLOBAL_SYMBOLS);
-    if (handle == 0 || errno != 0) {
-        close(fd);
-        if (handle) {
-            unldByModuleId(handle, 0);
+    if (!mp->entry || symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
+        if ((at = mprSearchForModule(mp->path)) == 0) {
+            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+                mprGetModuleSearchPath());
+            return 0;
         }
-        mprError("Can't load module %s", mp->path);
-        return MPR_ERR_CANT_READ;
+        mp->path = at;
+        mprGetPathInfo(mp->path, &info);
+        mp->modified = info.mtime;
+
+        mprLog(2, "Loading native module %s", mp->name);
+        if ((fd = open(mp->path, O_RDONLY, 0664)) < 0) {
+            mprError("Can't open module \"%s\"", mp->path);
+            return MPR_ERR_CANT_OPEN;
+        }
+        handle = loadModule(fd, LOAD_GLOBAL_SYMBOLS);
+        if (handle == 0) {
+            close(fd);
+            if (handle) {
+                unldByModuleId(handle, 0);
+            }
+            mprError("Can't load module %s", mp->path);
+            return MPR_ERR_CANT_READ;
+        }
+        close(fd);
+        mp->handle = handle;
+
+    } else if (mp->entry) {
+        mprLog(2, "Activating module %s", mp->name);
     }
-    close(fd);
     if (mp->entry) {
-#if BLD_HOST_CPU_ARCH == MPR_CPU_IX86 || BLD_HOST_CPU_ARCH == MPR_CPU_IX64
-        mprSprintf(entryPoint, sizeof(entryPoint), "_%s", mp->entry);
-#else
-        scopy(entryPoint, sizeof(entryPoint), mp->entry);
-#endif
-        fn = 0;
-        if (symFindByName(sysSymTbl, entryPoint, (char**) &fn, &symType) == -1) {
+        if (symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
             mprError("Can't find symbol %s when loading %s", mp->entry, mp->path);
             return MPR_ERR_CANT_READ;
         }
-        mp->handle = handle;
         if ((fn)(mp->moduleData, mp) < 0) {
             mprError("Initialization for %s failed.", mp->path);
             return MPR_ERR_CANT_INITIALIZE;
@@ -185,8 +192,8 @@ void stubMprVxWorks() {}
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

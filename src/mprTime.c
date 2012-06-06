@@ -70,7 +70,7 @@ static TimeToken fullDays[] = {
 };
 
 /*
-    Make origin 1 to correspond to user date entries 10/28/2011
+    Make origin 1 to correspond to user date entries 10/28/2012
  */
 static TimeToken months[] = {
     { "jan",  1 | TOKEN_MONTH },
@@ -140,7 +140,7 @@ static int timeSep = ':';
 /*
     Formats for mprFormatTime
  */
-#if WIN
+#if WINDOWS
     #define VALID_FMT "AaBbCcDdEeFHhIjklMmnOPpRrSsTtUuvWwXxYyZz+%"
 #elif MACOSX
     #define VALID_FMT "AaBbCcDdEeFGgHhIjklMmnOPpRrSsTtUuVvWwXxYyZz+%"
@@ -392,7 +392,7 @@ MprTime mprMakeUniversalTime(struct tm *tp)
 
 static int localTime(struct tm *timep, MprTime time)
 {
-#if BLD_UNIX_LIKE || WINCE
+#if BIT_UNIX_LIKE || WINCE
     time_t when = (time_t) (time / MS_PER_SEC);
     if (localtime_r(&when, timep) == 0) {
         return MPR_ERR;
@@ -411,7 +411,7 @@ static int localTime(struct tm *timep, MprTime time)
 
 struct tm *universalTime(struct tm *timep, MprTime time)
 {
-#if BLD_UNIX_LIKE || WINCE
+#if BIT_UNIX_LIKE || WINCE
     time_t when = (time_t) (time / MS_PER_SEC);
     return gmtime_r(&when, timep);
 #else
@@ -433,7 +433,7 @@ struct tm *universalTime(struct tm *timep, MprTime time)
  */
 static int getTimeZoneOffsetFromTm(struct tm *tp)
 {
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     int                     offset;
     TIME_ZONE_INFORMATION   tinfo;
     GetTimeZoneInformation(&tinfo);
@@ -458,7 +458,7 @@ static int getTimeZoneOffsetFromTm(struct tm *tp)
         }
     }
     return offset;
-#elif BLD_UNIX_LIKE && !CYGWIN
+#elif BIT_UNIX_LIKE && !CYGWIN
     return (int) tp->tm_gmtoff * MS_PER_SEC;
 #else
     struct timezone     tz;
@@ -591,7 +591,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
             offset = getTimeZoneOffsetFromTm(&t);
             dst = t.tm_isdst;
         }
-#if BLD_UNIX_LIKE && !CYGWIN
+#if BIT_UNIX_LIKE && !CYGWIN
         zoneName = (char*) t.tm_zone;
 #endif
         when += offset;
@@ -606,7 +606,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     tp->tm_yday     = (int) (floorDiv(when, MS_PER_DAY) - daysSinceEpoch(year));
     tp->tm_mon      = getMonth(year, tp->tm_yday);
     tp->tm_isdst    = dst != 0;
-#if BLD_UNIX_LIKE && !CYGWIN
+#if BIT_UNIX_LIKE && !CYGWIN
     tp->tm_gmtoff   = offset / MS_PER_SEC;
     tp->tm_zone     = zoneName;
 #endif
@@ -948,7 +948,7 @@ static void digits(MprBuf *buf, int count, int fill, int value)
 
 static char *getTimeZoneName(struct tm *tp)
 {
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     TIME_ZONE_INFORMATION   tz;
     WCHAR                   *wzone;
     GetTimeZoneInformation(&tz);
@@ -989,7 +989,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
             mprPutCharToBuf(buf, '%');
             break;
 
-        case '+' :                                      /* date (Mon May 18 23:29:50 PDT 2011) */
+        case '+' :                                      /* date (Mon May 18 23:29:50 PDT 2012) */
             mprPutStringToBuf(buf, abbrevDay[tp->tm_wday]);
             mprPutCharToBuf(buf, ' ');
             mprPutStringToBuf(buf, abbrevMonth[tp->tm_mon]);
@@ -1346,7 +1346,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
     tm.tm_year = -MAXINT;
     tm.tm_mon = tm.tm_mday = tm.tm_hour = tm.tm_sec = tm.tm_min = tm.tm_wday = -1;
     tm.tm_min = tm.tm_sec = tm.tm_yday = -1;
-#if BLD_UNIX_LIKE && !CYGWIN
+#if BIT_UNIX_LIKE && !CYGWIN
     tm.tm_gmtoff = 0;
     tm.tm_zone = 0;
 #endif
@@ -1374,7 +1374,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
     while (token && *token) {
         if (snumber(token)) {
             /*
-                Parse either day of month or year. Priority to day of month. Format: <29> Jan <15> <2011>
+                Parse either day of month or year. Priority to day of month. Format: <29> Jan <15> <2012>
              */ 
             value = stoi(token);
             if (value > 3000) {
@@ -1439,7 +1439,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
                 }
             }
 
-        } else if ((cp = strchr(token, timeSep)) != 0 && isdigit((int) token[0])) {
+        } else if ((cp = strchr(token, timeSep)) != 0 && isdigit((uchar) token[0])) {
             /*
                 Time:  10:52[:23]
                 Must not parse GMT-07:30
@@ -1461,7 +1461,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
             }
             if (dateSep) {
                 /*
-                    Date:  07/28/2011, 07/28/08, Jan/28/2011, Jaunuary-28-2011, 28-jan-2011
+                    Date:  07/28/2012, 07/28/08, Jan/28/2012, Jaunuary-28-2012, 28-jan-2012
                     Support order: dd/mm/yy, mm/dd/yy and yyyy/mm/dd
                     Support separators "/", ".", "-"
                  */
@@ -1624,10 +1624,10 @@ static void validateTime(struct tm *tp, struct tm *defaults)
 /*
     Compatibility for windows and VxWorks
  */
-#if BLD_WIN_LIKE || VXWORKS
+#if BIT_WIN_LIKE || VXWORKS
 int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
-    #if BLD_WIN_LIKE
+    #if BIT_WIN_LIKE
         FILETIME        fileTime;
         MprTime         now;
         static int      tzOnce;
@@ -1679,20 +1679,20 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
         return rc;
     #endif
 }
-#endif /* BLD_WIN_LIKE || VXWORKS */
+#endif /* BIT_WIN_LIKE || VXWORKS */
 
 /********************************* Measurement **********************************/
 /*
     High resolution timer
  */
 #if MPR_HIGH_RES_TIMER
-    #if BLD_UNIX_LIKE
+    #if BIT_UNIX_LIKE
         uint64 mprGetTicks() {
             uint64  now;
             __asm__ __volatile__ ("rdtsc" : "=A" (now));
             return now;
         }
-    #elif BLD_WIN_LIKE
+    #elif BIT_WIN_LIKE
         uint64 mprGetTicks() {
             LARGE_INTEGER  now;
             QueryPerformanceCounter(&now);
@@ -1713,8 +1713,8 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

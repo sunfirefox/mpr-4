@@ -10,10 +10,10 @@
 
 #include    "mpr.h"
 
-#if !BLD_FEATURE_ROMFS
+#if !BIT_FEATURE_ROMFS
 /*********************************** Defines **********************************/
 
-#if WIN
+#if WINDOWS
 /*
     Open/Delete retries to circumvent windows pending delete problems
  */
@@ -36,7 +36,7 @@ static int cygOpen(MprFileSystem *fs, cchar *path, int omode, int perms)
     int     fd;
 
     fd = open(path, omode, perms);
-#if WIN
+#if WINDOWS
     if (fd < 0) {
         if (*path == '/') {
             path = sjoin(fs->cygwin, path, NULL);
@@ -54,14 +54,13 @@ static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
     
     mprAssert(path);
 
-    file = mprAllocObj(MprFile, manageDiskFile);
-    if (file == 0) {
+    if ((file = mprAllocObj(MprFile, manageDiskFile)) == 0) {
         return NULL;
     }
     file->path = sclone(path);
     file->fd = open(path, omode, perms);
     if (file->fd < 0) {
-#if WIN
+#if WINDOWS
         /*
             Windows opens can fail of immediately following a delete. Windows uses pending deletes which prevent opens.
          */
@@ -94,7 +93,9 @@ static void manageDiskFile(MprFile *file, int flags)
         mprMark(file->path);
         mprMark(file->fileSystem);
         mprMark(file->buf);
-        //  MOB - mark inode?
+#if BIT_FEATURE_ROMFS
+        mprMark(file->inode);
+#endif
 
     } else if (flags & MPR_MANAGE_FREE) {
         closeFile(file);
@@ -152,7 +153,7 @@ static MprOff seekFile(MprFile *file, int seekType, MprOff distance)
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     return (MprOff) _lseeki64(file->fd, (int64) distance, seekType);
 #elif HAS_OFF64
     return (MprOff) lseek64(file->fd, (off64_t) distance, seekType);
@@ -164,7 +165,7 @@ static MprOff seekFile(MprFile *file, int seekType, MprOff distance)
 
 static bool accessPath(MprDiskFileSystem *fs, cchar *path, int omode)
 {
-#if BLD_WIN && FUTURE
+#if BIT_WIN && FUTURE
     if (access(path, omode) < 0) {
         if (*path == '/') {
             path = sjoin(fs->cygwin, path, NULL);
@@ -175,7 +176,6 @@ static bool accessPath(MprDiskFileSystem *fs, cchar *path, int omode)
 }
 
 
-//  MOB - should this be called removePath
 static int deletePath(MprDiskFileSystem *fs, cchar *path)
 {
     MprPath     info;
@@ -183,7 +183,7 @@ static int deletePath(MprDiskFileSystem *fs, cchar *path)
     if (getPathInfo(fs, path, &info) == 0 && info.isDir) {
         return rmdir((char*) path);
     }
-#if WIN
+#if WINDOWS
 {
     /*
         NOTE: Windows delete makes a file pending delete which prevents immediate recreation. Rename and then delete.
@@ -219,10 +219,10 @@ static int makeDir(MprDiskFileSystem *fs, cchar *path, int perms, int owner, int
     if (rc < 0) {
         return MPR_ERR_CANT_CREATE;
     }
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     if ((owner != -1 || group != -1) && chown(path, owner, group) < 0) {
         rmdir(path);
-        return MPR_ERR_CANT_CREATE;
+        return MPR_ERR_CANT_COMPLETE;
     }
 #endif
     return 0;
@@ -231,7 +231,7 @@ static int makeDir(MprDiskFileSystem *fs, cchar *path, int perms, int owner, int
 
 static int makeLink(MprDiskFileSystem *fs, cchar *path, cchar *target, int hard)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     if (hard) {
         return link(target, path);
     } else {
@@ -254,6 +254,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
 
     info->checked = 1;
     info->valid = 0;
+    info->isReg = 0;
+    info->isDir = 0;
 
     if (_stat64(path, &s) < 0) {
         return -1;
@@ -263,6 +265,9 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     info->atime = s.st_atime;
     info->ctime = s.st_ctime;
     info->mtime = s.st_mtime;
+    info->perms = s.st_mode & 07777;
+    info->owner = s.st_uid;
+    info->group = s.st_gid;
     info->inode = s.st_ino;
     info->isDir = (s.st_mode & S_IFDIR) != 0;
     info->isReg = (s.st_mode & S_IFREG) != 0;
@@ -272,7 +277,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
         info->isLink = 1;
     }
 
-#elif BLD_WIN_LIKE
+#elif BIT_WIN_LIKE
     struct __stat64     s;
     cchar               *ext;
 
@@ -280,8 +285,10 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     mprAssert(info);
     info->checked = 1;
     info->valid = 0;
+    info->isReg = 0;
+    info->isDir = 0;
     if (_stat64(path, &s) < 0) {
-#if BLD_WIN && FUTURE
+#if BIT_WIN && FUTURE
         /*
             Try under /cygwin
          */
@@ -295,18 +302,25 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
         return -1;
 #endif
     }
+    ext = mprGetPathExt(path);
     info->valid = 1;
     info->size = s.st_size;
     info->atime = s.st_atime;
     info->ctime = s.st_ctime;
     info->mtime = s.st_mtime;
+    info->perms = s.st_mode & 07777;
+    info->owner = s.st_uid;
+    info->group = s.st_gid;
     info->inode = s.st_ino;
     info->isDir = (s.st_mode & S_IFDIR) != 0;
     info->isReg = (s.st_mode & S_IFREG) != 0;
     info->isLink = 0;
-    ext = mprGetPathExt(path);
-    if (ext && strcmp(ext, "lnk") == 0) {
-        info->isLink = 1;
+    if (ext) {
+        if (strcmp(ext, "lnk") == 0) {
+            info->isLink = 1;
+        } else if (strcmp(ext, "dll") == 0) {
+            info->perms |= 111;
+        }
     }
     /*
         Work hard on windows to determine if the file is a regular file.
@@ -346,6 +360,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
 #elif VXWORKS
     struct stat s;
     info->valid = 0;
+    info->isReg = 0;
+    info->isDir = 0;
     info->checked = 1;
     if (stat((char*) path, &s) < 0) {
         return MPR_ERR_CANT_ACCESS;
@@ -364,6 +380,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
 #else
     struct stat s;
     info->valid = 0;
+    info->isReg = 0;
+    info->isDir = 0;
     info->checked = 1;
     if (lstat((char*) path, &s) < 0) {
         return MPR_ERR_CANT_ACCESS;
@@ -396,7 +414,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
  
 static char *getPathLink(MprDiskFileSystem *fs, cchar *path)
 {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     char    pbuf[MPR_MAX_PATH];
     ssize   len;
 
@@ -414,7 +432,7 @@ static char *getPathLink(MprDiskFileSystem *fs, cchar *path)
 static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 {
     if (!mprPathExists(path, F_OK)) {
-#if BLD_WIN_LIKE && FUTURE
+#if BIT_WIN_LIKE && FUTURE
         /*
             Try under /cygwin
          */
@@ -425,7 +443,7 @@ static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 #endif
         return MPR_ERR_CANT_ACCESS;
     }
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
 {
     HANDLE  h;
 
@@ -466,7 +484,7 @@ static void manageDiskFileSystem(MprDiskFileSystem *dfs, int flags)
         mprMark(dfs->separators);
         mprMark(dfs->newline);
         mprMark(dfs->root);
-#if BLD_WIN_LIKE || CYGWIN
+#if BIT_WIN_LIKE || CYGWIN
         mprMark(dfs->cygdrive);
         mprMark(dfs->cygwin);
 #endif
@@ -528,14 +546,14 @@ MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 #endif
     return dfs;
 }
-#endif /* !BLD_FEATURE_ROMFS */
+#endif /* !BIT_FEATURE_ROMFS */
 
 
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

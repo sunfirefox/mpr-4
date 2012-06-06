@@ -25,11 +25,9 @@ MprModuleService *mprCreateModuleService()
         return 0;
     }
     ms->modules = mprCreateList(-1, 0);
-    ms->searchPath = sfmt(".%s%s%s/../%s%s%s", \
-        mprGetAppDir(), MPR_SEARCH_SEP, 
-        mprGetAppDir(), BLD_LIB_NAME, MPR_SEARCH_SEP, 
-        BLD_LIB_PREFIX);
     ms->mutex = mprCreateLock();
+    MPR->moduleService = ms;
+    mprSetModuleSearchPath(NULL);
     return ms;
 }
 
@@ -61,7 +59,7 @@ int mprStartModuleService()
             return MPR_ERR_CANT_INITIALIZE;
         }
     }
-#if VXWORKS && BLD_DEBUG && SYM_SYNC_INCLUDED
+#if VXWORKS && BIT_DEBUG && SYM_SYNC_INCLUDED
     symSyncLibInit();
 #endif
     return 0;
@@ -88,30 +86,20 @@ MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
 {
     MprModuleService    *ms;
     MprModule           *mp;
-    MprPath             info;
-    char                *at;
     int                 index;
 
     ms = MPR->moduleService;
     mprAssert(ms);
 
-    if (path) {
-        if ((at = mprSearchForModule(path)) == 0) {
-            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", path, mprGetCurrentPath(),
-                mprGetModuleSearchPath());
-            return 0;
-        }
-        path = at;
-        mprGetPathInfo(path, &info);
-    }
     if ((mp = mprAllocObj(MprModule, manageModule)) == 0) {
         return 0;
     }
     mp->name = sclone(name);
     mp->path = sclone(path);
-    mp->entry = sclone(entry);
+    if (entry && *entry) {
+        mp->entry = sclone(entry);
+    }
     mp->moduleData = data;
-    mp->modified = info.mtime;
     mp->lastActivity = mprGetTime();
     index = mprAddItem(ms->modules, mp);
     if (index < 0 || mp->name == 0) {
@@ -201,7 +189,6 @@ void mprSetModuleTimeout(MprModule *module, MprTime timeout)
 }
 
 
-//  MOB - rename SetModuleStop
 void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
 {
     module->stop = stop;
@@ -212,21 +199,15 @@ void mprSetModuleSearchPath(char *searchPath)
 {
     MprModuleService    *ms;
 
-    mprAssert(searchPath && *searchPath);
-
     ms = MPR->moduleService;
-    ms->searchPath = sclone(searchPath);
-
-#if BLD_WIN_LIKE && !WINCE
-    {
-        /*
-            Set PATH so dependent DLLs can be loaded by LoadLibrary
-         */
-        char *path = sjoin("PATH=", searchPath, ";", getenv("PATH"), NULL);
-        mprMapSeparators(path, '\\');
-        putenv(path);
-    }
+    if (searchPath == 0) {
+#if UNUSED
+        dir = mprJoinPath(mprGetPathParent(mprGetAppDir()), BIT_LIB_NAME);
 #endif
+        ms->searchPath = sjoin(mprGetAppDir(), MPR_SEARCH_SEP, mprGetAppDir(), MPR_SEARCH_SEP, BIT_BIN_PREFIX, NULL);
+    } else {
+        ms->searchPath = sclone(searchPath);
+    }
 }
 
 
@@ -241,10 +222,9 @@ cchar *mprGetModuleSearchPath()
  */
 int mprLoadModule(MprModule *mp)
 {
-#if BLD_CC_DYN_LOAD
+#if BIT_CC_DYN_LOAD
     mprAssert(mp);
 
-    mprLog(6, "Loading native module %s from %s", mp->name, mp->path);
     if (mprLoadNativeModule(mp) < 0) {
         return MPR_ERR_CANT_READ;
     }
@@ -263,7 +243,7 @@ int mprUnloadModule(MprModule *mp)
     if (mprStopModule(mp) < 0) {
         return MPR_ERR_NOT_READY;
     }
-#if BLD_CC_DYN_LOAD
+#if BIT_CC_DYN_LOAD
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
             mprError("Can't unload module %s", mp->name);
@@ -276,7 +256,7 @@ int mprUnloadModule(MprModule *mp)
 }
 
 
-#if BLD_CC_DYN_LOAD
+#if BIT_CC_DYN_LOAD
 /*
     Return true if the shared library in "file" can be found. Return the actual path in *path. The filename
     may not have a shared library extension which is typical so calling code can be cross platform.
@@ -292,8 +272,8 @@ static char *probe(cchar *filename)
         return sclone(filename);
     }
 
-    if (strstr(filename, BLD_SHOBJ) == 0) {
-        path = sjoin(filename, BLD_SHOBJ, NULL);
+    if (strstr(filename, BIT_SHOBJ) == 0) {
+        path = sjoin(filename, BIT_SHOBJ, NULL);
         mprLog(7, "Probe for native module %s", path);
         if (mprPathExists(path, R_OK)) {
             return path;
@@ -309,7 +289,7 @@ static char *probe(cchar *filename)
  */
 char *mprSearchForModule(cchar *filename)
 {
-#if BLD_CC_DYN_LOAD
+#if BIT_CC_DYN_LOAD
     char    *path, *f, *searchPath, *dir, *tok;
 
     filename = mprNormalizePath(filename);
@@ -336,7 +316,7 @@ char *mprSearchForModule(cchar *filename)
         }
         dir = stok(0, MPR_SEARCH_SEP, &tok);
     }
-#endif /* BLD_CC_DYN_LOAD */
+#endif /* BIT_CC_DYN_LOAD */
     return 0;
 }
 
@@ -344,8 +324,8 @@ char *mprSearchForModule(cchar *filename)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

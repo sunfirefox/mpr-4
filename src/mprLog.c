@@ -51,7 +51,7 @@ int mprStartLogging(cchar *logSpec, int showConfig)
     }
     if (*logSpec && strcmp(logSpec, "none") != 0) {
         MPR->logPath = path = sclone(logSpec);
-        if ((levelSpec = strrchr(path, ':')) != 0 && isdigit((int) levelSpec[1])) {
+        if ((levelSpec = strrchr(path, ':')) != 0 && isdigit((uchar) levelSpec[1])) {
             *levelSpec++ = '\0';
             level = atoi(levelSpec);
         }
@@ -79,21 +79,25 @@ int mprStartLogging(cchar *logSpec, int showConfig)
         mprSetLogFile(file);
 
         if (showConfig) {
-            mprLog(MPR_CONFIG, "Configuration for %s", mprGetAppTitle());
-            mprLog(MPR_CONFIG, "---------------------------------------------");
-            mprLog(MPR_CONFIG, "Version:            %s-%s", BLD_VERSION, BLD_NUMBER);
-            mprLog(MPR_CONFIG, "BuildType:          %s", BLD_TYPE);
-            mprLog(MPR_CONFIG, "CPU:                %s", BLD_CPU);
-            mprLog(MPR_CONFIG, "OS:                 %s", BLD_OS);
-            if (strcmp(BLD_DIST, "Unknown") != 0) {
-                mprLog(MPR_CONFIG, "Distribution:       %s %s", BLD_DIST, BLD_DIST_VER);
-            }
-            mprLog(MPR_CONFIG, "Host:               %s", mprGetHostName());
-            mprLog(MPR_CONFIG, "Configure:          %s", BLD_CONFIG_CMD);
-            mprLog(MPR_CONFIG, "---------------------------------------------");
+            mprLogHeader();
         }
     }
     return 0;
+}
+
+
+void mprLogHeader()
+{
+    mprLog(MPR_CONFIG, "Configuration for %s", mprGetAppTitle());
+    mprLog(MPR_CONFIG, "---------------------------------------------");
+    mprLog(MPR_CONFIG, "Version:            %s-%s", BIT_VERSION, BIT_NUMBER);
+    mprLog(MPR_CONFIG, "BuildType:          %s", BIT_DEBUG ? "Debug" : "Release");
+    mprLog(MPR_CONFIG, "CPU:                %s", BIT_CPU);
+    mprLog(MPR_CONFIG, "OS:                 %s", BIT_OS);
+    mprLog(MPR_CONFIG, "Host:               %s", mprGetHostName());
+    mprLog(MPR_CONFIG, "Directory:          %s", mprGetCurrentPath());
+    mprLog(MPR_CONFIG, "Configure:          %s", BIT_CONFIG_CMD);
+    mprLog(MPR_CONFIG, "---------------------------------------------");
 }
 
 
@@ -242,10 +246,10 @@ void mprStaticError(cchar *fmt, ...)
     va_start(args, fmt);
     mprSprintfv(buf, sizeof(buf), fmt, args);
     va_end(args);
-#if BLD_UNIX_LIKE || VXWORKS
+#if BIT_UNIX_LIKE || VXWORKS
     if (write(2, (char*) buf, slen(buf)) < 0) {}
     if (write(2, (char*) "\n", 1) < 0) {}
-#elif BLD_WIN_LIKE
+#elif BIT_WIN_LIKE
     if (fprintf(stderr, "%s\n", buf) < 0) {}
 #endif
     mprBreakpoint();
@@ -254,11 +258,11 @@ void mprStaticError(cchar *fmt, ...)
 
 void mprAssertError(cchar *loc, cchar *msg)
 {
-#if BLD_FEATURE_ASSERT
+#if BIT_FEATURE_ASSERT
     char    buf[MPR_MAX_LOG];
 
     if (loc) {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
         snprintf(buf, sizeof(buf), "Assertion %s, failed at %s", msg, loc);
 #else
         sprintf(buf, "Assertion %s, failed at %s", msg, loc);
@@ -293,13 +297,15 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     char        *prefix, buf[MPR_MAX_LOG];
     int         mode;
 
+    lock(MPR);
     if ((file = MPR->logFile) == 0) {
+        unlock(MPR);
         return;
     }
     prefix = MPR->name;
-    lock(MPR);
 
     if (MPR->logBackup > 0 && MPR->logSize) {
+        //  OPT - slow. Should not check every time
         mprGetPathInfo(MPR->logPath, &info);
         if (info.valid && info.size > MPR->logSize) {
             mprSetLogFile(0);
@@ -327,7 +333,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         } else {
             mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         }
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
         mprWriteToOsLog(buf, flags, level);
 #endif
         mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
@@ -350,7 +356,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
  */
 int mprGetOsError()
 {
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     int     rc;
     rc = GetLastError();
 
@@ -361,7 +367,7 @@ int mprGetOsError()
         return EPIPE;
     }
     return rc;
-#elif BLD_UNIX_LIKE || VXWORKS
+#elif BIT_UNIX_LIKE || VXWORKS
     return errno;
 #else
     return 0;
@@ -374,7 +380,7 @@ int mprGetOsError()
  */
 int mprGetError()
 {
-#if !BLD_WIN_LIKE
+#if !BIT_WIN_LIKE
     return mprGetOsError();
 #else
     int     err;
@@ -515,8 +521,8 @@ int _cmp(char *s1, char *s2)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

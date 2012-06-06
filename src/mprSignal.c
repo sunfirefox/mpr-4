@@ -9,7 +9,7 @@
 #include    "mpr.h"
 
 /*********************************** Forwards *********************************/
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
 
 static void manageSignal(MprSignal *sp, int flags);
 static void manageSignalService(MprSignalService *ssp, int flags);
@@ -122,8 +122,9 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
     if (signo <= 0 || signo >= MPR_MAX_SIGNALS || MPR == 0) {
         return;
     }
-    if (MPR->state >= MPR_STOPPING && signo == SIGINT) {
+    if (signo == SIGINT) {
         exit(1);
+        return;
     }
     ssp = MPR->signalService;
     ip = &ssp->info[signo];
@@ -289,7 +290,8 @@ void mprRemoveSignalHandler(MprSignal *sp)
         SIGTERM - graceful shutdown
         SIGPIPE - ignore
         SIGXFZ - ignore
-        SIGUSR1 - restart
+        SIGUSR1 - graceful shutdown, then restart
+        SIGUSR2 - toggle trace level (Appweb)
         All others - default exit
  */
 void mprAddStandardSignals()
@@ -305,7 +307,7 @@ void mprAddStandardSignals()
 #if SIGXFSZ
     mprAddItem(ssp->standard, mprAddSignalHandler(SIGXFSZ, standardSignalHandler, 0, 0, MPR_SIGNAL_AFTER));
 #endif
-#if MACOSX && BLD_DEBUG && 1
+#if MACOSX && BIT_DEBUG
     mprAddItem(ssp->standard, mprAddSignalHandler(SIGBUS, standardSignalHandler, 0, 0, MPR_SIGNAL_AFTER));
     mprAddItem(ssp->standard, mprAddSignalHandler(SIGSEGV, standardSignalHandler, 0, 0, MPR_SIGNAL_AFTER));
 #endif
@@ -319,7 +321,7 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
         mprTerminate(MPR_EXIT_GRACEFUL, -1);
 
     } else if (sp->signo == SIGINT) {
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
         /*  Ensure shell input goes to a new line */
         if (isatty(1)) {
             if (write(1, "\n", 1) < 0) {}
@@ -333,8 +335,9 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     } else if (sp->signo == SIGPIPE || sp->signo == SIGXFSZ) {
         /* Ignore */
 
-#if MACOSX && BLD_DEBUG && 1
+#if MACOSX && BIT_DEBUG
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
+        //  MOB - Review
         printf("PAUSED for watson to debug\n");
         sleep(86400 * 7);
 #endif
@@ -345,19 +348,19 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 }
 
 
-#else /* BLD_UNIX_LIKE */
+#else /* BIT_UNIX_LIKE */
     void mprAddStandardSignals() {}
     MprSignalService *mprCreateSignalService() { return mprAlloc(0); }
     void mprStopSignalService() {};
     void mprRemoveSignalHandler(MprSignal *sp) { }
     void mprServiceSignals() {}
-#endif /* BLD_UNIX_LIKE */
+#endif /* BIT_UNIX_LIKE */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

@@ -80,7 +80,7 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
         mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
         return 0;
     }
-#if BLD_UNIX_LIKE || VXWORKS
+#if BIT_UNIX_LIKE || VXWORKS
     if (fd >= FD_SETSIZE) {
         mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
     }
@@ -266,8 +266,8 @@ void mprDoWaitRecall(MprWaitService *ws)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

@@ -10,7 +10,6 @@
 
 /**************************** Forward Declarations ****************************/
 
-static void getArgs(Mpr *mpr, int argc, char **argv);
 static void manageMpr(Mpr *mpr, int flags);
 static void serviceEventsThread(void *data, MprThread *tp);
 
@@ -22,7 +21,6 @@ Mpr *mprCreate(int argc, char **argv, int flags)
 {
     MprFileSystem   *fs;
     Mpr             *mpr;
-    char            *cp, *name;
 
     srand((uint) time(NULL));
 
@@ -32,8 +30,9 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     }
     mpr->exitStrategy = MPR_EXIT_NORMAL;
     mpr->emptyString = sclone("");
-    mpr->title = sclone(BLD_NAME);
-    mpr->version = sclone(BLD_VERSION);
+    mpr->exitTimeout = MPR_TIMEOUT_STOP;
+    mpr->title = sclone(BIT_NAME);
+    mpr->version = sclone(BIT_VERSION);
     mpr->idleCallback = mprServicesAreIdle;
     mpr->mimeTypes = mprCreateMimeTypes(NULL);
     mpr->terminators = mprCreateList(0, MPR_LIST_STATIC_VALUES);
@@ -48,21 +47,35 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);
     mprCreateLogService();
-
+    
     if (argv) {
-        getArgs(mpr, argc, argv);
-    }
-    if (mpr->argv && mpr->argv[0] && *mpr->argv[0]) {
-        name = mpr->argv[0];
-        if ((cp = strrchr(name, '/')) != 0 || (cp = strrchr(name, '\\')) != 0) {
-            name = &cp[1];
+#if BIT_WIN_LIKE
+        if (argc >= 2 && strstr(argv[1], "--cygroot") != 0) {
+            /*
+                Cygwin shebang is broken. It will catenate args into argv[1]
+             */
+            char *args, *arg0;
+            int  i;
+            args = argv[1];
+            for (i = 2; i < argc; i++) {
+                args = sjoin(args, " ", argv[i], NULL);
+            }
+            arg0 = argv[0];
+            argc = mprMakeArgv(args, &mpr->argBuf, MPR_ARGV_ARGS_ONLY);
+            argv = mpr->argBuf;
+            argv[0] = arg0;
         }
-        mpr->name = sclone(name);
-        if ((cp = strrchr(mpr->name, '.')) != 0) {
-            *cp = '\0';
+#endif
+        mpr->argc = argc;
+        mpr->argv = (cchar**) argv;
+        if (!mprIsPathAbs(mpr->argv[0])) {
+            mpr->argv[0] = mprGetAppPath();
         }
+        mpr->name = mprTrimPathExt(mprGetPathBase(mpr->argv[0]));
     } else {
-        mpr->name = sclone(BLD_PRODUCT);
+        mpr->name = sclone(BIT_PRODUCT);
+        mpr->argv = mprAllocZeroed(sizeof(void*));
+        mpr->argc = 0;
     }
     mpr->signalService = mprCreateSignalService();
     mpr->threadService = mprCreateThreadService();
@@ -138,7 +151,8 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->dtoaSpin[1]);
         mprMark(mpr->cond);
         mprMark(mpr->emptyString);
-        mprMark(mpr->heap.markerCond);
+        mprMark(mpr->markerCond);
+        mprMark(mpr->argBuf);
     }
 }
 
@@ -174,7 +188,7 @@ void mprDestroy(int how)
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_GRACEFUL) {
-        mprWaitTillIdle(MPR_TIMEOUT_STOP);
+        mprWaitTillIdle(MPR->exitTimeout);
     }
     MPR->state = MPR_STOPPING_CORE;
     MPR->exitStrategy &= MPR_EXIT_GRACEFUL;
@@ -190,9 +204,9 @@ void mprDestroy(int how)
     wgc(gmode);
 
     if (how & MPR_EXIT_RESTART) {
-        mprLog(2, "Restarting\n\n");
+        mprLog(3, "Restarting\n\n");
     } else {
-        mprLog(2, "Exiting");
+        mprLog(3, "Exiting");
     }
     MPR->state = MPR_FINISHED;
     mprStopGCService();
@@ -215,25 +229,6 @@ void mprTerminate(int how, int status)
     MprTerminator   terminator;
     int             next;
 
-    MPR->exitStatus = status;
-    if (!(how & MPR_EXIT_DEFAULT)) {
-        MPR->exitStrategy = how;
-    }
-    how = MPR->exitStrategy;
-    if (how & MPR_EXIT_IMMEDIATE) {
-        mprLog(2, "Immediate exit. Aborting all requests and services.");
-        exit(status);
-
-    } else if (how & MPR_EXIT_NORMAL) {
-        mprLog(2, "Normal exit. Flush buffers, close files and aborting existing requests.");
-
-    } else if (how & MPR_EXIT_GRACEFUL) {
-        mprLog(2, "Graceful exit. Waiting for existing requests to complete.");
-
-    } else {
-        mprLog(7, "mprTerminate: how %d", how);
-    }
-
     /*
         Set the stopping flag. Services should stop accepting new requests. Current requests should be allowed to
         complete if graceful exit strategy.
@@ -243,6 +238,25 @@ void mprTerminate(int how, int status)
         return;
     }
     MPR->state = MPR_STOPPING;
+
+    MPR->exitStatus = status;
+    if (!(how & MPR_EXIT_DEFAULT)) {
+        MPR->exitStrategy = how;
+    }
+    how = MPR->exitStrategy;
+    if (how & MPR_EXIT_IMMEDIATE) {
+        mprLog(3, "Immediate exit. Terminate all requests and services.");
+        exit(status);
+
+    } else if (how & MPR_EXIT_NORMAL) {
+        mprLog(3, "Normal exit.");
+
+    } else if (how & MPR_EXIT_GRACEFUL) {
+        mprLog(3, "Graceful exit. Waiting for existing requests to complete.");
+
+    } else {
+        mprLog(7, "mprTerminate: how %d", how);
+    }
 
     /*
         Invoke terminators, set stopping state and wake up everybody
@@ -273,13 +287,12 @@ void mprAddTerminator(MprTerminator terminator)
 
 void mprRestart()
 {
-    //  MOB TODO - Other systems
-#if BLD_UNIX_LIKE
+#if BIT_UNIX_LIKE
     int     i;
     for (i = 3; i < MPR_MAX_FILE; i++) {
         close(i);
     }
-    execv(MPR->argv[0], MPR->argv);
+    execv(MPR->argv[0], (char*const*) MPR->argv);
 
     /*
         Last-ditch trace. Can only use stdout. Logging may be closed.
@@ -289,36 +302,9 @@ void mprRestart()
         printf("%s ", MPR->argv[i]);
     }
     printf("\n");
-#endif
-}
-
-
-/*
-    Wince and Vxworks passes an arg via argc, and the program name in argv. NOTE: this will only work on 32-bit systems.
- */
-static void getArgs(Mpr *mpr, int argc, char **argv) 
-{
-    if (argv) {
-#if WINCE
-        MprArgs *args = (MprArgs*) argv;
-        command = mprToMulti((uni*) args->command);
-        argc = mprMakeArgv(command, &argv, MPR_ARGV_ARGS_ONLY);
-        mprHold(argv);
-        argv[0] = sclone(args->program);
-        mprHold(argv[0]);
-#elif VXWORKS
-        MprArgs *args = (MprArgs*) argv;
-        argc = mprMakeArgv("", &argv, MPR_ARGV_ARGS_ONLY);
-        mprHold(argv);
-        argv[0] = sclone(args->program);
-        mprHold(argv[0]);
 #else
-        argv[0] = mprGetAppPath();
-        mprHold(argv[0]);
+    mprError("mprRestart not supported on this platform");
 #endif
-        mpr->argc = argc;
-        mpr->argv = argv;
-    }
 }
 
 
@@ -423,10 +409,11 @@ bool mprServicesAreIdle()
 
     /*
         Only test top level services. Dispatchers may have timers scheduled, but that is okay.
+        If not, users can install their own idleCallback.
      */
     idle = mprGetListLength(MPR->workerService->busyThreads) == 0 && mprGetListLength(MPR->cmdService->cmds) == 0;
     if (!idle) {
-        mprLog(4, "Not idle: cmds %d, busy threads %d, eventing %d",
+        mprLog(6, "Not idle: cmds %d, busy threads %d, eventing %d",
             mprGetListLength(MPR->cmdService->cmds), mprGetListLength(MPR->workerService->busyThreads), MPR->eventing);
     }
     return idle;
@@ -442,8 +429,9 @@ bool mprIsIdle()
 /*
     Parse the args and return the count of args. If argv is NULL, the args are parsed read-only. If argv is set,
     then the args will be extracted, back-quotes removed and argv will be set to point to all the args.
+    NOTE: this routine does not allocate.
  */
-static int parseArgs(char *args, char **argv)
+int mprParseArgs(char *args, char **argv, int maxArgc)
 {
     char    *dest, *src, *start;
     int     quote, argc;
@@ -452,8 +440,8 @@ static int parseArgs(char *args, char **argv)
         Example     "showColors" red 'light blue' "yellow white" 'Can\'t \"render\"'
         Becomes:    ["showColors", "red", "light blue", "yellow white", "Can't \"render\""]
      */
-    for (argc = 0, src = args; src && *src != '\0'; argc++) {
-        while (isspace((int) *src)) {
+    for (argc = 0, src = args; src && *src != '\0' && argc < maxArgc; argc++) {
+        while (isspace((uchar) *src)) {
             src++;
         }
         if (*src == '\0')  {
@@ -501,10 +489,9 @@ static int parseArgs(char *args, char **argv)
 /*
     Make an argv array. All args are in a single memory block of which argv points to the start.
     Set MPR_ARGV_ARGS_ONLY if not passing in a program name. 
-    Always returns and argv[0] reserved for the program name or empty string.
-    First arg starts at argv[1]
+    Always returns and argv[0] reserved for the program name or empty string.  First arg starts at argv[1].
  */
-int mprMakeArgv(cchar *command, char ***argvp, int flags)
+int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
 {
     char    **argv, *vector, *args;
     ssize   len;
@@ -516,7 +503,7 @@ int mprMakeArgv(cchar *command, char ***argvp, int flags)
         Allocate one vector for argv and the actual args themselves
      */
     len = slen(command) + 1;
-    argc = parseArgs((char*) command, NULL);
+    argc = mprParseArgs((char*) command, NULL, INT_MAX);
     if (flags & MPR_ARGV_ARGS_ONLY) {
         argc++;
     }
@@ -529,13 +516,13 @@ int mprMakeArgv(cchar *command, char ***argvp, int flags)
     argv = (char**) vector;
 
     if (flags & MPR_ARGV_ARGS_ONLY) {
-        parseArgs(args, &argv[1]);
+        mprParseArgs(args, &argv[1], argc);
         argv[0] = MPR->emptyString;
     } else {
-        parseArgs(args, argv);
+        mprParseArgs(args, argv, argc);
     }
     argv[argc] = 0;
-    *argvp = argv;
+    *argvp = (cchar**) argv;
     return argc;
 }
 
@@ -683,8 +670,8 @@ MprDispatcher *mprGetNonBlockDispatcher()
 
 cchar *mprCopyright()
 {
-    return  "Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.\n"
-            "Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.";
+    return  "Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.\n"
+            "Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.";
 }
 
 
@@ -723,13 +710,35 @@ void mprUnlockDtoa(int n)
 }
 
 
+void mprSetEnv(cchar *key, cchar *value)
+{
+#if !WINCE
+#if BIT_UNIX_LIKE
+    setenv(key, value, 1);
+#else
+    char *cmd = sjoin(key, "=", value, NULL);
+    putenv(cmd);
+#endif
+#endif
+    if (scasematch(key, "PATH")) {
+        MPR->pathEnv = sclone(value);
+    }
+}
+
+
+void mprSetExitTimeout(MprTime timeout)
+{
+    MPR->exitTimeout = timeout;
+}
+
+
 void mprNop(void *ptr) {}
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire

@@ -388,7 +388,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
             If all white space, then zero the token buffer
          */
         for (cp = tokBuf->start; *cp; cp++) {
-            if (!isspace((int) *cp & 0x7f)) {
+            if (!isspace((uchar) *cp & 0x7f)) {
                 return MPR_XMLTOK_TEXT;
             }
         }
@@ -455,7 +455,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
                 xp->quoteChar = 0;
 
             } else {
-                while (!isspace(c) && c != '>' && c != '/' && c != '=') {
+                while (!isspace((uchar) c) && c != '>' && c != '/' && c != '=') {
                     if (mprPutCharToBuf(tokBuf, c) < 0) {
                         return MPR_XMLTOK_TOO_BIG;
                     }
@@ -658,8 +658,8 @@ int mprXmlGetLineNumber(MprXml *xp)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

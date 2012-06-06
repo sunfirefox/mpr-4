@@ -22,13 +22,13 @@ MprFileSystem *mprCreateFileSystem(cchar *path)
     /*
         TODO - evolve this to support multiple file systems in a single system
      */
-#if BLD_FEATURE_ROMFS
+#if BIT_FEATURE_ROMFS
     fs = (MprFileSystem*) mprCreateRomFileSystem(path);
 #else
     fs = (MprFileSystem*) mprCreateDiskFileSystem(path);
 #endif
 
-#if BLD_WIN_LIKE
+#if BIT_WIN_LIKE
     fs->separators = sclone("\\/");
     fs->newline = sclone("\r\n");
 #elif CYGWIN
@@ -39,13 +39,13 @@ MprFileSystem *mprCreateFileSystem(cchar *path)
     fs->newline = sclone("\n");
 #endif
 
-#if BLD_WIN_LIKE || MACOSX || CYGWIN
+#if BIT_WIN_LIKE || MACOSX || CYGWIN
     fs->caseSensitive = 0;
 #else
     fs->caseSensitive = 1;
 #endif
 
-#if BLD_WIN_LIKE || VXWORKS || CYGWIN
+#if BIT_WIN_LIKE || VXWORKS || CYGWIN
     fs->hasDriveSpecs = 1;
 #endif
 
@@ -56,7 +56,7 @@ MprFileSystem *mprCreateFileSystem(cchar *path)
     if ((cp = strpbrk(fs->root, fs->separators)) != 0) {
         *++cp = '\0';
     }
-#if BLD_WIN_LIKE || CYGWIN
+#if BIT_WIN_LIKE || CYGWIN
     fs->cygwin = mprReadRegistry("HKEY_LOCAL_MACHINE\\SOFTWARE\\Cygwin\\setup", "rootdir");
     fs->cygdrive = sclone("/cygdrive");
 #endif
@@ -131,8 +131,8 @@ void mprSetPathNewline(cchar *path, cchar *newline)
 /*
     @copy   default
     
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
     
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire 

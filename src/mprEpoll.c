@@ -87,7 +87,7 @@ static int growEvents(MprWaitService *ws)
 int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct epoll_event  ev;
-    int                 fd;
+    int                 fd, rc;
 
     mprAssert(wp);
     fd = wp->fd;
@@ -96,14 +96,19 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     if (wp->desiredMask != mask) {
         memset(&ev, 0, sizeof(ev));
         ev.data.fd = fd;
-        if (wp->desiredMask & MPR_READABLE && !(mask & MPR_READABLE)) {
+        if (wp->desiredMask & MPR_READABLE) {
             ev.events |= (EPOLLIN | EPOLLHUP);
         }
-        if (wp->desiredMask & MPR_WRITABLE && !(mask & MPR_WRITABLE)) {
+        if (wp->desiredMask & MPR_WRITABLE) {
             ev.events |= EPOLLOUT;
         }
         if (ev.events) {
-            epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
+            rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
+#if UNUSED && KEEP
+            if (rc != 0) {
+                mprError("Epoll del error %d on fd %d\n", errno, fd);
+            }
+#endif
         }
         ev.events = 0;
         if (mask & MPR_READABLE) {
@@ -113,7 +118,10 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ev.events |= EPOLLOUT;
         }
         if (ev.events) {
-            epoll_ctl(ws->epoll, EPOLL_CTL_ADD, fd, &ev);
+            rc = epoll_ctl(ws->epoll, EPOLL_CTL_ADD, fd, &ev);
+            if (rc != 0) {
+                mprError("Epoll add error %d on fd %d\n", errno, fd);
+            }
         }
         if (mask && fd >= ws->handlerMax) {
             ws->handlerMax = fd + 32;
@@ -187,7 +195,7 @@ void mprWaitForIO(MprWaitService *ws, MprTime timeout)
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
     }
-#if BLD_DEBUG
+#if BIT_DEBUG
     if (mprGetDebugMode() && timeout > 30000) {
         timeout = 30000;
     }
@@ -282,8 +290,8 @@ void stubMmprEpoll() {}
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2011. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2011. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the GPL open source license described below or you may acquire
