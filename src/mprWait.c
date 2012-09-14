@@ -76,15 +76,6 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     mprAssert(fd >= 0);
 
     ws = MPR->waitService;
-    if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
-        mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
-        return 0;
-    }
-#if BIT_UNIX_LIKE || VXWORKS
-    if (fd >= FD_SETSIZE) {
-        mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
-    }
-#endif
     wp->fd              = fd;
     wp->notifierIndex   = -1;
     wp->dispatcher      = dispatcher;
@@ -94,6 +85,15 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     wp->service         = ws;
     wp->flags           = flags;
 
+    if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
+        mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
+        return 0;
+    }
+#if BIT_UNIX_LIKE || VXWORKS
+    if (fd >= FD_SETSIZE) {
+        mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
+    }
+#endif
     if (mask) {
         lock(ws);
         if (mprAddItem(ws->handlers, wp) < 0) {
