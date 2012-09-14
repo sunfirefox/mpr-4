@@ -89,40 +89,51 @@ int mprWaitForCond(MprCond *cp, MprTime timeout)
         now = 0;
     }
     mprLock(cp->mutex);
-    if (!cp->triggered) {
-        /*
-            WARNING: Can get spurious wakeups on some platforms (Unix + pthreads). 
-         */
-        do {
+    /*
+        NOTE: The WaitForSingleObject and semTake APIs keeps state as to whether the object is signalled.
+        WaitForSingleObject and semTake will not block if the object is already signalled. However, pthread_cond_ 
+        is different and does not keep such state. If it is signalled before pthread_cond_wait, the thread will 
+        still block. Consequently we need to keep our own state in cp->triggered. This also protects against 
+        spurious wakeups which can happen (on windows).
+     */
+    do {
 #if BIT_WIN_LIKE
-            mprUnlock(cp->mutex);
-            rc = WaitForSingleObject(cp->cv, (int) (expire - now));
-            mprLock(cp->mutex);
-            if (rc == WAIT_OBJECT_0) {
-                rc = 0;
-                ResetEvent(cp->cv);
-            } else if (rc == WAIT_TIMEOUT) {
+        /*
+            Regardless of the state of cp->triggered, we must call WaitForSingleObject to consume the signalled
+            internal state of the object.
+         */
+        mprUnlock(cp->mutex);
+        rc = WaitForSingleObject(cp->cv, (int) (expire - now));
+        mprLock(cp->mutex);
+        if (rc == WAIT_OBJECT_0) {
+            rc = 0;
+            ResetEvent(cp->cv);
+        } else if (rc == WAIT_TIMEOUT) {
+            rc = MPR_ERR_TIMEOUT;
+        } else {
+            rc = MPR_ERR;
+        }
+#elif VXWORKS
+        /*
+            Regardless of the state of cp->triggered, we must call semTake to consume the semaphore signalled state
+         */
+        mprUnlock(cp->mutex);
+        rc = semTake(cp->cv, (int) (expire - now));
+        mprLock(cp->mutex);
+        if (rc != 0) {
+            if (errno == S_objLib_OBJ_UNAVAILABLE) {
                 rc = MPR_ERR_TIMEOUT;
             } else {
                 rc = MPR_ERR;
             }
-#elif VXWORKS
-            mprUnlock(cp->mutex);
-            rc = semTake(cp->cv, (int) (expire - now));
-            mprLock(cp->mutex);
-            if (rc != 0) {
-                if (errno == S_objLib_OBJ_UNAVAILABLE) {
-                    rc = MPR_ERR_TIMEOUT;
-                } else {
-                    rc = MPR_ERR;
-                }
-            }
-            
+        }
+        
 #elif BIT_UNIX_LIKE
-            /*
-                NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
-                atomically unlock the mutex before sleeping and will relock on awakening.  
-             */
+        /*
+            NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
+            atomically unlock the mutex before sleeping and will relock on awakening.  
+         */
+        if (!cp->triggered) {
             if (now) {
                 rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
             } else {
@@ -137,9 +148,10 @@ int mprWaitForCond(MprCond *cp, MprTime timeout)
                 mprError("pthread_cond_timedwait error rc %d", rc);
                 rc = MPR_ERR;
             }
+        }
 #endif
-        } while (!cp->triggered && rc == 0 && (now && (now = mprGetTime()) < expire));
-    }
+    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTime()) < expire));
+
     if (cp->triggered) {
         cp->triggered = 0;
         rc = 0;
@@ -203,13 +215,12 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     struct timeval      current;
     int                 usec;
 #else
-    MprTime     now, expire;
+    MprTime             now, expire;
 #endif
 
     if (timeout < 0) {
         timeout = MAXINT;
     }
-
 #if BIT_UNIX_LIKE
     gettimeofday(&current, NULL);
     usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;

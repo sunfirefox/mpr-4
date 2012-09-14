@@ -337,7 +337,7 @@ int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
         mprYield(MPR_YIELD_STICKY);
         mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
-        if (mprWaitForCond(dispatcher->cond, (int) delay) == 0) {
+        if (mprWaitForCond(dispatcher->cond, delay) == 0) {
             mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
             mprResetYield();
             dispatcher->waitingOnCond = 0;
