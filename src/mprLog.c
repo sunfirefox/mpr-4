@@ -332,7 +332,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         } else {
             mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         }
-#if BIT_WIN_LIKE
+#if BIT_WIN_LIKE || BIT_UNIX_LIKE
         mprWriteToOsLog(buf, flags, level);
 #endif
         mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
