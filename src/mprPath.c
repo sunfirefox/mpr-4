@@ -721,6 +721,12 @@ static MprList *findFiles(MprList *list, cchar *dir, cchar *base, int flags)
 }
 
 
+static int sortFiles(MprDirEntry **dp1, MprDirEntry **dp2)
+{
+    return strcmp((*dp1)->name, (*dp2)->name);
+}
+
+
 /*
     Get the files in a directory. Returns a list of MprDirEntry objects.
 
@@ -744,7 +750,7 @@ MprList *mprGetPathFiles(cchar *dir, int flags)
     }
 #if LINUX
     /* Linux returns directories not sorted */
-    mprSortList(list, 0, 0);
+    mprSortList(list, (MprSortProc) sortFiles, 0);
 #endif
     return list;
 }
