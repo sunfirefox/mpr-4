@@ -732,13 +732,21 @@ static MprList *findFiles(MprList *list, cchar *dir, cchar *base, int flags)
  */
 MprList *mprGetPathFiles(cchar *dir, int flags)
 {
+    MprList *list;
     cchar   *base;
 
     if (dir == 0 || *dir == '\0') {
         dir = ".";
     }
     base = (flags & MPR_PATH_RELATIVE) ? 0 : dir;
-    return findFiles(mprCreateList(-1, 0), dir, base, flags);
+    if ((list = findFiles(mprCreateList(-1, 0), dir, base, flags)) == 0) {
+        return 0;
+    }
+#if LINUX
+    /* Linux returns directories not sorted */
+    mprSortList(list, 0, 0);
+#endif
+    return list;
 }
 
 

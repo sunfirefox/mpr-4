@@ -666,7 +666,7 @@ static int defaultSort(char **q1, char **q2, void *ctx)
 }
 
 
-void mprSortList(MprList *lp, MprSortProc compare, void *ctx)
+MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
 {
     lock(lp);
     if (!compare) {
@@ -674,6 +674,7 @@ void mprSortList(MprList *lp, MprSortProc compare, void *ctx)
     }
     mprSort(lp->items, lp->length, sizeof(void*), compare, ctx);
     unlock(lp);
+    return lp;
 }
 
 
