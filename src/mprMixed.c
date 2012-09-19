@@ -13,7 +13,7 @@
 
 int mcasecmp(MprChar *str1, cchar *str2)
 {
-    return mncasecmp(str1, str2, -1);
+    return mncaselesscmp(str1, str2, -1);
 }
 
 
@@ -64,7 +64,7 @@ MprChar *mcontains(MprChar *str, cchar *pattern)
 /*
     destMax and len are character counts, not sizes in bytes
  */
-ssize mcopy(MprChar *dest, cchar *src)
+ssize mcopy(MprChar *dest, ssize destMax, cchar *src)
 {
     ssize       len;
 
@@ -187,7 +187,7 @@ MprChar *mjoinv(MprChar *buf, va_list args)
 /*
     Case insensitive string comparison. Limited by length
  */
-int mncasecmp(MprChar *s1, cchar *s2, ssize n)
+int mncaselesscmp(MprChar *s1, cchar *s2, ssize n)
 {
     int     rc;
 

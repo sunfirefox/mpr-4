@@ -1475,7 +1475,7 @@ struct  MprXml;
     #define BIT_CHAR_LEN 1
 #endif
 #if BIT_CHAR_LEN == 4
-    typedef int MprChar;
+    typedef int32 MprChar;
     #define T(s) L ## s
 #elif BIT_CHAR_LEN == 2
     typedef short MprChar;
@@ -3232,27 +3232,27 @@ extern MprChar  *wupper(MprChar *s);
 #if BIT_CHAR_LEN > 1
 extern int      mcasecmp(MprChar *s1, cchar *s2);
 extern int      mcmp(MprChar *s1, cchar *s2);
-extern MprChar *mcontains(MprChar *str, cchar *pattern);
-extern MprChar *mncontains(MprChar *str, cchar *pattern, ssize limit);
-extern ssize   mcopy(MprChar *dest, ssize destMax, cchar *src);
+extern MprChar  *mcontains(MprChar *str, cchar *pattern);
+extern MprChar  *mncontains(MprChar *str, cchar *pattern, ssize limit);
+extern ssize    mcopy(MprChar *dest, ssize destMax, cchar *src);
 extern int      mends(MprChar *str, cchar *suffix);
-extern MprChar *mfmt(cchar *fmt, ...);
-extern MprChar *mfmtv(cchar *fmt, va_list arg);
-extern MprChar *mjoin(cchar *sep, ...);
-extern MprChar *mjoinv(cchar *sep, va_list args);
+extern MprChar  *mfmt(cchar *fmt, ...);
+extern MprChar  *mfmtv(cchar *fmt, va_list arg);
+extern MprChar  *mjoin(cchar *sep, ...);
+extern MprChar  *mjoinv(MprChar *buf, va_list args);
 extern int      mncmp(MprChar *s1, cchar *s2, ssize len);
 extern int      mncaselesscmp(MprChar *s1, cchar *s2, ssize len);
-extern ssize   mncopy(MprChar *dest, ssize destMax, cchar *src, ssize len);
-extern MprChar *mpbrk(MprChar *str, cchar *set);
-extern MprChar *mrejoin(MprChar *buf, cchar *sep, ...);
-extern MprChar *mrejoinv(MprChar *buf, cchar *sep, va_list args);
-extern ssize   mspn(MprChar *str, cchar *set);
+extern ssize    mncopy(MprChar *dest, ssize destMax, cchar *src, ssize len);
+extern MprChar  *mpbrk(MprChar *str, cchar *set);
+extern MprChar  *mrejoin(MprChar *buf, cchar *sep, ...);
+extern MprChar  *mrejoinv(MprChar *buf, cchar *sep, va_list args);
+extern ssize    mspn(MprChar *str, cchar *set);
 extern int      mstarts(MprChar *str, cchar *prefix);
-extern MprChar *mtok(MprChar *str, cchar *delim, MprChar **last);
-extern MprChar *mtrim(MprChar *str, cchar *set, int where);
+extern MprChar  *mtok(MprChar *str, cchar *delim, MprChar **last);
+extern MprChar  *mtrim(MprChar *str, cchar *set, int where);
 
 #else
-#define mcasecmp(s1, s2)                scaselesscmp(s1, s2)
+#define mcaselesscmp(s1, s2)            scaselesscmp(s1, s2)
 #define mcmp(s1, s2)                    scmp(s1, s2)
 #define mcontains(str, pattern)         scontains(str, pattern)
 #define mncontains(str, pattern, limit) sncontains(str, pattern, limit)
@@ -3814,10 +3814,10 @@ extern int mprPutCharToWideBuf(MprBuf *buf, int c);
     @description Append a null terminated wide string to the buffer at the end position and increment the end pointer.
     @param buf Buffer created via mprCreateBuf
     @param str String to append
-    @returns Zero if successful and otherwise a negative error code 
+    @returns Count of bytes written and otherwise a negative error code 
     @ingroup MprBuf
 */
-extern int mprPutStringToWideBuf(MprBuf *buf, cchar *str);
+extern ssize mprPutStringToWideBuf(MprBuf *buf, cchar *str);
 
 /**
     Put a formatted wide string to the buffer.
@@ -3825,9 +3825,9 @@ extern int mprPutStringToWideBuf(MprBuf *buf, cchar *str);
     @param buf Buffer created via mprCreateBuf
     @param fmt Printf style format string
     @param ... Variable arguments for the format string
-    @returns Zero if successful and otherwise a negative error code 
+    @returns Count of bytes written and otherwise a negative error code 
  */
-extern int mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
+extern ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 
 #else /* BIT_CHAR_LEN == 1 */
 #define mprAddNullToWideBuf     mprAddNullToBuf

@@ -17,7 +17,7 @@
 
 /**************************** Forward Declarations ****************************/
 
-static void *dupKey(MprHash *hash, MprKey *sp, cvoid *key);
+static void *dupKey(MprHash *hash, cvoid *key);
 static MprKey *lookupHash(int *index, MprKey **prevSp, MprHash *hash, cvoid *key);
 static void manageHashTable(MprHash *hash, int flags);
 
@@ -130,7 +130,7 @@ MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
     }
     sp->data = ptr;
     if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-        sp->key = dupKey(hash, sp, key);
+        sp->key = dupKey(hash, key);
     } else {
         sp->key = (void*) key;
     }
@@ -173,7 +173,7 @@ MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
     }
     sp->data = ptr;
     if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-        sp->key = dupKey(hash, sp, key);
+        sp->key = dupKey(hash, key);
     } else {
         sp->key = (void*) key;
     }
@@ -415,11 +415,11 @@ MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 }
 
 
-static void *dupKey(MprHash *hash, MprKey *sp, cvoid *key)
+static void *dupKey(MprHash *hash, cvoid *key)
 {
 #if BIT_CHAR_LEN > 1
     if (hash->flags & MPR_HASH_UNICODE) {
-        return wclone(sp, (MprChar*) key, -1);
+        return wclone((MprChar*) key);
     } else
 #endif
         return sclone(key);

@@ -720,11 +720,12 @@ char *wupper(MprChar *str)
     Return a count of characters copied or -1 if an invalid multibyte sequence was provided in src.
     NOTE: does not allocate.
  */
+//  MOB - is size in bytes or wide chars?
+//  MOB - is destCount in bytes or chars
+
 ssize wtom(char *dest, ssize destCount, MprChar *src, ssize len)
 {
     ssize      size;
-
-    mprAssert(0 <= len && len < MAXINT);
 
     if (destCount < 0) {
         destCount = MAXSSIZE;
@@ -732,8 +733,9 @@ ssize wtom(char *dest, ssize destCount, MprChar *src, ssize len)
     if (len < 0) {
         len = MAXSSIZE;
     }
-    size = min(destCount, len + 1);
+    size = min(destCount, len);
     if (size > 0) {
+        size--;
 #if BIT_CHAR_LEN == 1
         if (dest) {
             scopy(dest, size, src);
@@ -767,11 +769,11 @@ ssize mtow(MprChar *dest, ssize destCount, cchar *src, ssize len)
 {
     ssize      size;
 
-    mprAssert(0 < destCount && len < MAXINT);
-    mprAssert(0 <= len && len < MAXINT);
-
     if (destCount < 0) {
         destCount = MAXSSIZE;
+    }
+    if (len < 0) {
+        len = MAXSSIZE;
     }
     size = min(destCount, len + 1);
     if (size > 0) {

@@ -535,7 +535,7 @@ void mprAddNullToWideBuf(MprBuf *bp)
 int mprPutCharToWideBuf(MprBuf *bp, int c)
 {
     MprChar *cp;
-    int     space;
+    ssize   space;
 
     mprAssert(bp->buflen == (bp->endbuf - bp->data));
 
@@ -556,13 +556,13 @@ int mprPutCharToWideBuf(MprBuf *bp, int c)
 }
 
 
-int mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
+ssize mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
 {
     va_list     ap;
     MprChar     *wbuf;
     char        *buf;
-    ssize       len;
-    int         rc, space;
+    ssize       len, space;
+    ssize       rc;
 
     if (fmt == 0) {
         return 0;
@@ -571,20 +571,20 @@ int mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
     space = mprGetBufSpace(bp);
     space += (bp->maxsize - bp->buflen);
     buf = sfmtv(fmt, ap);
-    wbuf = amtow(bp, buf, &len);
+    wbuf = amtow(buf, &len);
     rc = mprPutBlockToBuf(bp, (char*) wbuf, len * sizeof(MprChar));
     va_end(ap);
     return rc;
 }
 
 
-int mprPutStringToWideBuf(MprBuf *bp, cchar *str)
+ssize mprPutStringToWideBuf(MprBuf *bp, cchar *str)
 {
     MprChar     *wstr;
     ssize       len;
 
     if (str) {
-        wstr = amtow(bp, str, &len);
+        wstr = amtow(str, &len);
         return mprPutBlockToBuf(bp, (char*) wstr, len);
     }
     return 0;
