@@ -444,7 +444,7 @@ static ssize blockingWrite(MprSocket *sp, cvoid *buf, ssize len)
             mprSetSocketBlockingMode(sp, prior);
             return bytes;
         }
-        buf += bytes;
+        buf = (char*) buf + bytes;
         len -= bytes;
         written += bytes;
     }

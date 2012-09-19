@@ -8,26 +8,26 @@
 
 #include    "mpr.h"
 
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
 /********************************** Forwards **********************************/
 
-int mcasecmp(MprChar *str1, cchar *str2)
+int mcasecmp(wchar *str1, cchar *str2)
 {
     return mncaselesscmp(str1, str2, -1);
 }
 
 
-int mcmp(MprChar *s1, cchar *s2)
+int mcmp(wchar *s1, cchar *s2)
 {
     return mncmp(s1, s2, -1);
 }
 
 
-MprChar *mncontains(MprChar *str, cchar *pattern, ssize limit)
+wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
 {
-    MprChar     *cp, *s1;
-    cchar       *s2;
-    ssize       lim;
+    wchar   *cp, *s1;
+    cchar   *s2;
+    ssize   lim;
 
     mprAssert(0 <= limit && limit < MAXSSIZE);
 
@@ -38,7 +38,7 @@ MprChar *mncontains(MprChar *str, cchar *pattern, ssize limit)
         return 0;
     }
     if (pattern == 0 || *pattern == '\0') {
-        return (MprChar*) str;
+        return (wchar*) str;
     }
     for (cp = str; *cp && limit > 0; cp++, limit--) {
         s1 = cp;
@@ -55,7 +55,7 @@ MprChar *mncontains(MprChar *str, cchar *pattern, ssize limit)
 }
 
 
-MprChar *mcontains(MprChar *str, cchar *pattern)
+wchar *mcontains(wchar *str, cchar *pattern)
 {
     return mncontains(str, pattern, -1);
 }
@@ -64,7 +64,7 @@ MprChar *mcontains(MprChar *str, cchar *pattern)
 /*
     destMax and len are character counts, not sizes in bytes
  */
-ssize mcopy(MprChar *dest, ssize destMax, cchar *src)
+ssize mcopy(wchar *dest, ssize destMax, cchar *src)
 {
     ssize       len;
 
@@ -81,10 +81,10 @@ ssize mcopy(MprChar *dest, ssize destMax, cchar *src)
 }
 
 
-int mends(MprChar *str, cchar *suffix)
+int mends(wchar *str, cchar *suffix)
 {
-    MprChar     *cp;
-    cchar       *sp;
+    wchar   *cp;
+    cchar   *sp;
 
     if (str == NULL || suffix == NULL) {
         return 0;
@@ -103,7 +103,7 @@ int mends(MprChar *str, cchar *suffix)
 }
 
 
-MprChar *mfmt(cchar *fmt, ...)
+wchar *mfmt(cchar *fmt, ...)
 {
     va_list     ap;
     char        *mresult;
@@ -117,7 +117,7 @@ MprChar *mfmt(cchar *fmt, ...)
 }
 
 
-MprChar *mfmtv(cchar *fmt, va_list arg)
+wchar *mfmtv(cchar *fmt, va_list arg)
 {
     char    *mresult;
 
@@ -128,11 +128,11 @@ MprChar *mfmtv(cchar *fmt, va_list arg)
 
 
 /*
-    Sep is ascii, args are MprChar
+    Sep is ascii, args are wchar
  */
-MprChar *mjoin(cchar *str, ...)
+wchar *mjoin(wchar *str, ...)
 {
-    MprChar     *result;
+    wchar       *result;
     va_list     ap;
 
     mprAssert(str);
@@ -144,10 +144,13 @@ MprChar *mjoin(cchar *str, ...)
 }
 
 
-MprChar *mjoinv(MprChar *buf, va_list args)
+/*
+    MOB - comment required. What does this do?
+ */
+wchar *mjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp;
+    wchar       *dest, *str, *dp;
     int         required, len;
 
     mprAssert(buf);
@@ -157,27 +160,27 @@ MprChar *mjoinv(MprChar *buf, va_list args)
     if (buf) {
         required += wlen(buf);
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     if ((dest = mprAlloc(required)) == 0) {
         return 0;
     }
     dp = dest;
     if (buf) {
-        wcopy(dp, buf);
+        wcopy(dp, -1, buf);
         dp += wlen(buf);
     }
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
@@ -187,7 +190,7 @@ MprChar *mjoinv(MprChar *buf, va_list args)
 /*
     Case insensitive string comparison. Limited by length
  */
-int mncaselesscmp(MprChar *s1, cchar *s2, ssize n)
+int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
@@ -219,7 +222,7 @@ int mncaselesscmp(MprChar *s1, cchar *s2, ssize n)
 
 
 
-int mncmp(MprChar *s1, cchar *s2, ssize n)
+int mncmp(wchar *s1, cchar *s2, ssize n)
 {
     mprAssert(0 <= n && n < MAXSSIZE);
 
@@ -248,7 +251,7 @@ int mncmp(MprChar *s1, cchar *s2, ssize n)
 }
 
 
-ssize mncopy(MprChar *dest, ssize destMax, cchar *src, ssize len)
+ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
 {
     mprAssert(0 <= len && len < MAXSSIZE);
     mprAssert(0 < destMax && destMax < MAXSSIZE);
@@ -257,7 +260,7 @@ ssize mncopy(MprChar *dest, ssize destMax, cchar *src, ssize len)
 }
 
 
-MprChar *mpbrk(MprChar *str, cchar *set)
+wchar *mpbrk(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -277,12 +280,12 @@ MprChar *mpbrk(MprChar *str, cchar *set)
 
 
 /*
-    Sep is ascii, args are MprChar
+    Sep is ascii, args are wchar
  */
-MprChar *mrejoin(MprChar *buf, ...)
+wchar *mrejoin(wchar *buf, ...)
 {
-    MprChar     *result;
     va_list     ap;
+    wchar       *result;
 
     va_start(ap, buf);
     result = mrejoinv(buf, ap);
@@ -291,10 +294,10 @@ MprChar *mrejoin(MprChar *buf, ...)
 }
 
 
-MprChar *mrejoinv(MprChar *buf, va_list args)
+wchar *mrejoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp;
+    wchar       *dest, *str, *dp;
     int         required, len;
 
     va_copy(ap, args);
@@ -302,30 +305,30 @@ MprChar *mrejoinv(MprChar *buf, va_list args)
     if (buf) {
         required += wlen(buf);
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     if ((dest = mprRealloc(buf, required)) == 0) {
         return 0;
     }
     dp = dest;
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
 }
 
 
-ssize mspn(MprChar *str, cchar *set)
+ssize mspn(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -347,7 +350,7 @@ ssize mspn(MprChar *str, cchar *set)
 }
  
 
-int mstarts(MprChar *str, cchar *prefix)
+int mstarts(wchar *str, cchar *prefix)
 {
     if (str == NULL || prefix == NULL) {
         return 0;
@@ -359,10 +362,10 @@ int mstarts(MprChar *str, cchar *prefix)
 }
 
 
-MprChar *mtok(MprChar *str, cchar *delim, MprChar **last)
+wchar *mtok(wchar *str, cchar *delim, wchar **last)
 {
-    MprChar    *start, *end;
-    ssize      i;
+    wchar   *start, *end;
+    ssize   i;
 
     start = str ? str : *last;
 
@@ -387,10 +390,10 @@ MprChar *mtok(MprChar *str, cchar *delim, MprChar **last)
 }
 
 
-MprChar *mtrim(MprChar *str, cchar *set, int where)
+wchar *mtrim(wchar *str, cchar *set, int where)
 {
-    MprChar     s;
-    ssize       len, i;
+    wchar   s;
+    ssize   len, i;
 
     if (str == NULL || set == NULL) {
         return str;
