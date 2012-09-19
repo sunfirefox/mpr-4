@@ -1475,15 +1475,16 @@ struct  MprXml;
     #define BIT_CHAR_LEN 1
 #endif
 #if BIT_CHAR_LEN == 4
-    typedef int32 MprChar;
+    typedef int32 wchar;
     #define T(s) L ## s
 #elif BIT_CHAR_LEN == 2
-    typedef short MprChar;
+    typedef short wchar;
     #define T(s) L ## s
 #else
-    typedef char MprChar;
+    typedef char wchar;
     #define T(s) s
 #endif
+#define MprChar wchar
 
 /*
     Convenience define to declare a main program entry point that works for Windows, VxWorks and Unix
