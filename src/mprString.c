@@ -176,6 +176,9 @@ char *scontains(cchar *str, cchar *pattern)
 }
 
 
+/*
+    Copy a string into a buffer. Always ensure it is null terminated
+ */
 ssize scopy(char *dest, ssize destMax, cchar *src)
 {
     ssize      len;
@@ -185,6 +188,7 @@ ssize scopy(char *dest, ssize destMax, cchar *src)
     mprAssert(0 < dest && destMax < MAXINT);
 
     len = slen(src);
+    /* Must ensure room for null */
     if (destMax <= len) {
         mprAssert(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;

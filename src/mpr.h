@@ -1475,13 +1475,13 @@ struct  MprXml;
     #define BIT_CHAR_LEN 1
 #endif
 #if BIT_CHAR_LEN == 4
-    typedef int32 MprChar;
+    typedef int32 wchar;
     #define T(s) L ## s
 #elif BIT_CHAR_LEN == 2
-    typedef short MprChar;
+    typedef short wchar;
     #define T(s) L ## s
 #else
-    typedef char MprChar;
+    typedef char wchar;
     #define T(s) s
 #endif
 
@@ -1506,19 +1506,6 @@ struct  MprXml;
             return innerMain(largc, largv, NULL); \
         } \
         static int innerMain(_argc, _argv, _envp)
-#elif BIT_WIN_LIKE && BIT_CHAR_LEN > 1
-    #define MAIN(name, _argc, _argv, _envp)  \
-        APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, LPWSTR command, int junk2) { \
-            char *largv[MPR_MAX_ARGC]; \
-            extern int main(); \
-            char *mcommand[MPR_MAX_STRING]; \
-            int largc; \
-            wtom(mcommand, sizeof(dest), command, -1);
-            largc = mprParseArgs(mcommand, &largv[1], MPR_MAX_ARGC - 1); \
-            largv[0] = #name; \
-            main(largc, largv, NULL); \
-        } \
-        int main(argc, argv, _envp)
 #elif BIT_WIN_LIKE
     #define MAIN(name, _argc, _argv, _envp)  \
         APIENTRY WinMain(HINSTANCE inst, HINSTANCE junk, char *command, int junk2) { \
@@ -3145,48 +3132,53 @@ extern char *supper(cchar *str);
 
     This API is not yet public
  */
-extern MprChar *amtow(cchar *src, ssize *len);
-extern char    *awtom(MprChar *src, ssize *len);
-extern MprChar *wfmt(MprChar *fmt, ...);
+extern wchar   *amtow(cchar *src, ssize *len);
+extern char    *awtom(wchar *src, ssize *len);
+extern wchar   *wfmt(wchar *fmt, ...);
 
 #if BIT_CHAR_LEN > 1
-extern ssize   wtom(char *dest, ssize count, MprChar *src, ssize len);
-extern ssize   mtow(MprChar *dest, ssize count, cchar *src, ssize len);
+extern ssize   wtom(char *dest, ssize count, wchar *src, ssize len);
+extern ssize   mtow(wchar *dest, ssize count, cchar *src, ssize len);
 
-extern MprChar  *itow(MprChar *buf, ssize bufCount, int64 value, int radix);
-extern MprChar  *wchr(MprChar *s, int c);
-extern int      wcasecmp(MprChar *s1, MprChar *s2);
-extern MprChar  *wclone(MprChar *str);
-extern int      wcmp(MprChar *s1, MprChar *s2);
-extern MprChar  *wcontains(MprChar *str, MprChar *pattern, ssize limit);
-extern ssize    wcopy(MprChar *dest, ssize destMax, MprChar *src);
-extern int      wends(MprChar *str, MprChar *suffix);
-extern MprChar  *wfmtv(MprChar *fmt, va_list arg);
-extern uint     whash(MprChar *name, ssize len);
-extern uint     whashlower(MprChar *name, ssize len);
-extern MprChar  *wjoin(MprChar *sep, ...);
-extern MprChar  *wjoinv(MprChar *sep, va_list args);
-extern ssize    wlen(MprChar *s);
+#if UNUSED && KEEP
+extern wchar    *itow(wchar *buf, ssize bufCount, int64 value, int radix);
+extern wchar    *wchr(wchar *s, int c);
+extern int      wcasecmp(wchar *s1, wchar *s2);
+extern wchar    *wclone(wchar *str);
+extern int      wcmp(wchar *s1, wchar *s2);
+extern wchar    *wcontains(wchar *str, wchar *pattern, ssize limit);
+extern ssize    wcopy(wchar *dest, ssize destMax, wchar *src);
+extern int      wends(wchar *str, wchar *suffix);
+extern wchar    *wfmtv(wchar *fmt, va_list arg);
+extern uint     whash(wchar *name, ssize len);
+extern uint     whashlower(wchar *name, ssize len);
+extern wchar    *wjoin(wchar *sep, ...);
+extern wchar    *wjoinv(wchar *sep, va_list args);
+extern ssize    wlen(wchar *s);
 
-extern MprChar  *wlower(MprChar *s);
-extern int      wncaselesscmp(MprChar *s1, MprChar *s2, ssize len);
-extern int      wncmp(MprChar *s1, MprChar *s2, ssize len);
-extern ssize    wncopy(MprChar *dest, ssize destCount, MprChar *src, ssize len);
-extern MprChar  *wpbrk(MprChar *str, MprChar *set);
-extern MprChar  *wrchr(MprChar *s, int c);
-extern MprChar  *wrejoin(MprChar *buf, MprChar *sep, ...);
-extern MprChar  *wrejoinv(MprChar *buf, MprChar *sep, va_list args);
-extern ssize    wspn(MprChar *str, MprChar *set);
-extern int      wstarts(MprChar *str, MprChar *prefix);
-extern MprChar  *wsub(MprChar *str, ssize offset, ssize len);
-extern int64    wtoi(MprChar *str);
-extern int64    wtoiradix(MprChar *str, int radix, int *err);
-extern MprChar  *wtok(MprChar *str, MprChar *delim, MprChar **last);
-extern MprChar  *wtrim(MprChar *str, MprChar *set, int where);
-extern MprChar  *wupper(MprChar *s);
+extern wchar    *wlower(wchar *s);
+extern int      wncaselesscmp(wchar *s1, wchar *s2, ssize len);
+extern int      wncmp(wchar *s1, wchar *s2, ssize len);
+extern ssize    wncopy(wchar *dest, ssize destCount, wchar *src, ssize len);
+extern wchar    *wpbrk(wchar *str, wchar *set);
+extern wchar    *wrchr(wchar *s, int c);
+extern wchar    *wrejoin(wchar *buf, wchar *sep, ...);
+extern wchar    *wrejoinv(wchar *buf, wchar *sep, va_list args);
+extern ssize    wspn(wchar *str, wchar *set);
+extern int      wstarts(wchar *str, wchar *prefix);
+extern wchar    *wsub(wchar *str, ssize offset, ssize len);
+extern int64    wtoi(wchar *str);
+extern int64    wtoiradix(wchar *str, int radix, int *err);
+extern wchar    *wtok(wchar *str, wchar *delim, wchar **last);
+extern wchar    *wtrim(wchar *str, wchar *set, int where);
+extern wchar    *wupper(wchar *s);
+#endif
+
 #else
 
 /* CHAR_LEN == 1 */
+
+#if UNUSED && KEEP
 #define wtom(dest, count, src, len)         sncopy(dest, count, src, len)
 #define mtow(dest, count, src, len)         sncopy(dest, count, src, len)
 #define itowbuf(buf, bufCount, value, radix) itosbuf(buf, bufCount, value, radix)
@@ -3221,6 +3213,7 @@ extern MprChar  *wupper(MprChar *s);
 #define wtok(str, delim, last)              stok(str, delim, last)
 #define wtrim(str, set, where)              strim(str, set, where)
 #define wupper(str)                         supper(str)
+#endif
 
 #endif /* BIT_CHAR_LEN > 1 */
 
@@ -3230,28 +3223,32 @@ extern MprChar  *wupper(MprChar *s);
     This API is not yet public
  */
 #if BIT_CHAR_LEN > 1
-extern int      mcasecmp(MprChar *s1, cchar *s2);
-extern int      mcmp(MprChar *s1, cchar *s2);
-extern MprChar  *mcontains(MprChar *str, cchar *pattern);
-extern MprChar  *mncontains(MprChar *str, cchar *pattern, ssize limit);
-extern ssize    mcopy(MprChar *dest, ssize destMax, cchar *src);
-extern int      mends(MprChar *str, cchar *suffix);
-extern MprChar  *mfmt(cchar *fmt, ...);
-extern MprChar  *mfmtv(cchar *fmt, va_list arg);
-extern MprChar  *mjoin(cchar *sep, ...);
-extern MprChar  *mjoinv(MprChar *buf, va_list args);
-extern int      mncmp(MprChar *s1, cchar *s2, ssize len);
-extern int      mncaselesscmp(MprChar *s1, cchar *s2, ssize len);
-extern ssize    mncopy(MprChar *dest, ssize destMax, cchar *src, ssize len);
-extern MprChar  *mpbrk(MprChar *str, cchar *set);
-extern MprChar  *mrejoin(MprChar *buf, cchar *sep, ...);
-extern MprChar  *mrejoinv(MprChar *buf, cchar *sep, va_list args);
-extern ssize    mspn(MprChar *str, cchar *set);
-extern int      mstarts(MprChar *str, cchar *prefix);
-extern MprChar  *mtok(MprChar *str, cchar *delim, MprChar **last);
-extern MprChar  *mtrim(MprChar *str, cchar *set, int where);
+#if UNUSED && FUTURE
+extern int      mcasecmp(wchar *s1, cchar *s2);
+extern int      mcmp(wchar *s1, cchar *s2);
+extern wchar    *mcontains(wchar *str, cchar *pattern);
+extern wchar    *mncontains(wchar *str, cchar *pattern, ssize limit);
+extern ssize    mcopy(wchar *dest, ssize destMax, cchar *src);
+extern int      mends(wchar *str, cchar *suffix);
+extern wchar    *mfmt(cchar *fmt, ...);
+extern wchar    *mfmtv(cchar *fmt, va_list arg);
+extern wchar    *mjoin(cchar *str, ...);
+extern wchar    *mjoinv(wchar *buf, va_list args);
+extern int      mncmp(wchar *s1, cchar *s2, ssize len);
+extern int      mncaselesscmp(wchar *s1, cchar *s2, ssize len);
+extern ssize    mncopy(wchar *dest, ssize destMax, cchar *src, ssize len);
+extern wchar    *mpbrk(wchar *str, cchar *set);
+extern wchar    *mrejoin(wchar *buf, cchar *sep, ...);
+extern wchar    *mrejoinv(wchar *buf, cchar *sep, va_list args);
+extern ssize    mspn(wchar *str, cchar *set);
+extern int      mstarts(wchar *str, cchar *prefix);
+extern wchar    *mtok(wchar *str, cchar *delim, wchar **last);
+extern wchar    *mtrim(wchar *str, cchar *set, int where);
+#endif
 
 #else
+
+#if UNUSED && FUTURE
 #define mcaselesscmp(s1, s2)            scaselesscmp(s1, s2)
 #define mcmp(s1, s2)                    scmp(s1, s2)
 #define mcontains(str, pattern)         scontains(str, pattern)
@@ -3272,6 +3269,8 @@ extern MprChar  *mtrim(MprChar *str, cchar *set, int where);
 #define mstarts(str, prefix)            sstarts(str, prefix)
 #define mtok(str, delim, last)          stok(str, delim, last)
 #define mtrim(str, set, where)          strim(str, set, where)
+#endif
+
 #endif /* BIT_CHAR_LEN > 1 */
 
 /************************************ Formatting ******************************/
@@ -3788,6 +3787,7 @@ extern void mprSetBufRefillProc(MprBuf *buf, MprBufProc fn, void *arg);
  */
 extern int mprSetBufSize(MprBuf *buf, ssize size, ssize maxSize);
 
+#if UNUSED && KEEP
 #if DOXYGEN || BIT_CHAR_LEN > 1
 /**
     Add a wide null character to the buffer contents.
@@ -3828,12 +3828,17 @@ extern ssize mprPutStringToWideBuf(MprBuf *buf, cchar *str);
     @returns Count of bytes written and otherwise a negative error code 
  */
 extern ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
+#endif
 
 #else /* BIT_CHAR_LEN == 1 */
+
+#if UNUSED && KEEP
 #define mprAddNullToWideBuf     mprAddNullToBuf
 #define mprPutCharToWideBuf     mprPutCharToBuf
 #define mprPutStringToWideBuf   mprPutStringToBuf
 #define mprPutFmtToWideBuf      mprPutFmtToBuf
+#endif
+
 #endif
 
 #if MPR_BUF_MACROS || 1

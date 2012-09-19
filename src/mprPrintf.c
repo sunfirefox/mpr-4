@@ -145,7 +145,7 @@ typedef struct MprEjsString {
     void            *next;
     void            *prev;
     ssize           length;
-    MprChar         value[0];
+    wchar         value[0];
 } MprEjsString;
 
 typedef struct MprEjsName {
@@ -161,7 +161,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
 static void outNum(Format *fmt, cchar *prefix, uint64 val);
 static void outString(Format *fmt, cchar *str, ssize len);
 #if BIT_CHAR_LEN > 1
-static void outWideString(Format *fmt, MprChar *str, ssize len);
+static void outWideString(Format *fmt, wchar *str, ssize len);
 #endif
 #if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value);
@@ -481,10 +481,10 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                     BPUT(&fmt, ':');
                     outString(&fmt, (char*) qname.name->value, qname.name->length);
 #else
-                    outWideString(&fmt, (MprChar*) qname.space->value, qname.space->length);
+                    outWideString(&fmt, (wchar*) qname.space->value, qname.space->length);
                     BPUT(&fmt, ':');
                     BPUT(&fmt, ':');
-                    outWideString(&fmt, (MprChar*) qname.name->value, qname.name->length);
+                    outWideString(&fmt, (wchar*) qname.name->value, qname.name->length);
 #endif
                 } else {
                     outString(&fmt, NULL, 0);
@@ -495,8 +495,8 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* Safe string */
 #if BIT_CHAR_LEN > 1
                 if (fmt.flags & SPRINTF_LONG) {
-                    //  UNICODE - not right MprChar
-                    safe = mprEscapeHtml(va_arg(args, MprChar*));
+                    //  UNICODE - not right wchar
+                    safe = mprEscapeHtml(va_arg(args, wchar*));
                     outWideString(&fmt, safe, -1);
                 } else
 #endif
@@ -521,9 +521,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 break;
 
             case 'w':
-                /* Wide string of MprChar characters (Same as %ls"). Null terminated. */
+                /* Wide string of wchar characters (Same as %ls"). Null terminated. */
 #if BIT_CHAR_LEN > 1
-                outWideString(&fmt, va_arg(args, MprChar*), -1);
+                outWideString(&fmt, va_arg(args, wchar*), -1);
                 break;
 #else
                 /* Fall through */
@@ -533,7 +533,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* Standard string */
 #if BIT_CHAR_LEN > 1
                 if (fmt.flags & SPRINTF_LONG) {
-                    outWideString(&fmt, va_arg(args, MprChar*), -1);
+                    outWideString(&fmt, va_arg(args, wchar*), -1);
                 } else
 #endif
                     outString(&fmt, va_arg(args, char*), -1);
@@ -681,9 +681,9 @@ static void outString(Format *fmt, cchar *str, ssize len)
 
 
 #if BIT_CHAR_LEN > 1
-static void outWideString(Format *fmt, MprChar *str, ssize len)
+static void outWideString(Format *fmt, wchar *str, ssize len)
 {
-    MprChar     *cp;
+    wchar     *cp;
     int         i;
 
     if (str == 0) {

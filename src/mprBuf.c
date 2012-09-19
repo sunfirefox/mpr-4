@@ -514,43 +514,43 @@ void mprResetBufIfEmpty(MprBuf *bp)
 }
 
 
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && UNUSED
 void mprAddNullToWideBuf(MprBuf *bp)
 {
     ssize      space;
 
     space = bp->endbuf - bp->end;
-    if (space < sizeof(MprChar)) {
-        if (mprGrowBuf(bp, sizeof(MprChar)) < 0) {
+    if (space < sizeof(wchar)) {
+        if (mprGrowBuf(bp, sizeof(wchar)) < 0) {
             return;
         }
     }
     mprAssert(bp->end < bp->endbuf);
     if (bp->end < bp->endbuf) {
-        *((MprChar*) bp->end) = (char) '\0';
+        *((wchar*) bp->end) = (char) '\0';
     }
 }
 
 
 int mprPutCharToWideBuf(MprBuf *bp, int c)
 {
-    MprChar *cp;
+    wchar *cp;
     ssize   space;
 
     mprAssert(bp->buflen == (bp->endbuf - bp->data));
 
     space = bp->buflen - mprGetBufLength(bp);
-    if (space < (sizeof(MprChar) * 2)) {
-        if (mprGrowBuf(bp, sizeof(MprChar) * 2) < 0) {
+    if (space < (sizeof(wchar) * 2)) {
+        if (mprGrowBuf(bp, sizeof(wchar) * 2) < 0) {
             return -1;
         }
     }
-    cp = (MprChar*) bp->end;
-    *cp++ = (MprChar) c;
+    cp = (wchar*) bp->end;
+    *cp++ = (wchar) c;
     bp->end = (char*) cp;
 
     if (bp->end < bp->endbuf) {
-        *((MprChar*) bp->end) = (char) '\0';
+        *((wchar*) bp->end) = (char) '\0';
     }
     return 1;
 }
@@ -559,7 +559,7 @@ int mprPutCharToWideBuf(MprBuf *bp, int c)
 ssize mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
 {
     va_list     ap;
-    MprChar     *wbuf;
+    wchar     *wbuf;
     char        *buf;
     ssize       len, space;
     ssize       rc;
@@ -572,7 +572,7 @@ ssize mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
     space += (bp->maxsize - bp->buflen);
     buf = sfmtv(fmt, ap);
     wbuf = amtow(buf, &len);
-    rc = mprPutBlockToBuf(bp, (char*) wbuf, len * sizeof(MprChar));
+    rc = mprPutBlockToBuf(bp, (char*) wbuf, len * sizeof(wchar));
     va_end(ap);
     return rc;
 }
@@ -580,7 +580,7 @@ ssize mprPutFmtToWideBuf(MprBuf *bp, cchar *fmt, ...)
 
 ssize mprPutStringToWideBuf(MprBuf *bp, cchar *str)
 {
-    MprChar     *wstr;
+    wchar     *wstr;
     ssize       len;
 
     if (str) {
