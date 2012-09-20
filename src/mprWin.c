@@ -93,7 +93,7 @@ int mprLoadNativeModule(MprModule *mp)
         mp->modified = info.mtime;
         mprLog(2, "Loading native module %s", mp->path);
         baseName = mprGetPathBase(mp->path);
-        if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
+        if ((handle = GetModuleHandle(wide(baseName))) == 0 && (handle = LoadLibrary(wide(mp->path))) == 0) {
             mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
         } 
@@ -167,7 +167,8 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *lines[9], *cp, *value;
+    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *cp, *value;
+	wchar		*lines[9];
     int         type;
     static int  once = 0;
 
@@ -177,7 +178,7 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
         *cp-- = '\0';
     }
     type = EVENTLOG_ERROR_TYPE;
-    lines[0] = buf;
+    lines[0] = wide(buf);
     lines[1] = 0;
     lines[2] = lines[3] = lines[4] = lines[5] = 0;
     lines[6] = lines[7] = lines[8] = 0;
@@ -189,15 +190,15 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
             mprGetAppName());
         hkey = 0;
 
-        if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, logName, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkey, &exists) == ERROR_SUCCESS) {
+        if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, wide(logName), 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkey, &exists) == ERROR_SUCCESS) {
             value = "%SystemRoot%\\System32\\netmsg.dll";
-            if (RegSetValueEx(hkey, "EventMessageFile", 0, REG_EXPAND_SZ, 
+            if (RegSetValueEx(hkey, T("EventMessageFile"), 0, REG_EXPAND_SZ, 
                     (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
             errorType = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
-            if (RegSetValueEx(hkey, "TypesSupported", 0, REG_DWORD, (uchar*) &errorType, sizeof(DWORD)) != ERROR_SUCCESS) {
+            if (RegSetValueEx(hkey, T("TypesSupported"), 0, REG_DWORD, (uchar*) &errorType, sizeof(DWORD)) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
@@ -205,13 +206,13 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
         }
     }
 
-    event = RegisterEventSource(0, mprGetAppName());
+    event = RegisterEventSource(0, wide(mprGetAppName()));
     if (event) {
         /*
             3299 is the event number for the generic message in netmsg.dll.
             "%1 %2 %3 %4 %5 %6 %7 %8 %9" -- thanks Apache for the tip
          */
-        ReportEvent(event, EVENTLOG_ERROR_TYPE, 0, 3299, NULL, sizeof(lines) / sizeof(char*), 0, (LPCSTR*) lines, 0);
+        ReportEvent(event, EVENTLOG_ERROR_TYPE, 0, 3299, NULL, sizeof(lines) / sizeof(wchar*), 0, lines, 0);
         DeregisterEventSource(event);
     }
 }
@@ -276,14 +277,14 @@ char *mprReadRegistry(cchar *key, cchar *name)
     if ((key = getHive(key, &top)) == 0) {
         return 0;
     }
-    if (RegOpenKeyEx(top, key, 0, KEY_READ, &h) != ERROR_SUCCESS) {
+    if (RegOpenKeyEx(top, wide(key), 0, KEY_READ, &h) != ERROR_SUCCESS) {
         return 0;
     }
 
     /*
         Get the type
      */
-    if (RegQueryValueEx(h, name, 0, &type, 0, &size) != ERROR_SUCCESS) {
+    if (RegQueryValueEx(h, wide(name), 0, &type, 0, &size) != ERROR_SUCCESS) {
         RegCloseKey(h);
         return 0;
     }
@@ -294,7 +295,7 @@ char *mprReadRegistry(cchar *key, cchar *name)
     if ((value = mprAlloc(size + 1)) == 0) {
         return 0;
     }
-    if (RegQueryValueEx(h, name, 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
+    if (RegQueryValueEx(h, wide(name), 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
         RegCloseKey(h);
         return 0;
     }
@@ -321,10 +322,10 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
         /*
             Write a registry string value
          */
-        if (RegOpenKeyEx(top, key, 0, KEY_ALL_ACCESS, &h) != ERROR_SUCCESS) {
+        if (RegOpenKeyEx(top, wide(key), 0, KEY_ALL_ACCESS, &h) != ERROR_SUCCESS) {
             return MPR_ERR_CANT_ACCESS;
         }
-        if (RegSetValueEx(h, name, 0, REG_SZ, (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
+        if (RegSetValueEx(h, wide(name), 0, REG_SZ, (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
             RegCloseKey(h);
             return MPR_ERR_CANT_READ;
         }
@@ -333,10 +334,10 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
         /*
             Create a new sub key
          */
-        if (RegOpenKeyEx(top, key, 0, KEY_CREATE_SUB_KEY, &h) != ERROR_SUCCESS){
+        if (RegOpenKeyEx(top, wide(key), 0, KEY_CREATE_SUB_KEY, &h) != ERROR_SUCCESS){
             return MPR_ERR_CANT_ACCESS;
         }
-        if (RegCreateKeyEx(h, value, 0, NULL, REG_OPTION_NON_VOLATILE,
+        if (RegCreateKeyEx(h, wide(value), 0, NULL, REG_OPTION_NON_VOLATILE,
                 KEY_ALL_ACCESS, NULL, &subHandle, &disposition) != ERROR_SUCCESS) {
             return MPR_ERR_CANT_ACCESS;
         }

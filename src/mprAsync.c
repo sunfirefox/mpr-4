@@ -66,7 +66,7 @@ int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     if (desiredMask & MPR_WRITABLE) {
         winMask |= FD_WRITE;
     }
-    h = CreateEvent(NULL, FALSE, FALSE, "mprWaitForSingleIO");
+    h = CreateEvent(NULL, FALSE, FALSE, T("mprWaitForSingleIO"));
     WSAEventSelect(fd, h, winMask);
     if (WaitForSingleObject(h, (DWORD) timeout) == WAIT_OBJECT_0) {
         CloseHandle(h);
@@ -175,12 +175,15 @@ int mprInitWindow()
     MprWaitService  *ws;
     WNDCLASS        wc;
     HWND            hwnd;
+	wchar			*name, *title;
     int             rc;
 
     ws = MPR->waitService;
     if (ws->hwnd) {
         return 0;
     }
+	name = wide(mprGetAppName());
+	title = wide(mprGetAppTitle());
     wc.style            = CS_HREDRAW | CS_VREDRAW;
     wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
@@ -189,14 +192,14 @@ int mprInitWindow()
     wc.hInstance        = 0;
     wc.hIcon            = NULL;
     wc.lpfnWndProc      = (WNDPROC) msgProc;
-    wc.lpszMenuName     = wc.lpszClassName = mprGetAppName();
+    wc.lpszMenuName     = wc.lpszClassName = name;
 
     rc = RegisterClass(&wc);
     if (rc == 0) {
         mprError("Can't register windows class");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    hwnd = CreateWindow(mprGetAppName(), mprGetAppTitle(), WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
+    hwnd = CreateWindow(name, title, WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
     if (!hwnd) {
         mprError("Can't create window");
         return -1;

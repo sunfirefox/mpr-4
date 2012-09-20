@@ -24,13 +24,13 @@
 #include    "mpr.h"
 
 #ifndef SERVICE_PROGRAM
-    #define SERVICE_PROGRAM BIT_BIN_PREFIX "/" BIT_PRODUCT
+    #define SERVICE_PROGRAM T(BIT_BIN_PREFIX "/" BIT_PRODUCT)
 #endif
 #ifndef SERVICE_NAME
-    #define SERVICE_NAME BIT_PRODUCT
+    #define SERVICE_NAME T(BIT_PRODUCT)
 #endif
 #ifndef SERVICE_HOME
-    #define SERVICE_HOME "/"
+    #define SERVICE_HOME T("/")
 #endif
 
 #if BIT_UNIX_LIKE
@@ -829,7 +829,7 @@ static Mpr *mpr;
 static SERVICE_STATUS           svcStatus;
 static SERVICE_STATUS_HANDLE    svcHandle;
 static SERVICE_TABLE_ENTRY      svcTable[] = {
-    { "default",    0   },
+    { T("default"), 0   },
     { 0,            0   }
 };
 
@@ -857,7 +857,7 @@ static void     manageApp(void *unused, int flags);
 static LRESULT  msgProc(HWND hwnd, uint msg, uint wp, long lp);
 
 static void     serviceThread(void *data);
-static void WINAPI serviceMain(ulong argc, char **argv);
+static void WINAPI serviceMain(ulong argc, wchar **argv);
 
 /*********************************** Code *************************************/
 

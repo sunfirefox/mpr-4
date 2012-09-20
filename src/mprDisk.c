@@ -197,7 +197,7 @@ static int deletePath(MprDiskFileSystem *fs, cchar *path)
      */
     int i, err;
     for (i = 0; i < RETRIES; i++) {
-        if (DeleteFile((char*) path) != 0) {
+        if (DeleteFile(wide(path)) != 0) {
             return 0;
         }
         err = GetLastError();
@@ -335,7 +335,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     if (info->isReg) {
         long    att;
 
-        if ((att = GetFileAttributes(path)) == -1) {
+        if ((att = GetFileAttributes(wide(path))) == -1) {
             return -1;
         }
         if (att & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_ENCRYPTED |
@@ -347,7 +347,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
         }
         if (info->isReg) {
             HANDLE handle;
-            handle = CreateFile(path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
+            handle = CreateFile(wide(path), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
             if (handle == INVALID_HANDLE_VALUE) {
                 info->isReg = 0;
             } else {
@@ -454,7 +454,7 @@ static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 {
     HANDLE  h;
 
-    h = CreateFile(path, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    h = CreateFile(wide(path), GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     SetFilePointer(h, (LONG) size, 0, FILE_BEGIN);
     if (h == INVALID_HANDLE_VALUE || SetEndOfFile(h) == 0) {
         CloseHandle(h);

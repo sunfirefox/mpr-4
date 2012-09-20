@@ -1232,7 +1232,7 @@ static int startProcess(MprCmd *cmd)
         startInfo.hStdError = (HANDLE) _get_osfhandle((int) fileno(stderr));
     }
     envBlock = makeWinEnvBlock(cmd);
-    if (! CreateProcess(0, cmd->command, 0, 0, 1, 0, (char*) envBlock, cmd->dir, &startInfo, &procInfo)) {
+    if (! CreateProcess(0, wide(cmd->command), 0, 0, 1, 0, (char*) envBlock, wide(cmd->dir), &startInfo, &procInfo)) {
         err = mprGetOsError();
         if (err == ERROR_DIRECTORY) {
             mprError("Can't create process: %s, directory %s is invalid", cmd->program, cmd->dir);
@@ -1340,7 +1340,7 @@ static int makeChannel(MprCmd *cmd, int index)
     pipeMode = 0;
 
     att = (index == MPR_CMD_STDIN) ? &clientAtt : &serverAtt;
-    readHandle = CreateNamedPipe(pipeName, openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
+    readHandle = CreateNamedPipe(wide(pipeName), openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
     if (readHandle == INVALID_HANDLE_VALUE) {
         mprError("Can't create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
@@ -1348,7 +1348,7 @@ static int makeChannel(MprCmd *cmd, int index)
     readFd = (int) (int64) _open_osfhandle((long) readHandle, 0);
 
     att = (index == MPR_CMD_STDIN) ? &serverAtt: &clientAtt;
-    writeHandle = CreateFile(pipeName, GENERIC_WRITE, 0, att, OPEN_EXISTING, openMode, 0);
+    writeHandle = CreateFile(wide(pipeName), GENERIC_WRITE, 0, att, OPEN_EXISTING, openMode, 0);
     writeFd = (int) _open_osfhandle((long) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {

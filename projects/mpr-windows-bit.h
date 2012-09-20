@@ -5,6 +5,8 @@
     configure or define variables in your Makefile to override these default values.
  */
 
+#define BIT_CHAR_LEN 2
+
 /* Settings */
 #ifndef BIT_ASSERT
     #define BIT_ASSERT 1

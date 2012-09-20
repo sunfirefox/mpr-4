@@ -8,7 +8,8 @@
 
 #include    "mpr.h"
 
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1
+#if UNUSED
 /************************************ Code ************************************/
 /*
     Format a number as a string. Support radix 10 and 16.
@@ -731,6 +732,7 @@ char *wupper(wchar *str)
     }
     return str;
 }
+#endif /* UNUSED */
 
 /*********************************** Conversions *******************************/
 /*
@@ -822,12 +824,12 @@ wchar *amtow(cchar *src, ssize *lenp)
     wchar   *dest;
     ssize   len;
 
-    len = mtow(NULL, MAXSSIZE, src, 0);
+    len = mtow(NULL, MAXSSIZE, src, -1);
     if (len < 0) {
         return NULL;
     }
     if ((dest = mprAlloc((len + 1) * sizeof(wchar))) != NULL) {
-        mtow(dest, len + 1, src, len);
+        mtow(dest, len + 1, src, -1);
     }
     if (lenp) {
         *lenp = len;
@@ -836,18 +838,19 @@ wchar *amtow(cchar *src, ssize *lenp)
 }
 
 
-//  UNICODE - need a version that can supply a length
+//  FUTURE UNICODE - need a version that can supply a length
+
 char *awtom(wchar *src, ssize *lenp)
 {
     char    *dest;
     ssize   len;
 
-    len = wtom(NULL, MAXSSIZE, src, 0);
+    len = wtom(NULL, MAXSSIZE, src, -1);
     if (len < 0) {
         return NULL;
     }
     if ((dest = mprAlloc(len + 1)) != 0) {
-        wtom(dest, len + 1, src, len);
+        wtom(dest, len + 1, src, -1);
     }
     if (lenp) {
         *lenp = len;

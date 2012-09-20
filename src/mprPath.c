@@ -236,10 +236,10 @@ char *mprGetAbsPath(cchar *path)
 
 #if BIT_WIN_LIKE && !WINCE
 {
-    char    buf[MPR_MAX_PATH];
-    GetFullPathName(path, sizeof(buf) - 1, buf, NULL);
-    buf[sizeof(buf) - 1] = '\0';
-    result = mprNormalizePath(buf);
+    wchar    buf[MPR_MAX_PATH];
+    GetFullPathName(wide(path), sizeof(buf) - 1, buf, NULL);
+    buf[TSZ(buf) - 1] = '\0';
+    result = mprNormalizePath(multi(buf));
 }
 #elif VXWORKS
 {
@@ -341,12 +341,12 @@ char *mprGetAppPath()
 }
 #elif BIT_WIN_LIKE
 {
-    char    pbuf[MPR_MAX_PATH];
+    wchar    pbuf[MPR_MAX_PATH];
 
     if (GetModuleFileName(0, pbuf, sizeof(pbuf) - 1) <= 0) {
         return 0;
     }
-    MPR->appPath = mprGetAbsPath(pbuf);
+    MPR->appPath = mprGetAbsPath(multi(pbuf));
 }
 #else
     if (mprIsPathAbs(MPR->argv[0])) {
@@ -573,7 +573,7 @@ static MprList *getDirFiles(cchar *dir, int flags)
     }
     seps = mprGetPathSeparators(dir);
 
-    h = FindFirstFile(path, &findData);
+    h = FindFirstFile(wide(path), &findData);
     if (h == INVALID_HANDLE_VALUE) {
         return 0;
     }
@@ -586,7 +586,7 @@ static MprList *getDirFiles(cchar *dir, int flags)
         if ((dp = mprAlloc(sizeof(MprDirEntry))) == 0) {
             return 0;
         }
-        dp->name = sclone(findData.cFileName);
+        dp->name = awtom(findData.cFileName, 0);
         if (dp->name == 0) {
             return 0;
         }

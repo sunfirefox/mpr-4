@@ -60,7 +60,7 @@ MAIN(testMain, int argc, char **argv, char **envp)
     Mpr             *mpr;
     MprTestService  *ts;
     int             rc;
-
+	rc = UNICODE;
     mpr = mprCreate(argc, argv, MPR_USER_EVENTS_THREAD);
     mprAddStandardSignals();
 

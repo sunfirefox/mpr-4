@@ -178,8 +178,6 @@
     #define BIT_WIN_LIKE 0
 #endif
 
-/********************************* O/S Includes *******************************/
-
 #if __WORDSIZE == 64 || __amd64 || __x86_64 || __x86_64__ || _WIN64
     #define BIT_64 1
     #define BIT_WORDSIZE 64
@@ -187,6 +185,30 @@
     #define BIT_WORDSIZE 32
 #endif
 
+/*
+    Foundational types
+ */
+#ifndef BIT_CHAR_LEN
+    #define BIT_CHAR_LEN 1
+    typedef char wchar;
+    #define UNICODE 0
+#endif
+#if BIT_CHAR_LEN == 4
+    typedef int32 wchar;
+    #define T(s) L ## s
+    #define UNICODE 1
+#elif BIT_CHAR_LEN == 2
+    typedef short wchar;
+    #define T(s) L ## s
+    #define UNICODE 1
+#else
+    typedef char wchar;
+    #define T(s) s
+    #define UNICODE 0
+#endif
+    #define TSZ(b) (sizeof(b) / sizeof(wchar))
+
+/********************************* O/S Includes *******************************/
 /*
     Out-of-order definitions and includes. Order really matters in this section
  */
@@ -1467,24 +1489,6 @@ struct  MprXml;
 #define MPR_NAME(msg)       msg "@" MPR_LOC
 
 #define MPR_STRINGIFY(s)    #s
-
-/*
-    Foundational types
- */
-#ifndef BIT_CHAR_LEN
-    #define BIT_CHAR_LEN 1
-#endif
-#if BIT_CHAR_LEN == 4
-    typedef int32 wchar;
-    #define T(s) L ## s
-#elif BIT_CHAR_LEN == 2
-    typedef short wchar;
-    #define T(s) L ## s
-#else
-    typedef char wchar;
-    #define T(s) s
-#endif
-#define MprChar wchar
 
 /*
     Convenience define to declare a main program entry point that works for Windows, VxWorks and Unix
@@ -3133,15 +3137,24 @@ extern char *supper(cchar *str);
 
     This API is not yet public
  */
+/* Allocating */
 extern wchar   *amtow(cchar *src, ssize *len);
 extern char    *awtom(wchar *src, ssize *len);
-extern wchar   *wfmt(wchar *fmt, ...);
+
+#if BIT_CHAR_LEN > 1
+#define multi(s) awtom(s, 0)
+#define wide(s)  amtow(s, 0)
+#else
+#define multi(s) (s)
+#define wide(s)  (s)
+#endif
 
 #if BIT_CHAR_LEN > 1
 extern ssize   wtom(char *dest, ssize count, wchar *src, ssize len);
 extern ssize   mtow(wchar *dest, ssize count, cchar *src, ssize len);
 
 #if UNUSED && KEEP
+extern wchar    *wfmt(wchar *fmt, ...);
 extern wchar    *itow(wchar *buf, ssize bufCount, int64 value, int radix);
 extern wchar    *wchr(wchar *s, int c);
 extern int      wcasecmp(wchar *s1, wchar *s2);
