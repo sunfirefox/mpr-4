@@ -11,7 +11,7 @@
 #if BIT_CHAR_LEN > 1 && UNUSED && KEEP
 /********************************** Forwards **********************************/
 
-int mcasecmp(wchar *str1, cchar *str2)
+int mcaselesscmp(wchar *str1, cchar *str2)
 {
     return mncaselesscmp(str1, str2, -1);
 }

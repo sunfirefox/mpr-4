@@ -3190,7 +3190,6 @@ extern wchar    *wupper(wchar *s);
 
 /* CHAR_LEN == 1 */
 
-#if UNUSED && KEEP
 #define wtom(dest, count, src, len)         sncopy(dest, count, src, len)
 #define mtow(dest, count, src, len)         sncopy(dest, count, src, len)
 #define itowbuf(buf, bufCount, value, radix) itosbuf(buf, bufCount, value, radix)
@@ -3225,7 +3224,6 @@ extern wchar    *wupper(wchar *s);
 #define wtok(str, delim, last)              stok(str, delim, last)
 #define wtrim(str, set, where)              strim(str, set, where)
 #define wupper(str)                         supper(str)
-#endif
 
 #endif /* BIT_CHAR_LEN > 1 */
 
@@ -3236,7 +3234,7 @@ extern wchar    *wupper(wchar *s);
  */
 #if BIT_CHAR_LEN > 1
 #if UNUSED && FUTURE
-extern int      mcasecmp(wchar *s1, cchar *s2);
+extern int      mcaselesscmp(wchar *s1, cchar *s2);
 extern int      mcmp(wchar *s1, cchar *s2);
 extern wchar    *mcontains(wchar *str, cchar *pattern);
 extern wchar    *mncontains(wchar *str, cchar *pattern, ssize limit);
@@ -3260,7 +3258,6 @@ extern wchar    *mtrim(wchar *str, cchar *set, int where);
 
 #else
 
-#if UNUSED && FUTURE
 #define mcaselesscmp(s1, s2)            scaselesscmp(s1, s2)
 #define mcmp(s1, s2)                    scmp(s1, s2)
 #define mcontains(str, pattern)         scontains(str, pattern)
@@ -3281,7 +3278,6 @@ extern wchar    *mtrim(wchar *str, cchar *set, int where);
 #define mstarts(str, prefix)            sstarts(str, prefix)
 #define mtok(str, delim, last)          stok(str, delim, last)
 #define mtrim(str, set, where)          strim(str, set, where)
-#endif
 
 #endif /* BIT_CHAR_LEN > 1 */
 
@@ -3844,12 +3840,10 @@ extern ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 
 #else /* BIT_CHAR_LEN == 1 */
 
-#if UNUSED && KEEP
 #define mprAddNullToWideBuf     mprAddNullToBuf
 #define mprPutCharToWideBuf     mprPutCharToBuf
 #define mprPutStringToWideBuf   mprPutStringToBuf
 #define mprPutFmtToWideBuf      mprPutFmtToBuf
-#endif
 
 #endif
 
