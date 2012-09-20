@@ -24,13 +24,13 @@
 #include    "mpr.h"
 
 #ifndef SERVICE_PROGRAM
-    #define SERVICE_PROGRAM T(BIT_BIN_PREFIX "/" BIT_PRODUCT)
+    #define SERVICE_PROGRAM BIT_BIN_PREFIX "/" BIT_PRODUCT
 #endif
 #ifndef SERVICE_NAME
-    #define SERVICE_NAME T(BIT_PRODUCT)
+    #define SERVICE_NAME BIT_PRODUCT
 #endif
 #ifndef SERVICE_HOME
-    #define SERVICE_HOME T("/")
+    #define SERVICE_HOME "/"
 #endif
 
 #if BIT_UNIX_LIKE

@@ -194,7 +194,7 @@
     #define UNICODE 0
 #endif
 #if BIT_CHAR_LEN == 4
-    typedef int32 wchar;
+    typedef int wchar;
     #define T(s) L ## s
     #define UNICODE 1
 #elif BIT_CHAR_LEN == 2
