@@ -190,8 +190,6 @@
  */
 #ifndef BIT_CHAR_LEN
     #define BIT_CHAR_LEN 1
-    typedef char wchar;
-    #define UNICODE 0
 #endif
 #if BIT_CHAR_LEN == 4
     typedef int wchar;
