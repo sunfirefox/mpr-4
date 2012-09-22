@@ -30,8 +30,6 @@ fi
 rm -rf ${CONFIG}/inc/mpr.h
 cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
-"${CC}" -c -Fo${CONFIG}/obj/dtoa.obj -Fd${CONFIG}/obj/dtoa.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/dtoa.c
-
 "${CC}" -c -Fo${CONFIG}/obj/mpr.obj -Fd${CONFIG}/obj/mpr.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mpr.c
 
 "${CC}" -c -Fo${CONFIG}/obj/mprAsync.obj -Fd${CONFIG}/obj/mprAsync.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprAsync.c
@@ -118,7 +116,7 @@ cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
 "${CC}" -c -Fo${CONFIG}/obj/mprXml.obj -Fd${CONFIG}/obj/mprXml.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprXml.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libmpr.dll -entry:_DllMainCRTStartup@12 -def:${CONFIG}/bin/libmpr.def ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/dtoa.obj ${CONFIG}/obj/mpr.obj ${CONFIG}/obj/mprAsync.obj ${CONFIG}/obj/mprAtomic.obj ${CONFIG}/obj/mprBuf.obj ${CONFIG}/obj/mprCache.obj ${CONFIG}/obj/mprCmd.obj ${CONFIG}/obj/mprCond.obj ${CONFIG}/obj/mprCrypt.obj ${CONFIG}/obj/mprDisk.obj ${CONFIG}/obj/mprDispatcher.obj ${CONFIG}/obj/mprEncode.obj ${CONFIG}/obj/mprEpoll.obj ${CONFIG}/obj/mprEvent.obj ${CONFIG}/obj/mprFile.obj ${CONFIG}/obj/mprFileSystem.obj ${CONFIG}/obj/mprHash.obj ${CONFIG}/obj/mprJSON.obj ${CONFIG}/obj/mprKqueue.obj ${CONFIG}/obj/mprList.obj ${CONFIG}/obj/mprLock.obj ${CONFIG}/obj/mprLog.obj ${CONFIG}/obj/mprMem.obj ${CONFIG}/obj/mprMime.obj ${CONFIG}/obj/mprMixed.obj ${CONFIG}/obj/mprModule.obj ${CONFIG}/obj/mprPath.obj ${CONFIG}/obj/mprPoll.obj ${CONFIG}/obj/mprPrintf.obj ${CONFIG}/obj/mprRomFile.obj ${CONFIG}/obj/mprSelect.obj ${CONFIG}/obj/mprSignal.obj ${CONFIG}/obj/mprSocket.obj ${CONFIG}/obj/mprString.obj ${CONFIG}/obj/mprTest.obj ${CONFIG}/obj/mprThread.obj ${CONFIG}/obj/mprTime.obj ${CONFIG}/obj/mprUnix.obj ${CONFIG}/obj/mprVxworks.obj ${CONFIG}/obj/mprWait.obj ${CONFIG}/obj/mprWide.obj ${CONFIG}/obj/mprWin.obj ${CONFIG}/obj/mprWince.obj ${CONFIG}/obj/mprXml.obj ${LIBS}
+"${LD}" -dll -out:${CONFIG}/bin/libmpr.dll -entry:_DllMainCRTStartup@12 -def:${CONFIG}/bin/libmpr.def ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mpr.obj ${CONFIG}/obj/mprAsync.obj ${CONFIG}/obj/mprAtomic.obj ${CONFIG}/obj/mprBuf.obj ${CONFIG}/obj/mprCache.obj ${CONFIG}/obj/mprCmd.obj ${CONFIG}/obj/mprCond.obj ${CONFIG}/obj/mprCrypt.obj ${CONFIG}/obj/mprDisk.obj ${CONFIG}/obj/mprDispatcher.obj ${CONFIG}/obj/mprEncode.obj ${CONFIG}/obj/mprEpoll.obj ${CONFIG}/obj/mprEvent.obj ${CONFIG}/obj/mprFile.obj ${CONFIG}/obj/mprFileSystem.obj ${CONFIG}/obj/mprHash.obj ${CONFIG}/obj/mprJSON.obj ${CONFIG}/obj/mprKqueue.obj ${CONFIG}/obj/mprList.obj ${CONFIG}/obj/mprLock.obj ${CONFIG}/obj/mprLog.obj ${CONFIG}/obj/mprMem.obj ${CONFIG}/obj/mprMime.obj ${CONFIG}/obj/mprMixed.obj ${CONFIG}/obj/mprModule.obj ${CONFIG}/obj/mprPath.obj ${CONFIG}/obj/mprPoll.obj ${CONFIG}/obj/mprPrintf.obj ${CONFIG}/obj/mprRomFile.obj ${CONFIG}/obj/mprSelect.obj ${CONFIG}/obj/mprSignal.obj ${CONFIG}/obj/mprSocket.obj ${CONFIG}/obj/mprString.obj ${CONFIG}/obj/mprTest.obj ${CONFIG}/obj/mprThread.obj ${CONFIG}/obj/mprTime.obj ${CONFIG}/obj/mprUnix.obj ${CONFIG}/obj/mprVxworks.obj ${CONFIG}/obj/mprWait.obj ${CONFIG}/obj/mprWide.obj ${CONFIG}/obj/mprWin.obj ${CONFIG}/obj/mprWince.obj ${CONFIG}/obj/mprXml.obj ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/benchMpr.obj -Fd${CONFIG}/obj/benchMpr.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/benchMpr.c
 

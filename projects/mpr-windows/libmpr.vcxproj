@@ -100,7 +100,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\dtoa.c" />
     <ClCompile Include="..\..\src\mpr.c" />
     <ClCompile Include="..\..\src\mprAsync.c" />
     <ClCompile Include="..\..\src\mprAtomic.c" />
