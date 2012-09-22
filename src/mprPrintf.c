@@ -268,7 +268,7 @@ int mprStaticPrintfError(cchar *fmt, ...)
 #endif
 
 
-char *mprSprintf(char *buf, ssize bufsize, cchar *fmt, ...)
+char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
 {
     va_list     ap;
     char        *result;
@@ -284,7 +284,7 @@ char *mprSprintf(char *buf, ssize bufsize, cchar *fmt, ...)
 }
 
 
-char *mprSprintfv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
+char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 {
     mprAssert(buf);
     mprAssert(fmt);
@@ -294,6 +294,7 @@ char *mprSprintfv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 }
 
 
+//  MOB - DEPRECATE
 char *mprAsprintf(cchar *fmt, ...)
 {
     va_list     ap;
@@ -812,18 +813,10 @@ static void outFloat(Format *fmt, char specChar, double value)
     result[0] = '\0';
     if (specChar == 'f') {
         sprintf(result, "%.*f", fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, MPR_DTOA_ALL_DIGITS, MPR_DTOA_FIXED_FORM);
-        // sprintf(result, "%*.*f", fmt->width, fmt->precision, value);
-
     } else if (specChar == 'g') {
         sprintf(result, "%*.*g", fmt->width, fmt->precision, value);
-        // sprintf(result, "%*.*g", fmt->width, fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, 0, 0);
-
     } else if (specChar == 'e') {
         sprintf(result, "%*.*e", fmt->width, fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, MPR_DTOA_N_DIGITS, MPR_DTOA_EXPONENT_FORM);
-        // sprintf(result, "%*.*e", fmt->width, fmt->precision, value);
     }
     len = (int) slen(result);
     fill = fmt->width - len;
@@ -860,6 +853,7 @@ static void outFloat(Format *fmt, char specChar, double value)
     BPUTNULL(fmt);
 }
 
+
 int mprIsNan(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_SNAN | _FPCLASS_QNAN);
@@ -891,6 +885,8 @@ int mprIsZero(double value) {
 #endif
 }
 
+
+#if UNUSED
 /*
     Convert a double to ascii. Caller must free the result. This uses the JavaScript ECMA-262 spec for formatting rules.
 
@@ -1029,6 +1025,7 @@ char *mprDtoa(double value, int ndigits, int mode, int flags)
     }
     return sclone(mprGetBufStart(buf));
 }
+#endif
 #endif /* BIT_FLOAT */
 
 
@@ -1080,8 +1077,9 @@ static int growBuf(Format *fmt)
  */
 int print(cchar *fmt, ...)
 {
-    int             len;
-    va_list         ap;
+    va_list     ap;
+    int         len;
+
     va_start(ap, fmt);
     len = vprintf(fmt, ap);
     va_end(ap);

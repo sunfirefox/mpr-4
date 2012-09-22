@@ -42,8 +42,10 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     mprCreateOsService();
     mpr->mutex = mprCreateLock();
     mpr->spin = mprCreateSpinLock();
+#if UNUSED
     mpr->dtoaSpin[0] = mprCreateSpinLock();
     mpr->dtoaSpin[1] = mprCreateSpinLock();
+#endif
 
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);
@@ -148,8 +150,10 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->terminators);
         mprMark(mpr->mutex);
         mprMark(mpr->spin);
+#if UNUSED
         mprMark(mpr->dtoaSpin[0]);
         mprMark(mpr->dtoaSpin[1]);
+#endif
         mprMark(mpr->cond);
         mprMark(mpr->emptyString);
         mprMark(mpr->argBuf);
@@ -695,18 +699,6 @@ char *mprEmptyString()
 void mprSetExitStrategy(int strategy)
 {
     MPR->exitStrategy = strategy;
-}
-
-
-void mprLockDtoa(int n)
-{
-    mprSpinLock(MPR->dtoaSpin[n]);
-}
-
-
-void mprUnlockDtoa(int n)
-{
-    mprSpinUnlock(MPR->dtoaSpin[n]);
 }
 
 

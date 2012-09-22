@@ -107,13 +107,11 @@ Third Party Components
 
 1) MatrixSSL. The MatrixSSL interface contains some licensed code from PeerSec. MatrixSSL is an optional component.
 
-2) DTOA (Decimal to Ascii conversion code). This is used in the runtime core. It is licensed by Lucent with a BSD style license.
+2) Hashing algorithm inspired by Paul Hsieh at http://www.azillionmonkeys.com/qed/hash.html.
 
-3) Hashing algorithm inspired by Paul Hsieh at http://www.azillionmonkeys.com/qed/hash.html.
+3) Qsort routine - (c) Michael Ringgaard. BSD license.
 
-4) Qsort routine - (c) Michael Ringgaard. BSD license.
-
-5) MD5 routine
+4) MD5 routine
     Copyright (C) 1991-2, RSA Data Security, Inc. All rights reserved.  Redistribution and use in source and binary
     forms, with or without modification, are permitted provided that the following conditions are met:
     

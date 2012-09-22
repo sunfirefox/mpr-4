@@ -250,37 +250,37 @@ void mprDecodeUniversalTime(struct tm *tp, MprTime when)
 }
 
 
-char *mprGetDate(char *fmt)
+char *mprGetDate(char *format)
 {
     struct tm   tm;
 
     mprDecodeLocalTime(&tm, mprGetTime());
-    if (fmt == 0 || *fmt == '\0') {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0 || *format == '\0') {
+        format = MPR_DEFAULT_DATE;
     }
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
-char *mprFormatLocalTime(cchar *fmt, MprTime time)
+char *mprFormatLocalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     mprDecodeLocalTime(&tm, time);
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
-char *mprFormatUniversalTime(cchar *fmt, MprTime time)
+char *mprFormatUniversalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     mprDecodeUniversalTime(&tm, time);
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
@@ -710,7 +710,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 /*
     Preferred implementation as strftime() will be localized
  */
-char *mprFormatTm(cchar *fmt, struct tm *tp)
+char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     char            localFmt[MPR_MAX_STRING];
@@ -721,8 +721,8 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     int             value;
 
     dp = localFmt;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     if (tp == 0) {
         mprDecodeLocalTime(&tm, mprGetTime());
@@ -730,7 +730,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     }
     endp = &localFmt[sizeof(localFmt) - 1];
     size = sizeof(localFmt) - 1;
-    for (cp = fmt; *cp && dp < &localFmt[sizeof(localFmt) - 32]; size = (int) (endp - dp - 1)) {
+    for (cp = format; *cp && dp < &localFmt[sizeof(localFmt) - 32]; size = (int) (endp - dp - 1)) {
         if (*cp == '%') {
             *dp++ = *cp++;
         again:
@@ -738,7 +738,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
             case '+':
                 if (tp->tm_mday < 10) {
                     /* Some platforms don't support 'e' so avoid it here. Put a double space before %d */
-                    mprSprintf(dp, size, "%s  %d %s", "a %b", tp->tm_mday, "%H:%M:%S %Z %Y");
+                    fmt(dp, size, "%s  %d %s", "a %b", tp->tm_mday, "%H:%M:%S %Z %Y");
                 } else {
                     strcpy(dp, "a %b %d %H:%M:%S %Z %Y");
                 }
@@ -887,7 +887,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
                 if (value < 0) {
                     value = -value;
                 }
-                mprSprintf(dp, size, "%s%02d%02d", sign, value / 60, value % 60);
+                fmt(dp, size, "%s%02d%02d", sign, value / 60, value % 60);
                 dp += slen(dp);
                 cp++;
                 break;
@@ -906,11 +906,11 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
         }
     }
     *dp = '\0';
-    fmt = localFmt;
-    if (*fmt == '\0') {
-        fmt = "%a %b %d %H:%M:%S %Z %Y";
+    format = localFmt;
+    if (*format == '\0') {
+        format = "%a %b %d %H:%M:%S %Z %Y";
     }
-    if (strftime(buf, sizeof(buf) - 1, fmt, tp) > 0) {
+    if (strftime(buf, sizeof(buf) - 1, format, tp) > 0) {
         buf[sizeof(buf) - 1] = '\0';
         return sclone(buf);
     }
@@ -961,15 +961,15 @@ static char *getTimeZoneName(struct tm *tp)
 }
 
 
-char *mprFormatTm(cchar *fmt, struct tm *tp)
+char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     MprBuf          *buf;
     char            *zone;
     int             w, value;
 
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     if (tp == 0) {
         mprDecodeLocalTime(&tm, mprGetTime());
@@ -978,13 +978,13 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     if ((buf = mprCreateBuf(64, -1)) == 0) {
         return 0;
     }
-    while ((*fmt != '\0')) {
-        if (*fmt++ != '%') {
-            mprPutCharToBuf(buf, fmt[-1]);
+    while ((*format != '\0')) {
+        if (*format++ != '%') {
+            mprPutCharToBuf(buf, format[-1]);
             continue;
         }
     again:
-        switch (*fmt++) {
+        switch (*format++) {
         case '%' :                                      /* percent */
             mprPutCharToBuf(buf, '%');
             break;
@@ -1235,7 +1235,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
 
         default:
             mprPutCharToBuf(buf, '%');
-            mprPutCharToBuf(buf, fmt[-1]);
+            mprPutCharToBuf(buf, format[-1]);
             break;
         }
     }

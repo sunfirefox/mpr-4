@@ -100,7 +100,7 @@ static void testHashScale(MprTestGroup *gp)
         deleting the table.
      */
     for (i = 0; i < HASH_COUNT; i++) {
-        mprSprintf(name, sizeof(name), "name.%d", i);
+        fmt(name, sizeof(name), "name.%d", i);
         address = sfmt("%d Park Ave", i);
         sp = mprAddKey(table, name, address);
         assert(sp != 0);
@@ -111,7 +111,7 @@ static void testHashScale(MprTestGroup *gp)
         Check data entered into the hash
      */
     for (i = 0; i < HASH_COUNT; i++) {
-        mprSprintf(name, sizeof(name), "name.%d", i);
+        fmt(name, sizeof(name), "name.%d", i);
         str = mprLookupKey(table, name);
         assert(str != 0);
         address = sfmt("%d Park Ave", i);
@@ -136,8 +136,8 @@ static void testIterateHash(MprTestGroup *gp)
         Fill the table
      */
     for (i = 0; i < HASH_COUNT; i++) {
-        mprSprintf(name, sizeof(name), "Bit longer name.%d", i);
-        mprSprintf(address, sizeof(address), "%d Park Ave", i);
+        fmt(name, sizeof(name), "Bit longer name.%d", i);
+        fmt(address, sizeof(address), "%d Park Ave", i);
         sp = mprAddKey(table, name, sclone(address));
         assert(sp != 0);
     }

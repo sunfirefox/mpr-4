@@ -140,7 +140,7 @@ void mprLog(int level, cchar *fmt, ...)
         return;
     }
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_LOG_SRC, level, buf);
 }
@@ -171,7 +171,7 @@ void mprError(cchar *fmt, ...)
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
     mprBreakpoint();
@@ -184,7 +184,7 @@ void mprWarn(cchar *fmt, ...)
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_ERROR_MSG | MPR_WARN_SRC, 0, buf);
     mprBreakpoint();
@@ -200,7 +200,7 @@ void mprMemoryError(cchar *fmt, ...)
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, "Memory allocation error");
     } else {
         va_start(args, fmt);
-        mprSprintfv(buf, sizeof(buf), fmt, args);
+        fmtv(buf, sizeof(buf), fmt, args);
         va_end(args);
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
     }
@@ -213,7 +213,7 @@ void mprUserError(cchar *fmt, ...)
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_USER_MSG | MPR_ERROR_SRC, 0, buf);
 }
@@ -225,7 +225,7 @@ void mprFatalError(cchar *fmt, ...)
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_USER_MSG | MPR_FATAL_SRC, 0, buf);
     exit(2);
@@ -241,7 +241,7 @@ void mprStaticError(cchar *fmt, ...)
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
 #if BIT_UNIX_LIKE || VXWORKS
     if (write(2, (char*) buf, slen(buf)) < 0) {}
@@ -323,23 +323,23 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         msg++;
     }
     if (flags & MPR_LOG_SRC) {
-        mprSprintf(buf, sizeof(buf), "%s: %d: %s\n", prefix, level, msg);
+        fmt(buf, sizeof(buf), "%s: %d: %s\n", prefix, level, msg);
         mprWriteFileString(file, buf);
 
     } else if (flags & (MPR_WARN_SRC | MPR_ERROR_SRC)) {
         if (flags & MPR_WARN_SRC) {
-            mprSprintf(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
+            fmt(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
         } else {
-            mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
+            fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         }
 #if BIT_WIN_LIKE || BIT_UNIX_LIKE
         mprWriteToOsLog(buf, flags, level);
 #endif
-        mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
+        fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         mprWriteFileString(file, buf);
 
     } else if (flags & MPR_FATAL_SRC) {
-        mprSprintf(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
+        fmt(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
         mprWriteToOsLog(buf, flags, level);
         mprWriteFileString(file, buf);
         

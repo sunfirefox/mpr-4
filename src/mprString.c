@@ -241,25 +241,25 @@ bool sends(cchar *str, cchar *suffix)
 }
 
 
-char *sfmt(cchar *fmt, ...)
+char *sfmt(cchar *format, ...)
 {
     va_list     ap;
     char        *buf;
 
-    if (fmt == 0) {
-        fmt = "%s";
+    if (format == 0) {
+        format = "%s";
     }
-    va_start(ap, fmt);
-    buf = mprAsprintfv(fmt, ap);
+    va_start(ap, format);
+    buf = mprAsprintfv(format, ap);
     va_end(ap);
     return buf;
 }
 
 
-char *sfmtv(cchar *fmt, va_list arg)
+char *sfmtv(cchar *format, va_list arg)
 {
-    mprAssert(fmt);
-    return mprAsprintfv(fmt, arg);
+    mprAssert(format);
+    return mprAsprintfv(format, arg);
 }
 
 
@@ -549,7 +549,7 @@ ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
     mprAssert(0 <= count && count < MAXINT);
     mprAssert(0 < destMax && destMax < MAXINT);
 
-    //  OPT need snlen(src, count);
+    //  OPT use strnlen(src, count);
     len = slen(src);
     len = min(len, count);
     if (destMax <= len) {

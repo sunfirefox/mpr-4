@@ -277,11 +277,11 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
     if (mprLookupModule(base)) {
         return 0;
     }
-    mprSprintf(entry, sizeof(entry), "%sInit", base);
+    fmt(entry, sizeof(entry), "%sInit", base);
     if (fileName[0] == '/' || (*fileName && fileName[1] == ':')) {
-        mprSprintf(path, sizeof(path), "%s%s", fileName, BIT_SHOBJ);
+        fmt(path, sizeof(path), "%s%s", fileName, BIT_SHOBJ);
     } else {
-        mprSprintf(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
+        fmt(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
     }
     if ((mp = mprCreateModule(base, path, entry, sp)) == 0) {
         mprError("Can't create module %s", path);
@@ -324,7 +324,7 @@ int mprRunTests(MprTestService *sp)
         Create worker threads for each test thread. 
      */
     for (i = 0; i < sp->numThreads; i++) {
-        mprSprintf(tName, sizeof(tName), "test.%d", i);
+        fmt(tName, sizeof(tName), "test.%d", i);
         if ((lp = copyGroups(sp, sp->groups)) == 0) {
             mprAssert(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
@@ -537,7 +537,7 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
     if (parent) {
         gp->dispatcher = parent->dispatcher;
     } else {
-        mprSprintf(name, sizeof(name), "Test-%d", counter++);
+        fmt(name, sizeof(name), "Test-%d", counter++);
         gp->dispatcher = mprCreateDispatcher(name, 1);
     }
 
@@ -822,7 +822,7 @@ static char *getErrorMessage(MprTestGroup *gp)
     errorMsg = sclone("");
     fp = mprGetNextItem(gp->failures, &next);
     while (fp) {
-        mprSprintf(msg, sizeof(msg), "Failure in %s\nAssertion: \"%s\"\n", fp->loc, fp->message);
+        fmt(msg, sizeof(msg), "Failure in %s\nAssertion: \"%s\"\n", fp->loc, fp->message);
         if ((errorMsg = sjoin(errorMsg, msg, NULL)) == NULL) {
             break;
         }

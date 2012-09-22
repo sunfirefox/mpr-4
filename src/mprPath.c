@@ -592,7 +592,7 @@ static MprList *getDirFiles(cchar *dir, int flags)
         }
         /* dp->lastModified = (uint) findData.ftLastWriteTime.dwLowDateTime; */
 
-        if (mprSprintf(pbuf, sizeof(pbuf), "%s%c%s", dir, seps[0], dp->name) < 0) {
+        if (fmt(pbuf, sizeof(pbuf), "%s%c%s", dir, seps[0], dp->name) < 0) {
             dp->lastModified = 0;
         } else {
             mprGetPathInfo(pbuf, &fileInfo);

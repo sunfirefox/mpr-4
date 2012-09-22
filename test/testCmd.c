@@ -66,7 +66,7 @@ static void testRunCmd(MprTestGroup *gp)
     /*
         runProgram reads from the input, so it requires stdin to be connected
      */
-    mprSprintf(command, sizeof(command), "%s 0", tc->program);
+    fmt(command, sizeof(command), "%s 0", tc->program);
     status = mprRunCmd(tc->cmd, command, NULL, &result, NULL, -1, MPR_CMD_IN);
     assert(result != NULL);
     assert(status == 0);
@@ -195,7 +195,7 @@ static void testWithData(MprTestGroup *gp)
     assert(fd > 0);
 
     for (i = 0; i < 10; i++) {
-        mprSprintf(line, sizeof(line), "line %d\n", i);
+        fmt(line, sizeof(line), "line %d\n", i);
         len = (int) strlen(line);
         rc = write(fd, line, (wsize) len);
         assert(rc == len);
@@ -224,7 +224,7 @@ static void testWithData(MprTestGroup *gp)
         assert(match(s, "CMD_ENV=xyz") == 0);
 
         for (i = 0; i < 10; i++) { 
-            mprSprintf(line, sizeof(line), "line %d", i);
+            fmt(line, sizeof(line), "line %d", i);
             s = stok(0, "\n\r", &tok);
             assert(s != 0);
             assert(match(s, line) == 0);
@@ -251,7 +251,7 @@ static void testExitCode(MprTestGroup *gp)
     assert(tc->cmd != 0);
 
     for (i = 0; i < 1; i++) {
-        mprSprintf(command, sizeof(command), "%s %d", tc->program, i);
+        fmt(command, sizeof(command), "%s %d", tc->program, i);
         status = mprRunCmd(tc->cmd, command, NULL, &result, NULL, -1, MPR_CMD_IN);
         assert(result != NULL);
         assert(status == i);
@@ -277,7 +277,7 @@ static void testNoCapture(MprTestGroup *gp)
     tc->cmd = mprCreateCmd(gp->dispatcher);
     assert(tc->cmd != 0);
 
-    mprSprintf(command, sizeof(command), "%s 99", tc->program);
+    fmt(command, sizeof(command), "%s 99", tc->program);
     status = mprRunCmd(tc->cmd, command, NULL, NULL, NULL, -1, MPR_CMD_IN);
     assert(status == 99);
 
@@ -304,7 +304,7 @@ static void testMultiple(MprTestGroup *gp)
         mprAddRoot(cmds[i]);
     }
     for (i = 0; i < CMD_COUNT; i++) {
-        mprSprintf(command, sizeof(command), "%s 99", tc->program);
+        fmt(command, sizeof(command), "%s 99", tc->program);
         status = mprRunCmd(cmds[i], command, NULL, NULL, NULL, -1, MPR_CMD_IN);
         assert(status == 99);
         status = mprGetCmdExitStatus(cmds[i]);
