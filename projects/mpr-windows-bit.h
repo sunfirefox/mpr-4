@@ -36,9 +36,6 @@
 #ifndef BIT_MANAGER
     #define BIT_MANAGER "manager"
 #endif
-#ifndef BIT_MINIMAL
-    #define BIT_MINIMAL "doxygen,dsi,man,man2html,pmaker,ssl"
-#endif
 #ifndef BIT_OPTIONAL
     #define BIT_OPTIONAL "doxygen,dsi,ejs,http,man,man2html,md5,matrixssl,openssl,ssl,utest"
 #endif
@@ -53,6 +50,12 @@
 #endif
 #ifndef BIT_VERSION
     #define BIT_VERSION "4.0.1"
+#endif
+#ifndef BIT_WITHOUT_ALL
+    #define BIT_WITHOUT_ALL "doxygen,dsi,man,man2html,pmaker,ssl,openssl,matrixssl"
+#endif
+#ifndef BIT_WITHOUT_OWN
+    #define BIT_WITHOUT_OWN "doxygen,dsi,man,man2html,pmaker,matrixssl"
 #endif
 
 /* Prefixes */

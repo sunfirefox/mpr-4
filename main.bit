@@ -24,7 +24,8 @@ Bit.load({
         float: true,
         manager: 'manager',
         '+optional': [ 'doxygen', 'dsi', 'ejs', 'http', 'man', 'man2html', 'md5', 'matrixssl', 'openssl', 'ssl', 'utest' ],
-        minimal: ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl'],
+        'without-all': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl', 'openssl', 'matrixssl'],
+        'without-own': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'matrixssl'],
     },
 
     usage: {
