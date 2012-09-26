@@ -182,8 +182,8 @@ int mprInitWindow()
     if (ws->hwnd) {
         return 0;
     }
-	name = wide(mprGetAppName());
-	title = wide(mprGetAppTitle());
+	name = (wchar*) wide(mprGetAppName());
+	title = (wchar*) wide(mprGetAppTitle());
     wc.style            = CS_HREDRAW | CS_VREDRAW;
     wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
