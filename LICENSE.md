@@ -105,7 +105,8 @@ NO WARRANTY
 Third Party Components
 ---
 
-1) MatrixSSL. The MatrixSSL interface contains some licensed code from PeerSec. MatrixSSL is an optional component.
+1) MatrixSSL. The MatrixSSL interface contains some commercially licensed code from PeerSec. 
+   MatrixSSL is an optional component.
 
 2) Hashing algorithm inspired by Paul Hsieh at http://www.azillionmonkeys.com/qed/hash.html.
 
@@ -144,6 +145,9 @@ Third Party Components
     
     These notices must be retained in any copies of any part of this documentation and/or software.
     
+5. SHA1 routine
+    Copyright (c) 2007, Cameron Rich. BSD license.
+
 Contributors have provided other portions of the software that are covered by the Embedthis Contributor license that grants Embedthis sufficient rights to execute this license Agreement.
 
 Trademarks and Copyrights

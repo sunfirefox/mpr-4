@@ -480,12 +480,17 @@ static void disconnectSocket(MprSocket *sp)
          */
         mprLog(6, "Disconnect socket %d", sp->fd);
         mprSetSocketBlockingMode(sp, 0);
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < 16; i++) {
             if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
                 break;
             }
         }
         shutdown(sp->fd, SHUT_RDWR);
+        for (i = 0; i < 16; i++) {
+            if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
+                break;
+            }
+        }
         fd = sp->fd;
         sp->flags |= MPR_SOCKET_EOF;
         mprRecallWaitHandlerByFd(fd);
