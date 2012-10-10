@@ -539,9 +539,7 @@ static void closeSocket(MprSocket *sp, bool gracefully)
         mprLog(6, "Close socket %d, graceful %d", sp->fd, gracefully);
         if (gracefully) {
             mprSetSocketBlockingMode(sp, 0);
-            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) {
-                ;
-            }
+            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) { }
         }
         if (shutdown(sp->fd, SHUT_RDWR) == 0) {
             if (gracefully) {
