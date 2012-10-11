@@ -61,7 +61,7 @@
     #define BIT_PRODUCT "mpr"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "compiler,link"
+    #define BIT_REQUIRED "compiler,lib,link"
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Multithreaded Portable Runtime"
@@ -168,6 +168,9 @@
 #endif
 #ifndef BIT_PACK_HTTP
     #define BIT_PACK_HTTP 1
+#endif
+#ifndef BIT_PACK_LIB
+    #define BIT_PACK_LIB 1
 #endif
 #ifndef BIT_PACK_LINK
     #define BIT_PACK_LINK 1

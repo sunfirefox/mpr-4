@@ -443,7 +443,7 @@ $(CONFIG)/obj/benchMpr.o: \
 $(CONFIG)/bin/benchMpr:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/benchMpr.o
-	$(CC) -o $(CONFIG)/bin/benchMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LIBS) -lmpr
+	$(CC) -o $(CONFIG)/bin/benchMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/runProgram.o: \
         test/runProgram.c \
@@ -477,7 +477,7 @@ $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/obj/mprMatrixssl.o \
         $(CONFIG)/obj/mprOpenssl.o \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.0.1 -current_version 4.0.1 -compatibility_version 4.0.1 -current_version 4.0.1 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprMatrixssl.o $(CONFIG)/obj/mprOpenssl.o $(CONFIG)/obj/mprSsl.o $(LIBS) -lmpr
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.0.1 -current_version 4.0.1 -compatibility_version 4.0.1 -current_version 4.0.1 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprMatrixssl.o $(CONFIG)/obj/mprOpenssl.o $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/testArgv.o: \
         test/testArgv.c \
@@ -602,7 +602,7 @@ $(CONFIG)/bin/testMpr:  \
         $(CONFIG)/obj/testThread.o \
         $(CONFIG)/obj/testTime.o \
         $(CONFIG)/obj/testUnicode.o
-	$(CC) -o $(CONFIG)/bin/testMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBS) -lmpr -lmprssl
+	$(CC) -o $(CONFIG)/bin/testMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o -lmprssl -lmpr $(LIBS)
 
 $(CONFIG)/obj/manager.o: \
         src/manager.c \
@@ -613,7 +613,7 @@ $(CONFIG)/obj/manager.o: \
 $(CONFIG)/bin/manager:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/manager.o
-	$(CC) -o $(CONFIG)/bin/manager -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS) -lmpr
+	$(CC) -o $(CONFIG)/bin/manager -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/makerom.o: \
         src/utils/makerom.c \
@@ -624,7 +624,7 @@ $(CONFIG)/obj/makerom.o: \
 $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/makerom.o
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS) -lmpr
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/charGen.o: \
         src/utils/charGen.c \
@@ -635,5 +635,5 @@ $(CONFIG)/obj/charGen.o: \
 $(CONFIG)/bin/chargen:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/charGen.o
-	$(CC) -o $(CONFIG)/bin/chargen -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBS) -lmpr
+	$(CC) -o $(CONFIG)/bin/chargen -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o -lmpr $(LIBS)
 
