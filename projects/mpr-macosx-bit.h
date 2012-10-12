@@ -37,7 +37,7 @@
     #define BIT_HAS_MTUNE 1
 #endif
 #ifndef BIT_HAS_PAM
-    #define BIT_HAS_PAM 0
+    #define BIT_HAS_PAM 1
 #endif
 #ifndef BIT_HAS_STACK_PROTECTOR
     #define BIT_HAS_STACK_PROTECTOR 1
@@ -70,10 +70,10 @@
     #define BIT_VERSION "4.0.1"
 #endif
 #ifndef BIT_WARN64TO32
-    #define BIT_WARN64TO32 0
+    #define BIT_WARN64TO32 1
 #endif
 #ifndef BIT_WARN_UNUSED
-    #define BIT_WARN_UNUSED 0
+    #define BIT_WARN_UNUSED 1
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "doxygen,dsi,man,man2html,pmaker,ssl,openssl,matrixssl"
@@ -185,7 +185,7 @@
     #define BIT_PACK_MATRIXSSL 0
 #endif
 #ifndef BIT_PACK_MD5
-    #define BIT_PACK_MD5 0
+    #define BIT_PACK_MD5 1
 #endif
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 0
