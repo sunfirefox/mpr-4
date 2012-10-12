@@ -121,8 +121,8 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libmprssl.lib;libmpr.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;..\packages-windows-x86\openssl\openssl-1.0.1b\out32dll;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    <AdditionalDependencies>libmprssl.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
 
