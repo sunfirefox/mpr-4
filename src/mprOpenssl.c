@@ -88,7 +88,7 @@ static DH       *get_dh1024();
 /*
     Create the Openssl module. This is called only once
  */
-int mprCreateOpenSslModule()
+PUBLIC int mprCreateOpenSslModule()
 {
     RandBuf     randBuf;
     int         i;
@@ -894,7 +894,7 @@ static DH *get_dh1024()
 }
 
 #else
-int mprCreateOpenSslModule() { return -1; }
+PUBLIC int mprCreateOpenSslModule() { return -1; }
 #endif /* BIT_PACK_OPENSSL */
 
 /*

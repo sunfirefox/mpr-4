@@ -4,38 +4,38 @@
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
-#if VXWORKS
 /********************************* Includes ***********************************/
 
 #include    "mpr.h"
 
+#if VXWORKS
 /*********************************** Code *************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     return 0;
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     return 0;
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
 }
 
 
-int access(const char *path, int mode)
+PUBLIC int access(const char *path, int mode)
 {
     struct stat sbuf;
     return stat((char*) path, &sbuf);
 }
 
 
-int mprGetRandomBytes(char *buf, int length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 {
     int     i;
 
@@ -46,7 +46,7 @@ int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
-int mprLoadNativeModule(MprModule *mp)
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     SYM_TYPE        symType;
@@ -103,14 +103,14 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
     unldByModuleId((MODULE_ID) mp->handle, 0);
     return 0;
 }
 
 
-void mprNap(MprTime milliseconds)
+PUBLIC void mprNap(MprTime milliseconds)
 {
     struct timespec timeout;
     int             rc;
@@ -124,7 +124,7 @@ void mprNap(MprTime milliseconds)
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTime timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -132,27 +132,27 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
 }
 
 
-uint mprGetpid(void) {
+PUBLIC uint mprGetpid(void) {
     return taskIdSelf();
 }
 
 
-int fsync(int fd) { 
+PUBLIC int fsync(int fd) { 
     return 0; 
 }
 
 
-int ftruncate(int fd, off_t offset) { 
+PUBLIC int ftruncate(int fd, off_t offset) { 
     return 0; 
 }
 
 
-int usleep(uint msec)
+PUBLIC int usleep(uint msec)
 {
     struct timespec     timeout;
     int                 rc;
@@ -166,7 +166,7 @@ int usleep(uint msec)
 }
 
 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     return 0;
 }
@@ -186,7 +186,7 @@ double  __mpr_floating_point_resolution(double a, double b, int64 c, int64 d, ui
 
 
 #else
-void stubMprVxWorks() {}
+PUBLIC void stubMprVxWorks() {}
 #endif /* VXWORKS */
 
 /*

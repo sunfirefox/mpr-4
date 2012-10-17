@@ -18,7 +18,7 @@ static void manageFile(MprFile *file, int flags);
 
 /************************************ Code ************************************/
 
-MprFile *mprAttachFileFd(int fd, cchar *name, int omode)
+PUBLIC MprFile *mprAttachFileFd(int fd, cchar *name, int omode)
 {
     MprFileSystem   *fs;
     MprFile         *file;
@@ -50,7 +50,7 @@ static void manageFile(MprFile *file, int flags)
 }
 
 
-int mprFlushFile(MprFile *file)
+PUBLIC int mprFlushFile(MprFile *file)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
@@ -80,31 +80,31 @@ int mprFlushFile(MprFile *file)
 }
 
 
-MprOff mprGetFilePosition(MprFile *file)
+PUBLIC MprOff mprGetFilePosition(MprFile *file)
 {
     return file->pos;
 }
 
 
-MprOff mprGetFileSize(MprFile *file)
+PUBLIC MprOff mprGetFileSize(MprFile *file)
 {
     return file->size;
 }
 
 
-MprFile *mprGetStderr()
+PUBLIC MprFile *mprGetStderr()
 {
     return MPR->stdError;
 }
 
 
-MprFile *mprGetStdin()
+PUBLIC MprFile *mprGetStdin()
 {
     return MPR->stdInput;
 }
 
 
-MprFile *mprGetStdout()
+PUBLIC MprFile *mprGetStdout()
 {
     return MPR->stdOutput;
 }
@@ -113,7 +113,7 @@ MprFile *mprGetStdout()
 /*
     Get a character from the file. This will put the file into buffered mode.
  */
-int mprGetFileChar(MprFile *file)
+PUBLIC int mprGetFileChar(MprFile *file)
 {
     MprBuf      *bp;
     ssize     len;
@@ -180,7 +180,7 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
     Get a string from the file. This will put the file into buffered mode.
     Return NULL on eof.
  */
-char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
+PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
 {
     MprBuf          *bp;
     MprFileSystem   *fs;
@@ -239,7 +239,7 @@ char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
 }
 
 
-MprFile *mprOpenFile(cchar *path, int omode, int perms)
+PUBLIC MprFile *mprOpenFile(cchar *path, int omode, int perms)
 {
     MprFileSystem   *fs;
     MprFile         *file;
@@ -265,7 +265,7 @@ MprFile *mprOpenFile(cchar *path, int omode, int perms)
 }
 
 
-int mprCloseFile(MprFile *file)
+PUBLIC int mprCloseFile(MprFile *file)
 {
     MprFileSystem   *fs;
 
@@ -280,7 +280,7 @@ int mprCloseFile(MprFile *file)
 /*
     Put a string to the file. This will put the file into buffered mode.
  */
-ssize mprPutFileString(MprFile *file, cchar *str)
+PUBLIC ssize mprPutFileString(MprFile *file, cchar *str)
 {
     MprBuf  *bp;
     ssize   total, bytes, count;
@@ -329,7 +329,7 @@ ssize mprPutFileString(MprFile *file, cchar *str)
 /*
     Peek at a character from the file without disturbing the read position. This will put the file into buffered mode.
  */
-int mprPeekFileChar(MprFile *file)
+PUBLIC int mprPeekFileChar(MprFile *file)
 {
     MprBuf      *bp;
     ssize       len;
@@ -360,7 +360,7 @@ int mprPeekFileChar(MprFile *file)
 /*
     Put a character to the file. This will put the file into buffered mode.
  */
-ssize mprPutFileChar(MprFile *file, int c)
+PUBLIC ssize mprPutFileChar(MprFile *file, int c)
 {
     mprAssert(file);
 
@@ -379,7 +379,7 @@ ssize mprPutFileChar(MprFile *file, int c)
 }
 
 
-ssize mprReadFile(MprFile *file, void *buf, ssize size)
+PUBLIC ssize mprReadFile(MprFile *file, void *buf, ssize size)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
@@ -417,7 +417,7 @@ ssize mprReadFile(MprFile *file, void *buf, ssize size)
 }
 
 
-MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
+PUBLIC MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
 {
     MprFileSystem   *fs;
 
@@ -459,7 +459,7 @@ MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
 }
 
 
-int mprTruncateFile(cchar *path, MprOff size)
+PUBLIC int mprTruncateFile(cchar *path, MprOff size)
 {
     MprFileSystem   *fs;
 
@@ -472,7 +472,7 @@ int mprTruncateFile(cchar *path, MprOff size)
 }
 
 
-ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
+PUBLIC ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
@@ -512,13 +512,13 @@ ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
 }
 
 
-ssize mprWriteFileString(MprFile *file, cchar *str)
+PUBLIC ssize mprWriteFileString(MprFile *file, cchar *str)
 {
     return mprWriteFile(file, str, slen(str));
 }
 
 
-ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...)
+PUBLIC ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -562,7 +562,7 @@ static ssize fillBuf(MprFile *file)
 /*
     Enable and control file buffering
  */
-int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
+PUBLIC int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
 {
     mprAssert(file);
 
@@ -585,14 +585,14 @@ int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
 }
 
 
-void mprDisableFileBuffering(MprFile *file)
+PUBLIC void mprDisableFileBuffering(MprFile *file)
 {
     mprFlushFile(file);
     file->buf = 0;
 }
 
 
-int mprGetFileFd(MprFile *file)
+PUBLIC int mprGetFileFd(MprFile *file)
 {
     return file->fd;
 }

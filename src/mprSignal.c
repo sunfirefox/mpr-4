@@ -20,7 +20,7 @@ static void unhookSignal(int signo);
 
 /************************************ Code ************************************/
 
-MprSignalService *mprCreateSignalService()
+PUBLIC MprSignalService *mprCreateSignalService()
 {
     MprSignalService    *ssp;
 
@@ -45,7 +45,7 @@ static void manageSignalService(MprSignalService *ssp, int flags)
 }
 
 
-void mprStopSignalService()
+PUBLIC void mprStopSignalService()
 {
     int     i;
 
@@ -139,7 +139,7 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
 /*
     Called by mprServiceEvents after a signal has been received. Create an event and queue on the appropriate dispatcher
  */
-void mprServiceSignals()
+PUBLIC void mprServiceSignals()
 {
     MprSignalService    *ssp;
     MprSignal           *sp;
@@ -241,7 +241,7 @@ static void unlinkSignalHandler(MprSignal *sp)
     normal async-safe strictures of normal signal handlers. This manages a next of signal handlers and ensures
     that prior handlers will be called appropriately.
  */
-MprSignal *mprAddSignalHandler(int signo, void *handler, void *data, MprDispatcher *dispatcher, int flags)
+PUBLIC MprSignal *mprAddSignalHandler(int signo, void *handler, void *data, MprDispatcher *dispatcher, int flags)
 {
     MprSignal           *sp;
 
@@ -276,7 +276,7 @@ static void manageSignal(MprSignal *sp, int flags)
 }
 
 
-void mprRemoveSignalHandler(MprSignal *sp)
+PUBLIC void mprRemoveSignalHandler(MprSignal *sp)
 {
     if (sp) {
         unlinkSignalHandler(sp);
@@ -294,7 +294,7 @@ void mprRemoveSignalHandler(MprSignal *sp)
         SIGUSR2 - toggle trace level (Appweb)
         All others - default exit
  */
-void mprAddStandardSignals()
+PUBLIC void mprAddStandardSignals()
 {
     MprSignalService    *ssp;
 

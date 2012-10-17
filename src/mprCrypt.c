@@ -157,7 +157,7 @@ static void shaProcess(MprSha *sha);
 
 /*********************************** Code *************************************/
 
-int mprRandom()
+PUBLIC int mprRandom()
 {
 #if WINDOWS || VXWORKS
     return rand();
@@ -171,7 +171,7 @@ int mprRandom()
     Decode a null terminated string and returns a null terminated string.
     Stops decoding at the end of string or '='
  */
-char *mprDecode64(cchar *s)
+PUBLIC char *mprDecode64(cchar *s)
 {
     return mprDecode64Block(s, NULL, MPR_DECODE_TOKEQ);
 }
@@ -181,7 +181,7 @@ char *mprDecode64(cchar *s)
     Decode a null terminated string and return a block with length.
     Stops decoding at the end of the block or '=' if MPR_DECODE_TOKEQ is specified.
  */
-char *mprDecode64Block(cchar *s, ssize *len, int flags)
+PUBLIC char *mprDecode64Block(cchar *s, ssize *len, int flags)
 {
     uint    bitBuf;
     char    *buffer, *bp;
@@ -225,7 +225,7 @@ char *mprDecode64Block(cchar *s, ssize *len, int flags)
     Encode a null terminated string.
     Returns a null terminated block
  */
-char *mprEncode64(cchar *s)
+PUBLIC char *mprEncode64(cchar *s)
 {
     return mprEncode64Block(s, slen(s));
 }
@@ -235,7 +235,7 @@ char *mprEncode64(cchar *s)
     Encode a block of a given length
     Returns a null terminated block
  */
-char *mprEncode64Block(cchar *s, ssize len)
+PUBLIC char *mprEncode64Block(cchar *s, ssize len)
 {
     uint    shiftbuf;
     char    *buffer, *bp;
@@ -269,7 +269,7 @@ char *mprEncode64Block(cchar *s, ssize len)
 }
 
 
-char *mprGetMD5(cchar *s)
+PUBLIC char *mprGetMD5(cchar *s)
 {
     return mprGetMD5WithPrefix(s, slen(s), NULL);
 }
@@ -278,7 +278,7 @@ char *mprGetMD5(cchar *s)
 /*
     Return the MD5 hash of a block. Returns allocated string. A prefix for the result can be supplied.
  */
-char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
+PUBLIC char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
 {
     MD5CONTEXT      context;
     uchar           hash[CRYPT_HASH_SIZE];
@@ -503,13 +503,13 @@ static void decode(uint *output, uchar *input, uint len)
 
 /************************************* Sha1 **********************************/
 
-char *mprGetSHA(cchar *s)
+PUBLIC char *mprGetSHA(cchar *s)
 {
     return mprGetSHAWithPrefix(s, slen(s), NULL);
 }
 
 
-char *mprGetSHABase64(cchar *s)
+PUBLIC char *mprGetSHABase64(cchar *s)
 {
     MprSha  sha;
     uchar   hash[SHA_SIZE + 1];
@@ -522,7 +522,7 @@ char *mprGetSHABase64(cchar *s)
 }
 
 
-char *mprGetSHAWithPrefix(cchar *buf, ssize length, cchar *prefix)
+PUBLIC char *mprGetSHAWithPrefix(cchar *buf, ssize length, cchar *prefix)
 {
     MprSha  sha;
     uchar   hash[SHA_SIZE];
@@ -556,7 +556,7 @@ char *mprGetSHAWithPrefix(cchar *buf, ssize length, cchar *prefix)
 }
 
 
-void shaInit(MprSha *sha)
+static void shaInit(MprSha *sha)
 {
     sha->lowLength = 0;
     sha->highLength = 0;
@@ -569,7 +569,7 @@ void shaInit(MprSha *sha)
 }
 
 
-void shaUpdate(MprSha *sha, cuchar *msg, ssize len)
+static void shaUpdate(MprSha *sha, cuchar *msg, ssize len)
 {
     while (len--) {
         sha->block[sha->index++] = (*msg & 0xFF);
@@ -585,7 +585,7 @@ void shaUpdate(MprSha *sha, cuchar *msg, ssize len)
 }
 
 
-void shaFinalize(uchar *digest, MprSha *sha)
+static void shaFinalize(uchar *digest, MprSha *sha)
 {
     int i;
 

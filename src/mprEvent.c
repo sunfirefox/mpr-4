@@ -24,7 +24,7 @@ static void queueEvent(MprEvent *prior, MprEvent *event);
     Create and queue a new event for service. Period is used as the delay before running the event and as the period 
     between events for continuous events.
  */
-MprEvent *mprCreateEventQueue()
+PUBLIC MprEvent *mprCreateEventQueue()
 {
     MprEvent    *queue;
 
@@ -40,7 +40,7 @@ MprEvent *mprCreateEventQueue()
     Create and queue a new event for service. Period is used as the delay before running the event and as the period 
     between events for continuous events.
  */
-MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
 {
     MprEvent    *event;
 
@@ -111,13 +111,14 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
 /*
     Create an interval timer
  */
-MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, 
+    void *data, int flags)
 {
     return mprCreateEvent(dispatcher, name, period, proc, data, MPR_EVENT_CONTINUOUS | flags);
 }
 
 
-void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
+PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
 {
     MprEventService     *es;
     MprEvent            *prior, *q;
@@ -153,7 +154,7 @@ void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
 }
 
 
-void mprRemoveEvent(MprEvent *event)
+PUBLIC void mprRemoveEvent(MprEvent *event)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -174,7 +175,7 @@ void mprRemoveEvent(MprEvent *event)
 }
 
 
-void mprRescheduleEvent(MprEvent *event, MprTime period)
+PUBLIC void mprRescheduleEvent(MprEvent *event, MprTime period)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -197,20 +198,20 @@ void mprRescheduleEvent(MprEvent *event, MprTime period)
 }
 
 
-void mprStopContinuousEvent(MprEvent *event)
+PUBLIC void mprStopContinuousEvent(MprEvent *event)
 {
     event->continuous = 0;
 }
 
 
-void mprRestartContinuousEvent(MprEvent *event)
+PUBLIC void mprRestartContinuousEvent(MprEvent *event)
 {
     event->continuous = 1;
     mprRescheduleEvent(event, event->period);
 }
 
 
-void mprEnableContinuousEvent(MprEvent *event, int enable)
+PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable)
 {
     event->continuous = enable;
 }
@@ -219,7 +220,7 @@ void mprEnableContinuousEvent(MprEvent *event, int enable)
 /*
     Get the next due event from the front of the event queue.
  */
-MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
+PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event, *next;
@@ -243,7 +244,7 @@ MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
 }
 
 
-int mprGetEventCount(MprDispatcher *dispatcher)
+PUBLIC int mprGetEventCount(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event;

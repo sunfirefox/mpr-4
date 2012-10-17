@@ -17,7 +17,7 @@ static void manageModuleService(MprModuleService *ms, int flags);
 /*
     Open the module service
  */
-MprModuleService *mprCreateModuleService()
+PUBLIC MprModuleService *mprCreateModuleService()
 {
     MprModuleService    *ms;
 
@@ -45,7 +45,7 @@ static void manageModuleService(MprModuleService *ms, int flags)
 /*
     Call the start routine for each module
  */
-int mprStartModuleService()
+PUBLIC int mprStartModuleService()
 {
     MprModuleService    *ms;
     MprModule           *mp;
@@ -66,7 +66,7 @@ int mprStartModuleService()
 }
 
 
-void mprStopModuleService()
+PUBLIC void mprStopModuleService()
 {
     MprModuleService    *ms;
     MprModule           *mp;
@@ -82,7 +82,7 @@ void mprStopModuleService()
 }
 
 
-MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
+PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
 {
     MprModuleService    *ms;
     MprModule           *mp;
@@ -120,7 +120,7 @@ static void manageModule(MprModule *mp, int flags)
 }
 
 
-int mprStartModule(MprModule *mp)
+PUBLIC int mprStartModule(MprModule *mp)
 {
     mprAssert(mp);
 
@@ -134,7 +134,7 @@ int mprStartModule(MprModule *mp)
 }
 
 
-int mprStopModule(MprModule *mp)
+PUBLIC int mprStopModule(MprModule *mp)
 {
     mprAssert(mp);
 
@@ -151,7 +151,7 @@ int mprStopModule(MprModule *mp)
 /*
     See if a module is already loaded
  */
-MprModule *mprLookupModule(cchar *name)
+PUBLIC MprModule *mprLookupModule(cchar *name)
 {
     MprModuleService    *ms;
     MprModule           *mp;
@@ -172,7 +172,7 @@ MprModule *mprLookupModule(cchar *name)
 }
 
 
-void *mprLookupModuleData(cchar *name)
+PUBLIC void *mprLookupModuleData(cchar *name)
 {
     MprModule   *module;
 
@@ -183,19 +183,19 @@ void *mprLookupModuleData(cchar *name)
 }
 
 
-void mprSetModuleTimeout(MprModule *module, MprTime timeout)
+PUBLIC void mprSetModuleTimeout(MprModule *module, MprTime timeout)
 {
     module->timeout = timeout;
 }
 
 
-void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
+PUBLIC void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
 {
     module->stop = stop;
 }
 
 
-void mprSetModuleSearchPath(char *searchPath)
+PUBLIC void mprSetModuleSearchPath(char *searchPath)
 {
     MprModuleService    *ms;
 
@@ -208,7 +208,7 @@ void mprSetModuleSearchPath(char *searchPath)
 }
 
 
-cchar *mprGetModuleSearchPath()
+PUBLIC cchar *mprGetModuleSearchPath()
 {
     return MPR->moduleService->searchPath;
 }
@@ -217,7 +217,7 @@ cchar *mprGetModuleSearchPath()
 /*
     Load a module. The module is located by searching for the filename by optionally using the module search path.
  */
-int mprLoadModule(MprModule *mp)
+PUBLIC int mprLoadModule(MprModule *mp)
 {
 #if BIT_HAS_DYN_LOAD
     mprAssert(mp);
@@ -234,7 +234,7 @@ int mprLoadModule(MprModule *mp)
 }
 
 
-int mprUnloadModule(MprModule *mp)
+PUBLIC int mprUnloadModule(MprModule *mp)
 {
     mprLog(6, "Unloading native module %s from %s", mp->name, mp->path);
     if (mprStopModule(mp) < 0) {
@@ -284,7 +284,7 @@ static char *probe(cchar *filename)
 /*
     Search for a module "filename" in the modulePath. Return the result in "result"
  */
-char *mprSearchForModule(cchar *filename)
+PUBLIC char *mprSearchForModule(cchar *filename)
 {
 #if BIT_HAS_DYN_LOAD
     char    *path, *f, *searchPath, *dir, *tok;

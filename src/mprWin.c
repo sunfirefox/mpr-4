@@ -18,7 +18,7 @@
     Initialize the O/S platform layer
  */ 
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     WSADATA     wsaData;
 
@@ -29,31 +29,31 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     return 0;
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
     WSACleanup();
 }
 
 
-long mprGetInst()
+PUBLIC long mprGetInst()
 {
     return (long) MPR->appInstance;
 }
 
 
-HWND mprGetHwnd()
+PUBLIC HWND mprGetHwnd()
 {
     return MPR->waitService->hwnd;
 }
 
 
-int mprGetRandomBytes(char *buf, ssize length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 {
     HCRYPTPROV      prov;
     int             rc;
@@ -70,7 +70,7 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-int mprLoadNativeModule(MprModule *mp)
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     MprPath         info;
@@ -118,7 +118,7 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
     mprAssert(mp->handle);
 
@@ -129,31 +129,31 @@ int mprUnloadNativeModule(MprModule *mp)
 }
 
 
-void mprSetInst(HINSTANCE inst)
+PUBLIC void mprSetInst(HINSTANCE inst)
 {
     MPR->appInstance = inst;
 }
 
 
-void mprSetHwnd(HWND h)
+PUBLIC void mprSetHwnd(HWND h)
 {
     MPR->waitService->hwnd = h;
 }
 
 
-void mprSetSocketMessage(int socketMessage)
+PUBLIC void mprSetSocketMessage(int socketMessage)
 {
     MPR->waitService->socketMessage = socketMessage;
 }
 
 
-void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTime timeout)
 {
     Sleep((int) timeout);
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTime timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -161,7 +161,7 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     HKEY        hkey;
     void        *event;
@@ -264,7 +264,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
 }
 
 
-char *mprReadRegistry(cchar *key, cchar *name)
+PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
 {
     HKEY        top, h;
     char        *value;
@@ -305,7 +305,7 @@ char *mprReadRegistry(cchar *key, cchar *name)
     return value;
 }
 
-int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
+PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 {
     HKEY    top, h, subHandle;
     ulong   disposition;

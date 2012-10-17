@@ -11,7 +11,7 @@
 #if BIT_UNIX_LIKE
 /*********************************** Code *************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     umask(022);
 
@@ -23,7 +23,7 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     /* 
         Open a syslog connection
@@ -37,13 +37,13 @@ int mprStartOsService()
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
     closelog();
 }
 
 
-int mprGetRandomBytes(char *buf, ssize length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 {
     ssize   sofar, rc;
     int     fd;
@@ -67,7 +67,7 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
 
 
 #if BIT_HAS_DYN_LOAD
-int mprLoadNativeModule(MprModule *mp)
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     MprPath         info;
@@ -124,7 +124,7 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
     return dlclose(mp->handle);
 }
@@ -134,7 +134,7 @@ int mprUnloadNativeModule(MprModule *mp)
 /*
     This routine does not yield
  */
-void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTime timeout)
 {
     MprTime         remaining, mark;
     struct timespec t;
@@ -154,7 +154,7 @@ void mprNap(MprTime timeout)
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTime timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -165,7 +165,7 @@ void mprSleep(MprTime timeout)
 /*  
     Write a message in the O/S native log (syslog in the case of linux)
  */
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     int     sflag;
 
@@ -182,13 +182,13 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
 }
 
 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     return 0;
 }
 
 #else
-void stubMprUnix() {}
+PUBLIC void stubMprUnix() {}
 #endif /* BIT_UNIX_LIKE */
 
 /*

@@ -17,7 +17,7 @@ static void logOutput(int flags, int level, cchar *msg);
 /*
     Put first in file so it is easy to locate in a debugger
  */
-void mprBreakpoint()
+PUBLIC void mprBreakpoint()
 {
 #if DEBUG_PAUSE
     {
@@ -33,13 +33,13 @@ void mprBreakpoint()
 }
 
 
-void mprCreateLogService() 
+PUBLIC void mprCreateLogService() 
 {
     MPR->logFile = MPR->stdError;
 }
 
 
-int mprStartLogging(cchar *logSpec, int showConfig)
+PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
 {
     MprFile     *file;
     MprPath     info;
@@ -87,7 +87,7 @@ int mprStartLogging(cchar *logSpec, int showConfig)
 }
 
 
-void mprLogHeader()
+PUBLIC void mprLogHeader()
 {
     mprLog(MPR_CONFIG, "Configuration for %s", mprGetAppTitle());
     mprLog(MPR_CONFIG, "---------------------------------------------");
@@ -102,7 +102,7 @@ void mprLogHeader()
 }
 
 
-int mprBackupLog(cchar *path, int count)
+PUBLIC int mprBackupLog(cchar *path, int count)
 {
     char    *from, *to;
     int     i;
@@ -123,7 +123,7 @@ int mprBackupLog(cchar *path, int count)
 }
 
 
-void mprSetLogBackup(ssize size, int backup, int flags)
+PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 {
     MPR->logBackup = backup;
     MPR->logSize = size;
@@ -131,7 +131,7 @@ void mprSetLogBackup(ssize size, int backup, int flags)
 }
 
 
-void mprLog(int level, cchar *fmt, ...)
+PUBLIC void mprLog(int level, cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -149,7 +149,7 @@ void mprLog(int level, cchar *fmt, ...)
 /*
     RawLog will call alloc. 
  */
-void mprRawLog(int level, cchar *fmt, ...)
+PUBLIC void mprRawLog(int level, cchar *fmt, ...)
 {
     va_list     args;
     char        *buf;
@@ -165,7 +165,7 @@ void mprRawLog(int level, cchar *fmt, ...)
 }
 
 
-void mprError(cchar *fmt, ...)
+PUBLIC void mprError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -178,7 +178,7 @@ void mprError(cchar *fmt, ...)
 }
 
 
-void mprWarn(cchar *fmt, ...)
+PUBLIC void mprWarn(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -191,7 +191,7 @@ void mprWarn(cchar *fmt, ...)
 }
 
 
-void mprMemoryError(cchar *fmt, ...)
+PUBLIC void mprMemoryError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -207,7 +207,7 @@ void mprMemoryError(cchar *fmt, ...)
 }
 
 
-void mprUserError(cchar *fmt, ...)
+PUBLIC void mprUserError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -219,7 +219,7 @@ void mprUserError(cchar *fmt, ...)
 }
 
 
-void mprFatalError(cchar *fmt, ...)
+PUBLIC void mprFatalError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -235,7 +235,7 @@ void mprFatalError(cchar *fmt, ...)
 /*
     Handle an error without allocating memory. Bypasses the logging mechanism.
  */
-void mprStaticError(cchar *fmt, ...)
+PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -254,7 +254,7 @@ void mprStaticError(cchar *fmt, ...)
 }
 
 
-void mprAssureError(cchar *loc, cchar *msg)
+PUBLIC void mprAssureError(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
     char    buf[MPR_MAX_LOG];
@@ -353,7 +353,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
 /*
     Return the raw O/S error code
  */
-int mprGetOsError()
+PUBLIC int mprGetOsError()
 {
 #if BIT_WIN_LIKE
     int     rc;
@@ -377,7 +377,7 @@ int mprGetOsError()
 /*
     Return the mapped (portable, Posix) error code
  */
-int mprGetError()
+PUBLIC int mprGetError()
 {
 #if !BIT_WIN_LIKE
     return mprGetOsError();
@@ -442,7 +442,7 @@ int mprGetError()
 }
 
 
-int mprGetLogLevel()
+PUBLIC int mprGetLogLevel()
 {
     Mpr     *mpr;
 
@@ -452,31 +452,31 @@ int mprGetLogLevel()
 }
 
 
-MprLogHandler mprGetLogHandler()
+PUBLIC MprLogHandler mprGetLogHandler()
 {
     return MPR->logHandler;
 }
 
 
-int mprUsingDefaultLogHandler()
+PUBLIC int mprUsingDefaultLogHandler()
 {
     return MPR->logHandler == defaultLogHandler;
 }
 
 
-MprFile *mprGetLogFile()
+PUBLIC MprFile *mprGetLogFile()
 {
     return MPR->logFile;
 }
 
 
-void mprSetLogHandler(MprLogHandler handler)
+PUBLIC void mprSetLogHandler(MprLogHandler handler)
 {
     MPR->logHandler = handler;
 }
 
 
-void mprSetLogFile(MprFile *file)
+PUBLIC void mprSetLogFile(MprFile *file)
 {
     if (file != MPR->logFile && MPR->logFile != MPR->stdOutput && MPR->logFile != MPR->stdError) {
         mprCloseFile(MPR->logFile);
@@ -485,13 +485,13 @@ void mprSetLogFile(MprFile *file)
 }
 
 
-void mprSetLogLevel(int level)
+PUBLIC void mprSetLogLevel(int level)
 {
     MPR->logLevel = level;
 }
 
 
-bool mprSetCmdlineLogging(bool on)
+PUBLIC bool mprSetCmdlineLogging(bool on)
 {
     bool    wasLogging;
 
@@ -501,7 +501,7 @@ bool mprSetCmdlineLogging(bool on)
 }
 
 
-bool mprGetCmdlineLogging()
+PUBLIC bool mprGetCmdlineLogging()
 {
     return MPR->cmdlineLogging;
 }
@@ -511,7 +511,7 @@ bool mprGetCmdlineLogging()
 /*
     Just for conditional breakpoints when debugging in Xcode
  */
-int _cmp(char *s1, char *s2)
+PUBLIC int _cmp(char *s1, char *s2)
 {
     return !strcmp(s1, s2);
 }

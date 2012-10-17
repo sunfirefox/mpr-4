@@ -19,7 +19,7 @@ static void serviceIO(MprWaitService *ws, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     ws->interestMax = MPR_FD_MIN;
     ws->eventsMax = MPR_FD_MIN;
@@ -49,7 +49,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManageKqueue(MprWaitService *ws, int flags)
+PUBLIC void mprManageKqueue(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->events);
@@ -84,7 +84,7 @@ static int growEvents(MprWaitService *ws)
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct kevent   *kp, *start;
     int             fd;
@@ -137,7 +137,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 {
     struct timespec ts;
     struct kevent   interest[2], events[1];
@@ -179,7 +179,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 {
     struct timespec ts;
     int             rc;
@@ -285,7 +285,7 @@ static void serviceIO(MprWaitService *ws, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -299,7 +299,7 @@ void mprWakeNotifier()
 }
 
 #else
-void stubMprKqueue() {}
+PUBLIC void stubMprKqueue() {}
 #endif /* MPR_EVENT_KQUEUE */
 
 /*

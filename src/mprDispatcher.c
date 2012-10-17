@@ -35,7 +35,7 @@ static bool serviceDispatcher(MprDispatcher *dp);
 /*
     Create the overall dispatch service. There may be many event dispatchers.
  */
-MprEventService *mprCreateEventService()
+PUBLIC MprEventService *mprCreateEventService()
 {
     MprEventService     *es;
 
@@ -73,7 +73,7 @@ static void manageEventService(MprEventService *es, int flags)
 }
 
 
-void mprStopEventService()
+PUBLIC void mprStopEventService()
 {
     mprWakeDispatchers();
     mprWakeNotifier();
@@ -83,7 +83,7 @@ void mprStopEventService()
 /*
     Create a disabled dispatcher. A dispatcher schedules events on a single dispatch queue.
  */
-MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
+PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -106,7 +106,7 @@ MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
 }
 
 
-void mprDestroyDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *q, *event, *next;
@@ -167,7 +167,7 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 }
 
 
-void mprEnableDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     int                 mustWake;
@@ -206,7 +206,7 @@ void mprEnableDispatcher(MprDispatcher *dispatcher)
     @param timeout Time in milliseconds to wait. Set to zero for no wait. Set to -1 to wait forever.
     @returns Zero if not events occurred. Otherwise returns non-zero.
  */
-int mprServiceEvents(MprTime timeout, int flags)
+PUBLIC int mprServiceEvents(MprTime timeout, int flags)
 {
     MprEventService     *es;
     MprDispatcher       *dp;
@@ -279,7 +279,7 @@ int mprServiceEvents(MprTime timeout, int flags)
     WARNING: this will enable GC while sleeping
     Return Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
  */
-int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
+PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
 {
     MprEventService     *es;
     MprTime             expires, delay;
@@ -365,7 +365,7 @@ int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
 }
 
 
-void mprWakeDispatchers()
+PUBLIC void mprWakeDispatchers()
 {
     MprEventService     *es;
     MprDispatcher       *runQ, *dp;
@@ -382,7 +382,7 @@ void mprWakeDispatchers()
 }
 
 
-int mprDispatchersAreIdle()
+PUBLIC int mprDispatchersAreIdle()
 {
     MprEventService     *es;
     MprDispatcher       *runQ, *dispatcher;
@@ -405,7 +405,7 @@ int mprDispatchersAreIdle()
 /*
     Relay an event to a dispatcher. This invokes the callback proc as though it was invoked from the given dispatcher. 
  */
-void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
+PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *event)
 {
 #if BIT_DEBUG
     MprThread   *tp = mprGetCurrentThread();
@@ -434,7 +434,7 @@ void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, MprEvent *
     the dispatcher is moved to the idleQ. If there is a past-due event, it is moved to the readyQ. If there is a future 
     event pending, it is put on the waitQ.
  */
-void mprScheduleDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event;
@@ -571,14 +571,14 @@ static void serviceDispatcherMain(MprDispatcher *dispatcher)
 }
 
 
-void mprClaimDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprClaimDispatcher(MprDispatcher *dispatcher)
 {
     mprAssert(isRunning(dispatcher));
     dispatcher->owner = mprGetCurrentOsThread();
 }
 
 
-void mprWakePendingDispatchers()
+PUBLIC void mprWakePendingDispatchers()
 {
     mprWakeNotifier();
 }
@@ -796,14 +796,14 @@ static int makeRunnable(MprDispatcher *dispatcher)
 /*
     Designate the required worker thread to run the event
  */
-void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
+PUBLIC void mprDedicateWorkerToDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
 {
     dispatcher->requiredWorker = worker;
     mprDedicateWorker(worker);
 }
 
 
-void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
+PUBLIC void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, MprWorker *worker)
 {
     dispatcher->requiredWorker = 0;
     mprReleaseWorker(worker);
@@ -811,7 +811,7 @@ void mprReleaseWorkerFromDispatcher(MprDispatcher *dispatcher, MprWorker *worker
 #endif
 
 
-void mprSignalDispatcher(MprDispatcher *dispatcher)
+PUBLIC void mprSignalDispatcher(MprDispatcher *dispatcher)
 {
     if (dispatcher == NULL) {
         dispatcher = MPR->dispatcher;
@@ -820,7 +820,7 @@ void mprSignalDispatcher(MprDispatcher *dispatcher)
 }
 
 
-bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
+PUBLIC bool mprDispatcherHasEvents(MprDispatcher *dispatcher)
 {
     if (dispatcher == 0) {
         return 0;

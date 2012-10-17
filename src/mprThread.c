@@ -25,7 +25,7 @@ static void workerMain(MprWorker *worker, MprThread *tp);
 
 /************************************ Code ***********************************/
 
-MprThreadService *mprCreateThreadService()
+PUBLIC MprThreadService *mprCreateThreadService()
 {
     MprThreadService    *ts;
 
@@ -53,7 +53,7 @@ MprThreadService *mprCreateThreadService()
 }
 
 
-void mprStopThreadService()
+PUBLIC void mprStopThreadService()
 {
 }
 
@@ -71,13 +71,13 @@ static void manageThreadService(MprThreadService *ts, int flags)
 }
 
 
-void mprSetThreadStackSize(ssize size)
+PUBLIC void mprSetThreadStackSize(ssize size)
 {
     MPR->threadService->stackSize = size;
 }
 
 
-MprThread *mprGetCurrentThread()
+PUBLIC MprThread *mprGetCurrentThread()
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -103,7 +103,7 @@ MprThread *mprGetCurrentThread()
 }
 
 
-cchar *mprGetCurrentThreadName()
+PUBLIC cchar *mprGetCurrentThreadName()
 {
     MprThread       *tp;
 
@@ -117,7 +117,7 @@ cchar *mprGetCurrentThreadName()
 /*
     Return the current thread object
  */
-void mprSetCurrentThreadPriority(int pri)
+PUBLIC void mprSetCurrentThreadPriority(int pri)
 {
     MprThread       *tp;
 
@@ -131,7 +131,7 @@ void mprSetCurrentThreadPriority(int pri)
 /*
     Create a main thread
  */
-MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize)
+PUBLIC MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize)
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -209,7 +209,7 @@ static int threadProcWrapper(void *data)
 }
 
 #else
-void *threadProcWrapper(void *data) 
+PUBLIC void *threadProcWrapper(void *data) 
 {
     threadProc((MprThread*) data);
     return 0;
@@ -240,7 +240,7 @@ static void threadProc(MprThread *tp)
 /*
     Start a thread
  */
-int mprStartThread(MprThread *tp)
+PUBLIC int mprStartThread(MprThread *tp)
 {
     lock(tp);
 
@@ -294,7 +294,7 @@ int mprStartThread(MprThread *tp)
 }
 
 
-MprOsThread mprGetCurrentOsThread()
+PUBLIC MprOsThread mprGetCurrentOsThread()
 {
 #if BIT_UNIX_LIKE
     return (MprOsThread) pthread_self();
@@ -306,7 +306,7 @@ MprOsThread mprGetCurrentOsThread()
 }
 
 
-void mprSetThreadPriority(MprThread *tp, int newPriority)
+PUBLIC void mprSetThreadPriority(MprThread *tp, int newPriority)
 {
     int     osPri;
 
@@ -345,7 +345,7 @@ static void manageThreadLocal(MprThreadLocal *tls, int flags)
 }
 
 
-MprThreadLocal *mprCreateThreadLocal()
+PUBLIC MprThreadLocal *mprCreateThreadLocal()
 {
     MprThreadLocal      *tls;
 
@@ -370,7 +370,7 @@ MprThreadLocal *mprCreateThreadLocal()
 }
 
 
-int mprSetThreadData(MprThreadLocal *tls, void *value)
+PUBLIC int mprSetThreadData(MprThreadLocal *tls, void *value)
 {
     bool    err;
 
@@ -389,7 +389,7 @@ int mprSetThreadData(MprThreadLocal *tls, void *value)
 }
 
 
-void *mprGetThreadData(MprThreadLocal *tls)
+PUBLIC void *mprGetThreadData(MprThreadLocal *tls)
 {
 #if BIT_UNIX_LIKE
     return pthread_getspecific(tls->key);
@@ -411,7 +411,7 @@ void *mprGetThreadData(MprThreadLocal *tls)
     Warning: +15 will not yield the CPU, -15 may get starved. We should be very wary going above +11.
  */
 
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
     mprAssert(mprPriority >= 0 && mprPriority <= 100);
  
@@ -432,7 +432,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map Windows priority to Mpr priority
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -452,7 +452,7 @@ int mprMapOsPriorityToMpr(int nativePriority)
     Map MPR priority to VxWorks native priority.
  */
 
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
     int     nativePriority;
 
@@ -472,7 +472,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map O/S priority to Mpr priority.
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -491,7 +491,7 @@ int mprMapOsPriorityToMpr(int nativePriority)
 /*
     Map MR priority to linux native priority. Unix priorities range from -19 to +19. Linux does -20 to +19. 
  */
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
     mprAssert(mprPriority >= 0 && mprPriority < 100);
 
@@ -514,7 +514,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map O/S priority to Mpr priority.
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -531,7 +531,7 @@ int mprMapOsPriorityToMpr(int nativePriority)
 #endif /* UNIX */
 
 
-MprWorkerService *mprCreateWorkerService()
+PUBLIC MprWorkerService *mprCreateWorkerService()
 {
     MprWorkerService      *ws;
 
@@ -565,7 +565,7 @@ static void manageWorkerService(MprWorkerService *ws, int flags)
 }
 
 
-int mprStartWorkerService()
+PUBLIC int mprStartWorkerService()
 {
     MprWorkerService    *ws;
 
@@ -579,7 +579,7 @@ int mprStartWorkerService()
 }
 
 
-void mprWakeWorkers()
+PUBLIC void mprWakeWorkers()
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
@@ -605,7 +605,7 @@ void mprWakeWorkers()
 /*
     Define the new minimum number of workers. Pre-allocate the minimum.
  */
-void mprSetMinWorkers(int n)
+PUBLIC void mprSetMinWorkers(int n)
 { 
     MprWorker           *worker;
     MprWorkerService    *ws;
@@ -629,7 +629,7 @@ void mprSetMinWorkers(int n)
 /*
     Define a new maximum number of theads. Prune if currently over the max.
  */
-void mprSetMaxWorkers(int n)
+PUBLIC void mprSetMaxWorkers(int n)
 {
     MprWorkerService  *ws;
 
@@ -647,7 +647,7 @@ void mprSetMaxWorkers(int n)
 }
 
 
-int mprGetMaxWorkers()
+PUBLIC int mprGetMaxWorkers()
 {
     return MPR->workerService->maxThreads;
 }
@@ -656,7 +656,7 @@ int mprGetMaxWorkers()
 /*
     Return the current worker thread object
  */
-MprWorker *mprGetCurrentWorker()
+PUBLIC MprWorker *mprGetCurrentWorker()
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
@@ -678,7 +678,7 @@ MprWorker *mprGetCurrentWorker()
 }
 
 
-void mprActivateWorker(MprWorker *worker, MprWorkerProc proc, void *data)
+PUBLIC void mprActivateWorker(MprWorker *worker, MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
 
@@ -692,13 +692,13 @@ void mprActivateWorker(MprWorker *worker, MprWorkerProc proc, void *data)
 }
 
 
-void mprSetWorkerStartCallback(MprWorkerProc start)
+PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start)
 {
     MPR->workerService->startWorker = start;
 }
 
 
-int mprAvailableWorkers()
+PUBLIC int mprAvailableWorkers()
 {
     MprWorkerService    *ws;
     int                 count;
@@ -711,7 +711,7 @@ int mprAvailableWorkers()
 }
 
 
-int mprStartWorker(MprWorkerProc proc, void *data)
+PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
@@ -786,7 +786,7 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 }
 
 
-int mprGetAvailableWorkers()
+PUBLIC int mprGetAvailableWorkers()
 {
     MprWorkerService  *ws;
 
@@ -809,13 +809,13 @@ static int getNextThreadNum(MprWorkerService *ws)
 /*
     Define a new stack size for new workers. Existing workers unaffected.
  */
-void mprSetWorkerStackSize(int n)
+PUBLIC void mprSetWorkerStackSize(int n)
 {
     MPR->workerService->stackSize = n; 
 }
 
 
-void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
+PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
 {
     mprAssert(ws);
 

@@ -15,7 +15,7 @@
     Format a number as a string. Support radix 10 and 16.
     Count is the length of buf in characters.
  */
-wchar *itow(wchar *buf, ssize count, int64 value, int radix)
+PUBLIC wchar *itow(wchar *buf, ssize count, int64 value, int radix)
 {
     wchar   numBuf[32];
     wchar   *cp, *dp, *endp;
@@ -53,7 +53,7 @@ wchar *itow(wchar *buf, ssize count, int64 value, int radix)
 }
 
 
-wchar *wchr(wchar *str, int c)
+PUBLIC wchar *wchr(wchar *str, int c)
 {
     wchar   *s;
 
@@ -69,7 +69,7 @@ wchar *wchr(wchar *str, int c)
 }
 
 
-int wcasecmp(wchar *s1, wchar *s2)
+PUBLIC int wcasecmp(wchar *s1, wchar *s2)
 {
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -82,7 +82,7 @@ int wcasecmp(wchar *s1, wchar *s2)
 }
 
 
-wchar *wclone(wchar *str)
+PUBLIC wchar *wclone(wchar *str)
 {
     wchar   *result, nullBuf[1];
     ssize   len, size;
@@ -101,7 +101,7 @@ wchar *wclone(wchar *str)
 }
 
 
-int wcmp(wchar *s1, wchar *s2)
+PUBLIC int wcmp(wchar *s1, wchar *s2)
 {
     if (s1 == s2) {
         return 0;
@@ -117,7 +117,7 @@ int wcmp(wchar *s1, wchar *s2)
 /*
     Count is the maximum number of characters to compare
  */
-wchar *wncontains(wchar *str, wchar *pattern, ssize count)
+PUBLIC wchar *wncontains(wchar *str, wchar *pattern, ssize count)
 {
     wchar   *cp, *s1, *s2;
     ssize   lim;
@@ -148,7 +148,7 @@ wchar *wncontains(wchar *str, wchar *pattern, ssize count)
 }
 
 
-wchar *wcontains(wchar *str, wchar *pattern)
+PUBLIC wchar *wcontains(wchar *str, wchar *pattern)
 {
     return wncontains(str, pattern, -1);
 }
@@ -157,7 +157,7 @@ wchar *wcontains(wchar *str, wchar *pattern)
 /*
     count is the size of dest in characters
  */
-ssize wcopy(wchar *dest, ssize count, wchar *src)
+PUBLIC ssize wcopy(wchar *dest, ssize count, wchar *src)
 {
     ssize      len;
 
@@ -175,7 +175,7 @@ ssize wcopy(wchar *dest, ssize count, wchar *src)
 }
 
 
-int wends(wchar *str, wchar *suffix)
+PUBLIC int wends(wchar *str, wchar *suffix)
 {
     if (str == NULL || suffix == NULL) {
         return 0;
@@ -187,7 +187,7 @@ int wends(wchar *str, wchar *suffix)
 }
 
 
-wchar *wfmt(wchar *fmt, ...)
+PUBLIC wchar *wfmt(wchar *fmt, ...)
 {
     va_list     ap;
     char        *mfmt, *mresult;
@@ -202,7 +202,7 @@ wchar *wfmt(wchar *fmt, ...)
 }
 
 
-wchar *wfmtv(wchar *fmt, va_list arg)
+PUBLIC wchar *wfmtv(wchar *fmt, va_list arg)
 {
     char        *mfmt, *mresult;
 
@@ -218,7 +218,7 @@ wchar *wfmtv(wchar *fmt, va_list arg)
     (Based on work by Paul Hsieh, see http://www.azillionmonkeys.com/qed/hash.html)
     Count is the length of name in characters
  */
-uint whash(wchar *name, ssize count)
+PUBLIC uint whash(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
@@ -267,7 +267,7 @@ uint whash(wchar *name, ssize count)
 /*
     Count is the length of name in characters
  */
-uint whashlower(wchar *name, ssize count)
+PUBLIC uint whashlower(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
@@ -313,7 +313,7 @@ uint whashlower(wchar *name, ssize count)
 }
 
 
-wchar *wjoin(wchar *str, ...)
+PUBLIC wchar *wjoin(wchar *str, ...)
 {
     wchar       *result;
     va_list     ap;
@@ -325,7 +325,7 @@ wchar *wjoin(wchar *str, ...)
 }
 
 
-wchar *wjoinv(wchar *buf, va_list args)
+PUBLIC wchar *wjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
     wchar       *dest, *str, *dp, nullBuf[1];
@@ -368,7 +368,7 @@ wchar *wjoinv(wchar *buf, va_list args)
 /*
     Return the length of "s" in characters
  */
-ssize wlen(wchar *s)
+PUBLIC ssize wlen(wchar *s)
 {
     ssize  i;
 
@@ -383,7 +383,7 @@ ssize wlen(wchar *s)
 /*  
     Map a string to lower case 
  */
-wchar *wlower(wchar *str)
+PUBLIC wchar *wlower(wchar *str)
 {
     wchar   *cp, *s;
 
@@ -405,7 +405,7 @@ wchar *wlower(wchar *str)
 /*
     Count is the maximum number of characters to compare
  */
-int wncasecmp(wchar *s1, wchar *s2, ssize count)
+PUBLIC int wncasecmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
@@ -439,7 +439,7 @@ int wncasecmp(wchar *s1, wchar *s2, ssize count)
 /*
     Count is the maximum number of characters to compare
  */
-int wncmp(wchar *s1, wchar *s2, ssize count)
+PUBLIC int wncmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
@@ -475,7 +475,7 @@ int wncmp(wchar *s1, wchar *s2, ssize count)
     the buffer does not overflow. DestCount is the maximum size of dest in characters.
     Returns MPR_ERR_WONT_FIT if the buffer is too small.
  */
-ssize wncopy(wchar *dest, ssize destCount, wchar *src, ssize count)
+PUBLIC ssize wncopy(wchar *dest, ssize destCount, wchar *src, ssize count)
 {
     ssize      len;
 
@@ -502,7 +502,7 @@ ssize wncopy(wchar *dest, ssize destCount, wchar *src, ssize count)
 }
 
 
-wchar *wpbrk(wchar *str, wchar *set)
+PUBLIC wchar *wpbrk(wchar *str, wchar *set)
 {
     wchar   *sp;
     int     count;
@@ -521,7 +521,7 @@ wchar *wpbrk(wchar *str, wchar *set)
 }
 
 
-wchar *wrchr(wchar *str, int c)
+PUBLIC wchar *wrchr(wchar *str, int c)
 {
     wchar   *s;
 
@@ -537,7 +537,7 @@ wchar *wrchr(wchar *str, int c)
 }
 
 
-wchar *wrejoin(wchar *buf, ...)
+PUBLIC wchar *wrejoin(wchar *buf, ...)
 {
     wchar       *result;
     va_list     ap;
@@ -549,7 +549,7 @@ wchar *wrejoin(wchar *buf, ...)
 }
 
 
-wchar *wrejoinv(wchar *buf, va_list args)
+PUBLIC wchar *wrejoinv(wchar *buf, va_list args)
 {
     va_list     ap;
     wchar       *dest, *str, *dp, nullBuf[1];
@@ -583,7 +583,7 @@ wchar *wrejoinv(wchar *buf, va_list args)
 }
 
 
-ssize wspn(wchar *str, wchar *set)
+PUBLIC ssize wspn(wchar *str, wchar *set)
 {
     wchar   *sp;
     int     count;
@@ -605,7 +605,7 @@ ssize wspn(wchar *str, wchar *set)
 }
  
 
-int wstarts(wchar *str, wchar *prefix)
+PUBLIC int wstarts(wchar *str, wchar *prefix)
 {
     if (str == NULL || prefix == NULL) {
         return 0;
@@ -617,13 +617,13 @@ int wstarts(wchar *str, wchar *prefix)
 }
 
 
-int64 wtoi(wchar *str)
+PUBLIC int64 wtoi(wchar *str)
 {
     return wtoiradix(str, 10, NULL);
 }
 
 
-int64 wtoiradix(wchar *str, int radix, int *err)
+PUBLIC int64 wtoiradix(wchar *str, int radix, int *err)
 {
     char    *bp, buf[32];
 
@@ -635,7 +635,7 @@ int64 wtoiradix(wchar *str, int radix, int *err)
 }
 
 
-wchar *wtok(wchar *str, wchar *delim, wchar **last)
+PUBLIC wchar *wtok(wchar *str, wchar *delim, wchar **last)
 {
     wchar   *start, *end;
     ssize   i;
@@ -666,7 +666,7 @@ wchar *wtok(wchar *str, wchar *delim, wchar **last)
 /*
     Count is the length in characters to extract
  */
-wchar *wsub(wchar *str, ssize offset, ssize count)
+PUBLIC wchar *wsub(wchar *str, ssize offset, ssize count)
 {
     wchar   *result;
     ssize   size;
@@ -687,7 +687,7 @@ wchar *wsub(wchar *str, ssize offset, ssize count)
 }
 
 
-wchar *wtrim(wchar *str, wchar *set, int where)
+PUBLIC wchar *wtrim(wchar *str, wchar *set, int where)
 {
     wchar   s;
     ssize   len, i;
@@ -716,7 +716,7 @@ wchar *wtrim(wchar *str, wchar *set, int where)
 /*  
     Map a string to upper case
  */
-char *wupper(wchar *str)
+PUBLIC char *wupper(wchar *str)
 {
     wchar   *cp, *s;
 
@@ -743,7 +743,7 @@ char *wupper(wchar *str)
     invalid unicode sequence was provided in src.
     NOTE: does not allocate.
  */
-ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
+PUBLIC ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
 {
     ssize   len;
 
@@ -785,7 +785,7 @@ ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
     or -1 if an invalid multibyte sequence was provided in src.
     NOTE: does not allocate.
  */
-ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count) 
+PUBLIC ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count) 
 {
     ssize      len;
 
@@ -819,7 +819,7 @@ ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count)
 }
 
 
-wchar *amtow(cchar *src, ssize *lenp)
+PUBLIC wchar *amtow(cchar *src, ssize *lenp)
 {
     wchar   *dest;
     ssize   len;
@@ -840,7 +840,7 @@ wchar *amtow(cchar *src, ssize *lenp)
 
 //  FUTURE UNICODE - need a version that can supply a length
 
-char *awtom(wchar *src, ssize *lenp)
+PUBLIC char *awtom(wchar *src, ssize *lenp)
 {
     char    *dest;
     ssize   len;
@@ -935,7 +935,7 @@ static int isValidUtf8(cuchar *src, int len)
 
 static int offsets[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080UL, 0x03C82080UL, 0xFA082080UL, 0x82082080UL };
 
-ssize xmtow(wchar *dest, ssize destMax, cchar *src, ssize len) 
+PUBLIC ssize xmtow(wchar *dest, ssize destMax, cchar *src, ssize len) 
 {
     wchar   *dp, *dend;
     cchar   *sp, *send;
@@ -1018,7 +1018,7 @@ static cuchar marks[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
    end if
 */
 
-ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
+PUBLIC ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
 {
     wchar   *sp, *send;
     char    *dp, *dend;
@@ -1081,7 +1081,7 @@ ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
 
 #else /* BIT_CHAR_LEN == 1 */
 
-wchar *amtow(cchar *src, ssize *len)
+PUBLIC wchar *amtow(cchar *src, ssize *len)
 {
     if (len) {
         *len = slen(src);
@@ -1090,7 +1090,7 @@ wchar *amtow(cchar *src, ssize *len)
 }
 
 
-char *awtom(wchar *src, ssize *len)
+PUBLIC char *awtom(wchar *src, ssize *len)
 {
     if (len) {
         *len = slen((char*) src);

@@ -21,7 +21,7 @@
 
 static char     *currentDir;            /* Current working directory */
 static MprList  *files;                 /* List of open files */
-int             errno;                  /* Last error */
+PUBLIC int             errno;                  /* Last error */
 static char     timzeone[2][32];        /* Standard and daylight savings zones */
 
 /*
@@ -37,7 +37,7 @@ static void timeToFileTime(uint64 t, FILETIME *ft);
 
 /************************************************ Code **********************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     files = mprCreateList();
     currentDir = sclone("/");
@@ -45,7 +45,7 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     WSADATA     wsaData;
 
@@ -56,13 +56,13 @@ int mprStartOsService()
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
     WSACleanup();
 }
 
 
-int mprGetRandomBytes(char *buf, int length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 {
     HCRYPTPROV      prov;
     int             rc;
@@ -79,7 +79,7 @@ int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
-int mprLoadModule(MprModule *mp)
+PUBLIC int mprLoadModule(MprModule *mp)
     cchar *moduleName, cchar *initFunction)
 {
     MprModuleEntry  fn;
@@ -153,7 +153,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
 }
 
 
-int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
+PUBLIC int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
 {
     HKEY        top, h;
     LPWSTR      wkey, wname;
@@ -199,32 +199,32 @@ int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
 }
 
 
-void mprSetInst(Mpr *mpr, long inst)
+PUBLIC void mprSetInst(Mpr *mpr, long inst)
 {
     mpr->appInstance = inst;
 }
 
 
-void mprSetHwnd(HWND h)
+PUBLIC void mprSetHwnd(HWND h)
 {
     MPR->service->hwnd = h;
 }
 
 
-void mprSetSocketMessage(int socketMessage)
+PUBLIC void mprSetSocketMessage(int socketMessage)
 {
     MPR->service->socketMessage = socketMessage;
 }
 #endif /* WINCE */
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTime timeout)
 {
     Sleep((int) timeout);
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTime timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -232,7 +232,7 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprUnloadNativeModule(MprModule *mp)
+PUBLIC void mprUnloadNativeModule(MprModule *mp)
 {
     mprAssert(mp->handle);
 
@@ -244,7 +244,7 @@ void mprUnloadNativeModule(MprModule *mp)
 
 
 #if KEEP
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     HKEY        hkey;
     void        *event;
@@ -299,7 +299,7 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     }
 }
 
-int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
+PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 {
     HKEY    top, h, subHandle;
     ulong   disposition;
@@ -348,7 +348,7 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 /******************************************* Posix Layer ********************************/
 
-int access(cchar *path, int flags)
+PUBLIC int access(cchar *path, int flags)
 {
     char    *tmpPath;
     int     rc;
@@ -363,21 +363,21 @@ int access(cchar *path, int flags)
 }
 
 
-int chdir(cchar *dir)
+PUBLIC int chdir(cchar *dir)
 {
     currentDir = mprGetAbsPath(MPR, dir);
     return 0;
 }
 
 
-int chmod(cchar *path, int mode)
+PUBLIC int chmod(cchar *path, int mode)
 {
     /* CE has no such permissions */
     return 0;
 }
 
 
-int close(int fd)
+PUBLIC int close(int fd)
 {
     int     rc;
 
@@ -388,31 +388,31 @@ int close(int fd)
 }
 
 
-long _get_osfhandle(int handle)
+PUBLIC long _get_osfhandle(int handle)
 {
     return (long) handle;
 }
 
 
-char *getenv(cchar *key)
+PUBLIC char *getenv(cchar *key)
 {
     return 0;
 }
 
 
-char *getcwd(char *buf, int size)
+PUBLIC char *getcwd(char *buf, int size)
 {
     scopy(buf, size, currentDir);
     return buf;
 }
 
 
-uint getpid() {
+PUBLIC uint getpid() {
     return 0;
 }
 
 
-long lseek(int handle, long offset, int origin)
+PUBLIC long lseek(int handle, long offset, int origin)
 {
     switch (origin) {
         case SEEK_SET: offset = FILE_BEGIN; break;
@@ -423,7 +423,7 @@ long lseek(int handle, long offset, int origin)
 }
 
 
-int mkdir(cchar *dir, int mode)
+PUBLIC int mkdir(cchar *dir, int mode)
 {
     char    *tmpDir;
     uni     *wdir;
@@ -463,13 +463,13 @@ static int addHandle(HANDLE h)
 }
 
 
-int _open_osfhandle(int *handle, int flags)
+PUBLIC int _open_osfhandle(int *handle, int flags)
 {
     return addHandle((HANDLE) handle);
 }
 
 
-uint open(cchar *path, int mode, va_list arg)
+PUBLIC uint open(cchar *path, int mode, va_list arg)
 {
     uni     *wpath;
     char    *tmpPath;
@@ -505,7 +505,7 @@ uint open(cchar *path, int mode, va_list arg)
 }
 
 
-int read(int fd, void *buffer, uint length)
+PUBLIC int read(int fd, void *buffer, uint length)
 {
     DWORD   dw;
 
@@ -514,7 +514,7 @@ int read(int fd, void *buffer, uint length)
 }
 
 
-int rename(cchar *oldname, cchar *newname)
+PUBLIC int rename(cchar *oldname, cchar *newname)
 {
     uni     *from, *to;
     char    *tmpOld, *tmpNew;
@@ -537,7 +537,7 @@ int rename(cchar *oldname, cchar *newname)
 }
 
 
-int rmdir(cchar *dir)
+PUBLIC int rmdir(cchar *dir)
 {
     uni     *wdir;
     char    *tmpDir;
@@ -554,7 +554,7 @@ int rmdir(cchar *dir)
 }
 
 
-int stat(cchar *path, struct stat *sbuf)
+PUBLIC int stat(cchar *path, struct stat *sbuf)
 {
     WIN32_FIND_DATAW    fd;
     DWORD               attributes;
@@ -707,7 +707,7 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
 }
 
 
-time_t mktime(struct tm *tp)
+PUBLIC time_t mktime(struct tm *tp)
 {
     TIME_ZONE_INFORMATION   tz;
     SYSTEMTIME              s;
@@ -742,7 +742,7 @@ time_t mktime(struct tm *tp)
 }
 
 
-int write(int fd, cvoid *buffer, uint count)
+PUBLIC int write(int fd, cvoid *buffer, uint count)
 {
     DWORD   dw;
 
@@ -751,7 +751,7 @@ int write(int fd, cvoid *buffer, uint count)
 }
 
 
-int unlink(cchar *file)
+PUBLIC int unlink(cchar *file)
 {
     uni     *wpath;
     int     rc;
@@ -764,7 +764,7 @@ int unlink(cchar *file)
 
 /********************************************** Windows32 Extensions *********************************************/
 
-WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
+PUBLIC WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
     LPSECURITY_ATTRIBUTES security, DWORD create, DWORD flags, HANDLE template)
 {
     LPWSTR  wpath;
@@ -776,7 +776,7 @@ WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
 }
 
 
-BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LPSECURITY_ATTRIBUTES threadatt,
+PUBLIC BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LPSECURITY_ATTRIBUTES threadatt,
     BOOL options, DWORD flags, LPVOID env, LPSTR dir, LPSTARTUPINFO lpsi, LPPROCESS_INFORMATION info)
 {
     LPWSTR      wapp, wcmd, wdir;
@@ -789,7 +789,7 @@ BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LP
 }
 
 
-HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
+PUBLIC HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 {
     WIN32_FIND_DATAW    wdata;
     LPWSTR              wpath;
@@ -805,7 +805,7 @@ HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 }
 
 
-BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
+PUBLIC BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
 {
     WIN32_FIND_DATAW    wdata;
     char                *file;
@@ -818,7 +818,7 @@ BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
 }
 
 
-DWORD GetFileAttributesA(cchar *path)
+PUBLIC DWORD GetFileAttributesA(cchar *path)
 {
     LPWSTR      wpath;
     DWORD       result;
@@ -829,7 +829,7 @@ DWORD GetFileAttributesA(cchar *path)
 }
 
 
-DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
+PUBLIC DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
 {
     LPWSTR      wpath;
     LPSTR       mb;
@@ -843,7 +843,7 @@ DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
 }
 
 
-WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
+PUBLIC WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
 {
     LPWSTR      wpath;
 
@@ -852,7 +852,7 @@ WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
 }
 
 
-void GetSystemTimeAsFileTime(FILETIME *ft)
+PUBLIC void GetSystemTimeAsFileTime(FILETIME *ft)
 {
     SYSTEMTIME  s;
 
@@ -861,7 +861,7 @@ void GetSystemTimeAsFileTime(FILETIME *ft)
 }
 
 
-HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
+PUBLIC HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
 {
     LPWSTR      wpath;
 
@@ -869,12 +869,12 @@ HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
     return LoadLibraryW(wpath);
 }
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
 }
 
 #else
-void stubMprWince() {}
+PUBLIC void stubMprWince() {}
 #endif /* WINCE */
 
 /*

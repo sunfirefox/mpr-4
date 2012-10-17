@@ -32,7 +32,7 @@ static int      setLogging(char *logSpec);
 
 /******************************************************************************/
 
-MprTestService *mprCreateTestService()
+PUBLIC MprTestService *mprCreateTestService()
 {
     MprTestService      *sp;
 
@@ -65,7 +65,7 @@ static void manageTestService(MprTestService *ts, int flags)
 }
 
 
-int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser extraParser)
+PUBLIC int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser extraParser)
 {
     cchar       *programName;
     char        *argp;
@@ -295,7 +295,7 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
 }
 
 
-int mprRunTests(MprTestService *sp)
+PUBLIC int mprRunTests(MprTestService *sp)
 {
     MprTestGroup    *gp;
     MprThread       *tp;
@@ -426,7 +426,7 @@ static void runTestThread(MprList *groups, MprThread *tp)
 }
 
 
-void mprReportTestResults(MprTestService *sp)
+PUBLIC void mprReportTestResults(MprTestService *sp)
 {
     if (sp->totalFailedCount == 0 && sp->verbose >= 1) {
         mprPrintf("%12s All tests PASSED for \"%s\"\n", "[REPORT]", sp->name);
@@ -482,7 +482,7 @@ static void buildFullNames(MprTestGroup *gp, cchar *name)
 /*
     Used by main program to add the top level test group(s)
  */
-MprTestGroup *mprAddTestGroup(MprTestService *sp, MprTestDef *def)
+PUBLIC MprTestGroup *mprAddTestGroup(MprTestService *sp, MprTestDef *def)
 {
     MprTestGroup    *gp;
 
@@ -579,7 +579,7 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
 }
 
 
-void mprResetTestGroup(MprTestGroup *gp)
+PUBLIC void mprResetTestGroup(MprTestGroup *gp)
 {
     gp->success = 1;
     gp->mutex = mprCreateLock();
@@ -869,7 +869,7 @@ static MprTestFailure *createFailure(MprTestGroup *gp, cchar *loc, cchar *messag
 }
 
 
-bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
+PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 {
     if (! isTrue) {
         gp->success = isTrue;
@@ -886,7 +886,7 @@ bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 }
 
 
-bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
+PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
 {
     MprTime     expires, remaining;
     int         rc;
@@ -909,7 +909,7 @@ bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
 }
 
 
-void mprSignalTestComplete(MprTestGroup *gp)
+PUBLIC void mprSignalTestComplete(MprTestGroup *gp)
 {
     gp->testComplete = 1;
     mprSignalDispatcher(gp->dispatcher);

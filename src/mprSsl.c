@@ -13,7 +13,7 @@
 /*
     Module initialization entry point
  */
-int mprSslInit(void *unused, MprModule *module)
+PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
     mprAssert(module);
 
@@ -33,7 +33,7 @@ int mprSslInit(void *unused, MprModule *module)
 }
 
 #else
-int mprSslInit(void *unused, MprModule *module) { return -1; }
+PUBLIC int mprSslInit(void *unused, MprModule *module) { return -1; }
 #endif /* BLD_PACK_SSL */
 
 /*

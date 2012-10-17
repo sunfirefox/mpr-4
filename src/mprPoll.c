@@ -18,7 +18,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct pollfd   *pollfd;
     int             fd;
@@ -51,7 +51,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManagePoll(MprWaitService *ws, int flags)
+PUBLIC void mprManagePoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->fds);
@@ -90,7 +90,7 @@ static int growHandlers(MprWaitService *ws, int fd)
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct pollfd   *pollfd;
     int             fd, index;
@@ -161,7 +161,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 {
     struct pollfd   fds[1];
     int             rc;
@@ -199,7 +199,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 {
     int     count, rc;
 
@@ -281,7 +281,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -295,7 +295,7 @@ void mprWakeNotifier()
 }
 
 #else
-void stubMprPollWait() {}
+PUBLIC void stubMprPollWait() {}
 #endif /* MPR_EVENT_POLL */
 
 /*

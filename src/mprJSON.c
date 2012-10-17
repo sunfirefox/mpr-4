@@ -22,7 +22,7 @@ static int setValue(MprJson *jp, MprObj *obj, int index, cchar *name, cchar *val
 
 /************************************ Code ************************************/
 
-MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
+PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
 {
     MprJson     jp;
 
@@ -41,7 +41,7 @@ MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
 /*
     Deserialize a JSON string into an MprHash object. Objects and lists "[]" are stored in hashes. 
  */
-MprObj *mprDeserialize(cchar *str)
+PUBLIC MprObj *mprDeserialize(cchar *str)
 {
     MprJsonCallback cb;
 
@@ -340,7 +340,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
 /*
     Serialize into JSON format.
  */
-cchar *mprSerialize(MprObj *obj, int flags)
+PUBLIC cchar *mprSerialize(MprObj *obj, int flags)
 {
     MprBuf  *buf;
     int     pretty;
@@ -406,7 +406,7 @@ static void jsonParseError(MprJson *jp, cchar *msg)
 }
 
 
-void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
+PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *msg;

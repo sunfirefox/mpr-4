@@ -10,7 +10,7 @@
 
 /************************************ Code ************************************/
 
-void mprAtomicBarrier()
+PUBLIC void mprAtomicBarrier()
 {
     #ifdef VX_MEM_BARRIER_RW
         VX_MEM_BARRIER_RW();
@@ -37,7 +37,7 @@ void mprAtomicBarrier()
 /*
     Atomic Compare and swap a pointer with a full memory barrier
  */
-int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
+PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 {
     #if MACOSX
         return OSAtomicCompareAndSwapPtrBarrier(expected, (void*) value, (void*) addr);
@@ -85,7 +85,7 @@ int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 /*
     Atomic add of a signed value. Used for add, subtract, inc, dec
  */
-void mprAtomicAdd(volatile int *ptr, int value)
+PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
 {
     #if MACOSX
         OSAtomicAdd32(value, ptr);
@@ -109,7 +109,7 @@ void mprAtomicAdd(volatile int *ptr, int value)
 /*
     On some platforms, this operation is only atomic with respect to other calls to mprAtomicAdd64
  */
-void mprAtomicAdd64(volatile int64 *ptr, int value)
+PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
 {
 #if MACOSX
     OSAtomicAdd64(value, ptr);
@@ -128,7 +128,7 @@ void mprAtomicAdd64(volatile int64 *ptr, int value)
 }
 
 
-void *mprAtomicExchange(void * volatile *addr, cvoid *value)
+PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 {
 #if MACOSX && 0
     return OSAtomicCompareAndSwapPtrBarrier(expected, value, addr);
@@ -152,7 +152,7 @@ void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 /*
     Atomic list insertion. Inserts "item" at the "head" of the list. The "link" field is the next field in item.
  */
-void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item)
+PUBLIC void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item)
 {
     do {
         *link = *head;

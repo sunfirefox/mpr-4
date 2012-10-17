@@ -25,7 +25,7 @@ static void trimToken(MprXml *xp);
 
 /************************************ Code ************************************/
 
-MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
+PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
 {
     MprXml  *xp;
 
@@ -49,14 +49,14 @@ static void manageXml(MprXml *xml, int flags)
 }
 
 
-void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h)
+PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h)
 {
     mprAssert(xp);
     xp->handler = h;
 }
 
 
-void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
+PUBLIC void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
 {
     mprAssert(xp);
 
@@ -68,7 +68,7 @@ void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
 /*
     Set the parse arg
  */ 
-void mprXmlSetParseArg(MprXml *xp, void *parseArg)
+PUBLIC void mprXmlSetParseArg(MprXml *xp, void *parseArg)
 {
     mprAssert(xp);
 
@@ -79,7 +79,7 @@ void mprXmlSetParseArg(MprXml *xp, void *parseArg)
 /*
     Set the parse arg
  */ 
-void *mprXmlGetParseArg(MprXml *xp)
+PUBLIC void *mprXmlGetParseArg(MprXml *xp)
 {
     mprAssert(xp);
 
@@ -90,7 +90,7 @@ void *mprXmlGetParseArg(MprXml *xp)
 /*
     Parse an XML file. Return 0 for success, -1 for error.
  */ 
-int mprXmlParse(MprXml *xp)
+PUBLIC int mprXmlParse(MprXml *xp)
 {
     mprAssert(xp);
 
@@ -640,7 +640,7 @@ static void trimToken(MprXml *xp)
 }
 
 
-cchar *mprXmlGetErrorMsg(MprXml *xp)
+PUBLIC cchar *mprXmlGetErrorMsg(MprXml *xp)
 {
     if (xp->errMsg == 0) {
         return "";
@@ -649,7 +649,7 @@ cchar *mprXmlGetErrorMsg(MprXml *xp)
 }
 
 
-int mprXmlGetLineNumber(MprXml *xp)
+PUBLIC int mprXmlGetLineNumber(MprXml *xp)
 {
     return xp->lineNumber;
 }

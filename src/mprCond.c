@@ -15,7 +15,7 @@ static void manageCond(MprCond *cp, int flags);
     Create a condition variable for use by single or multiple waiters
  */
 
-MprCond *mprCreateCond()
+PUBLIC MprCond *mprCreateCond()
 {
     MprCond     *cp;
 
@@ -61,7 +61,7 @@ static void manageCond(MprCond *cp, int flags)
     triggered, then it will return immediately. Timeout of -1 means wait forever. Timeout of 0 means no wait.
     Returns 0 if the event was signalled. Returns < 0 for a timeout.
  */
-int mprWaitForCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
 {
     MprTime             now, expire;
     int                 rc;
@@ -166,7 +166,7 @@ int mprWaitForCond(MprCond *cp, MprTime timeout)
 /*
     Signal a condition and wakeup the waiter. Note: this may be called prior to the waiter waiting.
  */
-void mprSignalCond(MprCond *cp)
+PUBLIC void mprSignalCond(MprCond *cp)
 {
     mprLock(cp->mutex);
     if (!cp->triggered) {
@@ -183,7 +183,7 @@ void mprSignalCond(MprCond *cp)
 }
 
 
-void mprResetCond(MprCond *cp)
+PUBLIC void mprResetCond(MprCond *cp)
 {
     mprLock(cp->mutex);
     cp->triggered = 0;
@@ -207,7 +207,7 @@ void mprResetCond(MprCond *cp)
     A timeout of -1 means wait forever. Timeout of 0 means no wait.  Returns 0 if the event was signalled. 
     Returns < 0 for a timeout.
  */
-int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
 {
     int         rc;
 #if BIT_UNIX_LIKE
@@ -267,7 +267,7 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
 /*
     Signal a condition and wakeup the all the waiters. Note: this may be called before or after to the waiter waiting.
  */
-void mprSignalMultiCond(MprCond *cp)
+PUBLIC void mprSignalMultiCond(MprCond *cp)
 {
     mprLock(cp->mutex);
 #if BIT_WIN_LIKE

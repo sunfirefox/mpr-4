@@ -154,7 +154,7 @@ static MPR_INLINE char *lastSep(MprFileSystem *fs, cchar *path)
 /*
     This copies a file.
  */
-int mprCopyPath(cchar *fromName, cchar *toName, int mode)
+PUBLIC int mprCopyPath(cchar *fromName, cchar *toName, int mode)
 {
     MprFile     *from, *to;
     ssize       count;
@@ -177,7 +177,7 @@ int mprCopyPath(cchar *fromName, cchar *toName, int mode)
 }
 
 
-int mprDeletePath(cchar *path)
+PUBLIC int mprDeletePath(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -194,7 +194,7 @@ int mprDeletePath(cchar *path)
     On CYGWIN, this is a cygwin path with forward-slashes and without drive specs. 
     Use mprGetWinPath for a windows style path with a drive specifier and back-slashes.
  */
-char *mprGetAbsPath(cchar *path)
+PUBLIC char *mprGetAbsPath(cchar *path)
 {
     MprFileSystem   *fs;
     char            *result;
@@ -275,7 +275,7 @@ char *mprGetAbsPath(cchar *path)
 /*
     Get the directory containing the application executable. Tries to return an absolute path.
  */
-char *mprGetAppDir()
+PUBLIC char *mprGetAppDir()
 { 
     if (MPR->appDir == 0) {
         MPR->appDir = mprGetPathDir(mprGetAppPath());
@@ -287,7 +287,7 @@ char *mprGetAppDir()
 /*
     Get the path for the application executable. Tries to return an absolute path.
  */
-char *mprGetAppPath()
+PUBLIC char *mprGetAppPath()
 { 
     if (MPR->appPath) {
         return sclone(MPR->appPath);
@@ -362,7 +362,7 @@ char *mprGetAppPath()
 /*
     This will return a fully qualified absolute path for the current working directory.
  */
-char *mprGetCurrentPath()
+PUBLIC char *mprGetCurrentPath()
 {
     char    dir[MPR_MAX_PATH];
 
@@ -397,7 +397,7 @@ char *mprGetCurrentPath()
 }
 
 
-cchar *mprGetFirstPathSeparator(cchar *path) 
+PUBLIC cchar *mprGetFirstPathSeparator(cchar *path) 
 {
     MprFileSystem   *fs;
 
@@ -409,7 +409,7 @@ cchar *mprGetFirstPathSeparator(cchar *path)
 /*
     Return a pointer into the path at the last path separator or null if none found
  */
-cchar *mprGetLastPathSeparator(cchar *path) 
+PUBLIC cchar *mprGetLastPathSeparator(cchar *path) 
 {
     MprFileSystem   *fs;
 
@@ -421,7 +421,7 @@ cchar *mprGetLastPathSeparator(cchar *path)
 /*
     Return a path with native separators. This means "\\" on windows and cygwin
  */
-char *mprGetNativePath(cchar *path)
+PUBLIC char *mprGetNativePath(cchar *path)
 {
     return mprTransformPath(path, MPR_PATH_NATIVE_SEP);
 }
@@ -430,7 +430,7 @@ char *mprGetNativePath(cchar *path)
 /*
     Return the last portion of a pathname. The separators are not mapped and the path is not cleaned.
  */
-char *mprGetPathBase(cchar *path)
+PUBLIC char *mprGetPathBase(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -458,7 +458,7 @@ char *mprGetPathBase(cchar *path)
     Return the last portion of a pathname. The separators are not mapped and the path is not cleaned.
     This returns a reference into the original string
  */
-cchar *mprGetPathBaseRef(cchar *path)
+PUBLIC cchar *mprGetPathBaseRef(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -484,7 +484,7 @@ cchar *mprGetPathBaseRef(cchar *path)
 /*
     Return the directory portion of a pathname.
  */
-char *mprGetPathDir(cchar *path)
+PUBLIC char *mprGetPathDir(cchar *path)
 {
     MprFileSystem   *fs;
     cchar           *cp, *start;
@@ -529,7 +529,7 @@ char *mprGetPathDir(cchar *path)
     Return the extension portion of a pathname.
     Return the extension without the "."
  */
-char *mprGetPathExt(cchar *path)
+PUBLIC char *mprGetPathExt(cchar *path)
 {
     MprFileSystem  *fs;
     char            *cp;
@@ -738,7 +738,7 @@ static int sortFiles(MprDirEntry **dp1, MprDirEntry **dp2)
     MPR_PATH_NODIRS         to exclude subdirectories
     MPR_PATH_RELATIVE       to return paths relative to the initial directory
  */
-MprList *mprGetPathFiles(cchar *dir, int flags)
+PUBLIC MprList *mprGetPathFiles(cchar *dir, int flags)
 {
     MprList *list;
     cchar   *base;
@@ -761,7 +761,7 @@ MprList *mprGetPathFiles(cchar *dir, int flags)
 /*
     Return the first directory of a pathname
  */
-char *mprGetPathFirstDir(cchar *path)
+PUBLIC char *mprGetPathFirstDir(cchar *path)
 {
     MprFileSystem   *fs;
     cchar           *cp;
@@ -782,7 +782,7 @@ char *mprGetPathFirstDir(cchar *path)
 }
 
 
-int mprGetPathInfo(cchar *path, MprPath *info)
+PUBLIC int mprGetPathInfo(cchar *path, MprPath *info)
 {
     MprFileSystem  *fs;
 
@@ -791,7 +791,7 @@ int mprGetPathInfo(cchar *path, MprPath *info)
 }
 
 
-char *mprGetPathLink(cchar *path)
+PUBLIC char *mprGetPathLink(cchar *path)
 {
     MprFileSystem  *fs;
 
@@ -804,7 +804,7 @@ char *mprGetPathLink(cchar *path)
     GetPathParent is smarter than GetPathDir which operates purely textually on the path. GetPathParent will convert
     relative paths to absolute to determine the parent directory.
  */
-char *mprGetPathParent(cchar *path)
+PUBLIC char *mprGetPathParent(cchar *path)
 {
     MprFileSystem   *fs;
     char            *dir;
@@ -825,7 +825,7 @@ char *mprGetPathParent(cchar *path)
 }
 
 
-char *mprGetPortablePath(cchar *path)
+PUBLIC char *mprGetPortablePath(cchar *path)
 {
     char    *result, *cp;
 
@@ -842,7 +842,7 @@ char *mprGetPortablePath(cchar *path)
 /*
     This returns a path relative to the current working directory for the given path
  */
-char *mprGetRelPath(cchar *destArg, cchar *originArg)
+PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
 {
     MprFileSystem   *fs;
     char            originBuf[MPR_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
@@ -944,7 +944,7 @@ char *mprGetRelPath(cchar *destArg, cchar *originArg)
 /*
     Get a temporary file name. The file is created in the system temp location.
  */
-char *mprGetTempPath(cchar *tempDir)
+PUBLIC char *mprGetTempPath(cchar *tempDir)
 {
     MprFile         *file;
     char            *dir, *path;
@@ -991,7 +991,7 @@ char *mprGetTempPath(cchar *tempDir)
     Return a windows path.
     On CYGWIN, this is a cygwin path without drive specs.
  */
-char *mprGetWinPath(cchar *path)
+PUBLIC char *mprGetWinPath(cchar *path)
 {
     char            *result;
 
@@ -1021,7 +1021,7 @@ char *mprGetWinPath(cchar *path)
 }
 
 
-bool mprIsPathAbs(cchar *path)
+PUBLIC bool mprIsPathAbs(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -1030,7 +1030,7 @@ bool mprIsPathAbs(cchar *path)
 }
 
 
-bool mprIsPathDir(cchar *path)
+PUBLIC bool mprIsPathDir(cchar *path)
 {
     MprPath     info;
 
@@ -1038,7 +1038,7 @@ bool mprIsPathDir(cchar *path)
 }
 
 
-bool mprIsPathRel(cchar *path)
+PUBLIC bool mprIsPathRel(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -1047,7 +1047,7 @@ bool mprIsPathRel(cchar *path)
 }
 
 
-bool mprIsPathSeparator(cchar *path, cchar c)
+PUBLIC bool mprIsPathSeparator(cchar *path, cchar c)
 {
     MprFileSystem   *fs;
 
@@ -1061,7 +1061,7 @@ bool mprIsPathSeparator(cchar *path, cchar c)
     If other is absolute, then return other. If other is null, empty or "." then return path.
     The separator is chosen to match the first separator found in either path. If none, it uses the default separator.
  */
-char *mprJoinPath(cchar *path, cchar *other)
+PUBLIC char *mprJoinPath(cchar *path, cchar *other)
 {
     MprFileSystem   *fs;
     char            *join, *drive, *cp;
@@ -1106,7 +1106,7 @@ char *mprJoinPath(cchar *path, cchar *other)
     Join an extension to a path. If path already has an extension, this call does nothing.
     The extension should not have a ".", but this routine is tolerant if it does.
  */
-char *mprJoinPathExt(cchar *path, cchar *ext)
+PUBLIC char *mprJoinPathExt(cchar *path, cchar *ext)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -1130,7 +1130,7 @@ char *mprJoinPathExt(cchar *path, cchar *ext)
 /*
     Make a directory with all necessary intervening directories.
  */
-int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMissing)
+PUBLIC int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMissing)
 {
     MprFileSystem   *fs;
     char            *parent;
@@ -1155,7 +1155,7 @@ int mprMakeDir(cchar *path, int perms, int owner, int group, bool makeMissing)
 }
 
 
-int mprMakeLink(cchar *path, cchar *target, bool hard)
+PUBLIC int mprMakeLink(cchar *path, cchar *target, bool hard)
 {
     MprFileSystem   *fs;
 
@@ -1171,7 +1171,7 @@ int mprMakeLink(cchar *path, cchar *target, bool hard)
     Normalize a path to remove redundant "./" and cleanup "../" and make separator uniform. Does not make an abs path.
     It does not map separators, change case, nor add drive specifiers.
  */
-char *mprNormalizePath(cchar *pathArg)
+PUBLIC char *mprNormalizePath(cchar *pathArg)
 {
     MprFileSystem   *fs;
     char            *path, *sp, *dp, *mark, **segments;
@@ -1333,7 +1333,7 @@ char *mprNormalizePath(cchar *pathArg)
 }
 
 
-void mprMapSeparators(char *path, int separator)
+PUBLIC void mprMapSeparators(char *path, int separator)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -1347,7 +1347,7 @@ void mprMapSeparators(char *path, int separator)
 }
 
 
-bool mprPathExists(cchar *path, int omode)
+PUBLIC bool mprPathExists(cchar *path, int omode)
 {
     MprFileSystem  *fs;
 
@@ -1359,7 +1359,7 @@ bool mprPathExists(cchar *path, int omode)
 }
 
 
-char *mprReadPathContents(cchar *path, ssize *lenp)
+PUBLIC char *mprReadPathContents(cchar *path, ssize *lenp)
 {
     MprFile     *file;
     MprPath     info;
@@ -1392,13 +1392,13 @@ char *mprReadPathContents(cchar *path, ssize *lenp)
 }
 
 
-int mprRenamePath(cchar *from, cchar *to)
+PUBLIC int mprRenamePath(cchar *from, cchar *to)
 {
     return rename(from, to);
 }
 
 
-char *mprReplacePathExt(cchar *path, cchar *ext)
+PUBLIC char *mprReplacePathExt(cchar *path, cchar *ext)
 {
     return mprJoinPathExt(mprTrimPathExt(path), ext);
 }
@@ -1421,7 +1421,7 @@ char *mprReplacePathExt(cchar *path, cchar *ext)
     Returns a joined (normalized) path.
     If path is absolute, then return path. If path is null, empty or "." then return path.
  */
-char *mprResolvePath(cchar *base, cchar *path)
+PUBLIC char *mprResolvePath(cchar *base, cchar *path)
 {
     MprFileSystem   *fs;
     char            *join, *drive, *cp, *dir;
@@ -1457,7 +1457,7 @@ char *mprResolvePath(cchar *base, cchar *path)
 /*
     Compare two file path to determine if they point to the same file.
  */
-int mprSamePath(cchar *path1, cchar *path2)
+PUBLIC int mprSamePath(cchar *path1, cchar *path2)
 {
     MprFileSystem   *fs;
     cchar           *p1, *p2;
@@ -1498,7 +1498,7 @@ int mprSamePath(cchar *path1, cchar *path2)
 /*
     Compare two file path to determine if they point to the same file.
  */
-int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
+PUBLIC int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 {
     MprFileSystem   *fs;
     cchar           *p1, *p2;
@@ -1532,7 +1532,7 @@ int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 }
 
 
-void mprSetAppPath(cchar *path)
+PUBLIC void mprSetAppPath(cchar *path)
 { 
     MPR->appPath = sclone(path);
     MPR->appDir = mprGetPathDir(MPR->appPath);
@@ -1561,7 +1561,7 @@ static char* checkPath(cchar *path, int flags)
 }
 
 
-char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
+PUBLIC char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
 {
     va_list     args;
     char        *result, *path, *dir, *nextDir, *tok;
@@ -1605,7 +1605,7 @@ char *mprSearchPath(cchar *file, int flags, cchar *search, ...)
     This normalizes a path. Returns a normalized path according to flags. Default is absolute. 
     if MPR_PATH_NATIVE_SEP is specified in the flags, map separators to the native format.
  */
-char *mprTransformPath(cchar *path, int flags)
+PUBLIC char *mprTransformPath(cchar *path, int flags)
 {
     char    *result;
 
@@ -1638,7 +1638,7 @@ char *mprTransformPath(cchar *path, int flags)
 }
 
 
-char *mprTrimPathExt(cchar *path)
+PUBLIC char *mprTrimPathExt(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp, *result;
@@ -1654,7 +1654,7 @@ char *mprTrimPathExt(cchar *path)
 }
 
 
-char *mprTrimPathDrive(cchar *path)
+PUBLIC char *mprTrimPathDrive(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp, *endDrive;
@@ -1671,7 +1671,7 @@ char *mprTrimPathDrive(cchar *path)
 }
 
 
-ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
+PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
 {
     MprFile     *file;
 

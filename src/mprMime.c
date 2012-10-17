@@ -73,7 +73,7 @@ static void manageMimeType(MprMime *mt, int flags);
 
 /*********************************** Code *************************************/
 
-MprHash *mprCreateMimeTypes(cchar *path)
+PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
 {
     MprHash     *table;
     MprFile     *file;
@@ -136,7 +136,7 @@ static void manageMimeType(MprMime *mt, int flags)
 }
 
 
-MprMime *mprAddMime(MprHash *table, cchar *ext, cchar *mimeType)
+PUBLIC MprMime *mprAddMime(MprHash *table, cchar *ext, cchar *mimeType)
 {
     MprMime  *mt;
 
@@ -152,7 +152,7 @@ MprMime *mprAddMime(MprHash *table, cchar *ext, cchar *mimeType)
 }
 
 
-int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
+PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
 {
     MprKey      *kp;
     MprMime     *mt;
@@ -174,7 +174,7 @@ int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
 }
 
 
-cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType)
+PUBLIC cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType)
 {
     MprMime      *mt;
 
@@ -188,7 +188,7 @@ cchar *mprGetMimeProgram(MprHash *table, cchar *mimeType)
 }
 
 
-cchar *mprLookupMime(MprHash *table, cchar *ext)
+PUBLIC cchar *mprLookupMime(MprHash *table, cchar *ext)
 {
     MprMime     *mt;
     cchar       *ep;

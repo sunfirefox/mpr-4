@@ -14,7 +14,7 @@ static void manageLock(MprMutex *lock, int flags);
 
 /************************************ Code ************************************/
 
-MprMutex *mprCreateLock()
+PUBLIC MprMutex *mprCreateLock()
 {
     MprMutex    *lock;
 #if BIT_UNIX_LIKE
@@ -60,7 +60,7 @@ static void manageLock(MprMutex *lock, int flags)
 }
 
 
-MprMutex *mprInitLock(MprMutex *lock)
+PUBLIC MprMutex *mprInitLock(MprMutex *lock)
 {
 #if BIT_UNIX_LIKE
     pthread_mutexattr_t attr;
@@ -90,7 +90,7 @@ MprMutex *mprInitLock(MprMutex *lock)
 /*
     Try to attain a lock. Do not block! Returns true if the lock was attained.
  */
-bool mprTryLock(MprMutex *lock)
+PUBLIC bool mprTryLock(MprMutex *lock)
 {
     int     rc;
 
@@ -115,7 +115,7 @@ bool mprTryLock(MprMutex *lock)
 }
 
 
-MprSpin *mprCreateSpinLock()
+PUBLIC MprSpin *mprCreateSpinLock()
 {
     MprSpin    *lock;
 
@@ -126,7 +126,7 @@ MprSpin *mprCreateSpinLock()
 }
 
 
-void mprManageSpinLock(MprSpin *lock, int flags)
+PUBLIC void mprManageSpinLock(MprSpin *lock, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
         mprAssert(lock);
@@ -149,7 +149,7 @@ void mprManageSpinLock(MprSpin *lock, int flags)
 /*
     Static version just for mprAlloc which needs locks that don't allocate memory.
  */
-MprSpin *mprInitSpinLock(MprSpin *lock)
+PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
 {
 #if BIT_UNIX_LIKE && !BIT_HAS_SPINLOCK && !MACOSX
     pthread_mutexattr_t attr;
@@ -192,7 +192,7 @@ MprSpin *mprInitSpinLock(MprSpin *lock)
 /*
     Try to attain a lock. Do not block! Returns true if the lock was attained.
  */
-bool mprTrySpinLock(MprSpin *lock)
+PUBLIC bool mprTrySpinLock(MprSpin *lock)
 {
     int     rc;
 
@@ -229,7 +229,7 @@ bool mprTrySpinLock(MprSpin *lock)
 /*
     Big global lock. Avoid using this.
  */
-void mprGlobalLock()
+PUBLIC void mprGlobalLock()
 {
     if (MPR && MPR->mutex) {
         mprLock(MPR->mutex);
@@ -237,7 +237,7 @@ void mprGlobalLock()
 }
 
 
-void mprGlobalUnlock()
+PUBLIC void mprGlobalUnlock()
 {
     if (MPR && MPR->mutex) {
         mprUnlock(MPR->mutex);
@@ -258,7 +258,7 @@ void mprGlobalUnlock()
 /*
     Lock a mutex
  */
-void mprLock(MprMutex *lock)
+PUBLIC void mprLock(MprMutex *lock)
 {
     if (lock == 0) return;
 #if BIT_UNIX_LIKE
@@ -278,7 +278,7 @@ void mprLock(MprMutex *lock)
 }
 
 
-void mprUnlock(MprMutex *lock)
+PUBLIC void mprUnlock(MprMutex *lock)
 {
     if (lock == 0) return;
 #if BIT_UNIX_LIKE
@@ -297,7 +297,7 @@ void mprUnlock(MprMutex *lock)
 /*
     Lock a mutex
  */
-void mprSpinLock(MprSpin *lock)
+PUBLIC void mprSpinLock(MprSpin *lock)
 {
     if (lock == 0) return;
 
@@ -330,7 +330,7 @@ void mprSpinLock(MprSpin *lock)
 }
 
 
-void mprSpinUnlock(MprSpin *lock)
+PUBLIC void mprSpinUnlock(MprSpin *lock)
 {
     if (lock == 0) return;
 

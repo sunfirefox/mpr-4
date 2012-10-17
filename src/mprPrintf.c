@@ -35,7 +35,7 @@
 #define STATE_TYPE      7               /* Data type */
 #define STATE_COUNT     8
 
-char stateMap[] = {
+PUBLIC char stateMap[] = {
     /*     STATES:  Normal Percent Modifier Width  Dot  Prec Bits Type */
     /* CLASS           0      1       2       3     4     5    6    7  */
     /* Normal   0 */   0,     0,      0,      0,    0,    0,   0,   0,
@@ -54,7 +54,7 @@ char stateMap[] = {
   
     The Class map will map from a specifier letter to a state.
  */
-char classMap[] = {
+PUBLIC char classMap[] = {
     /*   0  ' '    !     "     #     $     %     &     ' */
              2,    0,    0,    2,    0,    1,    0,    0,
     /*  07   (     )     *     +     ,     -     .     / */
@@ -169,7 +169,7 @@ static void outFloat(Format *fmt, char specChar, double value);
 
 /************************************* Code ***********************************/
 
-ssize mprPrintf(cchar *fmt, ...)
+PUBLIC ssize mprPrintf(cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -189,7 +189,7 @@ ssize mprPrintf(cchar *fmt, ...)
 }
 
 
-ssize mprPrintfError(cchar *fmt, ...)
+PUBLIC ssize mprPrintfError(cchar *fmt, ...)
 {
     va_list     ap;
     ssize       len;
@@ -209,7 +209,7 @@ ssize mprPrintfError(cchar *fmt, ...)
 }
 
 
-ssize mprFprintf(MprFile *file, cchar *fmt, ...)
+PUBLIC ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 {
     ssize       len;
     va_list     ap;
@@ -234,7 +234,7 @@ ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
-int mprStaticPrintf(cchar *fmt, ...)
+PUBLIC int mprStaticPrintf(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
@@ -252,7 +252,7 @@ int mprStaticPrintf(cchar *fmt, ...)
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
-int mprStaticPrintfError(cchar *fmt, ...)
+PUBLIC int mprStaticPrintfError(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
@@ -268,7 +268,7 @@ int mprStaticPrintfError(cchar *fmt, ...)
 #endif
 
 
-char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
+PUBLIC char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
 {
     va_list     ap;
     char        *result;
@@ -284,7 +284,7 @@ char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
 }
 
 
-char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
+PUBLIC char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 {
     mprAssert(buf);
     mprAssert(fmt);
@@ -295,7 +295,7 @@ char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 
 
 //  MOB - DEPRECATE
-char *mprAsprintf(cchar *fmt, ...)
+PUBLIC char *mprAsprintf(cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -309,7 +309,7 @@ char *mprAsprintf(cchar *fmt, ...)
 }
 
 
-char *mprAsprintfv(cchar *fmt, va_list arg)
+PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg)
 {
     mprAssert(fmt);
     return sprintfCore(NULL, -1, fmt, arg);
@@ -854,7 +854,7 @@ static void outFloat(Format *fmt, char specChar, double value)
 }
 
 
-int mprIsNan(double value) {
+PUBLIC int mprIsNan(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_SNAN | _FPCLASS_QNAN);
 #elif VXWORKS
@@ -865,7 +865,7 @@ int mprIsNan(double value) {
 }
 
 
-int mprIsInfinite(double value) {
+PUBLIC int mprIsInfinite(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_PINF | _FPCLASS_NINF);
 #elif VXWORKS
@@ -875,7 +875,7 @@ int mprIsInfinite(double value) {
 #endif
 }
 
-int mprIsZero(double value) {
+PUBLIC int mprIsZero(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_NZ | _FPCLASS_PZ);
 #elif VXWORKS
@@ -892,7 +892,7 @@ int mprIsZero(double value) {
 
     function dtoa(double value, int mode, int ndigits, int *periodOffset, int *sign, char **end)
  */
-char *mprDtoa(double value, int ndigits, int mode, int flags)
+PUBLIC char *mprDtoa(double value, int ndigits, int mode, int flags)
 {
     MprBuf  *buf;
     char    *intermediate, *ip;
@@ -1075,7 +1075,7 @@ static int growBuf(Format *fmt)
 /*
     For easy debug trace
  */
-int print(cchar *fmt, ...)
+PUBLIC int print(cchar *fmt, ...)
 {
     va_list     ap;
     int         len;

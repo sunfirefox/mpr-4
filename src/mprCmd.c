@@ -47,7 +47,7 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg);
 
 /************************************* Code ***********************************/
 
-MprCmdService *mprCreateCmdService()
+PUBLIC MprCmdService *mprCreateCmdService()
 {
     MprCmdService   *cs;
 
@@ -60,7 +60,7 @@ MprCmdService *mprCreateCmdService()
 }
 
 
-void mprStopCmdService()
+PUBLIC void mprStopCmdService()
 {
     mprClearList(MPR->cmdService->cmds);
 }
@@ -79,7 +79,7 @@ static void manageCmdService(MprCmdService *cs, int flags)
 }
 
 
-MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
+PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
 {
     MprCmd          *cmd;
     MprCmdFile      *files;
@@ -183,7 +183,7 @@ static void vxCmdManager(MprCmd *cmd)
 }
 
 
-void mprDestroyCmd(MprCmd *cmd)
+PUBLIC void mprDestroyCmd(MprCmd *cmd)
 {
     mprAssert(cmd);
     resetCmd(cmd);
@@ -227,7 +227,7 @@ static void resetCmd(MprCmd *cmd)
 }
 
 
-void mprDisconnectCmd(MprCmd *cmd)
+PUBLIC void mprDisconnectCmd(MprCmd *cmd)
 {
     int     i;
 
@@ -245,7 +245,7 @@ void mprDisconnectCmd(MprCmd *cmd)
 /*
     Close a command channel. Must be able to be called redundantly.
  */
-void mprCloseCmdFd(MprCmd *cmd, int channel)
+PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
 {
     mprAssert(cmd);
     mprAssert(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
@@ -276,7 +276,7 @@ void mprCloseCmdFd(MprCmd *cmd, int channel)
 }
 
 
-void mprFinalizeCmd(MprCmd *cmd)
+PUBLIC void mprFinalizeCmd(MprCmd *cmd)
 {
     mprLog(6, "mprFinalizeCmd");
     mprAssert(cmd);
@@ -284,7 +284,7 @@ void mprFinalizeCmd(MprCmd *cmd)
 }
 
 
-int mprIsCmdComplete(MprCmd *cmd)
+PUBLIC int mprIsCmdComplete(MprCmd *cmd)
 {
     return cmd->complete;
 }
@@ -293,7 +293,7 @@ int mprIsCmdComplete(MprCmd *cmd)
 /*
     Run a simple blocking command. See arg usage below in mprRunCmdV.
  */
-int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)
 {
     cchar   **argv;
     int     argc;
@@ -311,14 +311,14 @@ int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err,
     Env is an array of "KEY=VALUE" strings. Null terminated
     The user must preserve the environment. This module does not clone the environment and uses the supplied reference.
  */
-void mprSetCmdDefaultEnv(MprCmd *cmd, cchar **env)
+PUBLIC void mprSetCmdDefaultEnv(MprCmd *cmd, cchar **env)
 {
     /* WARNING: defaultEnv is not cloned, but is marked */
     cmd->defaultEnv = env;
 }
 
 
-void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
+PUBLIC void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
 {
     cmd->searchPath = sclone(search);
 }
@@ -332,7 +332,7 @@ void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
  */
-int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)
 {
     int     rc, status;
 
@@ -420,7 +420,7 @@ static void addCmdHandlers(MprCmd *cmd)
     run a command. The caller needs to do code like mprRunCmd() themselves to wait for completion and to send/receive data.
     The routine does not wait. Callers must call mprWaitForCmd to wait for the command to complete.
  */
-int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags)
+PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int flags)
 {
     MprPath     info;
     cchar       *program, *search, *pair;
@@ -507,7 +507,7 @@ static int makeCmdIO(MprCmd *cmd)
 /*
     Stop the command
  */
-int mprStopCmd(MprCmd *cmd, int signal)
+PUBLIC int mprStopCmd(MprCmd *cmd, int signal)
 {
     mprLog(7, "cmd: stop");
 
@@ -531,7 +531,7 @@ int mprStopCmd(MprCmd *cmd, int signal)
 /*
     Do non-blocking I/O - except on windows - will block
  */
-ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
+PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 {
 #if BIT_WIN_LIKE
     int     rc, count;
@@ -582,7 +582,7 @@ ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 /*
     Do non-blocking I/O - except on windows - will block
  */
-ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
+PUBLIC ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 {
 #if BIT_WIN_LIKE
     /*
@@ -596,7 +596,7 @@ ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
 }
 
 
-void mprEnableCmdEvents(MprCmd *cmd, int channel)
+PUBLIC void mprEnableCmdEvents(MprCmd *cmd, int channel)
 {
     int mask = (channel == MPR_CMD_STDIN) ? MPR_WRITABLE : MPR_READABLE;
     if (cmd->handlers[channel]) {
@@ -605,7 +605,7 @@ void mprEnableCmdEvents(MprCmd *cmd, int channel)
 }
 
 
-void mprDisableCmdEvents(MprCmd *cmd, int channel)
+PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
 {
     if (cmd->handlers[channel]) {
         mprWaitOn(cmd->handlers[channel], 0);
@@ -675,7 +675,7 @@ static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
 /*
     Wait for a command to complete. Return 0 if the command completed, otherwise it will return MPR_ERR_TIMEOUT. 
  */
-int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
+PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
 {
     MprTime     expires, remaining;
 
@@ -920,14 +920,14 @@ static void stderrCallback(MprCmd *cmd, MprEvent *event)
 }
 
 
-void mprSetCmdCallback(MprCmd *cmd, MprCmdProc proc, void *data)
+PUBLIC void mprSetCmdCallback(MprCmd *cmd, MprCmdProc proc, void *data)
 {
     cmd->callback = proc;
     cmd->callbackData = data;
 }
 
 
-int mprGetCmdExitStatus(MprCmd *cmd)
+PUBLIC int mprGetCmdExitStatus(MprCmd *cmd)
 {
     mprAssert(cmd);
 
@@ -938,7 +938,7 @@ int mprGetCmdExitStatus(MprCmd *cmd)
 }
 
 
-bool mprIsCmdRunning(MprCmd *cmd)
+PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 {
     return cmd->pid > 0;
 }
@@ -946,7 +946,7 @@ bool mprIsCmdRunning(MprCmd *cmd)
 
 /* FUTURE - not yet supported */
 
-void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
+PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
 {
     mprAssert(0);
 #if UNUSED && KEEP
@@ -955,19 +955,19 @@ void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
 }
 
 
-int mprGetCmdFd(MprCmd *cmd, int channel) 
+PUBLIC int mprGetCmdFd(MprCmd *cmd, int channel) 
 { 
     return cmd->files[channel].fd; 
 }
 
 
-MprBuf *mprGetCmdBuf(MprCmd *cmd, int channel)
+PUBLIC MprBuf *mprGetCmdBuf(MprCmd *cmd, int channel)
 {
     return (channel == MPR_CMD_STDOUT) ? cmd->stdoutBuf : cmd->stderrBuf;
 }
 
 
-void mprSetCmdDir(MprCmd *cmd, cchar *dir)
+PUBLIC void mprSetCmdDir(MprCmd *cmd, cchar *dir)
 {
 #if VXWORKS
     mprError("WARNING: Setting working directory on VxWorks is global: %s", dir);
@@ -1516,7 +1516,7 @@ static int startProcess(MprCmd *cmd)
 /*
     Start the command to run (stdIn and stdOut are named from the client's perspective)
  */
-int startProcess(MprCmd *cmd)
+PUBLIC int startProcess(MprCmd *cmd)
 {
     MprCmdTaskFn    entryFn;
     MprModule       *mp;

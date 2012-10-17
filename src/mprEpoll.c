@@ -19,7 +19,7 @@ static void serviceIO(MprWaitService *ws, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
@@ -53,7 +53,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManageEpoll(MprWaitService *ws, int flags)
+PUBLIC void mprManageEpoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->events);
@@ -84,7 +84,7 @@ static int growEvents(MprWaitService *ws)
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct epoll_event  ev;
     int                 fd, rc;
@@ -143,7 +143,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 {
     struct epoll_event  ev, events[2];
     int                 epfd, rc;
@@ -188,7 +188,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected. 
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 {
     int     rc;
 
@@ -270,7 +270,7 @@ static void serviceIO(MprWaitService *ws, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -284,7 +284,7 @@ void mprWakeNotifier()
 }
 
 #else
-void stubMmprEpoll() {}
+PUBLIC void stubMmprEpoll() {}
 #endif /* MPR_EVENT_EPOLL */
 
 /*

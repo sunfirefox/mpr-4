@@ -130,7 +130,7 @@ static ssize    writeMss(MprSocket *sp, cvoid *buf, ssize len);
 
 /************************************ Code ************************************/
 
-int mprCreateMatrixSslModule()
+PUBLIC int mprCreateMatrixSslModule()
 {
     MprSocketProvider   *provider;
 
@@ -721,7 +721,8 @@ static ssize flushMss(MprSocket *sp)
 
 #else
 
-int mprCreateMatrixSslModule() { return -1; }
+#include "mpr.h"
+PUBLIC int mprCreateMatrixSslModule() { return -1; }
 #endif /* BIT_PACK_MATRIXSSL */
 
 /*

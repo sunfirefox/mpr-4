@@ -204,7 +204,7 @@ static MprRomInode *lookup(MprRomFileSystem *rfs, cchar *path)
 }
 
 
-int mprSetRomFileSystem(MprRomInode *inodeList)
+PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 {
     MprRomFileSystem    *rfs;
     MprRomInode         *ri;
@@ -223,7 +223,7 @@ int mprSetRomFileSystem(MprRomInode *inodeList)
 }
 
 
-void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
+PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
 #if !WINCE
@@ -242,7 +242,7 @@ void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
 }
 
 
-MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
+PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 {
     MprFileSystem      *fs;
     MprRomFileSystem   *rfs;
@@ -317,7 +317,7 @@ MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 
 
 #else /* BIT_ROM */
-void stubRomfs() {}
+PUBLIC void stubRomfs() {}
 #endif /* BIT_ROM */
 
 /*

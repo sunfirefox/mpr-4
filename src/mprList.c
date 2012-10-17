@@ -23,7 +23,7 @@ static void manageList(MprList *lp, int flags);
 /*
     Create a general growable list structure
  */
-MprList *mprCreateList(int size, int flags)
+PUBLIC MprList *mprCreateList(int size, int flags)
 {
     MprList     *lp;
 
@@ -63,7 +63,7 @@ static void manageList(MprList *lp, int flags)
 /*
     Initialize a list which may not be a memory context.
  */
-void mprInitList(MprList *lp, int flags)
+PUBLIC void mprInitList(MprList *lp, int flags)
 {
     lp->flags = 0;
     lp->size = 0;
@@ -77,7 +77,7 @@ void mprInitList(MprList *lp, int flags)
 /*
     Define the list maximum size. If the list has not yet been written to, the initialSize will be observed.
  */
-int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
+PUBLIC int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
 {
     ssize   size;
 
@@ -105,7 +105,7 @@ int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
 }
 
 
-int mprCopyListContents(MprList *dest, MprList *src)
+PUBLIC int mprCopyListContents(MprList *dest, MprList *src)
 {
     void        *item;
     int         next;
@@ -130,7 +130,7 @@ int mprCopyListContents(MprList *dest, MprList *src)
 }
 
 
-MprList *mprCloneList(MprList *src)
+PUBLIC MprList *mprCloneList(MprList *src)
 {
     MprList     *lp;
 
@@ -144,7 +144,7 @@ MprList *mprCloneList(MprList *src)
 }
 
 
-MprList *mprAppendList(MprList *lp, MprList *add)
+PUBLIC MprList *mprAppendList(MprList *lp, MprList *add)
 {
     void        *item;
     int         next;
@@ -163,7 +163,7 @@ MprList *mprAppendList(MprList *lp, MprList *add)
 /*
     Change the item in the list at index. Return the old item.
  */
-void *mprSetItem(MprList *lp, int index, cvoid *item)
+PUBLIC void *mprSetItem(MprList *lp, int index, cvoid *item)
 {
     void    *old;
     int     length;
@@ -197,7 +197,7 @@ void *mprSetItem(MprList *lp, int index, cvoid *item)
 /*
     Add an item to the list and return the item index.
  */
-int mprAddItem(MprList *lp, cvoid *item)
+PUBLIC int mprAddItem(MprList *lp, cvoid *item)
 {
     int     index;
 
@@ -219,7 +219,7 @@ int mprAddItem(MprList *lp, cvoid *item)
 }
 
 
-int mprAddNullItem(MprList *lp)
+PUBLIC int mprAddNullItem(MprList *lp)
 {
     int     index;
 
@@ -249,7 +249,7 @@ int mprAddNullItem(MprList *lp)
     Insert an item to the list at a specified position. We insert before the item at "index".
     ie. The inserted item will go into the "index" location and the other elements will be moved up.
  */
-int mprInsertItemAtPos(MprList *lp, int index, cvoid *item)
+PUBLIC int mprInsertItemAtPos(MprList *lp, int index, cvoid *item)
 {
     void    **items;
     int     i;
@@ -296,7 +296,7 @@ int mprInsertItemAtPos(MprList *lp, int index, cvoid *item)
 /*
     Remove an item from the list. Return the index where the item resided.
  */
-int mprRemoveItem(MprList *lp, cvoid *item)
+PUBLIC int mprRemoveItem(MprList *lp, cvoid *item)
 {
     int     index;
 
@@ -315,7 +315,7 @@ int mprRemoveItem(MprList *lp, cvoid *item)
 }
 
 
-int mprRemoveLastItem(MprList *lp)
+PUBLIC int mprRemoveLastItem(MprList *lp)
 {
     mprAssert(lp);
     mprAssert(lp->size > 0);
@@ -332,7 +332,7 @@ int mprRemoveLastItem(MprList *lp)
     Remove an index from the list. Return the index where the item resided.
     The list is compacted.
  */
-int mprRemoveItemAtPos(MprList *lp, int index)
+PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
 {
     void    **items;
 
@@ -374,7 +374,7 @@ int mprRemoveItemAtPos(MprList *lp, int index)
 /*
     Remove a set of items. Return 0 if successful.
  */
-int mprRemoveRangeOfItems(MprList *lp, int start, int end)
+PUBLIC int mprRemoveRangeOfItems(MprList *lp, int start, int end)
 {
     void    **items;
     int     i, count;
@@ -415,7 +415,7 @@ int mprRemoveRangeOfItems(MprList *lp, int start, int end)
 /*
     Remove a string item from the list. Return the index where the item resided.
  */
-int mprRemoveStringItem(MprList *lp, cchar *str)
+PUBLIC int mprRemoveStringItem(MprList *lp, cchar *str)
 {
     int     index;
 
@@ -434,7 +434,7 @@ int mprRemoveStringItem(MprList *lp, cchar *str)
 }
 
 
-void *mprGetItem(MprList *lp, int index)
+PUBLIC void *mprGetItem(MprList *lp, int index)
 {
     mprAssert(lp);
 
@@ -445,7 +445,7 @@ void *mprGetItem(MprList *lp, int index)
 }
 
 
-void *mprGetFirstItem(MprList *lp)
+PUBLIC void *mprGetFirstItem(MprList *lp)
 {
     mprAssert(lp);
 
@@ -459,7 +459,7 @@ void *mprGetFirstItem(MprList *lp)
 }
 
 
-void *mprGetLastItem(MprList *lp)
+PUBLIC void *mprGetLastItem(MprList *lp)
 {
     mprAssert(lp);
 
@@ -473,7 +473,7 @@ void *mprGetLastItem(MprList *lp)
 }
 
 
-void *mprGetNextItem(MprList *lp, int *next)
+PUBLIC void *mprGetNextItem(MprList *lp, int *next)
 {
     void    *item;
     int     index;
@@ -497,7 +497,7 @@ void *mprGetNextItem(MprList *lp, int *next)
 }
 
 
-void *mprGetPrevItem(MprList *lp, int *next)
+PUBLIC void *mprGetPrevItem(MprList *lp, int *next)
 {
     void    *item;
     int     index;
@@ -523,13 +523,13 @@ void *mprGetPrevItem(MprList *lp, int *next)
 }
 
 
-int mprPushItem(MprList *lp, cvoid *item)
+PUBLIC int mprPushItem(MprList *lp, cvoid *item)
 {
     return mprAddItem(lp, item);
 }
 
 
-void *mprPopItem(MprList *lp)
+PUBLIC void *mprPopItem(MprList *lp)
 {
     void    *item;
     int     index;
@@ -547,7 +547,7 @@ void *mprPopItem(MprList *lp)
 
 
 #ifndef mprGetListLength
-int mprGetListLength(MprList *lp)
+PUBLIC int mprGetListLength(MprList *lp)
 {
     if (lp == 0) {
         return 0;
@@ -557,7 +557,7 @@ int mprGetListLength(MprList *lp)
 #endif
 
 
-int mprGetListCapacity(MprList *lp)
+PUBLIC int mprGetListCapacity(MprList *lp)
 {
     mprAssert(lp);
 
@@ -568,7 +568,7 @@ int mprGetListCapacity(MprList *lp)
 }
 
 
-void mprClearList(MprList *lp)
+PUBLIC void mprClearList(MprList *lp)
 {
     int     i;
 
@@ -583,7 +583,7 @@ void mprClearList(MprList *lp)
 }
 
 
-int mprLookupItem(MprList *lp, cvoid *item)
+PUBLIC int mprLookupItem(MprList *lp, cvoid *item)
 {
     int     i;
 
@@ -601,7 +601,7 @@ int mprLookupItem(MprList *lp, cvoid *item)
 }
 
 
-int mprLookupStringItem(MprList *lp, cchar *str)
+PUBLIC int mprLookupStringItem(MprList *lp, cchar *str)
 {
     int     i;
 
@@ -666,7 +666,7 @@ static int defaultSort(char **q1, char **q2, void *ctx)
 }
 
 
-MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
+PUBLIC MprList *mprSortList(MprList *lp, MprSortProc compare, void *ctx)
 {
     lock(lp);
     if (!compare) {
@@ -687,7 +687,7 @@ static void manageKeyValue(MprKeyValue *pair, int flags)
 }
 
 
-MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value)
+PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value)
 {
     MprKeyValue     *pair;
     
@@ -730,7 +730,7 @@ static void shortsort(char *lo, char *hi, ssize width, MprSortProc comp, void *c
     }
 }
 
-void mprSort(void *base, ssize num, ssize width, MprSortProc comp, void *ctx) 
+PUBLIC void mprSort(void *base, ssize num, ssize width, MprSortProc comp, void *ctx) 
 {
     char    *lo, *hi, *mid, *l, *h, *lostk[30], *histk[30];
     ssize   size;

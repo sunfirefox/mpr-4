@@ -18,7 +18,7 @@ static void readPipe(MprWaitService *ws);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     int     rc, retries, breakPort, breakSock, maxTries;
 
@@ -78,7 +78,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManageSelect(MprWaitService *ws, int flags)
+PUBLIC void mprManageSelect(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
         if (ws->breakSock >= 0) {
@@ -99,7 +99,7 @@ static int growFds(MprWaitService *ws, int fd)
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     int     fd;
 
@@ -151,7 +151,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 {
     MprWaitService  *ws;
     struct timeval  tval;
@@ -192,7 +192,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 {
     struct timeval  tval;
     int             rc, maxfd;
@@ -270,7 +270,7 @@ static void serviceIO(MprWaitService *ws, int maxfd)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     ssize           rc;
@@ -306,7 +306,7 @@ static void readPipe(MprWaitService *ws)
 }
 
 #else
-void stubMprSelectWait() {}
+PUBLIC void stubMprSelectWait() {}
 #endif /* MPR_EVENT_SELECT */
 
 /*

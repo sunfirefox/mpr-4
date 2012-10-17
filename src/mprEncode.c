@@ -41,7 +41,7 @@ static uchar charMatch[256] = {
 /*  
     Uri encode by encoding special characters with hex equivalents. Return an allocated string.
  */
-char *mprUriEncode(cchar *inbuf, int map)
+PUBLIC char *mprUriEncode(cchar *inbuf, int map)
 {
     static cchar    hexTable[] = "0123456789ABCDEF";
     uchar           c;
@@ -85,7 +85,7 @@ char *mprUriEncode(cchar *inbuf, int map)
 /*  
     Decode a string using URL encoding. Return an allocated string.
  */
-char *mprUriDecode(cchar *inbuf)
+PUBLIC char *mprUriDecode(cchar *inbuf)
 {
     cchar   *ip;
     char    *result, *op;
@@ -129,7 +129,7 @@ char *mprUriDecode(cchar *inbuf)
 /*  
     Escape a shell command. Not really Http, but useful anyway for CGI
  */
-char *mprEscapeCmd(cchar *cmd, int escChar)
+PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
 {
     uchar   c;
     cchar   *ip;
@@ -176,7 +176,7 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
 /*  
     Escape HTML to escape defined characters (prevent cross-site scripting)
  */
-char *mprEscapeHtml(cchar *html)
+PUBLIC char *mprEscapeHtml(cchar *html)
 {
     cchar   *ip;
     char    *result, *op;

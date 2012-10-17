@@ -25,7 +25,7 @@ static void manageHashTable(MprHash *hash, int flags);
 /*
     Create a new hash hash of a given size. Caller should provide a size that is a prime number for the greatest efficiency.
  */
-MprHash *mprCreateHash(int hashSize, int flags)
+PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
 {
     MprHash     *hash;
 
@@ -99,7 +99,7 @@ static void manageHashTable(MprHash *hash, int flags)
     Insert an entry into the hash hash. If the entry already exists, update its value. 
     Order of insertion is not preserved.
  */
-MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
+PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 {
     MprKey      *sp, *prevSp;
     int         index;
@@ -143,7 +143,7 @@ MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
+PUBLIC MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
 {
     va_list     ap;
     char        *value;
@@ -160,7 +160,7 @@ MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
     Order of insertion is not preserved. Lookup cannot be used to retrieve all duplicate keys, some will be shadowed. 
     Use enumeration to retrieve the keys.
  */
-MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
+PUBLIC MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 {
     MprKey      *sp;
     int         index;
@@ -188,7 +188,7 @@ MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-int mprRemoveKey(MprHash *hash, cvoid *key)
+PUBLIC int mprRemoveKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp, *prevSp;
     int         index;
@@ -212,7 +212,7 @@ int mprRemoveKey(MprHash *hash, cvoid *key)
 }
 
 
-MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
+PUBLIC MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
 {
     MprKey      *kp;
 
@@ -226,7 +226,7 @@ MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
 }
 
 
-MprHash *mprCloneHash(MprHash *master)
+PUBLIC MprHash *mprCloneHash(MprHash *master)
 {
     MprKey      *kp;
     MprHash     *hash;
@@ -246,7 +246,7 @@ MprHash *mprCloneHash(MprHash *master)
 /*
     Lookup a key and return the hash entry
  */
-MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
+PUBLIC MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
 {
     return lookupHash(0, 0, hash, key);
 }
@@ -255,7 +255,7 @@ MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
 /*
     Lookup a key and return the hash entry data
  */
-void *mprLookupKey(MprHash *hash, cvoid *key)
+PUBLIC void *mprLookupKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp;
 
@@ -364,7 +364,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
 }
 
 
-int mprGetHashLength(MprHash *hash)
+PUBLIC int mprGetHashLength(MprHash *hash)
 {
     return hash->length;
 }
@@ -373,7 +373,7 @@ int mprGetHashLength(MprHash *hash)
 /*
     Return the first entry in the hash.
  */
-MprKey *mprGetFirstKey(MprHash *hash)
+PUBLIC MprKey *mprGetFirstKey(MprHash *hash)
 {
     MprKey      *sp;
     int         i;
@@ -392,7 +392,7 @@ MprKey *mprGetFirstKey(MprHash *hash)
 /*
     Return the next entry in the hash
  */
-MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
+PUBLIC MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 {
     MprKey      *sp;
     int         i;
@@ -426,7 +426,7 @@ static void *dupKey(MprHash *hash, cvoid *key)
 }
 
 
-MprHash *mprCreateHashFromWords(cchar *str)
+PUBLIC MprHash *mprCreateHashFromWords(cchar *str)
 {
     MprHash     *hash;
     char        *word, *next;

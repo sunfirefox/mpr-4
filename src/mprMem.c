@@ -20,8 +20,8 @@
     Set this address to break when this address is allocated or freed
     Only used for debug, but defined regardless so we can have constant exports.
  */
-MprMem *stopAlloc = 0;
-int stopSeqno = -1;
+PUBLIC MprMem *stopAlloc = 0;
+PUBLIC int stopSeqno = -1;
 
 #define GET_MEM(ptr)                ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
 #define GET_PTR(mp)                 ((char*) (((char*) mp) + sizeof(MprMem)))
@@ -148,7 +148,7 @@ int stopSeqno = -1;
 /********************************** Data **************************************/
 
 #undef              MPR
-Mpr                 *MPR;
+PUBLIC Mpr                 *MPR;
 static MprHeap      *heap;
 static MprMemStats  memStats;
 static int          padding[] = { 0, MANAGER_SIZE };
@@ -206,7 +206,7 @@ static void vmfree(void *ptr, ssize size);
 
 /************************************* Code ***********************************/
 
-Mpr *mprCreateMemService(MprManager manager, int flags)
+PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 {
     MprMem      *mp;
     MprMem      *spare;
@@ -292,7 +292,7 @@ Mpr *mprCreateMemService(MprManager manager, int flags)
 /*
     Shutdown memory service. Run managers on all allocated blocks.
  */
-void mprDestroyMemService()
+PUBLIC void mprDestroyMemService()
 {
     volatile MprRegion  *region;
     MprMem              *mp, *next;
@@ -313,7 +313,7 @@ void mprDestroyMemService()
 }
 
 
-void *mprAllocMem(ssize usize, int flags)
+PUBLIC void *mprAllocMem(ssize usize, int flags)
 {
     MprMem      *mp;
     void        *ptr;
@@ -346,7 +346,7 @@ void *mprAllocMem(ssize usize, int flags)
 /*
     Realloc will always zero new memory
  */
-void *mprReallocMem(void *ptr, ssize usize)
+PUBLIC void *mprReallocMem(void *ptr, ssize usize)
 {
     MprMem      *mp, *newb;
     void        *newptr;
@@ -388,7 +388,7 @@ void *mprReallocMem(void *ptr, ssize usize)
 }
 
 
-void *mprMemdupMem(cvoid *ptr, ssize usize)
+PUBLIC void *mprMemdupMem(cvoid *ptr, ssize usize)
 {
     char    *newp;
 
@@ -399,7 +399,7 @@ void *mprMemdupMem(cvoid *ptr, ssize usize)
 }
 
 
-int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
+PUBLIC int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
 {
     int         rc;
 
@@ -422,7 +422,7 @@ int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
 /*
     mprMemcpy will support insitu copy where src and destination overlap
  */
-ssize mprMemcpy(void *dest, ssize destMax, cvoid *src, ssize nbytes)
+PUBLIC ssize mprMemcpy(void *dest, ssize destMax, cvoid *src, ssize nbytes)
 {
     mprAssert(dest);
     mprAssert(destMax <= 0 || destMax >= nbytes);
@@ -883,7 +883,7 @@ static MprFreeMem *getQueue(ssize size)
     It is the application's responsibility to set the red-line value suitable for the system.
     Memory is zereod on all platforms.
  */
-void *mprVirtAlloc(ssize size, int mode)
+PUBLIC void *mprVirtAlloc(ssize size, int mode)
 {
     ssize       used;
     void        *ptr;
@@ -908,7 +908,7 @@ void *mprVirtAlloc(ssize size, int mode)
 }
 
 
-void mprVirtFree(void *ptr, ssize size)
+PUBLIC void mprVirtFree(void *ptr, ssize size)
 {
     vmfree(ptr, size);
     lockHeap();
@@ -966,7 +966,7 @@ static void vmfree(void *ptr, ssize size)
 
 /***************************************************** Garbage Colllector *************************************************/
 
-void mprStartGCService()
+PUBLIC void mprStartGCService()
 {
     if (heap->enabled) {
         if (heap->flags & MPR_MARK_THREAD) {
@@ -994,14 +994,14 @@ void mprStartGCService()
 }
 
 
-void mprStopGCService()
+PUBLIC void mprStopGCService()
 {
     mprWakeGCService();
     mprNap(1);
 }
 
 
-void mprWakeGCService()
+PUBLIC void mprWakeGCService()
 {
     mprSignalCond(heap->markerCond);
     mprResumeThreads();
@@ -1022,7 +1022,7 @@ static void triggerGC(int flags)
 }
 
 
-void mprRequestGC(int flags)
+PUBLIC void mprRequestGC(int flags)
 {
     int     i, count;
 
@@ -1237,7 +1237,7 @@ static void markRoots()
 }
 
 
-void mprMarkBlock(cvoid *ptr)
+PUBLIC void mprMarkBlock(cvoid *ptr)
 {
     MprMem      *mp;
     int         gen;
@@ -1294,7 +1294,7 @@ void mprMarkBlock(cvoid *ptr)
 
 
 //  WARNING: these do not mark component members
-void mprHold(void *ptr)
+PUBLIC void mprHold(void *ptr)
 {
     MprMem  *mp;
 
@@ -1308,7 +1308,7 @@ void mprHold(void *ptr)
 }
 
 
-void mprRelease(void *ptr)
+PUBLIC void mprRelease(void *ptr)
 {
     MprMem  *mp;
 
@@ -1326,7 +1326,7 @@ void mprRelease(void *ptr)
 /*
     If dispatcher is 0, will use MPR->nonBlock if MPR_EVENT_QUICK else MPR->dispatcher
  */
-int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *data)
+PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *data)
 {
     MprEvent    *event;
 
@@ -1389,7 +1389,7 @@ static void sweeper(void *unused, MprThread *tp)
     If the GC marker is synchronizing, this call will block at the GC sync point (should be brief).
     NOTE: if called by ResetYield, we may be already marking.
  */
-void mprYield(int flags)
+PUBLIC void mprYield(int flags)
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -1422,7 +1422,7 @@ void mprYield(int flags)
 }
 
 
-void mprResetYield()
+PUBLIC void mprResetYield()
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -1514,7 +1514,7 @@ static int pauseThreads()
 /*
     Resume all yielded threads. Called by the GC marker only and when destroying the app.
  */
-void mprResumeThreads()
+PUBLIC void mprResumeThreads()
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -1537,7 +1537,7 @@ void mprResumeThreads()
 }
 
 
-void mprVerifyMem()
+PUBLIC void mprVerifyMem()
 {
 #if BIT_MEMORY_DEBUG
     MprRegion   *region;
@@ -1587,7 +1587,7 @@ void mprVerifyMem()
 /*
     WARNING: Caller must be locked so that the sweeper will not free this block. 
  */
-int mprIsDead(cvoid *ptr)
+PUBLIC int mprIsDead(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -1603,7 +1603,7 @@ int mprIsDead(cvoid *ptr)
     Revive a block that is scheduled for sweeping.
     WARNING: Caller must be locked so that the sweeper will not free this block. 
  */
-void mprRevive(cvoid *ptr)
+PUBLIC void mprRevive(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -1613,7 +1613,7 @@ void mprRevive(cvoid *ptr)
 }
 
 
-bool mprEnableGC(bool on)
+PUBLIC bool mprEnableGC(bool on)
 {
     bool    old;
 
@@ -1658,7 +1658,7 @@ static void nextGen()
 }
 
 
-void mprAddRoot(void *root)
+PUBLIC void mprAddRoot(void *root)
 {
     /*
         Need to use root lock because mprAddItem may allocate
@@ -1669,7 +1669,7 @@ void mprAddRoot(void *root)
 }
 
 
-void mprRemoveRoot(void *root)
+PUBLIC void mprRemoveRoot(void *root)
 {
     ssize   index;
 
@@ -1803,7 +1803,7 @@ static void printGCStats()
 #endif /* BIT_MEMORY_STATS */
 
 
-void mprPrintMem(cchar *msg, int detail)
+PUBLIC void mprPrintMem(cchar *msg, int detail)
 {
 #if BIT_MEMORY_STATS
     MprMemStats   *ap;
@@ -1851,7 +1851,7 @@ static int validBlk(MprMem *mp)
 }
 
 
-void mprCheckBlock(MprMem *mp)
+PUBLIC void mprCheckBlock(MprMem *mp)
 {
     ssize   size;
 
@@ -1898,7 +1898,7 @@ static void breakpoint(MprMem *mp)
 /*
     Called to set the memory block name when doing an allocation
  */
-void *mprSetAllocName(void *ptr, cchar *name)
+PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
 {
     MPR_GET_MEM(ptr)->name = name;
 
@@ -1949,7 +1949,7 @@ static void freeLocation(cchar *name, ssize size)
 }
 
 
-void *mprSetName(void *ptr, cchar *name) 
+PUBLIC void *mprSetName(void *ptr, cchar *name) 
 {
 #if BIT_MEMORY_STATS
     MprMem  *mp = GET_MEM(ptr);
@@ -1964,7 +1964,7 @@ void *mprSetName(void *ptr, cchar *name)
 }
 
 
-void *mprCopyName(void *dest, void *src) 
+PUBLIC void *mprCopyName(void *dest, void *src) 
 {
     return mprSetName(dest, mprGetName(src));
 }
@@ -2127,7 +2127,7 @@ static int winPageModes(int flags)
 #endif
 
 
-MprMemStats *mprGetMemStats()
+PUBLIC MprMemStats *mprGetMemStats()
 {
 #if LINUX
     char            buf[1024], *cp;
@@ -2179,7 +2179,7 @@ MprMemStats *mprGetMemStats()
     platforms. On FREEBDS it returns the peak resident set size using getrusage. If a suitable O/S API is not available,
     the amount of heap memory allocated by the MPR is returned.
  */
-ssize mprGetMem()
+PUBLIC ssize mprGetMem()
 {
     ssize size = 0;
 
@@ -2311,20 +2311,20 @@ static MPR_INLINE int flsl(ulong word)
 
 
 #if BIT_WIN_LIKE
-Mpr *mprGetMpr()
+PUBLIC Mpr *mprGetMpr()
 {
     return MPR;
 }
 #endif
 
 
-int mprGetPageSize()
+PUBLIC int mprGetPageSize()
 {
     return memStats.pageSize;
 }
 
 
-ssize mprGetBlockSize(cvoid *ptr)
+PUBLIC ssize mprGetBlockSize(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -2337,19 +2337,19 @@ ssize mprGetBlockSize(cvoid *ptr)
 }
 
 
-int mprGetHeapFlags()
+PUBLIC int mprGetHeapFlags()
 {
     return heap->flags;
 }
 
 
-void mprSetMemNotifier(MprMemNotifier cback)
+PUBLIC void mprSetMemNotifier(MprMemNotifier cback)
 {
     heap->notifier = cback;
 }
 
 
-void mprSetMemLimits(ssize redLine, ssize maxMemory)
+PUBLIC void mprSetMemLimits(ssize redLine, ssize maxMemory)
 {
     if (redLine > 0) {
         heap->stats.redLine = redLine;
@@ -2360,31 +2360,31 @@ void mprSetMemLimits(ssize redLine, ssize maxMemory)
 }
 
 
-void mprSetMemPolicy(int policy)
+PUBLIC void mprSetMemPolicy(int policy)
 {
     heap->allocPolicy = policy;
 }
 
 
-void mprSetMemError()
+PUBLIC void mprSetMemError()
 {
     heap->hasError = 1;
 }
 
 
-bool mprHasMemError()
+PUBLIC bool mprHasMemError()
 {
     return heap->hasError;
 }
 
 
-void mprResetMemError()
+PUBLIC void mprResetMemError()
 {
     heap->hasError = 0;
 }
 
 
-int mprIsValid(cvoid *ptr)
+PUBLIC int mprIsValid(cvoid *ptr)
 {
     MprMem      *mp;
 
@@ -2415,7 +2415,7 @@ static void dummyManager(void *ptr, int flags)
 }
 
 
-void *mprSetManager(void *ptr, MprManager manager)
+PUBLIC void *mprSetManager(void *ptr, MprManager manager)
 {
     MprMem      *mp;
 
@@ -2521,10 +2521,10 @@ static void monitorStack()
 /*
     Define stubs so windows can use same *.def for debug or release
  */
-void mprCheckBlock(MprMem *mp) {}
-void *mprSetName(void *ptr, cchar *name) { return 0; }
-void *mprCopyName(void *dest, void *src) { return 0; }
-void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
+PUBLIC void mprCheckBlock(MprMem *mp) {}
+PUBLIC void *mprSetName(void *ptr, cchar *name) { return 0; }
+PUBLIC void *mprCopyName(void *dest, void *src) { return 0; }
+PUBLIC void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
 
 /*
     Re-instate defines for combo releases, where source will be appended below here

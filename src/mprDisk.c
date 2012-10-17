@@ -500,7 +500,7 @@ static void manageDiskFileSystem(MprDiskFileSystem *dfs, int flags)
 }
 
 
-MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
+PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 {
     MprFileSystem       *fs;
     MprDiskFileSystem   *dfs;

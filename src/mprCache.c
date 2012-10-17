@@ -36,7 +36,7 @@ static void removeItem(MprCache *cache, CacheItem *item);
 
 /************************************* Code ***********************************/
 
-MprCache *mprCreateCache(int options)
+PUBLIC MprCache *mprCreateCache(int options)
 {
     MprCache    *cache;
     int         wantShared;
@@ -62,7 +62,7 @@ MprCache *mprCreateCache(int options)
 }
 
 
-void *mprDestroyCache(MprCache *cache)
+PUBLIC void *mprDestroyCache(MprCache *cache)
 {
     mprAssert(cache);
 
@@ -77,7 +77,7 @@ void *mprDestroyCache(MprCache *cache)
 }
 
 
-int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
+PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
 {
     CacheItem   *item;
 
@@ -103,7 +103,7 @@ int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
 }
 
 
-int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
+PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
 {
     CacheItem   *item;
     int64       value;
@@ -138,7 +138,7 @@ int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
 }
 
 
-char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
+PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
 {
     CacheItem   *item;
     char        *result;
@@ -173,7 +173,7 @@ char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *versio
 }
 
 
-bool mprRemoveCache(MprCache *cache, cchar *key)
+PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key)
 {
     CacheItem   *item;
     bool        result;
@@ -206,7 +206,7 @@ bool mprRemoveCache(MprCache *cache, cchar *key)
 }
 
 
-void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memory, int resolution)
+PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memory, int resolution)
 {
     mprAssert(cache);
 
@@ -238,7 +238,7 @@ void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memo
 }
 
 
-ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
+PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
     int64 version, int options)
 {
     CacheItem   *item;
@@ -399,7 +399,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
 }
 
 
-void mprPruneCache(MprCache *cache)
+PUBLIC void mprPruneCache(MprCache *cache)
 {
     pruneCache(cache, NULL);
 }

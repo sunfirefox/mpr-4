@@ -13,7 +13,7 @@
 
 /************************************ Code ************************************/
 
-char *itos(int64 value)
+PUBLIC char *itos(int64 value)
 {
     return itosradix(value, 10);
 }
@@ -22,7 +22,7 @@ char *itos(int64 value)
 /*
     Format a number as a string. Support radix 10 and 16.
  */
-char *itosradix(int64 value, int radix)
+PUBLIC char *itosradix(int64 value, int radix)
 {
     char    numBuf[32];
     char    *cp;
@@ -53,7 +53,7 @@ char *itosradix(int64 value, int radix)
 }
 
 
-char *itosbuf(char *buf, ssize size, int64 value, int radix)
+PUBLIC char *itosbuf(char *buf, ssize size, int64 value, int radix)
 {
     char    *cp, *end;
     char    digits[] = "0123456789ABCDEF";
@@ -91,7 +91,7 @@ char *itosbuf(char *buf, ssize size, int64 value, int radix)
 }
 
 
-char *scamel(cchar *str)
+PUBLIC char *scamel(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -113,7 +113,7 @@ char *scamel(cchar *str)
 /*
     Case insensitive string comparison. Limited by length
  */
-int scaselesscmp(cchar *s1, cchar *s2)
+PUBLIC int scaselesscmp(cchar *s1, cchar *s2)
 {
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -126,13 +126,13 @@ int scaselesscmp(cchar *s1, cchar *s2)
 }
 
 
-bool scaselessmatch(cchar *s1, cchar *s2)
+PUBLIC bool scaselessmatch(cchar *s1, cchar *s2)
 {
     return scaselesscmp(s1, s2) == 0;
 }
 
 
-char *schr(cchar *s, int c)
+PUBLIC char *schr(cchar *s, int c)
 {
     if (s == 0) {
         return 0;
@@ -141,7 +141,7 @@ char *schr(cchar *s, int c)
 }
 
 
-char *sncontains(cchar *str, cchar *pattern, ssize limit)
+PUBLIC char *sncontains(cchar *str, cchar *pattern, ssize limit)
 {
     cchar   *cp, *s1, *s2;
     ssize   lim;
@@ -170,7 +170,7 @@ char *sncontains(cchar *str, cchar *pattern, ssize limit)
 }
 
 
-char *scontains(cchar *str, cchar *pattern)
+PUBLIC char *scontains(cchar *str, cchar *pattern)
 {
     return sncontains(str, pattern, -1);
 }
@@ -179,7 +179,7 @@ char *scontains(cchar *str, cchar *pattern)
 /*
     Copy a string into a buffer. Always ensure it is null terminated
  */
-ssize scopy(char *dest, ssize destMax, cchar *src)
+PUBLIC ssize scopy(char *dest, ssize destMax, cchar *src)
 {
     ssize      len;
 
@@ -198,7 +198,7 @@ ssize scopy(char *dest, ssize destMax, cchar *src)
 }
 
 
-char *sclone(cchar *str)
+PUBLIC char *sclone(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -216,7 +216,7 @@ char *sclone(cchar *str)
 }
 
 
-int scmp(cchar *s1, cchar *s2)
+PUBLIC int scmp(cchar *s1, cchar *s2)
 {
     if (s1 == s2) {
         return 0;
@@ -229,7 +229,7 @@ int scmp(cchar *s1, cchar *s2)
 }
 
 
-bool sends(cchar *str, cchar *suffix)
+PUBLIC bool sends(cchar *str, cchar *suffix)
 {
     if (str == 0 || suffix == 0) {
         return 0;
@@ -241,7 +241,7 @@ bool sends(cchar *str, cchar *suffix)
 }
 
 
-char *sfmt(cchar *format, ...)
+PUBLIC char *sfmt(cchar *format, ...)
 {
     va_list     ap;
     char        *buf;
@@ -256,7 +256,7 @@ char *sfmt(cchar *format, ...)
 }
 
 
-char *sfmtv(cchar *format, va_list arg)
+PUBLIC char *sfmtv(cchar *format, va_list arg)
 {
     mprAssert(format);
     return mprAsprintfv(format, arg);
@@ -267,7 +267,7 @@ char *sfmtv(cchar *format, va_list arg)
     Compute a hash for a C string
     Inspired by Paul Hsieh (c) 2004-2008, see http://www.azillionmonkeys.com/qed/hash.html)
  */
-uint shash(cchar *cname, ssize len)
+PUBLIC uint shash(cchar *cname, ssize len)
 {
     uchar   *name;
     uint    hash, rem, tmp;
@@ -317,7 +317,7 @@ uint shash(cchar *cname, ssize len)
 /*
     Hash the lower case name
  */
-uint shashlower(cchar *cname, ssize len)
+PUBLIC uint shashlower(cchar *cname, ssize len)
 {
     uchar   *name;
     uint    hash, rem, tmp;
@@ -365,7 +365,7 @@ uint shashlower(cchar *cname, ssize len)
 }
 
 
-char *sjoin(cchar *str, ...)
+PUBLIC char *sjoin(cchar *str, ...)
 {
     va_list     ap;
     char        *result;
@@ -377,7 +377,7 @@ char *sjoin(cchar *str, ...)
 }
 
 
-char *sjoinv(cchar *buf, va_list args)
+PUBLIC char *sjoinv(cchar *buf, va_list args)
 {
     va_list     ap;
     char        *dest, *str, *dp;
@@ -413,7 +413,7 @@ char *sjoinv(cchar *buf, va_list args)
 }
 
 
-ssize slen(cchar *s)
+PUBLIC ssize slen(cchar *s)
 {
     return s ? strlen(s) : 0;
 }
@@ -422,7 +422,7 @@ ssize slen(cchar *s)
 /*  
     Map a string to lower case. Allocates a new string.
  */
-char *slower(cchar *str)
+PUBLIC char *slower(cchar *str)
 {
     char    *cp, *s;
 
@@ -441,13 +441,13 @@ char *slower(cchar *str)
 }
 
 
-bool smatch(cchar *s1, cchar *s2)
+PUBLIC bool smatch(cchar *s1, cchar *s2)
 {
     return scmp(s1, s2) == 0;
 }
 
 
-int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
+PUBLIC int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
@@ -482,7 +482,7 @@ int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
     Clone a sub-string of a specified length. The null is added after the length. The given len can be longer than the
     source string.
  */
-char *snclone(cchar *str, ssize len)
+PUBLIC char *snclone(cchar *str, ssize len)
 {
     char    *ptr;
     ssize   size, l;
@@ -504,7 +504,7 @@ char *snclone(cchar *str, ssize len)
 /*
     Case sensitive string comparison. Limited by length
  */
-int sncmp(cchar *s1, cchar *s2, ssize n)
+PUBLIC int sncmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
@@ -539,7 +539,7 @@ int sncmp(cchar *s1, cchar *s2, ssize n)
     This routine copies at most "count" characters from a string. It ensures the result is always null terminated and 
     the buffer does not overflow. Returns MPR_ERR_WONT_FIT if the buffer is too small.
  */
-ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
+PUBLIC ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 {
     ssize      len;
 
@@ -567,13 +567,13 @@ ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 }
 
 
-bool snumber(cchar *s)
+PUBLIC bool snumber(cchar *s)
 {
     return s && *s && strspn(s, "1234567890") == strlen(s);
 } 
 
 
-char *spascal(cchar *str)
+PUBLIC char *spascal(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -592,7 +592,7 @@ char *spascal(cchar *str)
 }
 
 
-char *spbrk(cchar *str, cchar *set)
+PUBLIC char *spbrk(cchar *str, cchar *set)
 {
     cchar       *sp;
     int         count;
@@ -611,7 +611,7 @@ char *spbrk(cchar *str, cchar *set)
 }
 
 
-char *srchr(cchar *s, int c)
+PUBLIC char *srchr(cchar *s, int c)
 {
     if (s == 0) {
         return 0;
@@ -620,7 +620,7 @@ char *srchr(cchar *s, int c)
 }
 
 
-char *srejoin(char *buf, ...)
+PUBLIC char *srejoin(char *buf, ...)
 {
     va_list     args;
     char        *result;
@@ -632,7 +632,7 @@ char *srejoin(char *buf, ...)
 }
 
 
-char *srejoinv(char *buf, va_list args)
+PUBLIC char *srejoinv(char *buf, va_list args)
 {
     va_list     ap;
     char        *dest, *str, *dp;
@@ -662,7 +662,7 @@ char *srejoinv(char *buf, va_list args)
 }
 
 
-char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
+PUBLIC char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
 {
     MprBuf      *buf;
     cchar       *s;
@@ -685,7 +685,7 @@ char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
 }
 
 
-ssize sspn(cchar *str, cchar *set)
+PUBLIC ssize sspn(cchar *str, cchar *set)
 {
 #if KEEP
     cchar       *sp;
@@ -714,7 +714,7 @@ ssize sspn(cchar *str, cchar *set)
 }
  
 
-bool sstarts(cchar *str, cchar *prefix)
+PUBLIC bool sstarts(cchar *str, cchar *prefix)
 {
     if (str == 0 || prefix == 0) {
         return 0;
@@ -726,7 +726,7 @@ bool sstarts(cchar *str, cchar *prefix)
 }
 
 
-int64 stoi(cchar *str)
+PUBLIC int64 stoi(cchar *str)
 {
     return stoiradix(str, 10, NULL);
 }
@@ -741,7 +741,7 @@ int64 stoi(cchar *str)
         [(+|-)][DIGITS]
 
  */
-int64 stoiradix(cchar *str, int radix, int *err)
+PUBLIC int64 stoiradix(cchar *str, int radix, int *err)
 {
     cchar   *start;
     int64   val;
@@ -824,7 +824,7 @@ int64 stoiradix(cchar *str, int radix, int *err)
     Note "str" is modifed as per strtok()
     WARNING:  this does not allocate
  */
-char *stok(char *str, cchar *delim, char **last)
+PUBLIC char *stok(char *str, cchar *delim, char **last)
 {
     char    *start, *end;
     ssize   i;
@@ -852,7 +852,7 @@ char *stok(char *str, cchar *delim, char **last)
 }
 
 
-char *ssub(cchar *str, ssize offset, ssize len)
+PUBLIC char *ssub(cchar *str, ssize offset, ssize len)
 {
     char    *result;
     ssize   size;
@@ -877,7 +877,7 @@ char *ssub(cchar *str, ssize offset, ssize len)
 /*
     Trim characters from the given set. Returns a newly allocated string.
  */
-char *strim(cchar *str, cchar *set, int where)
+PUBLIC char *strim(cchar *str, cchar *set, int where)
 {
     char    *s;
     ssize   len, i;
@@ -905,7 +905,7 @@ char *strim(cchar *str, cchar *set, int where)
 /*  
     Map a string to upper case
  */
-char *supper(cchar *str)
+PUBLIC char *supper(cchar *str)
 {
     char    *cp, *s;
 
@@ -927,7 +927,7 @@ char *supper(cchar *str)
     Expand ${token} references in a path or string.
     Currently support DOCUMENT_ROOT, SERVER_ROOT and PRODUCT, OS and VERSION.
  */
-char *stemplate(cchar *str, MprHash *keys)
+PUBLIC char *stemplate(cchar *str, MprHash *keys)
 {
     MprBuf      *buf;
     char        *src, *result, *cp, *tok, *value;

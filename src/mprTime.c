@@ -195,7 +195,7 @@ static void validateTime(struct tm *tm, struct tm *defaults);
 /*
     Initialize the time service
  */
-int mprCreateTimeService()
+PUBLIC int mprCreateTimeService()
 {
     Mpr                 *mpr;
     TimeToken           *tt;
@@ -227,7 +227,7 @@ int mprCreateTimeService()
 }
 
 
-int mprCompareTime(MprTime t1, MprTime t2)
+PUBLIC int mprCompareTime(MprTime t1, MprTime t2)
 {
     if (t1 < t2) {
         return -1;
@@ -238,19 +238,19 @@ int mprCompareTime(MprTime t1, MprTime t2)
 }
 
 
-void mprDecodeLocalTime(struct tm *tp, MprTime when)
+PUBLIC void mprDecodeLocalTime(struct tm *tp, MprTime when)
 {
     decodeTime(tp, when, 1);
 }
 
 
-void mprDecodeUniversalTime(struct tm *tp, MprTime when)
+PUBLIC void mprDecodeUniversalTime(struct tm *tp, MprTime when)
 {
     decodeTime(tp, when, 0);
 }
 
 
-char *mprGetDate(char *format)
+PUBLIC char *mprGetDate(char *format)
 {
     struct tm   tm;
 
@@ -262,7 +262,7 @@ char *mprGetDate(char *format)
 }
 
 
-char *mprFormatLocalTime(cchar *format, MprTime time)
+PUBLIC char *mprFormatLocalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
     if (format == 0) {
@@ -273,7 +273,7 @@ char *mprFormatLocalTime(cchar *format, MprTime time)
 }
 
 
-char *mprFormatUniversalTime(cchar *format, MprTime time)
+PUBLIC char *mprFormatUniversalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
     if (format == 0) {
@@ -287,7 +287,7 @@ char *mprFormatUniversalTime(cchar *format, MprTime time)
 /*
     Returns time in milliseconds since the epoch: 0:0:0 UTC Jan 1 1970.
  */
-MprTime mprGetTime()
+PUBLIC MprTime mprGetTime()
 {
 #if VXWORKS
     struct timespec  tv;
@@ -304,7 +304,7 @@ MprTime mprGetTime()
 /*
     Return the number of milliseconds until the given timeout has expired.
  */
-MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
+PUBLIC MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
 {
     MprTime     now, diff;
 
@@ -324,7 +324,7 @@ MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
 /*
     Get the elapsed time since a time marker
  */
-MprTime mprGetElapsedTime(MprTime mark)
+PUBLIC MprTime mprGetElapsedTime(MprTime mark)
 {
     return mprGetTime() - mark;
 }
@@ -334,7 +334,7 @@ MprTime mprGetElapsedTime(MprTime mark)
     Get the timezone offset including DST
     Return the timezone offset (including DST) in msec. local == (UTC + offset)
  */
-int mprGetTimeZoneOffset(MprTime when)
+PUBLIC int mprGetTimeZoneOffset(MprTime when)
 {
     MprTime     alternate, secs;
     struct tm   t;
@@ -360,7 +360,7 @@ int mprGetTimeZoneOffset(MprTime when)
 /*
     Make a time value interpreting "tm" as a local time
  */
-MprTime mprMakeTime(struct tm *tp)
+PUBLIC MprTime mprMakeTime(struct tm *tp)
 {
     MprTime     when, alternate;
     struct tm   t;
@@ -382,7 +382,7 @@ MprTime mprMakeTime(struct tm *tp)
 }
 
 
-MprTime mprMakeUniversalTime(struct tm *tp)
+PUBLIC MprTime mprMakeUniversalTime(struct tm *tp)
 {
     return makeTime(tp);
 }
@@ -550,7 +550,7 @@ static int getYear(MprTime when)
 }
 
 
-MprTime floorDiv(MprTime x, MprTime divisor)
+PUBLIC MprTime floorDiv(MprTime x, MprTime divisor)
 {
     if (x < 0) {
         return (x - divisor + 1) / divisor;
@@ -710,7 +710,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 /*
     Preferred implementation as strftime() will be localized
  */
-char *mprFormatTm(cchar *format, struct tm *tp)
+PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     char            localFmt[MPR_MAX_STRING];
@@ -961,7 +961,7 @@ static char *getTimeZoneName(struct tm *tp)
 }
 
 
-char *mprFormatTm(cchar *format, struct tm *tp)
+PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     MprBuf          *buf;
@@ -1322,7 +1322,7 @@ static void swapDayMonth(struct tm *tp)
     Parse the a date/time string according to the given zoneFlags and return the result in *time. Missing date items 
     may be provided via the defaults argument.
  */ 
-int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *defaults)
+PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *defaults)
 {
     TimeToken       *tt;
     struct tm       tm;
@@ -1625,7 +1625,7 @@ static void validateTime(struct tm *tp, struct tm *defaults)
     Compatibility for windows and VxWorks
  */
 #if BIT_WIN_LIKE || VXWORKS
-int gettimeofday(struct timeval *tv, struct timezone *tz)
+PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
     #if BIT_WIN_LIKE
         FILETIME        fileTime;

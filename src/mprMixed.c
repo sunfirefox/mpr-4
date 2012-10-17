@@ -11,19 +11,19 @@
 #if BIT_CHAR_LEN > 1 && UNUSED && KEEP
 /********************************** Forwards **********************************/
 
-int mcaselesscmp(wchar *str1, cchar *str2)
+PUBLIC int mcaselesscmp(wchar *str1, cchar *str2)
 {
     return mncaselesscmp(str1, str2, -1);
 }
 
 
-int mcmp(wchar *s1, cchar *s2)
+PUBLIC int mcmp(wchar *s1, cchar *s2)
 {
     return mncmp(s1, s2, -1);
 }
 
 
-wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
+PUBLIC wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
 {
     wchar   *cp, *s1;
     cchar   *s2;
@@ -55,7 +55,7 @@ wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
 }
 
 
-wchar *mcontains(wchar *str, cchar *pattern)
+PUBLIC wchar *mcontains(wchar *str, cchar *pattern)
 {
     return mncontains(str, pattern, -1);
 }
@@ -64,7 +64,7 @@ wchar *mcontains(wchar *str, cchar *pattern)
 /*
     destMax and len are character counts, not sizes in bytes
  */
-ssize mcopy(wchar *dest, ssize destMax, cchar *src)
+PUBLIC ssize mcopy(wchar *dest, ssize destMax, cchar *src)
 {
     ssize       len;
 
@@ -81,7 +81,7 @@ ssize mcopy(wchar *dest, ssize destMax, cchar *src)
 }
 
 
-int mends(wchar *str, cchar *suffix)
+PUBLIC int mends(wchar *str, cchar *suffix)
 {
     wchar   *cp;
     cchar   *sp;
@@ -103,7 +103,7 @@ int mends(wchar *str, cchar *suffix)
 }
 
 
-wchar *mfmt(cchar *fmt, ...)
+PUBLIC wchar *mfmt(cchar *fmt, ...)
 {
     va_list     ap;
     char        *mresult;
@@ -117,7 +117,7 @@ wchar *mfmt(cchar *fmt, ...)
 }
 
 
-wchar *mfmtv(cchar *fmt, va_list arg)
+PUBLIC wchar *mfmtv(cchar *fmt, va_list arg)
 {
     char    *mresult;
 
@@ -130,7 +130,7 @@ wchar *mfmtv(cchar *fmt, va_list arg)
 /*
     Sep is ascii, args are wchar
  */
-wchar *mjoin(wchar *str, ...)
+PUBLIC wchar *mjoin(wchar *str, ...)
 {
     wchar       *result;
     va_list     ap;
@@ -147,7 +147,7 @@ wchar *mjoin(wchar *str, ...)
 /*
     MOB - comment required. What does this do?
  */
-wchar *mjoinv(wchar *buf, va_list args)
+PUBLIC wchar *mjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
     wchar       *dest, *str, *dp;
@@ -190,7 +190,7 @@ wchar *mjoinv(wchar *buf, va_list args)
 /*
     Case insensitive string comparison. Limited by length
  */
-int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
+PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
@@ -222,7 +222,7 @@ int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 
 
 
-int mncmp(wchar *s1, cchar *s2, ssize n)
+PUBLIC int mncmp(wchar *s1, cchar *s2, ssize n)
 {
     mprAssert(0 <= n && n < MAXSSIZE);
 
@@ -251,7 +251,7 @@ int mncmp(wchar *s1, cchar *s2, ssize n)
 }
 
 
-ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
+PUBLIC ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
 {
     mprAssert(0 <= len && len < MAXSSIZE);
     mprAssert(0 < destMax && destMax < MAXSSIZE);
@@ -260,7 +260,7 @@ ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
 }
 
 
-wchar *mpbrk(wchar *str, cchar *set)
+PUBLIC wchar *mpbrk(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -282,7 +282,7 @@ wchar *mpbrk(wchar *str, cchar *set)
 /*
     Sep is ascii, args are wchar
  */
-wchar *mrejoin(wchar *buf, ...)
+PUBLIC wchar *mrejoin(wchar *buf, ...)
 {
     va_list     ap;
     wchar       *result;
@@ -294,7 +294,7 @@ wchar *mrejoin(wchar *buf, ...)
 }
 
 
-wchar *mrejoinv(wchar *buf, va_list args)
+PUBLIC wchar *mrejoinv(wchar *buf, va_list args)
 {
     va_list     ap;
     wchar       *dest, *str, *dp;
@@ -328,7 +328,7 @@ wchar *mrejoinv(wchar *buf, va_list args)
 }
 
 
-ssize mspn(wchar *str, cchar *set)
+PUBLIC ssize mspn(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -350,7 +350,7 @@ ssize mspn(wchar *str, cchar *set)
 }
  
 
-int mstarts(wchar *str, cchar *prefix)
+PUBLIC int mstarts(wchar *str, cchar *prefix)
 {
     if (str == NULL || prefix == NULL) {
         return 0;
@@ -362,7 +362,7 @@ int mstarts(wchar *str, cchar *prefix)
 }
 
 
-wchar *mtok(wchar *str, cchar *delim, wchar **last)
+PUBLIC wchar *mtok(wchar *str, cchar *delim, wchar **last)
 {
     wchar   *start, *end;
     ssize   i;
@@ -390,7 +390,7 @@ wchar *mtok(wchar *str, cchar *delim, wchar **last)
 }
 
 
-wchar *mtrim(wchar *str, cchar *set, int where)
+PUBLIC wchar *mtrim(wchar *str, cchar *set, int where)
 {
     wchar   s;
     ssize   len, i;
@@ -416,7 +416,7 @@ wchar *mtrim(wchar *str, cchar *set, int where)
 }
 
 #else
-void dummyWide() {}
+PUBLIC void dummyWide() {}
 #endif /* BIT_CHAR_LEN > 1 */
 
 /*

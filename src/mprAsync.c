@@ -17,14 +17,14 @@ static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {   
     ws->socketMessage = MPR_SOCKET_MESSAGE;
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     int     winMask;
 
@@ -51,7 +51,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single descriptor. Return the number of I/O events found. Mask is the events of interest.
     Timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
 {
     HANDLE      h;
     int         winMask;
@@ -81,7 +81,7 @@ int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     Wait for I/O on all registered descriptors. Timeout is in milliseconds. Return the number of events serviced.
     Should only be called by the thread that calls mprServiceEvents
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 {
     MSG     msg;
 
@@ -114,7 +114,7 @@ void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 }
 
 
-void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
+PUBLIC void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 {
     MprWaitHandler      *wp;
     int                 index;
@@ -155,7 +155,7 @@ void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 /*
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
    
@@ -170,7 +170,7 @@ void mprWakeNotifier()
 /*
     Create a default window if the application has not already created one.
  */ 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     MprWaitService  *ws;
     WNDCLASS        wc;
@@ -238,7 +238,7 @@ static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
 }
 
 
-void mprSetWinMsgCallback(MprMsgCallback callback)
+PUBLIC void mprSetWinMsgCallback(MprMsgCallback callback)
 {
     MprWaitService  *ws;
 
@@ -248,7 +248,7 @@ void mprSetWinMsgCallback(MprMsgCallback callback)
 
 
 #else
-void stubMprAsync() {}
+PUBLIC void stubMprAsync() {}
 #endif /* MPR_EVENT_ASYNC */
 
 /*

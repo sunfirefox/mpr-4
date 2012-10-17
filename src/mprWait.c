@@ -23,7 +23,7 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags);
 /*
     Initialize the service
  */
-MprWaitService *mprCreateWaitService()
+PUBLIC MprWaitService *mprCreateWaitService()
 {
     MprWaitService  *ws;
 
@@ -108,7 +108,7 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
 }
 
 
-MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
+PUBLIC MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
 {
     MprWaitHandler  *wp;
 
@@ -140,7 +140,7 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags)
 }
 
 
-void mprRemoveWaitHandler(MprWaitHandler *wp)
+PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService      *ws;
 
@@ -169,7 +169,7 @@ void mprRemoveWaitHandler(MprWaitHandler *wp)
 }
 
 
-void mprQueueIOEvent(MprWaitHandler *wp)
+PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 {
     MprDispatcher   *dispatcher;
     MprEvent        *event;
@@ -195,7 +195,7 @@ static void ioEvent(void *data, MprEvent *event)
 }
 
 
-void mprWaitOn(MprWaitHandler *wp, int mask)
+PUBLIC void mprWaitOn(MprWaitHandler *wp, int mask)
 {
     lock(wp->service);
     if (mask != wp->desiredMask) {
@@ -212,7 +212,7 @@ void mprWaitOn(MprWaitHandler *wp, int mask)
 /*
     Set a handler to be recalled without further I/O
  */
-void mprRecallWaitHandlerByFd(int fd)
+PUBLIC void mprRecallWaitHandlerByFd(int fd)
 {
     MprWaitService  *ws;
     MprWaitHandler  *wp;
@@ -232,7 +232,7 @@ void mprRecallWaitHandlerByFd(int fd)
 }
 
 
-void mprRecallWaitHandler(MprWaitHandler *wp)
+PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService  *ws;
 
@@ -248,7 +248,7 @@ void mprRecallWaitHandler(MprWaitHandler *wp)
 /*
     Recall a handler which may have buffered data. Only called by notifiers.
  */
-void mprDoWaitRecall(MprWaitService *ws)
+PUBLIC void mprDoWaitRecall(MprWaitService *ws)
 {
     MprWaitHandler      *wp;
     int                 index;

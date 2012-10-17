@@ -14,7 +14,7 @@
 
 /************************************ Code ************************************/
 
-MprFileSystem *mprCreateFileSystem(cchar *path)
+PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp;
@@ -64,7 +64,7 @@ MprFileSystem *mprCreateFileSystem(cchar *path)
 }
 
 
-void mprAddFileSystem(MprFileSystem *fs)
+PUBLIC void mprAddFileSystem(MprFileSystem *fs)
 {
     mprAssert(fs);
     
@@ -76,13 +76,13 @@ void mprAddFileSystem(MprFileSystem *fs)
 /*
     Note: path can be null
  */
-MprFileSystem *mprLookupFileSystem(cchar *path)
+PUBLIC MprFileSystem *mprLookupFileSystem(cchar *path)
 {
     return MPR->fileSystem;
 }
 
 
-cchar *mprGetPathNewline(cchar *path)
+PUBLIC cchar *mprGetPathNewline(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -93,7 +93,7 @@ cchar *mprGetPathNewline(cchar *path)
 }
 
 
-cchar *mprGetPathSeparators(cchar *path)
+PUBLIC cchar *mprGetPathSeparators(cchar *path)
 {
     MprFileSystem   *fs;
 
@@ -104,7 +104,7 @@ cchar *mprGetPathSeparators(cchar *path)
 }
 
 
-void mprSetPathSeparators(cchar *path, cchar *separators)
+PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 {
     MprFileSystem   *fs;
 
@@ -116,7 +116,7 @@ void mprSetPathSeparators(cchar *path, cchar *separators)
 }
 
 
-void mprSetPathNewline(cchar *path, cchar *newline)
+PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 {
     MprFileSystem   *fs;
     
