@@ -56,7 +56,7 @@ PUBLIC char *mprUriEncode(cchar *inbuf, int map)
         return MPR->emptyString;
     }
     for (len = 1, ip = inbuf; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & map) {
+        if (charMatch[(uchar) *ip] & map) {
             len += 2;
         }
     }
@@ -142,7 +142,7 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
         return MPR->emptyString;
     }
     for (len = 1, ip = cmd; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_SHELL) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_SHELL) {
             len++;
         }
     }
@@ -186,7 +186,7 @@ PUBLIC char *mprEscapeHtml(cchar *html)
         return MPR->emptyString;
     }
     for (len = 1, ip = html; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_HTML) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_HTML) {
             len += 5;
         }
     }

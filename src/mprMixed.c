@@ -204,7 +204,7 @@ PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
         return 1;
     }
     for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower(*s1) - tolower(*s2);
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;

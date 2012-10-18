@@ -281,25 +281,25 @@ PUBLIC uint whashlower(wchar *name, ssize count)
     rem = count & 3;
 
     for (count >>= 2; count > 0; count--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -392,8 +392,8 @@ PUBLIC wchar *wlower(wchar *str)
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
-                *cp = (wchar) tolower(*cp);
+            if (isupper((uchar) *cp)) {
+                *cp = (wchar) tolower((uchar) *cp);
             }
         }
         str = s;
@@ -419,7 +419,7 @@ PUBLIC int wncasecmp(wchar *s1, wchar *s2, ssize count)
         return 1;
     }
     for (rc = 0; count > 0 && *s1 && rc == 0; s1++, s2++, count--) {
-        rc = tolower(*s1) - tolower(*s2);
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -724,8 +724,8 @@ PUBLIC char *wupper(wchar *str)
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (islower(*cp)) {
-                *cp = (wchar) toupper(*cp);
+            if (islower((uchar) *cp)) {
+                *cp = (wchar) toupper((uchar) *cp);
             }
         }
         str = s;

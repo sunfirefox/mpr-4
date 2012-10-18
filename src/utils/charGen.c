@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         }
 #endif
 
-        if (isalnum(c) || strchr("-_.~", c)) {
+        if (isalnum((uchar) c) || strchr("-_.~", c)) {
             /* Acceptable */
         } else if (strchr("+", c)) {
             flags |= MPR_ENCODE_URI_COMPONENT | MPR_ENCODE_JS_URI_COMPONENT;

@@ -1288,7 +1288,7 @@ static int getNumOrSym(char **token, int sep, int kind, int *isAlpah)
     if (*token == 0) {
         return 0;
     }
-    if (isalpha((int) **token)) {
+    if (isalpha((uchar) **token)) {
         *isAlpah = 1;
         cp = strchr(*token, sep);
         if (cp) {
@@ -1395,7 +1395,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
             /*
                 Timezone. Format: [GMT|UTC][+-]NN[:]NN
              */
-            if (!isalpha((int) *token)) {
+            if (!isalpha((uchar) *token)) {
                 cp = token;
             }
             negate = *cp == '-' ? -1 : 1;
@@ -1408,7 +1408,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
             zoneOffset = negate * (hour * 60 + min);
             explicitZone = 1;
 
-        } else if (isalpha((int) *token)) {
+        } else if (isalpha((uchar) *token)) {
             if ((tt = (TimeToken*) mprLookupKey(MPR->timeTokens, token)) != 0) {
                 kind = tt->value & TOKEN_MASK;
                 value = tt->value & ~TOKEN_MASK; 

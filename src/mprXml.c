@@ -633,7 +633,7 @@ static void xmlError(MprXml *xp, char *fmt, ...)
  */
 static void trimToken(MprXml *xp)
 {
-    while (isspace(mprLookAtLastCharInBuf(xp->tokBuf))) {
+    while (isspace((uchar) mprLookAtLastCharInBuf(xp->tokBuf))) {
         mprAdjustBufEnd(xp->tokBuf, -1);
     }
     mprAddNullToBuf(xp->tokBuf);

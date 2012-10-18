@@ -333,25 +333,25 @@ PUBLIC uint shashlower(cchar *cname, ssize len)
     name = (uchar*) cname;
 
     for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + tolower((name[1]) << 8);
+        hash += tolower((uchar) name[0]) + tolower(((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -431,7 +431,7 @@ PUBLIC char *slower(cchar *str)
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
+            if (isupper((uchar) *cp)) {
                 *cp = (char) tolower((uchar) *cp);
             }
         }
