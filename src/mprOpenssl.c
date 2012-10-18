@@ -305,7 +305,11 @@ static MprOpenSsl *createOpenSslConfig(MprSsl *ssl, int server)
             SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
         }
     } else {
-        SSL_CTX_set_verify(context, SSL_VERIFY_PEER, verifyX509Certificate);
+        if (ssl->verifyPeer) {
+            SSL_CTX_set_verify(context, SSL_VERIFY_PEER, verifyX509Certificate);
+        } else {
+            SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
+        }
     }
     /*
         Define callbacks

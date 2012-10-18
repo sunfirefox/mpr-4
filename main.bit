@@ -21,6 +21,7 @@ Bit.load({
         version: '4.0.1',
         buildNumber: '0',
         assert: true,
+        ciphers: "HIGH:MEDIUM",
         float: true,
         manager: 'manager',
         '+optional': [ 'doxygen', 'dsi', 'ejs', 'http', 'man', 'man2html', 'md5', 'matrixssl', 'openssl', 'ssl', 'utest' ],
