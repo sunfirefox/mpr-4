@@ -66,7 +66,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     if (desiredMask & MPR_WRITABLE) {
         winMask |= FD_WRITE;
     }
-    h = CreateEvent(NULL, FALSE, FALSE, T("mprWaitForSingleIO"));
+    h = CreateEvent(NULL, FALSE, FALSE, UT("mprWaitForSingleIO"));
     WSAEventSelect(fd, h, winMask);
     if (WaitForSingleObject(h, (DWORD) timeout) == WAIT_OBJECT_0) {
         CloseHandle(h);
