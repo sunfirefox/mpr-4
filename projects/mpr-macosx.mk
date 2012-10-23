@@ -9,7 +9,7 @@ LD       ?= /usr/bin/ld
 PROFILE  ?= debug
 CONFIG   ?= $(OS)-$(ARCH)-$(PROFILE)
 
-CFLAGS   += -Wno-deprecated-declarations -w
+CFLAGS   += -w
 DFLAGS   += 
 IFLAGS   += -I$(CONFIG)/inc
 LDFLAGS  += '-Wl,-rpath,@executable_path/' '-Wl,-rpath,@loader_path/'
