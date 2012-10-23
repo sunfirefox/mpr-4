@@ -82,8 +82,7 @@ Bit.load({
                 safeRemove(bit.dir.pkg)
                 install('package/mpr.bit', d.join('src/deps/mpr/mpr.bit'), {hidden: true})
                 install(['src/utils/makerom.c', 'src/manager.c'], d.join('src/deps/mpr'))
-                install(['doc/api/mpr.html', 'doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], 
-                    d.join('doc/api'))
+                install(['doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], d.join('doc/api'))
                 install('doc/man/*.1', d.join('doc/man'))
                 install('src/mpr.h', d.join('src/deps/mpr/mpr.h'))
                 install(['src/mprMem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
