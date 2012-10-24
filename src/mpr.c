@@ -42,10 +42,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mprCreateOsService();
     mpr->mutex = mprCreateLock();
     mpr->spin = mprCreateSpinLock();
-#if UNUSED
-    mpr->dtoaSpin[0] = mprCreateSpinLock();
-    mpr->dtoaSpin[1] = mprCreateSpinLock();
-#endif
+    mpr->verifySsl = 1;
 
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);

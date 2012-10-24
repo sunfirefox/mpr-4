@@ -1549,14 +1549,18 @@ PUBLIC MprSsl *mprCreateSsl(int server)
     }
     ssl->ciphers = sclone(BIT_CIPHERS);
     ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11;
+    /*
+        The default for servers is not to verify client certificates.
+        The default for clients is to verify unless MPR->verifySsl has been set to false
+     */
     if (server) {
         ssl->verifyDepth = 0;
         ssl->verifyPeer = 0;
         ssl->verifyIssuer = 0;
     } else {
-        ssl->verifyDepth = 1;
-        ssl->verifyPeer = 1;
-        ssl->verifyIssuer = 1;
+        ssl->verifyDepth = MPR->verifySsl;
+        ssl->verifyPeer = MPR->verifySsl;
+        ssl->verifyIssuer = MPR->verifySsl;
     }
     return ssl;
 }
