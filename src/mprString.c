@@ -829,6 +829,9 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
     char    *start, *end;
     ssize   i;
 
+    assure(last);
+    assure(delim);
+
     start = str ? str : *last;
 
     if (start == 0) {
