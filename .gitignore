@@ -77,3 +77,4 @@ doc/api/mpr/xml
 *-vsdebug
 projects/*macosx-full.xcodeproj
 *-mine
+*-mine*
