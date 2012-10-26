@@ -38,10 +38,10 @@ all: prep \
 prep:
 	@if [ "$(CONFIG)" = "" ] ; then echo WARNING: CONFIG not set ; exit 255 ; fi
 	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc $(CONFIG)/obj $(CONFIG)/lib $(CONFIG)/bin ; true
-	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/mpr-$(OS)-bit.h $(CONFIG)/inc/bit.h ; true
-	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-$(OS)-bit.h >/dev/null ; then\
-		echo cp projects/mpr-$(OS)-bit.h $(CONFIG)/inc/bit.h  ; \
-		cp projects/mpr-$(OS)-bit.h $(CONFIG)/inc/bit.h  ; \
+	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/mpr-$(OS)-$(PROFILE)-bit.h $(CONFIG)/inc/bit.h ; true
+	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-$(OS)-$(PROFILE)-bit.h >/dev/null ; then\
+		echo cp projects/mpr-$(OS)-$(PROFILE)-bit.h $(CONFIG)/inc/bit.h  ; \
+		cp projects/mpr-$(OS)-$(PROFILE)-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
 
 clean:
