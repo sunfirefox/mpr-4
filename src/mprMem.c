@@ -1401,7 +1401,7 @@ PUBLIC void mprYield(int flags)
         return;
     }
     /*
-        Must not call mprLog or derviatives here as it will allocate memory and assert
+        Must not call mprLog or derviatives after setting yielded as they will allocate memory and assert.
      */
     tp->yielded = 1;
     if (flags & MPR_YIELD_STICKY) {

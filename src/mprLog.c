@@ -136,7 +136,7 @@ PUBLIC void mprLog(int level, cchar *fmt, ...)
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
-    if (level > mprGetLogLevel()) {
+    if (level < 0 || level > mprGetLogLevel()) {
         return;
     }
     va_start(args, fmt);
