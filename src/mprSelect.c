@@ -141,6 +141,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             }
             ws->highestFd = fd;
         }
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;

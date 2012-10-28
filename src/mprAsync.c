@@ -41,6 +41,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         wp->desiredMask = mask;
         WSAAsyncSelect(wp->fd, ws->hwnd, ws->socketMessage, winMask);
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;

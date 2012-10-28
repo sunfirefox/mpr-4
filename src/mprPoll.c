@@ -137,7 +137,6 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             }
             wp->desiredMask = mask;
         }
-
         /*
             Compact on removal. If not the last entry, copy last poll entry to replace the deleted fd.
          */
@@ -150,6 +149,10 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ws->handlerMap[wp->fd] = 0;
             wp->notifierIndex = -1;
             wp->desiredMask = 0;
+        }
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
         }
     }
     unlock(ws);

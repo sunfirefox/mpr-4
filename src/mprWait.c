@@ -191,6 +191,7 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 
 static void ioEvent(void *data, MprEvent *event)
 {
+    event->handler->event = 0;
     event->handler->proc(data, event);
 }
 
