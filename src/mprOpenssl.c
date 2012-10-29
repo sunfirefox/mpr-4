@@ -31,9 +31,6 @@ typedef struct MprOpenSsl {
     RSA             *rsaKey1024;
     DH              *dhKey512;
     DH              *dhKey1024;
-#if UNUSED
-    MprMutex        **locks;
-#endif
 } MprOpenSsl;
 
 typedef struct MprOpenSocket {

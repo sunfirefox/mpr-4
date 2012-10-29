@@ -147,10 +147,6 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->terminators);
         mprMark(mpr->mutex);
         mprMark(mpr->spin);
-#if UNUSED
-        mprMark(mpr->dtoaSpin[0]);
-        mprMark(mpr->dtoaSpin[1]);
-#endif
         mprMark(mpr->cond);
         mprMark(mpr->emptyString);
         mprMark(mpr->argBuf);

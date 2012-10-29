@@ -254,7 +254,7 @@ PUBLIC void mprStaticError(cchar *fmt, ...)
 }
 
 
-PUBLIC void mprAssureError(cchar *loc, cchar *msg)
+PUBLIC void mprAssure(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
     char    buf[MPR_MAX_LOG];

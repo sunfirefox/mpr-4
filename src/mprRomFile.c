@@ -286,32 +286,6 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
     MPR->stdOutput->fd = 1;
     MPR->stdOutput->fileSystem = fs;
     MPR->stdOutput->mode = O_WRONLY;
-
-#if UNUSED
-    fs->stdError = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdError == 0) {
-        return NULL;
-    }
-    fs->stdError->fd = 2;
-    fs->stdError->fileSystem = fs;
-    fs->stdError->mode = O_WRONLY;
-
-    fs->stdInput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdInput == 0) {
-        return NULL;
-    }
-    fs->stdInput->fd = 0;
-    fs->stdInput->fileSystem = fs;
-    fs->stdInput->mode = O_RDONLY;
-
-    fs->stdOutput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdOutput == 0) {
-        return NULL;
-    }
-    fs->stdOutput->fd = 1;
-    fs->stdOutput->fileSystem = fs;
-    fs->stdOutput->mode = O_WRONLY;
-#endif
     return rfs;
 }
 
