@@ -77,7 +77,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     char            *at, *baseName;
     void            *handle;
 
-    mprAssert(mp);
+    assure(mp);
 
     if ((handle = (HANDLE) MPR->appInstance) == 0) {
         handle = GetModuleHandle(NULL);
@@ -120,7 +120,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 
 PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
-    mprAssert(mp->handle);
+    assure(mp->handle);
 
     if (FreeLibrary((HINSTANCE) mp->handle) == 0) {
         return MPR_ERR_ABORTED;
@@ -232,7 +232,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     char    key[MPR_MAX_STRING], *cp;
     ssize   len;
 
-    mprAssert(keyPath && *keyPath);
+    assure(keyPath && *keyPath);
 
     *hive = 0;
 
@@ -270,7 +270,7 @@ PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
     char        *value;
     ulong       type, size;
 
-    mprAssert(key && *key);
+    assure(key && *key);
 
     /*
         Get the registry hive
@@ -310,8 +310,8 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
     HKEY    top, h, subHandle;
     ulong   disposition;
 
-    mprAssert(key && *key);
-    mprAssert(value && *value);
+    assure(key && *key);
+    assure(value && *value);
 
     /*
         Get the registry hive

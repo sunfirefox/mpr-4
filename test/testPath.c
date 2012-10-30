@@ -228,7 +228,7 @@ static void testNormalize(MprTestGroup *gp)
 
 #if VXWORKS || BIT_WIN_LIKE
     path = mprNormalizePath("\\\\a\\\\b\\\\.\\.\\.\\c\\d\\e\\f\\..\\..\\g");
-    mprAssert(strcmp(path, "\\a\\b\\c\\d\\g") == 0);
+    assure(strcmp(path, "\\a\\b\\c\\d\\g") == 0);
     assert(strcmp(mprNormalizePath("host:"), "host:.") == 0);
     assert(strcmp(mprNormalizePath("host:/"), "host:/") == 0);
     assert(strcmp(mprNormalizePath("host:////"), "host:/") == 0);
@@ -355,7 +355,7 @@ static void testTransform(MprTestGroup *gp)
     assert(strcmp(path, "/") == 0);
 
     path = mprTransformPath("/", MPR_PATH_ABS);
-    mprAssert(mprIsPathAbs(path));
+    assure(mprIsPathAbs(path));
 
 #if BIT_WIN_LIKE || CYGWIN
     /* Test MapSeparators */
@@ -367,7 +367,7 @@ static void testTransform(MprTestGroup *gp)
     /* Test PortablePath */
     path = sclone("\\a\\b\\c\\d");
     path = mprGetPortablePath(path);
-    mprAssert(*path == '/');
+    assure(*path == '/');
     assert(strchr(path, '\\') == 0);
     assert(mprIsPathAbs(path));
 #endif

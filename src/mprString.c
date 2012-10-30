@@ -183,14 +183,14 @@ PUBLIC ssize scopy(char *dest, ssize destMax, cchar *src)
 {
     ssize      len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < dest && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < dest && destMax < MAXINT);
 
     len = slen(src);
     /* Must ensure room for null */
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     strcpy(dest, src);
@@ -258,7 +258,7 @@ PUBLIC char *sfmt(cchar *format, ...)
 
 PUBLIC char *sfmtv(cchar *format, va_list arg)
 {
-    mprAssert(format);
+    assure(format);
     return mprAsprintfv(format, arg);
 }
 
@@ -272,8 +272,8 @@ PUBLIC uint shash(cchar *cname, ssize len)
     uchar   *name;
     uint    hash, rem, tmp;
 
-    mprAssert(cname);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(cname);
+    assure(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -322,8 +322,8 @@ PUBLIC uint shashlower(cchar *cname, ssize len)
     uchar   *name;
     uint    hash, rem, tmp;
 
-    mprAssert(cname);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(cname);
+    assure(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -426,7 +426,7 @@ PUBLIC char *slower(cchar *str)
 {
     char    *cp, *s;
 
-    mprAssert(str);
+    assure(str);
 
     if (str) {
         s = sclone(str);
@@ -451,7 +451,7 @@ PUBLIC int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= n && n < MAXINT);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -508,7 +508,7 @@ PUBLIC int sncmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= n && n < MAXINT);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -543,17 +543,17 @@ PUBLIC ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 {
     ssize      len;
 
-    mprAssert(dest);
-    mprAssert(src);
-    mprAssert(src != dest);
-    mprAssert(0 <= count && count < MAXINT);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(dest);
+    assure(src);
+    assure(src != dest);
+    assure(0 <= count && count < MAXINT);
+    assure(0 < destMax && destMax < MAXINT);
 
     //  OPT use strnlen(src, count);
     len = slen(src);
     len = min(len, count);
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (len > 0) {
@@ -860,9 +860,9 @@ PUBLIC char *ssub(cchar *str, ssize offset, ssize len)
     char    *result;
     ssize   size;
 
-    mprAssert(str);
-    mprAssert(offset >= 0);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(str);
+    assure(offset >= 0);
+    assure(0 <= len && len < MAXINT);
 
     if (str == 0) {
         return 0;
@@ -912,7 +912,7 @@ PUBLIC char *supper(cchar *str)
 {
     char    *cp, *s;
 
-    mprAssert(str);
+    assure(str);
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {

@@ -52,7 +52,7 @@ static void manageList(MprList *lp, int flags)
         mprMark(lp->items);
         if (!(lp->flags & MPR_LIST_STATIC_VALUES)) {
             for (i = 0; i < lp->length; i++) {
-                mprAssert(lp->items[i] == 0 || mprIsValid(lp->items[i]));
+                assure(lp->items[i] == 0 || mprIsValid(lp->items[i]));
                 mprMark(lp->items[i]);
             }
         }
@@ -92,7 +92,7 @@ PUBLIC int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
     lock(lp);
     if (lp->items == 0) {
         if ((lp->items = mprAlloc(size)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             unlock(lp);
             return MPR_ERR_MEMORY;
         }
@@ -114,13 +114,13 @@ PUBLIC int mprCopyListContents(MprList *dest, MprList *src)
 
     lock(src);
     if (mprSetListLimits(dest, src->size, src->maxSize) < 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         unlock(src);
         return MPR_ERR_MEMORY;
     }
     for (next = 0; (item = mprGetNextItem(src, &next)) != 0; ) {
         if (mprAddItem(dest, item) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             unlock(src);
             return MPR_ERR_MEMORY;
         }
@@ -149,7 +149,7 @@ PUBLIC MprList *mprAppendList(MprList *lp, MprList *add)
     void        *item;
     int         next;
 
-    mprAssert(lp);
+    assure(lp);
 
     for (next = 0; ((item = mprGetNextItem(add, &next)) != 0); ) {
         if (mprAddItem(lp, item) < 0) {
@@ -168,10 +168,10 @@ PUBLIC void *mprSetItem(MprList *lp, int index, cvoid *item)
     void    *old;
     int     length;
 
-    mprAssert(lp);
-    mprAssert(lp->size >= 0);
-    mprAssert(lp->length >= 0);
-    mprAssert(index >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
+    assure(index >= 0);
 
     length = lp->length;
 
@@ -201,9 +201,9 @@ PUBLIC int mprAddItem(MprList *lp, cvoid *item)
 {
     int     index;
 
-    mprAssert(lp);
-    mprAssert(lp->size >= 0);
-    mprAssert(lp->length >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
 
     lock(lp);
     if (lp->length >= lp->size) {
@@ -223,9 +223,9 @@ PUBLIC int mprAddNullItem(MprList *lp)
 {
     int     index;
 
-    mprAssert(lp);
-    mprAssert(lp->size >= 0);
-    mprAssert(lp->length >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
 
     lock(lp);
     if (lp->length != 0 && lp->items[lp->length - 1] == 0) {
@@ -254,10 +254,10 @@ PUBLIC int mprInsertItemAtPos(MprList *lp, int index, cvoid *item)
     void    **items;
     int     i;
 
-    mprAssert(lp);
-    mprAssert(lp->size >= 0);
-    mprAssert(lp->length >= 0);
-    mprAssert(index >= 0);
+    assure(lp);
+    assure(lp->size >= 0);
+    assure(lp->length >= 0);
+    assure(index >= 0);
 
     if (index < 0) {
         index = 0;
@@ -300,7 +300,7 @@ PUBLIC int mprRemoveItem(MprList *lp, cvoid *item)
 {
     int     index;
 
-    mprAssert(lp);
+    assure(lp);
 
     lock(lp);
     index = mprLookupItem(lp, item);
@@ -309,7 +309,7 @@ PUBLIC int mprRemoveItem(MprList *lp, cvoid *item)
         return index;
     }
     index = mprRemoveItemAtPos(lp, index);
-    mprAssert(index >= 0);
+    assure(index >= 0);
     unlock(lp);
     return index;
 }
@@ -317,9 +317,9 @@ PUBLIC int mprRemoveItem(MprList *lp, cvoid *item)
 
 PUBLIC int mprRemoveLastItem(MprList *lp)
 {
-    mprAssert(lp);
-    mprAssert(lp->size > 0);
-    mprAssert(lp->length > 0);
+    assure(lp);
+    assure(lp->size > 0);
+    assure(lp->length > 0);
 
     if (lp->length <= 0) {
         return MPR_ERR_CANT_FIND;
@@ -336,10 +336,10 @@ PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
 {
     void    **items;
 
-    mprAssert(lp);
-    mprAssert(lp->size > 0);
-    mprAssert(index >= 0 && index < lp->size);
-    mprAssert(lp->length > 0);
+    assure(lp);
+    assure(lp->size > 0);
+    assure(index >= 0 && index < lp->size);
+    assure(lp->length > 0);
 
     if (index < 0 || index >= lp->length) {
         return MPR_ERR_CANT_FIND;
@@ -352,7 +352,7 @@ PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
         /* Scan backwards to find last non-null item */
         for (ip = &items[index - 1]; ip >= items && *ip == 0; ip--) ;
         lp->length = ++ip - items;
-        mprAssert(lp->length >= 0);
+        assure(lp->length >= 0);
     } else {
         /* Copy down following items */
         for (ip = &items[index]; ip < &items[lp->length]; ip++) {
@@ -365,7 +365,7 @@ PUBLIC int mprRemoveItemAtPos(MprList *lp, int index)
     lp->length--;
 #endif
     lp->items[lp->length] = 0;
-    mprAssert(lp->length >= 0);
+    assure(lp->length >= 0);
     unlock(lp);
     return index;
 }
@@ -379,10 +379,10 @@ PUBLIC int mprRemoveRangeOfItems(MprList *lp, int start, int end)
     void    **items;
     int     i, count;
 
-    mprAssert(lp);
-    mprAssert(lp->size > 0);
-    mprAssert(lp->length > 0);
-    mprAssert(start > end);
+    assure(lp);
+    assure(lp->size > 0);
+    assure(lp->length > 0);
+    assure(start > end);
 
     if (start < 0 || start >= lp->length) {
         return MPR_ERR_CANT_FIND;
@@ -419,7 +419,7 @@ PUBLIC int mprRemoveStringItem(MprList *lp, cchar *str)
 {
     int     index;
 
-    mprAssert(lp);
+    assure(lp);
 
     lock(lp);
     index = mprLookupStringItem(lp, str);
@@ -428,7 +428,7 @@ PUBLIC int mprRemoveStringItem(MprList *lp, cchar *str)
         return index;
     }
     index = mprRemoveItemAtPos(lp, index);
-    mprAssert(index >= 0);
+    assure(index >= 0);
     unlock(lp);
     return index;
 }
@@ -436,7 +436,7 @@ PUBLIC int mprRemoveStringItem(MprList *lp, cchar *str)
 
 PUBLIC void *mprGetItem(MprList *lp, int index)
 {
-    mprAssert(lp);
+    assure(lp);
 
     if (index < 0 || index >= lp->length) {
         return 0;
@@ -447,7 +447,7 @@ PUBLIC void *mprGetItem(MprList *lp, int index)
 
 PUBLIC void *mprGetFirstItem(MprList *lp)
 {
-    mprAssert(lp);
+    assure(lp);
 
     if (lp == 0) {
         return 0;
@@ -461,7 +461,7 @@ PUBLIC void *mprGetFirstItem(MprList *lp)
 
 PUBLIC void *mprGetLastItem(MprList *lp)
 {
-    mprAssert(lp);
+    assure(lp);
 
     if (lp == 0) {
         return 0;
@@ -478,8 +478,8 @@ PUBLIC void *mprGetNextItem(MprList *lp, int *next)
     void    *item;
     int     index;
 
-    mprAssert(next);
-    mprAssert(*next >= 0);
+    assure(next);
+    assure(*next >= 0);
 
     if (lp == 0) {
         return 0;
@@ -502,7 +502,7 @@ PUBLIC void *mprGetPrevItem(MprList *lp, int *next)
     void    *item;
     int     index;
 
-    mprAssert(next);
+    assure(next);
 
     if (lp == 0) {
         return 0;
@@ -559,7 +559,7 @@ PUBLIC int mprGetListLength(MprList *lp)
 
 PUBLIC int mprGetListCapacity(MprList *lp)
 {
-    mprAssert(lp);
+    assure(lp);
 
     if (lp == 0) {
         return 0;
@@ -572,7 +572,7 @@ PUBLIC void mprClearList(MprList *lp)
 {
     int     i;
 
-    mprAssert(lp);
+    assure(lp);
 
     lock(lp);
     for (i = 0; i < lp->length; i++) {
@@ -587,7 +587,7 @@ PUBLIC int mprLookupItem(MprList *lp, cvoid *item)
 {
     int     i;
 
-    mprAssert(lp);
+    assure(lp);
     
     lock(lp);
     for (i = 0; i < lp->length; i++) {
@@ -605,7 +605,7 @@ PUBLIC int mprLookupStringItem(MprList *lp, cchar *str)
 {
     int     i;
 
-    mprAssert(lp);
+    assure(lp);
     
     lock(lp);
     for (i = 0; i < lp->length; i++) {
@@ -634,7 +634,7 @@ static int growList(MprList *lp, int incr)
         Need to grow the list
      */
     if (lp->size >= lp->maxSize) {
-        mprAssert(lp->size < lp->maxSize);
+        assure(lp->size < lp->maxSize);
         return MPR_ERR_TOO_MANY;
     }
     /*
@@ -652,7 +652,7 @@ static int growList(MprList *lp, int incr)
         Lock free realloc. Old list will be intact via lp->items until mprRealloc returns.
      */
     if ((lp->items = mprRealloc(lp->items, memsize)) == NULL) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     lp->size = len;

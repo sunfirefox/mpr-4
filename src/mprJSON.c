@@ -301,7 +301,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
             itosbuf(numbuf, sizeof(numbuf), i, 10);
             if (pretty) mprPutStringToBuf(buf, "    ");
             if ((kp = mprLookupKeyEntry(obj, numbuf)) == 0) {
-                mprAssert(kp);
+                assure(kp);
                 continue;
             }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
@@ -370,7 +370,7 @@ static cchar *findQuote(cchar *tok, int quote)
 {
     cchar   *cp;
 
-    mprAssert(tok);
+    assure(tok);
     for (cp = tok; *cp; cp++) {
         if (*cp == quote && (cp == tok || *cp != '\\')) {
             return cp;
@@ -384,7 +384,7 @@ static cchar *findEndKeyword(MprJson *jp, cchar *str)
 {
     cchar   *cp, *etok;
 
-    mprAssert(str);
+    assure(str);
     for (cp = jp->tok; *cp; cp++) {
         if ((etok = strpbrk(cp, " \t\n\r:,}]")) != 0) {
             if (etok == jp->tok || *etok != '\\') {

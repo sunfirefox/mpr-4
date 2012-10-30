@@ -77,7 +77,7 @@ static int growEvents(MprWaitService *ws)
     ws->interest = mprRealloc(ws->interest, sizeof(struct kevent) * ws->interestMax);
     ws->events = mprRealloc(ws->events, sizeof(struct kevent) * ws->eventsMax);
     if (ws->interest == 0 || ws->events == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -89,13 +89,13 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     struct kevent   *kp, *start;
     int             fd;
 
-    mprAssert(wp);
+    assure(wp);
     fd = wp->fd;
 
     lock(ws);
     mprLog(7, "mprNotifyOn: fd %d, mask %x, old mask %x", wp->fd, mask, wp->desiredMask);
     if (wp->desiredMask != mask) {
-        mprAssert(fd >= 0);
+        assure(fd >= 0);
         while ((ws->interestCount + 4) >= ws->interestMax) {
             growEvents(ws);
         }
@@ -120,11 +120,11 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (fd >= ws->handlerMax) {
             ws->handlerMax = fd + 32;
             if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                mprAssert(!MPR_ERR_MEMORY);
+                assure(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
         if (wp->event) {
             mprRemoveEvent(wp->event);
@@ -188,7 +188,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
     struct timespec ts;
     int             rc;
 
-    mprAssert(timeout > 0);
+    assure(timeout > 0);
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -238,7 +238,7 @@ static void serviceIO(MprWaitService *ws, int count)
     for (i = 0; i < count; i++) {
         kev = &ws->events[i];
         fd = (int) kev->ident;
-        mprAssert(fd < ws->handlerMax);
+        assure(fd < ws->handlerMax);
         if ((wp = ws->handlerMap[fd]) == 0) {
             if (kev->filter == EVFILT_READ && fd == ws->breakPipe[MPR_READ_PIPE]) {
                 (void) read(fd, buf, sizeof(buf));

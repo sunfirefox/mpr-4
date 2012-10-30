@@ -630,15 +630,15 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     } else {
         tp->tm_mday = tp->tm_yday - normalMonthStart[tp->tm_mon] + 1;
     }
-    mprAssert(tp->tm_hour >= 0);
-    mprAssert(tp->tm_min >= 0);
-    mprAssert(tp->tm_sec >= 0);
-    mprAssert(tp->tm_wday >= 0);
-    mprAssert(tp->tm_mon >= 0);
+    assure(tp->tm_hour >= 0);
+    assure(tp->tm_min >= 0);
+    assure(tp->tm_sec >= 0);
+    assure(tp->tm_wday >= 0);
+    assure(tp->tm_mon >= 0);
     /* This asserts with some calculating some intermediate dates <= year 100 */
-    mprAssert(tp->tm_yday >= 0);
-    mprAssert(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
-    mprAssert(tp->tm_mday >= 1);
+    assure(tp->tm_yday >= 0);
+    assure(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
+    assure(tp->tm_mday >= 1);
 }
 
 
@@ -1283,7 +1283,7 @@ static int getNumOrSym(char **token, int sep, int kind, int *isAlpah)
     char    *cp;
     int     num;
 
-    mprAssert(token && *token);
+    assure(token && *token);
 
     if (*token == 0) {
         return 0;

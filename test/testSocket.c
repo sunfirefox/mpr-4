@@ -134,7 +134,7 @@ static int acceptFn(MprTestGroup *gp, MprEvent *event)
     sp = mprAcceptSocket(ts->server);
     assert(sp != NULL);
     if (sp) {
-        mprAssert(sp->fd >= 0);
+        assure(sp->fd >= 0);
         ts->accepted = sp;
         mprAddSocketHandler(sp, MPR_READABLE, NULL, (MprEventProc) readEvent, (void*) gp, 0);
         mprSignalTestComplete(gp);

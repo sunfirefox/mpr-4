@@ -74,7 +74,7 @@ PUBLIC char *mprGet(MprBuf *bp)
  */
 PUBLIC int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
 {
-    mprAssert(bp);
+    assure(bp);
 
     if (initialSize <= 0) {
         if (maxSize > 0) {
@@ -85,7 +85,7 @@ PUBLIC int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
     if (maxSize > 0 && initialSize > maxSize) {
         initialSize = maxSize;
     }
-    mprAssert(initialSize > 0);
+    assure(initialSize > 0);
 
     if (bp->data) {
         /*
@@ -100,7 +100,7 @@ PUBLIC int mprSetBufSize(MprBuf *bp, ssize initialSize, ssize maxSize)
         return 0;
     }
     if ((bp->data = mprAlloc(initialSize)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     bp->growBy = initialSize;
@@ -133,7 +133,7 @@ PUBLIC void mprAddNullToBuf(MprBuf *bp)
             return;
         }
     }
-    mprAssert(bp->end < bp->endbuf);
+    assure(bp->end < bp->endbuf);
     if (bp->end < bp->endbuf) {
         *((char*) bp->end) = (char) '\0';
     }
@@ -142,14 +142,14 @@ PUBLIC void mprAddNullToBuf(MprBuf *bp)
 
 PUBLIC void mprAdjustBufEnd(MprBuf *bp, ssize size)
 {
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
-    mprAssert(size <= bp->buflen);
-    mprAssert((bp->end + size) >= bp->data);
-    mprAssert((bp->end + size) <= bp->endbuf);
+    assure(bp->buflen == (bp->endbuf - bp->data));
+    assure(size <= bp->buflen);
+    assure((bp->end + size) >= bp->data);
+    assure((bp->end + size) <= bp->endbuf);
 
     bp->end += size;
     if (bp->end > bp->endbuf) {
-        mprAssert(bp->end <= bp->endbuf);
+        assure(bp->end <= bp->endbuf);
         bp->end = bp->endbuf;
     }
     if (bp->end < bp->data) {
@@ -163,10 +163,10 @@ PUBLIC void mprAdjustBufEnd(MprBuf *bp, ssize size)
  */
 PUBLIC void mprAdjustBufStart(MprBuf *bp, ssize size)
 {
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
-    mprAssert(size <= bp->buflen);
-    mprAssert((bp->start + size) >= bp->data);
-    mprAssert((bp->start + size) <= bp->end);
+    assure(bp->buflen == (bp->endbuf - bp->data));
+    assure(size <= bp->buflen);
+    assure((bp->start + size) >= bp->data);
+    assure((bp->start + size) <= bp->end);
 
     bp->start += size;
     if (bp->start > bp->end) {
@@ -198,9 +198,9 @@ PUBLIC ssize mprGetBlockFromBuf(MprBuf *bp, char *buf, ssize size)
 {
     ssize     thisLen, bytesRead;
 
-    mprAssert(buf);
-    mprAssert(size >= 0);
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
+    assure(buf);
+    assure(size >= 0);
+    assure(bp->buflen == (bp->endbuf - bp->data));
 
     /*
         Get the max bytes in a straight copy
@@ -304,7 +304,7 @@ PUBLIC int mprPutCharToBuf(MprBuf *bp, int c)
     char       *cp;
     ssize      space;
 
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
+    assure(bp->buflen == (bp->endbuf - bp->data));
 
     space = bp->buflen - mprGetBufLength(bp);
     if (space < sizeof(char)) {
@@ -331,9 +331,9 @@ PUBLIC ssize mprPutBlockToBuf(MprBuf *bp, cchar *str, ssize size)
 {
     ssize      thisLen, bytes, space;
 
-    mprAssert(str);
-    mprAssert(size >= 0);
-    mprAssert(size < MAXINT);
+    assure(str);
+    assure(size >= 0);
+    assure(size < MAXINT);
 
     bytes = 0;
     while (size > 0) {
@@ -385,7 +385,7 @@ PUBLIC ssize mprPutSubStringToBuf(MprBuf *bp, cchar *str, ssize count)
 
 PUBLIC ssize mprPutPadToBuf(MprBuf *bp, int c, ssize count)
 {
-    mprAssert(count < MAXINT);
+    assure(count < MAXINT);
 
     while (count-- > 0) {
         if (mprPutCharToBuf(bp, c) < 0) {
@@ -431,7 +431,7 @@ PUBLIC int mprGrowBuf(MprBuf *bp, ssize need)
         growBy = bp->growBy;
     }
     if ((newbuf = mprAlloc(bp->buflen + growBy)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     if (bp->data) {
@@ -526,7 +526,7 @@ PUBLIC void mprAddNullToWideBuf(MprBuf *bp)
             return;
         }
     }
-    mprAssert(bp->end < bp->endbuf);
+    assure(bp->end < bp->endbuf);
     if (bp->end < bp->endbuf) {
         *((wchar*) bp->end) = (char) '\0';
     }
@@ -538,7 +538,7 @@ PUBLIC int mprPutCharToWideBuf(MprBuf *bp, int c)
     wchar *cp;
     ssize   space;
 
-    mprAssert(bp->buflen == (bp->endbuf - bp->data));
+    assure(bp->buflen == (bp->endbuf - bp->data));
 
     space = bp->buflen - mprGetBufLength(bp);
     if (space < (sizeof(wchar) * 2)) {

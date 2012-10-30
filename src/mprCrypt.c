@@ -208,7 +208,7 @@ PUBLIC char *mprDecode64Block(cchar *s, ssize *len, int flags)
             shift -= 6;
         }
         --i;
-        mprAssert((bp + i) < &buffer[size]);
+        assure((bp + i) < &buffer[size]);
         for (j = 0; j < i; j++) {
             *bp++ = (char) ((bitBuf >> (8 * (2 - j))) & 0xff);
         }

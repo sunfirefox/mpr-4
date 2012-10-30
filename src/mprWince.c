@@ -86,7 +86,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
     void            *handle;
     char            *baseName;
 
-    mprAssert(moduleName && *moduleName);
+    assure(moduleName && *moduleName);
 
     baseName = mprGetPathBase(mp->path);
     if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
@@ -121,7 +121,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     char    key[MPR_MAX_STRING], *cp;
     int     len;
 
-    mprAssert(keyPath && *keyPath);
+    assure(keyPath && *keyPath);
 
     *hive = 0;
 
@@ -160,8 +160,8 @@ PUBLIC int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
     char        *value;
     ulong       type, size;
 
-    mprAssert(key && *key);
-    mprAssert(buf);
+    assure(key && *key);
+    assure(buf);
 
     if ((key = getHive(key, &top)) == 0) {
         return MPR_ERR_CANT_ACCESS;
@@ -186,7 +186,7 @@ PUBLIC int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
     value = mprAlloc(size);
     if ((int) size > max) {
         RegCloseKey(h);
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (RegQueryValueEx(h, wname, 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
@@ -234,7 +234,7 @@ PUBLIC void mprSleep(MprTime timeout)
 
 PUBLIC void mprUnloadNativeModule(MprModule *mp)
 {
-    mprAssert(mp->handle);
+    assure(mp->handle);
 
     if (FreeLibrary((HINSTANCE) mp->handle) == 0) {
         return MPR_ERR_ABORTED;
@@ -304,9 +304,9 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
     HKEY    top, h, subHandle;
     ulong   disposition;
 
-    mprAssert(key && *key);
-    mprAssert(name && *name);
-    mprAssert(value && *value);
+    assure(key && *key);
+    assure(name && *name);
+    assure(value && *value);
 
     /*
         Get the registry hive
@@ -678,8 +678,8 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
     TIME_ZONE_INFORMATION   tz;
     int                     bias, rc;
 
-    mprAssert(when);
-    mprAssert(tp);
+    assure(when);
+    assure(tp);
 
     rc = GetTimeZoneInformation(&tz);
     bias = tz.Bias;
@@ -715,7 +715,7 @@ PUBLIC time_t mktime(struct tm *tp)
     time_t                  result;
     int                     rc, bias;
 
-    mprAssert(tp);
+    assure(tp);
 
     rc = GetTimeZoneInformation(&tz);
     bias = tz.Bias;

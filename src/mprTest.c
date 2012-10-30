@@ -243,7 +243,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
 {
     char    *str, *word, *tok;
 
-    mprAssert(filter);
+    assure(filter);
     if (filter == 0 || *filter == '\0') {
         return 0;
     }
@@ -253,7 +253,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
     word = stok(str, " \t\r\n", &tok);
     while (word) {
         if (mprAddItem(sp->testFilter, sclone(word)) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         word = stok(0, " \t\r\n", &tok);
@@ -267,10 +267,10 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
     MprModule   *mp;
     char        *cp, *base, entry[MPR_MAX_FNAME], path[MPR_MAX_FNAME];
 
-    mprAssert(fileName && *fileName);
+    assure(fileName && *fileName);
 
     base = mprGetPathBase(fileName);
-    mprAssert(base);
+    assure(base);
     if ((cp = strrchr(base, '.')) != 0) {
         *cp = '\0';
     }
@@ -326,11 +326,11 @@ PUBLIC int mprRunTests(MprTestService *sp)
     for (i = 0; i < sp->numThreads; i++) {
         fmt(tName, sizeof(tName), "test.%d", i);
         if ((lp = copyGroups(sp, sp->groups)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprAddItem(sp->threadData, lp) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         /*
@@ -341,7 +341,7 @@ PUBLIC int mprRunTests(MprTestService *sp)
             buildFullNames(gp, gp->name);
         }
         if ((tp = mprCreateThread(tName, relayEvent, lp, 0)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprStartThread(tp) < 0) {
@@ -385,7 +385,7 @@ static void relayEvent(MprList *groups, MprThread *tp)
     MprTestGroup    *gp;
 
     gp = mprGetFirstItem(groups);
-    mprAssert(gp);
+    assure(gp);
 
     mprRelayEvent(gp->dispatcher, runTestThread, groups, NULL);
     if (tp) {
@@ -404,7 +404,7 @@ static void runTestThread(MprList *groups, MprThread *tp)
     int             next, i, count;
 
     sp = MPR->testService;
-    mprAssert(sp);
+    assure(sp);
 
     for (next = 0; (gp = mprGetNextItem(groups, &next)) != 0; ) {
         runInit(gp);
@@ -464,7 +464,7 @@ static void buildFullNames(MprTestGroup *gp, cchar *name)
     while (--tos >= 0) {
         nameBuf = sjoin(nameBuf, ".", nameStack[tos], NULL);
     }
-    mprAssert(gp->fullName == 0);
+    assure(gp->fullName == 0);
     gp->fullName = sclone(nameBuf);
 
     /*
@@ -526,8 +526,8 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
     char            name[80];
     static int      counter = 0;
 
-    mprAssert(sp);
-    mprAssert(def);
+    assure(sp);
+    assure(def);
 
     gp = mprAllocObj(MprTestGroup, manageTestGroup);
     if (gp == 0) {
@@ -838,8 +838,8 @@ static int addFailure(MprTestGroup *gp, cchar *loc, cchar *message)
 
     fp = createFailure(gp, loc, message);
     if (fp == 0) {
-        mprAssert(fp);
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(fp);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     mprAddItem(gp->failures, fp);
@@ -891,8 +891,8 @@ PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
     MprTime     expires, remaining;
     int         rc;
     
-    mprAssert(gp->dispatcher);
-    mprAssert(timeout >= 0);
+    assure(gp->dispatcher);
+    assure(timeout >= 0);
 
     if (mprGetDebugMode()) {
         timeout *= 100;

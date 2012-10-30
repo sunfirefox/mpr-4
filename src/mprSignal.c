@@ -64,7 +64,7 @@ static void hookSignal(int signo, MprSignal *sp)
     struct sigaction    act, old;
     int                 rc;
 
-    mprAssert(0 < signo && signo < MPR_MAX_SIGNALS);
+    assure(0 < signo && signo < MPR_MAX_SIGNALS);
 
     ssp = MPR->signalService;
     lock(ssp);
@@ -171,8 +171,8 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
 {
     MprSignal   *np;
     
-    mprAssert(sp);
-    mprAssert(event);
+    assure(sp);
+    assure(event);
 
     mprLog(7, "signalEvent signo %d, flags %x", sp->signo, sp->flags);
     np = sp->next;
@@ -230,7 +230,7 @@ static void unlinkSignalHandler(MprSignal *sp)
         }
         prev = np;
     }
-    mprAssert(np);
+    assure(np);
     sp->next = 0;
     unlock(ssp);
 }

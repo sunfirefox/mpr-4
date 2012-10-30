@@ -29,7 +29,7 @@ PUBLIC wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
     cchar   *s2;
     ssize   lim;
 
-    mprAssert(0 <= limit && limit < MAXSSIZE);
+    assure(0 <= limit && limit < MAXSSIZE);
 
     if (limit < 0) {
         limit = MAXINT;
@@ -68,13 +68,13 @@ PUBLIC ssize mcopy(wchar *dest, ssize destMax, cchar *src)
 {
     ssize       len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < destMax && destMax < MAXINT);
 
     len = slen(src);
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     return mtow(dest, len + 1, src, len);
@@ -108,7 +108,7 @@ PUBLIC wchar *mfmt(cchar *fmt, ...)
     va_list     ap;
     char        *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     mresult = sfmtv(fmt, ap);
@@ -121,7 +121,7 @@ PUBLIC wchar *mfmtv(cchar *fmt, va_list arg)
 {
     char    *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
     mresult = sfmtv(fmt, arg);
     return amtow(mresult, NULL);
 }
@@ -135,7 +135,7 @@ PUBLIC wchar *mjoin(wchar *str, ...)
     wchar       *result;
     va_list     ap;
 
-    mprAssert(str);
+    assure(str);
 
     va_start(ap, str);
     result = mjoinv(str, ap);
@@ -153,7 +153,7 @@ PUBLIC wchar *mjoinv(wchar *buf, va_list args)
     wchar       *dest, *str, *dp;
     int         required, len;
 
-    mprAssert(buf);
+    assure(buf);
 
     va_copy(ap, args);
     required = 1;
@@ -194,7 +194,7 @@ PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXSSIZE);
+    assure(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -224,7 +224,7 @@ PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 
 PUBLIC int mncmp(wchar *s1, cchar *s2, ssize n)
 {
-    mprAssert(0 <= n && n < MAXSSIZE);
+    assure(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -253,8 +253,8 @@ PUBLIC int mncmp(wchar *s1, cchar *s2, ssize n)
 
 PUBLIC ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
 {
-    mprAssert(0 <= len && len < MAXSSIZE);
-    mprAssert(0 < destMax && destMax < MAXSSIZE);
+    assure(0 <= len && len < MAXSSIZE);
+    assure(0 < destMax && destMax < MAXSSIZE);
 
     return mtow(dest, destMax, src, len);
 }

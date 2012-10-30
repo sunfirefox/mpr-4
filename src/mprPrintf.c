@@ -273,9 +273,9 @@ PUBLIC char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
     va_list     ap;
     char        *result;
 
-    mprAssert(buf);
-    mprAssert(fmt);
-    mprAssert(bufsize > 0);
+    assure(buf);
+    assure(fmt);
+    assure(bufsize > 0);
 
     va_start(ap, fmt);
     result = sprintfCore(buf, bufsize, fmt, ap);
@@ -286,9 +286,9 @@ PUBLIC char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
 
 PUBLIC char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 {
-    mprAssert(buf);
-    mprAssert(fmt);
-    mprAssert(bufsize > 0);
+    assure(buf);
+    assure(fmt);
+    assure(bufsize > 0);
 
     return sprintfCore(buf, bufsize, fmt, arg);
 }
@@ -300,7 +300,7 @@ PUBLIC char *mprAsprintf(cchar *fmt, ...)
     va_list     ap;
     char        *buf;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     buf = sprintfCore(NULL, -1, fmt, ap);
@@ -311,7 +311,7 @@ PUBLIC char *mprAsprintf(cchar *fmt, ...)
 
 PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg)
 {
-    mprAssert(fmt);
+    assure(fmt);
     return sprintfCore(NULL, -1, fmt, arg);
 }
 
@@ -323,10 +323,10 @@ static int getState(char c, int state)
     if (c < ' ' || c > 'z') {
         chrClass = CLASS_NORMAL;
     } else {
-        mprAssert((c - ' ') < (int) sizeof(classMap));
+        assure((c - ' ') < (int) sizeof(classMap));
         chrClass = classMap[(c - ' ')];
     }
-    mprAssert((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
+    assure((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
     state = stateMap[chrClass * STATE_COUNT + state];
     return state;
 }
@@ -347,7 +347,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         spec = "";
     }
     if (buf != 0) {
-        mprAssert(maxsize > 0);
+        assure(maxsize > 0);
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[maxsize];
         fmt.growBy = -1;
@@ -1015,7 +1015,7 @@ PUBLIC char *mprDtoa(double value, int ndigits, int mode, int flags)
                 mprPutStringToBuf(buf, ip);
 
             } else {
-                mprAssert(0);
+                assure(0);
             }
         }
     }
@@ -1050,7 +1050,7 @@ static int growBuf(Format *fmt)
     }
     newbuf = mprAlloc(buflen + fmt->growBy);
     if (newbuf == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     if (fmt->buf) {

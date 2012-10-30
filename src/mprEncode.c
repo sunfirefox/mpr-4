@@ -49,8 +49,8 @@ PUBLIC char *mprUriEncode(cchar *inbuf, int map)
     char            *result, *op;
     int             len;
 
-    mprAssert(inbuf);
-    mprAssert(inbuf);
+    assure(inbuf);
+    assure(inbuf);
 
     if (!inbuf) {
         return MPR->emptyString;
@@ -76,7 +76,7 @@ PUBLIC char *mprUriEncode(cchar *inbuf, int map)
             *op++ = c;
         }
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -91,7 +91,7 @@ PUBLIC char *mprUriDecode(cchar *inbuf)
     char    *result, *op;
     int     num, i, c;
 
-    mprAssert(inbuf);
+    assure(inbuf);
 
     if ((result = sclone(inbuf)) == 0) {
         return 0;
@@ -136,7 +136,7 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
     char    *result, *op;
     int     len;
 
-    mprAssert(cmd);
+    assure(cmd);
 
     if (!cmd) {
         return MPR->emptyString;
@@ -167,7 +167,7 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
         }
         *op++ = c;
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -225,14 +225,14 @@ PUBLIC char *mprEscapeHtml(cchar *html)
                 strcpy(op, "&#39;");
                 op += 5;
             } else {
-                mprAssert(0);
+                assure(0);
             }
             html++;
         } else {
             *op++ = *html++;
         }
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }

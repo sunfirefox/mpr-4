@@ -56,7 +56,7 @@ PUBLIC int mprFlushFile(MprFile *file)
     MprBuf          *bp;
     ssize           len, rc;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -118,7 +118,7 @@ PUBLIC int mprGetFileChar(MprFile *file)
     MprBuf      *bp;
     ssize     len;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR;
@@ -148,16 +148,16 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
     ssize   newlines;
     int     i;
 
-    mprAssert(str);
-    mprAssert(newline);
-    mprAssert(nlen);
-    mprAssert(len > 0);
+    assure(str);
+    assure(newline);
+    assure(nlen);
+    assure(len > 0);
 
     if (str == NULL || newline == NULL) {
         return NULL;
     }
     newlines = slen(newline);
-    mprAssert(newlines == 1 || newlines == 2);
+    assure(newlines == 1 || newlines == 2);
 
     start = best = NULL;
     *nlen = 0;
@@ -188,7 +188,7 @@ PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
     cchar           *eol, *newline, *start;
     char            *result;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return NULL;
@@ -286,7 +286,7 @@ PUBLIC ssize mprPutFileString(MprFile *file, cchar *str)
     ssize   total, bytes, count;
     char    *buf;
 
-    mprAssert(file);
+    assure(file);
     count = slen(str);
 
     /*
@@ -334,7 +334,7 @@ PUBLIC int mprPeekFileChar(MprFile *file)
     MprBuf      *bp;
     ssize       len;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR;
@@ -362,7 +362,7 @@ PUBLIC int mprPeekFileChar(MprFile *file)
  */
 PUBLIC ssize mprPutFileChar(MprFile *file, int c)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return -1;
@@ -386,7 +386,7 @@ PUBLIC ssize mprReadFile(MprFile *file, void *buf, ssize size)
     ssize           bytes, totalRead;
     void            *bufStart;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -421,7 +421,7 @@ PUBLIC MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
 {
     MprFileSystem   *fs;
 
-    mprAssert(file);
+    assure(file);
     fs = file->fileSystem;
 
     if (file->buf) {
@@ -463,7 +463,7 @@ PUBLIC int mprTruncateFile(cchar *path, MprOff size)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     if ((fs = mprLookupFileSystem(path)) == 0) {
         return MPR_ERR_CANT_OPEN;
@@ -478,7 +478,7 @@ PUBLIC ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
     MprBuf          *bp;
     ssize           bytes, written;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -546,7 +546,7 @@ static ssize fillBuf(MprFile *file)
     bp = file->buf;
     fs = file->fileSystem;
 
-    mprAssert(mprGetBufLength(bp) == 0);
+    assure(mprGetBufLength(bp) == 0);
     mprFlushBuf(bp);
 
     len = fs->readFile(file, mprGetBufStart(bp), mprGetBufSpace(bp));
@@ -563,7 +563,7 @@ static ssize fillBuf(MprFile *file)
  */
 PUBLIC int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR_BAD_STATE;

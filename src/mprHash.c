@@ -75,17 +75,17 @@ static void manageHashTable(MprHash *hash, int flags)
         lock(hash);
         for (i = 0; i < hash->size; i++) {
             for (sp = (MprKey*) hash->buckets[i]; sp; sp = sp->next) {
-                mprAssert(mprIsValid(sp));
+                assure(mprIsValid(sp));
                 mprMark(sp);
                 if (!(hash->flags & MPR_HASH_STATIC_VALUES)) {
                     if (sp->data && !mprIsValid(sp->data)) {
                         mprLog(0, "Data in key %s is not valid", sp->key);
                     }
-                    mprAssert(sp->data == 0 || mprIsValid(sp->data));
+                    assure(sp->data == 0 || mprIsValid(sp->data));
                     mprMark(sp->data);
                 }
                 if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-                    mprAssert(mprIsValid(sp->key));
+                    assure(mprIsValid(sp->key));
                     mprMark(sp->key);
                 }
             }
@@ -105,7 +105,7 @@ PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
     int         index;
 
     if (hash == 0) {
-        mprAssert(hash);
+        assure(hash);
         return 0;
     }
     lock(hash);
@@ -165,8 +165,8 @@ PUBLIC MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
     MprKey      *sp;
     int         index;
 
-    mprAssert(hash);
-    mprAssert(key);
+    assure(hash);
+    assure(key);
 
     if ((sp = mprAllocStruct(MprKey)) == 0) {
         return 0;
@@ -193,8 +193,8 @@ PUBLIC int mprRemoveKey(MprHash *hash, cvoid *key)
     MprKey      *sp, *prevSp;
     int         index;
 
-    mprAssert(hash);
-    mprAssert(key);
+    assure(hash);
+    assure(key);
 
     lock(hash);
     if ((sp = lookupHash(&index, &prevSp, hash, key)) == 0) {
@@ -307,7 +307,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
                 for (i = 0; i < hash->size; i++) {
                     for (sp = hash->buckets[i]; sp; sp = next) {
                         next = sp->next;
-                        mprAssert(next != sp);
+                        assure(next != sp);
                         index = hash->fn(sp->key, slen(sp->key)) % hashSize;
                         if (buckets[index]) {
                             sp->next = buckets[index];
@@ -357,7 +357,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
             return sp;
         }
         prev = sp;
-        mprAssert(sp != sp->next);
+        assure(sp != sp->next);
         sp = sp->next;
     }
     return 0;
@@ -378,7 +378,7 @@ PUBLIC MprKey *mprGetFirstKey(MprHash *hash)
     MprKey      *sp;
     int         i;
 
-    mprAssert(hash);
+    assure(hash);
 
     for (i = 0; i < hash->size; i++) {
         if ((sp = (MprKey*) hash->buckets[i]) != 0) {

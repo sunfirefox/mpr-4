@@ -157,7 +157,7 @@ static MprMatrixSsl *createMatrixSslConfig(MprSsl *ssl, int server)
     MprMatrixSsl    *mssl;
     char            *password;
 
-    mprAssert(ssl);
+    assure(ssl);
 
     if ((ssl->pconfig = mprAllocObj(MprMatrixSsl, manageMatrixSsl)) == 0) {
         return 0;
@@ -242,11 +242,11 @@ static void closeMss(MprSocket *sp, bool gracefully)
     uchar               *obuf;
     int                 nbytes;
 
-    mprAssert(sp);
+    assure(sp);
 
     lock(sp);
     msp = sp->sslSocket;
-    mprAssert(msp);
+    assure(msp);
 
     if (!(sp->flags & MPR_SOCKET_EOF) && msp->handle) {
         /*
@@ -278,8 +278,8 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
     uint32              cipherSuite;
 
     ss = sp->service;
-    mprAssert(ss);
-    mprAssert(sp);
+    assure(ss);
+    assure(sp);
 
     if ((msp = (MprMatrixSocket*) mprAllocObj(MprMatrixSocket, manageMatrixSocket)) == 0) {
         return MPR_ERR_MEMORY;
@@ -351,7 +351,7 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     unlock(ss);
     if (!sp) {
         /* Should not get here */
-        mprAssert(sp);
+        assure(sp);
         return SSL_ALLOW_ANON_CONNECTION;
     }
     if (alert > 0) {
@@ -545,7 +545,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
             return 0;
 
         case MATRIXSSL_RECEIVED_ALERT:
-            mprAssert(dlen == 2);
+            assure(dlen == 2);
             if (data[0] == SSL_ALERT_LEVEL_FATAL) {
                 return MPR_ERR;
             } else if (data[1] == SSL_ALERT_CLOSE_NOTIFY) {

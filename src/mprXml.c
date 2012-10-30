@@ -51,14 +51,14 @@ static void manageXml(MprXml *xml, int flags)
 
 PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h)
 {
-    mprAssert(xp);
+    assure(xp);
     xp->handler = h;
 }
 
 
 PUBLIC void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
 {
-    mprAssert(xp);
+    assure(xp);
 
     xp->readFn = s;
     xp->inputArg = arg;
@@ -70,7 +70,7 @@ PUBLIC void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
  */ 
 PUBLIC void mprXmlSetParseArg(MprXml *xp, void *parseArg)
 {
-    mprAssert(xp);
+    assure(xp);
 
     xp->parseArg = parseArg;
 }
@@ -81,7 +81,7 @@ PUBLIC void mprXmlSetParseArg(MprXml *xp, void *parseArg)
  */ 
 PUBLIC void *mprXmlGetParseArg(MprXml *xp)
 {
-    mprAssert(xp);
+    assure(xp);
 
     return xp->parseArg;
 }
@@ -92,7 +92,7 @@ PUBLIC void *mprXmlGetParseArg(MprXml *xp)
  */ 
 PUBLIC int mprXmlParse(MprXml *xp)
 {
-    mprAssert(xp);
+    assure(xp);
 
     return parseNext(xp, MPR_XML_BEGIN);
 }
@@ -109,7 +109,7 @@ static int parseNext(MprXml *xp, int state)
     char            *tname, *aname;
     int             rc;
 
-    mprAssert(state >= 0);
+    assure(state >= 0);
 
     tokBuf = xp->tokBuf;
     handler = xp->handler;
@@ -179,7 +179,7 @@ static int parseNext(MprXml *xp, int state)
                 state = MPR_XML_NEW_ELT;
                 tname = sclone(mprGetBufStart(tokBuf));
                 if (tname == 0) {
-                    mprAssert(!MPR_ERR_MEMORY);
+                    assure(!MPR_ERR_MEMORY);
                     return MPR_ERR_MEMORY;
                 }
                 rc = (*handler)(xp, state, tname, 0, 0);
@@ -328,7 +328,7 @@ static int parseNext(MprXml *xp, int state)
             return MPR_ERR;
         }
     }
-    mprAssert(0);
+    assure(0);
 }
 
 
@@ -344,7 +344,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
     char        *cp;
     int         c, rc;
 
-    mprAssert(state >= 0);
+    assure(state >= 0);
     tokBuf = xp->tokBuf;
 
     if ((c = getNextChar(xp)) < 0) {
@@ -517,7 +517,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
     }
 
     /* Should never get here */
-    mprAssert(0);
+    assure(0);
     return MPR_XMLTOK_ERR;
 }
 
@@ -532,10 +532,10 @@ static int scanFor(MprXml *xp, char *pattern)
     char    *start, *p, *cp;
     int     c;
 
-    mprAssert(pattern);
+    assure(pattern);
 
     tokBuf = xp->tokBuf;
-    mprAssert(tokBuf);
+    assure(tokBuf);
 
     start = mprGetBufStart(tokBuf);
     while (1) {
@@ -601,7 +601,7 @@ static int getNextChar(MprXml *xp)
 static int putLastChar(MprXml *xp, int c)
 {
     if (mprInsertCharToBuf(xp->inBuf, (char) c) < 0) {
-        mprAssert(0);
+        assure(0);
         return MPR_ERR_BAD_STATE;
     }
     if (c == '\n') {
@@ -619,7 +619,7 @@ static void xmlError(MprXml *xp, char *fmt, ...)
     va_list     args;
     char        *buf;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(args, fmt);
     buf = sfmtv(fmt, args);

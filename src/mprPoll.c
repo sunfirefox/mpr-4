@@ -72,7 +72,7 @@ static int growFds(MprWaitService *ws)
 {
     ws->fdMax *= 2;
     if ((ws->fds = mprRealloc(ws->fds, sizeof(struct pollfd) * ws->fdMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -83,7 +83,7 @@ static int growHandlers(MprWaitService *ws, int fd)
 {
     ws->handlerMax = fd + 1;
     if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -105,15 +105,15 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             if (index < 0) {
                 if (ws->fdsCount >= ws->fdMax && growFds(ws) < 0) {
                     unlock(ws);
-                    mprAssert(!MPR_ERR_MEMORY);
+                    assure(!MPR_ERR_MEMORY);
                     return MPR_ERR_MEMORY;
                 }
                 if (fd >= ws->handlerMax && growHandlers(ws, fd) < 0) {
                     unlock(ws);
                     return MPR_ERR_MEMORY;
                 }
-                mprAssert(fd < ws->handlerMax);
-                mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+                assure(fd < ws->handlerMax);
+                assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
                 ws->handlerMap[fd] = wp;
                 index = wp->notifierIndex = ws->fdsCount++;
                 pollfd = &ws->fds[index];
@@ -260,8 +260,8 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
         if (fp->revents & POLLOUT) {
             mask |= MPR_WRITABLE;
         }
-        mprAssert(mask);
-        mprAssert(fp->fd >= 0);
+        assure(mask);
+        assure(fp->fd >= 0);
         if ((wp = ws->handlerMap[fp->fd]) == 0) {
             char    buf[128];
             if (fp->fd == ws->breakPipe[MPR_READ_PIPE]) {

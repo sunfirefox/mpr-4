@@ -49,7 +49,7 @@ static void testCriticalSection(MprTestGroup *gp)
     tc = gp->data;
     tc->cond = mprCreateCond(gp);
     assert(tc->cond != 0);
-    mprAssert(tc->cond->triggered == 0);
+    assure(tc->cond->triggered == 0);
 
     tc->event = mprCreateEvent(NULL, "testCriticalSection", 0, callback, tc->cond, MPR_EVENT_QUICK);
     assert(tc->event != 0);

@@ -28,7 +28,7 @@ static MPR_INLINE bool isSep(MprFileSystem *fs, int c)
 {
     char    *separators;
 
-    mprAssert(fs);
+    assure(fs);
     for (separators = fs->separators; *separators; separators++) {
         if (*separators == c)
             return 1;
@@ -41,8 +41,8 @@ static MPR_INLINE bool hasDrive(MprFileSystem *fs, cchar *path)
 {
     char    *cp, *endDrive;
 
-    mprAssert(fs);
-    mprAssert(path);
+    assure(fs);
+    assure(path);
 
     if (fs->hasDriveSpecs) {
         cp = firstSep(fs, path);
@@ -64,8 +64,8 @@ static MPR_INLINE bool isAbsPath(MprFileSystem *fs, cchar *path)
 {
     char    *cp, *endDrive;
 
-    mprAssert(fs);
-    mprAssert(path);
+    assure(fs);
+    assure(path);
 
     if (path == NULL || *path == '\0') {
         return 0;
@@ -97,8 +97,8 @@ static MPR_INLINE bool isAbsPath(MprFileSystem *fs, cchar *path)
  */
 static MPR_INLINE bool isFullPath(MprFileSystem *fs, cchar *path) 
 {
-    mprAssert(fs);
-    mprAssert(path);
+    assure(fs);
+    assure(path);
 
 #if (BIT_WIN_LIKE || VXWORKS) && !WINCE
 {
@@ -491,7 +491,7 @@ PUBLIC char *mprGetPathDir(cchar *path)
     char            *result;
     ssize          len;
 
-    mprAssert(path);
+    assure(path);
 
     if (path == 0 || *path == '\0') {
         return sclone(path);
@@ -767,7 +767,7 @@ PUBLIC char *mprGetPathFirstDir(cchar *path)
     cchar           *cp;
     int             len;
 
-    mprAssert(path);
+    assure(path);
 
     fs = mprLookupFileSystem(path);
     if (isAbsPath(fs, path)) {
@@ -903,7 +903,7 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
             break;
         }
     }
-    mprAssert(commonSegments >= 0);
+    assure(commonSegments >= 0);
 
     if (*cp && *op) {
         op = lastop;
@@ -1235,7 +1235,7 @@ PUBLIC char *mprNormalizePath(cchar *pathArg)
     /*
         Have dots to process so break into path segments. Add one incase we need have an absolute path with a drive-spec.
      */
-    mprAssert(segmentCount > 0);
+    assure(segmentCount > 0);
     if ((segments = mprAlloc(sizeof(char*) * (segmentCount + 1))) == 0) {
         return NULL;
     }
@@ -1256,14 +1256,14 @@ PUBLIC char *mprNormalizePath(cchar *pathArg)
             if (*mark == '.' && mark[1] == '.' && mark[2] == '\0' && i > 0 && strcmp(segments[i-1], "..") != 0) {
                 /* Erase ".." and previous segment */
                 if (*segments[i - 1] == '\0' ) {
-                    mprAssert(i == 1);
+                    assure(i == 1);
                     /* Previous segement is "/". Prevent escape from root */
                     segmentCount--;
                 } else {
                     i--;
                     segmentCount -= 2;
                 }
-                mprAssert(segmentCount >= 0);
+                assure(segmentCount >= 0);
                 mark = sp + 1;
                 continue;
             }
@@ -1286,7 +1286,7 @@ PUBLIC char *mprNormalizePath(cchar *pathArg)
         segments[i++] = mark;
         len += (sp - mark);
     }
-    mprAssert(i <= segmentCount);
+    assure(i <= segmentCount);
     segmentCount = i;
 
     if (segmentCount <= 0) {
@@ -1310,7 +1310,7 @@ PUBLIC char *mprNormalizePath(cchar *pathArg)
     if ((path = mprAlloc(len + segmentCount + 1)) == 0) {
         return NULL;
     }
-    mprAssert(segmentCount > 0);
+    assure(segmentCount > 0);
 
     /*
         First segment requires special treatment due to drive specs

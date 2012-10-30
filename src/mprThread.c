@@ -157,8 +157,8 @@ PUBLIC MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize st
 #if BIT_WIN_LIKE
     tp->threadHandle = 0;
 #endif
-    mprAssert(ts);
-    mprAssert(ts->threads);
+    assure(ts);
+    assure(ts->threads);
     if (mprAddItem(ts->threads, tp) < 0) {
         return 0;
     }
@@ -223,7 +223,7 @@ PUBLIC void *threadProcWrapper(void *data)
  */
 static void threadProc(MprThread *tp)
 {
-    mprAssert(tp);
+    assure(tp);
 
     tp->osThread = mprGetCurrentOsThread();
 
@@ -282,7 +282,7 @@ PUBLIC int mprStartThread(MprThread *tp)
     pthread_attr_setstacksize(&attr, tp->stackSize);
 
     if (pthread_create(&h, &attr, threadProcWrapper, (void*) tp) != 0) { 
-        mprAssert(0);
+        assure(0);
         pthread_attr_destroy(&attr);
         return MPR_ERR_CANT_CREATE;
     }
@@ -413,7 +413,7 @@ PUBLIC void *mprGetThreadData(MprThreadLocal *tls)
 
 PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
-    mprAssert(mprPriority >= 0 && mprPriority <= 100);
+    assure(mprPriority >= 0 && mprPriority <= 100);
  
     if (mprPriority <= MPR_BACKGROUND_PRIORITY) {
         return THREAD_PRIORITY_LOWEST;
@@ -456,7 +456,7 @@ PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
     int     nativePriority;
 
-    mprAssert(mprPriority >= 0 && mprPriority < 100);
+    assure(mprPriority >= 0 && mprPriority < 100);
 
     nativePriority = (100 - mprPriority) * 5 / 2;
 
@@ -493,7 +493,7 @@ PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
  */
 PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
-    mprAssert(mprPriority >= 0 && mprPriority < 100);
+    assure(mprPriority >= 0 && mprPriority < 100);
 
     if (mprPriority <= MPR_BACKGROUND_PRIORITY) {
         return 19;
@@ -506,7 +506,7 @@ PUBLIC int mprMapMprPriorityToOs(int mprPriority)
     } else {
         return -19;
     }
-    mprAssert(0);
+    assure(0);
     return 0;
 }
 
@@ -817,7 +817,7 @@ PUBLIC void mprSetWorkerStackSize(int n)
 
 PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
 {
-    mprAssert(ws);
+    assure(ws);
 
     stats->maxThreads = ws->maxThreads;
     stats->minThreads = ws->minThreads;
@@ -870,8 +870,8 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     MprWorkerService    *ws;
 
     ws = MPR->workerService;
-    mprAssert(worker->state == MPR_WORKER_BUSY);
-    mprAssert(!worker->idleCond->triggered);
+    assure(worker->state == MPR_WORKER_BUSY);
+    assure(!worker->idleCond->triggered);
 
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
@@ -888,7 +888,7 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         worker->lastActivity = MPR->eventService->now;
         changeState(worker, MPR_WORKER_IDLE);
 
-        mprAssert(worker->cleanup == 0);
+        assure(worker->cleanup == 0);
         if (worker->cleanup) {
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
@@ -967,7 +967,7 @@ static void changeState(MprWorker *worker, int state)
     if (lp) {
         if (mprAddItem(lp, worker) < 0) {
             mprUnlock(ws->mutex);
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return;
         }
     }

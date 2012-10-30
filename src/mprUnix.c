@@ -55,7 +55,7 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
     do {
         rc = read(fd, &buf[sofar], length);
         if (rc < 0) {
-            mprAssert(0);
+            assure(0);
             return MPR_ERR_CANT_READ;
         }
         length -= rc;
@@ -74,7 +74,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     char            *at;
     void            *handle;
 
-    mprAssert(mp);
+    assure(mp);
 
     /*
         Search the image incase the module has been statically linked
@@ -140,7 +140,7 @@ PUBLIC void mprNap(MprTime timeout)
     struct timespec t;
     int             rc;
 
-    mprAssert(timeout >= 0);
+    assure(timeout >= 0);
     
     mark = mprGetTime();
     remaining = timeout;
@@ -171,7 +171,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 
     if (flags & MPR_FATAL_SRC) {
         sflag = LOG_ERR;
-    } else if (flags & MPR_ASSERT_SRC) {
+    } else if (flags & MPR_ASSURE_SRC) {
         sflag = LOG_WARNING;
     } else if (flags & MPR_ERROR_SRC) {
         sflag = LOG_ERR;

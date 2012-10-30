@@ -320,8 +320,8 @@ PUBLIC void *mprAllocMem(ssize usize, int flags)
     ssize       size;
     int         padWords;
 
-    mprAssert(!heap->marking);
-    mprAssert(usize >= 0);
+    assure(!heap->marking);
+    assure(usize >= 0);
 
     padWords = padding[flags & MPR_ALLOC_PAD_MASK];
     size = usize + sizeof(MprMem) + (padWords * sizeof(void*));
@@ -338,7 +338,7 @@ PUBLIC void *mprAllocMem(ssize usize, int flags)
     }
     BREAKPOINT(mp);
     CHECK(mp);
-    mprAssert(GET_GEN(mp) != heap->eternal);
+    assure(GET_GEN(mp) != heap->eternal);
     return ptr;
 }
 
@@ -353,15 +353,15 @@ PUBLIC void *mprReallocMem(void *ptr, ssize usize)
     ssize       oldSize, oldUsize;
     int         flags, hasManager;
 
-    mprAssert(usize > 0);
+    assure(usize > 0);
 
     if (ptr == 0) {
         return mprAllocMem(usize, 0);
     }
     mp = GET_MEM(ptr);
     CHECK(mp);
-    mprAssert(!IS_FREE(mp));
-    mprAssert(GET_GEN(mp) != heap->dead);
+    assure(!IS_FREE(mp));
+    assure(GET_GEN(mp) != heap->dead);
     oldUsize = GET_USIZE(mp);
 
     if (usize <= oldUsize) {
@@ -403,10 +403,10 @@ PUBLIC int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
 {
     int         rc;
 
-    mprAssert(s1);
-    mprAssert(s2);
-    mprAssert(s1Len >= 0);
-    mprAssert(s2Len >= 0);
+    assure(s1);
+    assure(s2);
+    assure(s1Len >= 0);
+    assure(s2Len >= 0);
 
     if ((rc = memcmp(s1, s2, min(s1Len, s2Len))) == 0) {
         if (s1Len < s2Len) {
@@ -424,13 +424,13 @@ PUBLIC int mprMemcmp(cvoid *s1, ssize s1Len, cvoid *s2, ssize s2Len)
  */
 PUBLIC ssize mprMemcpy(void *dest, ssize destMax, cvoid *src, ssize nbytes)
 {
-    mprAssert(dest);
-    mprAssert(destMax <= 0 || destMax >= nbytes);
-    mprAssert(src);
-    mprAssert(nbytes >= 0);
+    assure(dest);
+    assure(destMax <= 0 || destMax >= nbytes);
+    assure(src);
+    assure(nbytes >= 0);
 
     if (destMax > 0 && nbytes > destMax) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (nbytes > 0) {
@@ -532,10 +532,10 @@ static MprMem *allocMem(ssize required, int flags)
                 if (freeq->next != freeq) {
                     fp = freeq->next;
                     mp = (MprMem*) fp;
-                    mprAssert(IS_FREE(mp));
+                    assure(IS_FREE(mp));
                     unlinkBlock(fp);
 
-                    mprAssert(GET_GEN(mp) == heap->eternal);
+                    assure(GET_GEN(mp) == heap->eternal);
                     SET_GEN(mp, heap->active);
 
                     //  OPT
@@ -595,7 +595,7 @@ static MprMem *growHeap(ssize required, int flags)
     ssize               size, rsize, spareLen;
     int                 hasManager;
 
-    mprAssert(required > 0);
+    assure(required > 0);
 
     rsize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
     size = max(required + rsize, (ssize) heap->chunkSize);
@@ -639,7 +639,7 @@ static MprMem *growHeap(ssize required, int flags)
     heap->regions = region;
 
     if (spareLen > 0) {
-        mprAssert(spareLen >= sizeof(MprFreeMem));
+        assure(spareLen >= sizeof(MprFreeMem));
         spare = (MprMem*) ((char*) mp + required);
         INIT_BLK(spare, spareLen, 0, 1, mp);
         CHECK(spare);
@@ -677,7 +677,7 @@ static MprMem *freeBlock(MprMem *mp)
         BREAKPOINT(next);
         unlinkBlock((MprFreeMem*) next);
         if ((after = GET_NEXT(next)) != NULL) {
-            mprAssert(GET_PRIOR(after) == next);
+            assure(GET_PRIOR(after) == next);
             SET_PRIOR(after, mp);
         } else {
             SET_LAST(mp, 1);
@@ -696,7 +696,7 @@ static MprMem *freeBlock(MprMem *mp)
         BREAKPOINT(prev);
         unlinkBlock((MprFreeMem*) prev);
         if ((after = GET_NEXT(mp)) != NULL) {
-            mprAssert(GET_PRIOR(after) == mp);
+            assure(GET_PRIOR(after) == mp);
             SET_PRIOR(after, prev);
         } else {
             SET_LAST(prev, 1);
@@ -710,7 +710,7 @@ static MprMem *freeBlock(MprMem *mp)
         if (prev) {
             CHECK(prev);
         }
-        mprAssert(prev == 0 || !IS_FREE(prev));
+        assure(prev == 0 || !IS_FREE(prev));
     }
     next = GET_NEXT(mp);
 
@@ -722,7 +722,7 @@ static MprMem *freeBlock(MprMem *mp)
         unlockHeap();
         region = GET_REGION(mp);
         region->freeable = 1;
-        mprAssert(next == NULL);
+        assure(next == NULL);
     } else {
         linkBlock(mp);
         unlockHeap();
@@ -740,7 +740,7 @@ static int getQueueIndex(ssize size, int roundup)
     ssize       usize;
     int         asize, aligned, bucket, group, index, msb;
     
-    mprAssert(MPR_ALLOC_ALIGN(size) == size);
+    assure(MPR_ALLOC_ALIGN(size) == size);
 
     /*
         Allocate based on user sizes (sans header). This permits block searches to avoid scanning the next 
@@ -753,16 +753,16 @@ static int getQueueIndex(ssize size, int roundup)
     msb = (flsl((int) asize) - 1);
 
     group = max(0, msb - MPR_ALLOC_BUCKET_SHIFT + 1);
-    mprAssert(group < MPR_ALLOC_NUM_GROUPS);
+    assure(group < MPR_ALLOC_NUM_GROUPS);
 
     bucket = (asize >> max(0, group - 1)) & (MPR_ALLOC_NUM_BUCKETS - 1);
-    mprAssert(bucket < MPR_ALLOC_NUM_BUCKETS);
+    assure(bucket < MPR_ALLOC_NUM_BUCKETS);
 
     index = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
-    mprAssert(index < (heap->freeEnd - heap->freeq));
+    assure(index < (heap->freeEnd - heap->freeq));
     
 #if BIT_MEMORY_STATS
-    mprAssert(heap->freeq[index].info.stats.minSize <= (int) usize && 
+    assure(heap->freeq[index].info.stats.minSize <= (int) usize && 
         (int) usize < heap->freeq[index + 1].info.stats.minSize);
 #endif
     if (roundup) {
@@ -818,13 +818,13 @@ static void linkBlock(MprMem *mp)
      */
     fp = (MprFreeMem*) mp;
     freeq = &heap->freeq[index];
-    mprAssert(fp != freeq);
+    assure(fp != freeq);
     fp->next = freeq->next;
     fp->prev = freeq;
     freeq->next->prev = fp;
     freeq->next = fp;
-    mprAssert(fp != fp->next);
-    mprAssert(fp != fp->prev);
+    assure(fp != fp->next);
+    assure(fp != fp->prev);
 
     heap->stats.bytesFree += size;
 #if BIT_MEMORY_STATS
@@ -851,14 +851,14 @@ static void unlinkBlock(MprFreeMem *fp)
     mp = (MprMem*) fp;
     size = GET_SIZE(mp);
     heap->stats.bytesFree -= size;
-    mprAssert(IS_FREE(mp));
+    assure(IS_FREE(mp));
     SET_FREE(mp, 0);
     mprAtomicBarrier();
 #if BIT_MEMORY_STATS
 {
     MprFreeMem *freeq = getQueue(size);
     freeq->info.stats.count--;
-    mprAssert(freeq->info.stats.count >= 0);
+    assure(freeq->info.stats.count >= 0);
 }
 #endif
 }
@@ -913,7 +913,7 @@ PUBLIC void mprVirtFree(void *ptr, ssize size)
     vmfree(ptr, size);
     lockHeap();
     heap->stats.bytesAllocated -= size;
-    mprAssert(heap->stats.bytesAllocated >= 0);
+    assure(heap->stats.bytesAllocated >= 0);
     unlockHeap();
 }
 
@@ -948,7 +948,7 @@ static void vmfree(void *ptr, ssize size)
 #if VALLOC
     #if BIT_UNIX_LIKE
         if (munmap(ptr, size) != 0) {
-            mprAssert(0);
+            assure(0);
         }
     #elif BIT_WIN_LIKE
         VirtualFree(ptr, 0, MEM_RELEASE);
@@ -1146,7 +1146,7 @@ static void sweep()
         for (mp = region->start; mp; mp = GET_NEXT(mp)) {
             if (unlikely(GET_GEN(mp) == heap->dead && HAS_MANAGER(mp))) {
                 mgr = GET_MANAGER(mp);
-                mprAssert(!IS_FREE(mp));
+                assure(!IS_FREE(mp));
                 CHECK(mp);
                 BREAKPOINT(mp);
                 if (mgr && VALID_BLK(mp)) {
@@ -1165,7 +1165,7 @@ static void sweep()
      */
     prior = NULL;
     for (region = heap->regions; region; region = nextRegion) {
-        mprAssert(region->freeable == 0 || region->freeable == 1);
+        assure(region->freeable == 0 || region->freeable == 1);
         nextRegion = region->next;
 
         /*
@@ -1175,7 +1175,7 @@ static void sweep()
             CHECK(mp);
             INC(sweepVisited);
             if (unlikely(GET_GEN(mp) == heap->dead)) {
-                mprAssert(!IS_FREE(mp));
+                assure(!IS_FREE(mp));
                 CHECK(mp);
                 BREAKPOINT(mp);
                 INC(swept);
@@ -1254,19 +1254,19 @@ PUBLIC void mprMarkBlock(cvoid *ptr)
         mprError("Memory block is either not dynamically allocated, or is corrupted");
         return;
     }
-    mprAssert(!IS_FREE(mp));
+    assure(!IS_FREE(mp));
 #if PARALLEL_GC
-    mprAssert(GET_MARK(mp) != heap->dead);
-    mprAssert(GET_GEN(mp) != heap->dead);
+    assure(GET_MARK(mp) != heap->dead);
+    assure(GET_GEN(mp) != heap->dead);
     if (GET_MARK(mp) == heap->dead || IS_FREE(mp)) {
-        mprAssert(0);
+        assure(0);
         return;
     }
 #endif
 #endif
     CHECK(mp);
     INC(markVisited);
-    mprAssert((GET_MARK(mp) != heap->active) || GET_GEN(mp) == heap->active);
+    assure((GET_MARK(mp) != heap->active) || GET_GEN(mp) == heap->active);
 
     if (GET_MARK(mp) != heap->active) {
         BREAKPOINT(mp);
@@ -1315,7 +1315,7 @@ PUBLIC void mprRelease(void *ptr)
     if (ptr) {
         mp = GET_MEM(ptr);
         if (VALID_BLK(mp)) {
-            mprAssert(!IS_FREE(mp));
+            assure(!IS_FREE(mp));
             /* Lock-free update of mp->gen */
             SET_FIELD2(mp, GET_SIZE(mp), heap->active, UNMARKED, 0);
         }
@@ -1407,7 +1407,7 @@ PUBLIC void mprYield(int flags)
     if (flags & MPR_YIELD_STICKY) {
         tp->stickyYield = 1;
     }
-    mprAssert(tp->yielded);
+    assure(tp->yielded);
     while (tp->yielded && (heap->mustYield || (flags & MPR_YIELD_BLOCK)) && heap->marker) {
         if (heap->flags & MPR_MARK_THREAD) {
             mprSignalCond(ts->cond);
@@ -1418,7 +1418,7 @@ PUBLIC void mprYield(int flags)
     if (!tp->stickyYield) {
         tp->yielded = 0;
     }
-    mprAssert(!heap->marking);
+    assure(!heap->marking);
 }
 
 
@@ -1428,7 +1428,7 @@ PUBLIC void mprResetYield()
     MprThread           *tp;
 
     ts = MPR->threadService;
-    mprAssert(mprGetCurrentThread());
+    assure(mprGetCurrentThread());
     if ((tp = mprGetCurrentThread()) != 0) {
         tp->stickyYield = 0;
     }
@@ -1558,8 +1558,8 @@ PUBLIC void mprVerifyMem()
         for (fp = freeq->next; fp != freeq; fp = fp->next) {
             mp = (MprMem*) fp;
             CHECK(mp);
-            mprAssert(GET_GEN(mp) == heap->eternal);
-            mprAssert(IS_FREE(mp));
+            assure(GET_GEN(mp) == heap->eternal);
+            assure(IS_FREE(mp));
 #if FUTURE
             uchar *ptr;
             int  usize;
@@ -1845,8 +1845,8 @@ static int validBlk(MprMem *mp)
     ssize   size;
 
     size = GET_SIZE(mp);
-    mprAssert(mp->magic == MPR_ALLOC_MAGIC);
-    mprAssert(size > 0);
+    assure(mp->magic == MPR_ALLOC_MAGIC);
+    assure(size > 0);
     return (mp->magic == MPR_ALLOC_MAGIC) && (size > 0);
 }
 
@@ -1917,7 +1917,7 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
                 break;
             }
         }
-        //  mprAssert(np < &lp->names[MPR_TRACK_NAMES]);
+        //  assure(np < &lp->names[MPR_TRACK_NAMES]);
         if (np < &lp->names[MPR_TRACK_NAMES]) {
             *np = (char*) name;
         }
@@ -2420,7 +2420,7 @@ PUBLIC void *mprSetManager(void *ptr, MprManager manager)
     MprMem      *mp;
 
     mp = GET_MEM(ptr);
-    mprAssert(HAS_MANAGER(mp));
+    assure(HAS_MANAGER(mp));
     if (HAS_MANAGER(mp)) {
         if (!manager) {
             manager = dummyManager;
@@ -2483,7 +2483,7 @@ static void checkYielded()
     lock(ts->threads);
     for (i = 0; i < ts->threads->length; i++) {
         tp = (MprThread*) mprGetItem(ts->threads, i);
-        mprAssert(tp->yielded);
+        assure(tp->yielded);
     }
     unlock(ts->threads);
 #endif

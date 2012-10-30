@@ -122,7 +122,7 @@ PUBLIC wchar *wncontains(wchar *str, wchar *pattern, ssize count)
     wchar   *cp, *s1, *s2;
     ssize   lim;
 
-    mprAssert(0 <= count && count < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
     if (count < 0) {
         count = MAXINT;
@@ -161,13 +161,13 @@ PUBLIC ssize wcopy(wchar *dest, ssize count, wchar *src)
 {
     ssize      len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < count && count < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < count && count < MAXINT);
 
     len = wlen(src);
     if (count <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     memcpy(dest, src, (len + 1) * sizeof(wchar));
@@ -192,7 +192,7 @@ PUBLIC wchar *wfmt(wchar *fmt, ...)
     va_list     ap;
     char        *mfmt, *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     mfmt = awtom(fmt, NULL);
@@ -206,7 +206,7 @@ PUBLIC wchar *wfmtv(wchar *fmt, va_list arg)
 {
     char        *mfmt, *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
     mfmt = awtom(fmt, NULL);
     mresult = sfmtv(mfmt, arg);
     return amtow(mresult, NULL);
@@ -222,8 +222,8 @@ PUBLIC uint whash(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
-    mprAssert(name);
-    mprAssert(0 <= count && count < MAXINT);
+    assure(name);
+    assure(0 <= count && count < MAXINT);
 
     if (count < 0) {
         count = wlen(name);
@@ -271,8 +271,8 @@ PUBLIC uint whashlower(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
-    mprAssert(name);
-    mprAssert(0 <= count && count < MAXINT);
+    assure(name);
+    assure(0 <= count && count < MAXINT);
 
     if (count < 0) {
         count = wlen(name);
@@ -387,7 +387,7 @@ PUBLIC wchar *wlower(wchar *str)
 {
     wchar   *cp, *s;
 
-    mprAssert(str);
+    assure(str);
 
     if (str) {
         s = wclone(str);
@@ -409,7 +409,7 @@ PUBLIC int wncasecmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
-    mprAssert(0 <= count && count < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -443,7 +443,7 @@ PUBLIC int wncmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
-    mprAssert(0 <= count && count < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -479,16 +479,16 @@ PUBLIC ssize wncopy(wchar *dest, ssize destCount, wchar *src, ssize count)
 {
     ssize      len;
 
-    mprAssert(dest);
-    mprAssert(src);
-    mprAssert(dest != src);
-    mprAssert(0 <= count && count < MAXINT);
-    mprAssert(0 < destCount && destCount < MAXINT);
+    assure(dest);
+    assure(src);
+    assure(dest != src);
+    assure(0 <= count && count < MAXINT);
+    assure(0 < destCount && destCount < MAXINT);
 
     len = wlen(src);
     len = min(len, count);
     if (destCount <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (len > 0) {
@@ -577,7 +577,7 @@ PUBLIC wchar *wrejoinv(wchar *buf, va_list args)
         required -= n;
         str = va_arg(ap, wchar*);
     }
-    mprAssert(required >= 0);
+    assure(required >= 0);
     *dp = '\0';
     return dest;
 }
@@ -671,9 +671,9 @@ PUBLIC wchar *wsub(wchar *str, ssize offset, ssize count)
     wchar   *result;
     ssize   size;
 
-    mprAssert(str);
-    mprAssert(offset >= 0);
-    mprAssert(0 <= count && count < MAXINT);
+    assure(str);
+    assure(offset >= 0);
+    assure(0 <= count && count < MAXINT);
 
     if (str == 0) {
         return 0;
@@ -720,7 +720,7 @@ PUBLIC char *wupper(wchar *str)
 {
     wchar   *cp, *s;
 
-    mprAssert(str);
+    assure(str);
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
@@ -769,7 +769,7 @@ PUBLIC ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
                 dest[len] = 0;
             }
         } else if (len >= destCount) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
         }
     }
@@ -811,7 +811,7 @@ PUBLIC ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count)
                 dest[len] = 0;
             }
         } else if (len >= destCount) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
         }
     }
@@ -941,7 +941,7 @@ PUBLIC ssize xmtow(wchar *dest, ssize destMax, cchar *src, ssize len)
     cchar   *sp, *send;
     int     i, c, count;
 
-    mprAssert(0 <= len && len < MAXINT);
+    assure(0 <= len && len < MAXINT);
 
     if (len < 0) {
         len = slen(src);
@@ -965,7 +965,7 @@ PUBLIC ssize xmtow(wchar *dest, ssize destMax, cchar *src, ssize len)
         c -= offsets[len];
         count++;
         if (dp >= dend) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
         }
         if (c <= 0xFFFF) {
@@ -982,7 +982,7 @@ PUBLIC ssize xmtow(wchar *dest, ssize destMax, cchar *src, ssize len)
             c -= 0x0010000UL;
             *dp++ = (c >> 10) + 0xD800;
             if (dp >= dend) {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
             *dp++ = (c & 0x3FF) + 0xDC00;
@@ -1024,7 +1024,7 @@ PUBLIC ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
     char    *dp, *dend;
     int     i, c, c2, count, bytes, mark, mask;
 
-    mprAssert(0 <= len && len < MAXINT);
+    assure(0 <= len && len < MAXINT);
 
     if (len < 0) {
         len = wlen(src);
@@ -1044,7 +1044,7 @@ PUBLIC ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
                     c = ((c - 0xD800) << 10) + (c2 - 0xDC00) + 0x10000;
                 }
             } else {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
         }
@@ -1061,7 +1061,7 @@ PUBLIC ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
         if (dest) {
             dp += bytes;
             if (dp >= dend) {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
             for (i = 1; i < bytes; i++) {

@@ -15,7 +15,7 @@
  */
 PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
-    mprAssert(module);
+    assure(module);
 
 #if BIT_PACK_MATRIXSSL
     if (mprCreateMatrixSslModule() < 0) {

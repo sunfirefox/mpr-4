@@ -105,7 +105,7 @@ static ssize withDataCallback(MprCmd *cmd, int channel, void *data)
         space = mprGetBufSpace(buf);
         if (space < (MPR_BUFSIZE / 4)) {
             if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
-                mprAssert(0);
+                assure(0);
                 mprCloseCmdFd(cmd, channel);
                 return 0;
             }

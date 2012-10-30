@@ -38,13 +38,13 @@ PUBLIC MprCond *mprCreateCond()
 
 static void manageCond(MprCond *cp, int flags)
 {
-    mprAssert(cp);
+    assure(cp);
     
     if (flags & MPR_MANAGE_MARK) {
         mprMark(cp->mutex);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        mprAssert(cp->mutex);
+        assure(cp->mutex);
 #if BIT_WIN_LIKE
         CloseHandle(cp->cv);
 #elif VXWORKS
@@ -144,7 +144,7 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
             } else if (rc == EAGAIN) {
                 rc = 0;
             } else if (rc != 0) {
-                mprAssert(rc == 0);
+                assure(rc == 0);
                 mprError("pthread_cond_timedwait error rc %d", rc);
                 rc = MPR_ERR;
             }
@@ -255,7 +255,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     if (rc == ETIMEDOUT) {
         rc = MPR_ERR_TIMEOUT;
     } else if (rc != 0) {
-        mprAssert(rc == 0);
+        assure(rc == 0);
         rc = MPR_ERR;
     }
     mprUnlock(cp->mutex);

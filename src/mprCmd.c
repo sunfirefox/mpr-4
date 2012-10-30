@@ -185,7 +185,7 @@ static void vxCmdManager(MprCmd *cmd)
 
 PUBLIC void mprDestroyCmd(MprCmd *cmd)
 {
-    mprAssert(cmd);
+    assure(cmd);
     resetCmd(cmd);
     if (cmd->signal) {
         mprRemoveSignalHandler(cmd->signal);
@@ -199,7 +199,7 @@ static void resetCmd(MprCmd *cmd)
     MprCmdFile      *files;
     int             i;
 
-    mprAssert(cmd);
+    assure(cmd);
     files = cmd->files;
     for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->handlers[i]) {
@@ -231,7 +231,7 @@ PUBLIC void mprDisconnectCmd(MprCmd *cmd)
 {
     int     i;
 
-    mprAssert(cmd);
+    assure(cmd);
 
     for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->handlers[i]) {
@@ -247,8 +247,8 @@ PUBLIC void mprDisconnectCmd(MprCmd *cmd)
  */
 PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
 {
-    mprAssert(cmd);
-    mprAssert(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
+    assure(cmd);
+    assure(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
 
     if (cmd->handlers[channel]) {
         mprRemoveWaitHandler(cmd->handlers[channel]);
@@ -279,7 +279,7 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
 PUBLIC void mprFinalizeCmd(MprCmd *cmd)
 {
     mprLog(6, "mprFinalizeCmd");
-    mprAssert(cmd);
+    assure(cmd);
     mprCloseCmdFd(cmd, MPR_CMD_STDIN);
 }
 
@@ -298,7 +298,7 @@ PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char
     cchar   **argv;
     int     argc;
 
-    mprAssert(cmd);
+    assure(cmd);
     if ((argc = mprMakeArgv(command, &argv, 0)) < 0 || argv == 0) {
         return 0;
     }
@@ -336,7 +336,7 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
 {
     int     rc, status;
 
-    mprAssert(cmd);
+    assure(cmd);
     if (err) {
         *err = 0;
         flags |= MPR_CMD_ERR;
@@ -426,8 +426,8 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
     cchar       *program, *search, *pair;
     int         rc, next, i;
 
-    mprAssert(cmd);
-    mprAssert(argv);
+    assure(cmd);
+    assure(argv);
 
     if (argc <= 0 || argv == NULL || argv[0] == NULL) {
         return MPR_ERR_BAD_ARGS;
@@ -538,7 +538,7 @@ PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
     /*
         Need to detect EOF in windows. Pipe always in blocking mode, but reads block even with no one on the other end.
      */
-    mprAssert(cmd->files[channel].handle);
+    assure(cmd->files[channel].handle);
     rc = PeekNamedPipe(cmd->files[channel].handle, NULL, 0, NULL, &count, NULL);
     if (rc > 0 && count > 0) {
         return read(cmd->files[channel].fd, buf, (uint) bufsize);
@@ -573,7 +573,7 @@ PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
     return rc;
 
 #else
-    mprAssert(cmd->files[channel].fd >= 0);
+    assure(cmd->files[channel].fd >= 0);
     return read(cmd->files[channel].fd, buf, bufsize);
 #endif
 }
@@ -679,7 +679,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
 {
     MprTime     expires, remaining;
 
-    mprAssert(cmd);
+    assure(cmd);
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -748,7 +748,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
                 mprLog(7, "waitpid FUNNY pid %d, errno %d", cmd->pid, errno);
             }
             cmd->pid = 0;
-            mprAssert(cmd->signal);
+            assure(cmd->signal);
             mprRemoveSignalHandler(cmd->signal);
             cmd->signal = 0;
         } else {
@@ -781,9 +781,9 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     if (status != STILL_ACTIVE) {
         cmd->status = status;
         rc = CloseHandle(cmd->process);
-        mprAssert(rc != 0);
+        assure(rc != 0);
         rc = CloseHandle(cmd->thread);
-        mprAssert(rc != 0);
+        assure(rc != 0);
         cmd->process = 0;
         cmd->thread = 0;
         cmd->pid = 0;
@@ -828,8 +828,8 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
             if (cmd->eofCount != cmd->requiredEof) {
                 mprLog(0, "reapCmd: insufficient EOFs %d %d, complete %d", cmd->eofCount, cmd->requiredEof, cmd->complete);
             }
-            mprAssert(cmd->eofCount == cmd->requiredEof);
-            mprAssert(cmd->complete);
+            assure(cmd->eofCount == cmd->requiredEof);
+            assure(cmd->complete);
 #endif
         }
     }
@@ -929,7 +929,7 @@ PUBLIC void mprSetCmdCallback(MprCmd *cmd, MprCmdProc proc, void *data)
 
 PUBLIC int mprGetCmdExitStatus(MprCmd *cmd)
 {
-    mprAssert(cmd);
+    assure(cmd);
 
     if (cmd->pid == 0) {
         return cmd->status;
@@ -948,7 +948,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 
 PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
 {
-    mprAssert(0);
+    assure(0);
 #if UNUSED && KEEP
     cmd->timeoutPeriod = timeout;
 #endif
@@ -972,7 +972,7 @@ PUBLIC void mprSetCmdDir(MprCmd *cmd, cchar *dir)
 #if VXWORKS
     mprError("WARNING: Setting working directory on VxWorks is global: %s", dir);
 #else
-    mprAssert(dir && *dir);
+    assure(dir && *dir);
 
     cmd->dir = sclone(dir);
 #endif
@@ -1088,7 +1088,7 @@ static cchar *makeWinEnvBlock(MprCmd *cmd)
     /* Windows requires two nulls */
     *dp++ = '\0';
     *dp++ = '\0';
-    mprAssert(dp <= ep);
+    assure(dp <= ep);
     return env;
 }
 #endif
@@ -1119,7 +1119,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     ssize       len;
     int         quote;
 
-    mprAssert(argc > 0 && argv[0] != NULL);
+    assure(argc > 0 && argv[0] != NULL);
 
     cmd->argv = argv;
     cmd->argc = argc;

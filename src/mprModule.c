@@ -52,7 +52,7 @@ PUBLIC int mprStartModuleService()
     int                 next;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         if (mprStartModule(mp) < 0) {
@@ -73,7 +73,7 @@ PUBLIC void mprStopModuleService()
     int                 next;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
     mprLock(ms->mutex);
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         mprStopModule(mp);
@@ -89,7 +89,7 @@ PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *
     int                 index;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     if ((mp = mprAllocObj(MprModule, manageModule)) == 0) {
         return 0;
@@ -122,7 +122,7 @@ static void manageModule(MprModule *mp, int flags)
 
 PUBLIC int mprStartModule(MprModule *mp)
 {
-    mprAssert(mp);
+    assure(mp);
 
     if (mp->start && !(mp->flags & MPR_MODULE_STARTED)) {
         if (mp->start(mp) < 0) {
@@ -136,7 +136,7 @@ PUBLIC int mprStartModule(MprModule *mp)
 
 PUBLIC int mprStopModule(MprModule *mp)
 {
-    mprAssert(mp);
+    assure(mp);
 
     if (mp->stop && (mp->flags & MPR_MODULE_STARTED) && !(mp->flags & MPR_MODULE_STOPPED)) {
         if (mp->stop(mp) < 0) {
@@ -157,13 +157,13 @@ PUBLIC MprModule *mprLookupModule(cchar *name)
     MprModule           *mp;
     int                 next;
 
-    mprAssert(name && name);
+    assure(name && name);
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
-        mprAssert(mp->name);
+        assure(mp->name);
         if (mp && strcmp(mp->name, name) == 0) {
             return mp;
         }
@@ -226,7 +226,7 @@ PUBLIC cchar *mprGetModuleSearchPath()
 PUBLIC int mprLoadModule(MprModule *mp)
 {
 #if BIT_HAS_DYN_LOAD
-    mprAssert(mp);
+    assure(mp);
 
     if (mprLoadNativeModule(mp) < 0) {
         return MPR_ERR_CANT_READ;
@@ -268,7 +268,7 @@ static char *probe(cchar *filename)
 {
     char    *path;
 
-    mprAssert(filename && *filename);
+    assure(filename && *filename);
 
     mprLog(7, "Probe for native module %s", filename);
     if (mprPathExists(filename, R_OK)) {

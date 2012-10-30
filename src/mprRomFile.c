@@ -26,7 +26,7 @@ static MprFile *openFile(MprFileSystem *fileSystem, cchar *path, int flags, int 
     MprRomFileSystem    *rfs;
     MprFile             *file;
     
-    mprAssert(path && *path);
+    assure(path && *path);
 
     rfs = (MprRomFileSystem*) fileSystem;
     file = mprAllocObj(MprFile, manageRomFile);
@@ -63,14 +63,14 @@ static ssize readFile(MprFile *file, void *buf, ssize size)
     MprRomInode     *inode;
     ssize           len;
 
-    mprAssert(buf);
+    assure(buf);
 
     if (file->fd == 0) {
         return read(file->fd, buf, size);
     }
     inode = file->inode;
     len = min(inode->size - file->iopos, size);
-    mprAssert(len >= 0);
+    assure(len >= 0);
     memcpy(buf, &inode->data[file->iopos], len);
     file->iopos += len;
     return len;
@@ -90,7 +90,7 @@ static long seekFile(MprFile *file, int seekType, long distance)
 {
     MprRomInode     *inode;
 
-    mprAssert(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
+    assure(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
 
     inode = file->inode;
 
@@ -145,7 +145,7 @@ static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info)
 {
     MprRomInode *ri;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     info->checked = 1;
 
@@ -215,7 +215,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 
     for (ri = inodeList; ri->path; ri++) {
         if (mprAddKey(rfs->fileIndex, ri->path, ri) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
     }

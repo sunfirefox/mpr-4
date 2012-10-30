@@ -25,7 +25,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     srand((uint) time(NULL));
 
     if ((mpr = mprCreateMemService((MprManager) manageMpr, flags)) == 0) {
-        mprAssert(mpr);
+        assure(mpr);
         return 0;
     }
     mpr->start = mprGetTime(); 
@@ -494,7 +494,7 @@ PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
     ssize   len;
     int     argc;
 
-    mprAssert(command);
+    assure(command);
 
     /*
         Allocate one vector for argv and the actual args themselves
@@ -505,7 +505,7 @@ PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
         argc++;
     }
     if ((vector = (char*) mprAlloc(((argc + 1) * sizeof(char*)) + len)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     args = &vector[(argc + 1) * sizeof(char*)];
