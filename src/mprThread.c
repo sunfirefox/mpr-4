@@ -769,14 +769,13 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 {
     MprWorker     *worker;
-    int           index;
+    int           index, pruned;
 
     if (mprGetDebugMode()) {
         return;
     }
-    mprLog(6, "Check to prune idle workers. Pool has %d workers. Limits %d-%d", 
-        ws->numThreads, ws->minThreads, ws->maxThreads);
     mprLock(ws->mutex);
+    pruned = 0;
     for (index = 0; index < ws->idleThreads->length; index++) {
         if (ws->numThreads <= ws->minThreads) {
             break;
@@ -784,7 +783,12 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
         worker = mprGetItem(ws->idleThreads, index);
         if ((worker->lastActivity + MPR_TIMEOUT_WORKER) < MPR->eventService->now) {
             changeState(worker, MPR_WORKER_PRUNED);
+            pruned++;
         }
+    }
+    if (pruned) {
+        mprLog(4, "Pruned %d workers, pool has %d workers. Limits %d-%d", 
+            pruned, ws->numThreads, ws->minThreads, ws->maxThreads);
     }
     mprUnlock(ws->mutex);
 }

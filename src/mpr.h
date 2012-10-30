@@ -1343,8 +1343,8 @@ struct  MprXml;
 #define MPR_TIMEOUT_HANDLER     10000       /**< Wait period when removing a wait handler */
 #endif
 
-#define MPR_TIMEOUT_PRUNER      600000      /**< Time between worker thread pruner runs (10 min) */
-#define MPR_TIMEOUT_WORKER      300000      /**< Prune worker that has been idle for 5 minutes */
+#define MPR_TIMEOUT_PRUNER      120000      /**< Time between worker thread pruner runs (2 min) */
+#define MPR_TIMEOUT_WORKER      60000       /**< Prune worker that has been idle for 1 min */
 #define MPR_TIMEOUT_START_TASK  10000       /**< Time to start tasks running */
 #define MPR_TIMEOUT_STOP        30000       /**< Default wait when stopping resources (30 sec) */
 #define MPR_TIMEOUT_STOP_TASK   10000       /**< Time to stop or reap tasks (vxworks) */
