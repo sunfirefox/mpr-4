@@ -715,6 +715,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
+    static int          warnOnceWorkers = 0;
 
     ws = MPR->workerService;
     mprLock(ws->mutex);
@@ -750,7 +751,10 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
         /*
             No free workers and can't create anymore
          */
-        mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
+        if (!warnOnceWorkers) {
+            warnOnceWorkers = 1;
+            mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
+        }
         mprUnlock(ws->mutex);
         return MPR_ERR_BUSY;
     }
