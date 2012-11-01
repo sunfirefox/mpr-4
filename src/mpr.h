@@ -1946,8 +1946,9 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 /********************************* Memory Allocator ***************************/
 /*
     Allocator debug and stats selection
+    Use configure --set memoryCheck=true to enable
  */
-#if BIT_DEBUG
+#if BIT_MEMORY_CHECK
     #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity. */
     #define BIT_MEMORY_STATS        1                   /**< Include memory stats routines */
     #define BIT_MEMORY_STACK        1                   /**< Monitor stack usage */
@@ -8112,6 +8113,7 @@ typedef struct MprCmd {
 
     cchar           *program;           /**< Program path name */
     int             pid;                /**< Process ID of the created process */
+    int             pid2;               /**< Persistent copy of the pid */
     int             status;             /**< Command exit status */
     int             flags;              /**< Control flags (userFlags not here) */
     int             eofCount;           /**< Count of end-of-files */

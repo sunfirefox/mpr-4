@@ -393,7 +393,6 @@ PUBLIC int mprRemoveRangeOfItems(MprList *lp, int start, int end)
     if (start > end) {
         return MPR_ERR_BAD_ARGS;
     }
-
     /*
         Copy down to compress
      */
@@ -648,9 +647,6 @@ static int growList(MprList *lp, int incr)
     }
     memsize = len * sizeof(void*);
 
-    /*
-        Lock free realloc. Old list will be intact via lp->items until mprRealloc returns.
-     */
     if ((lp->items = mprRealloc(lp->items, memsize)) == NULL) {
         assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;

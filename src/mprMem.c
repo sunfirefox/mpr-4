@@ -1428,7 +1428,6 @@ PUBLIC void mprResetYield()
     MprThread           *tp;
 
     ts = MPR->threadService;
-    assure(mprGetCurrentThread());
     if ((tp = mprGetCurrentThread()) != 0) {
         tp->stickyYield = 0;
     }
@@ -2401,7 +2400,7 @@ PUBLIC int mprIsValid(cvoid *ptr)
     }
     return 0;
 #else
-#if BIT_DEBUG
+#if BIT_MEMORY_CHECK
     return ptr && mp->magic == MPR_ALLOC_MAGIC && GET_SIZE(mp) > 0;
 #else
     return ptr && GET_SIZE(mp) > 0;

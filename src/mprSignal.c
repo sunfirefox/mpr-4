@@ -65,7 +65,6 @@ static void hookSignal(int signo, MprSignal *sp)
     int                 rc;
 
     assure(0 < signo && signo < MPR_MAX_SIGNALS);
-
     ssp = MPR->signalService;
     lock(ssp);
     rc = sigaction(signo, 0, &old);

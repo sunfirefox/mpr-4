@@ -272,6 +272,18 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
             }
         }
     }
+#if BIT_DEBUG
+{
+    int     count, i;
+    count = 0;
+    for (i = MPR_CMD_STDIN + 1; i < MPR_CMD_MAX_PIPE; i++) {
+        if (cmd->files[i].fd >= 0) {
+            count++;
+        }
+    }
+    assure(cmd->requiredEof == (cmd->eofCount + count));
+}
+#endif
     mprLog(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
 }
 
@@ -481,6 +493,7 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
     }
     addCmdHandlers(cmd);
     rc = startProcess(cmd);
+    cmd->pid2 = cmd->pid;
     sunlock(cmd);
     return rc;
 }
@@ -723,7 +736,6 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
  */
 static void reapCmd(MprCmd *cmd, MprSignal *sp)
 {
-    ssize   got, nbytes;
     int     status, rc;
 
     mprLog(6, "reapCmd CHECK pid %d, eof %d, required %d\n", cmd->pid, cmd->eofCount, cmd->requiredEof);
@@ -793,16 +805,13 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
         if (cmd->eofCount >= cmd->requiredEof) {
             cmd->complete = 1;
         }
-        if (cmd->callback) {
-            (cmd->callback)(cmd, -1, cmd->callbackData);
-        }
         mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d\n", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
-
         if (cmd->callback) {
-            /*
-                Read outstanding data
-             */  
+#if UNUSED
             while (cmd->eofCount < cmd->requiredEof) {
+                /*
+                    Read outstanding data
+                 */  
                 got = 0;
                 if (cmd->files[MPR_CMD_STDERR].fd >= 0) {
                     if ((nbytes = (cmd->callback)(cmd, MPR_CMD_STDERR, cmd->callbackData)) > 0) {
@@ -824,6 +833,10 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
             if (cmd->files[MPR_CMD_STDOUT].fd >= 0) {
                 mprCloseCmdFd(cmd, MPR_CMD_STDOUT);
             }
+#endif
+            (cmd->callback)(cmd, -1, cmd->callbackData);
+            /* WARNING - this above call may invoke httpPump and complete the request. HttpConn.tx may be null */
+
 #if UNUSED && DONT_USE && KEEP
             if (cmd->eofCount != cmd->requiredEof) {
                 mprLog(0, "reapCmd: insufficient EOFs %d %d, complete %d", cmd->eofCount, cmd->requiredEof, cmd->complete);
