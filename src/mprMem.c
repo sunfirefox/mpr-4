@@ -148,7 +148,7 @@ PUBLIC int stopSeqno = -1;
 /********************************** Data **************************************/
 
 #undef              MPR
-PUBLIC Mpr                 *MPR;
+PUBLIC Mpr          *MPR;
 static MprHeap      *heap;
 static MprMemStats  memStats;
 static int          padding[] = { 0, MANAGER_SIZE };
@@ -1104,7 +1104,9 @@ static void mark()
     markRoots();
     heap->marking = 0;
     if (!heap->hasSweeper) {
+        heap->sweeping = 1;
         MPR_MEASURE(7, "GC", "sweep", sweep());
+        heap->sweeping = 0;
     }
     resumeThreads();
 }
@@ -1435,7 +1437,7 @@ PUBLIC void mprResetYield()
         May have been sticky yielded and so marking could be active. If so, must yield here regardless.
      */
     lock(ts->threads);
-    if (heap->marking) {
+    if (heap->marking || heap->sweeping) {
         unlock(ts->threads);
         mprYield(0);
     } else {
