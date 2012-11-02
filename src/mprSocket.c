@@ -1066,7 +1066,7 @@ PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
 {
     assure(sp);
 
-    return sp->flags & MPR_SOCKET_BLOCK;
+    return sp && (sp->flags & MPR_SOCKET_BLOCK);
 }
 
 
