@@ -253,7 +253,7 @@ static void serviceIO(MprWaitService *ws, int count)
                 mprNotifyOn(ws, wp, 0);
                 wp->desiredMask = 0;
                 mprNotifyOn(ws, wp, mask);
-                mprLog(7, "kqueue: file descriptor closed and reopened, fd %d", wp->fd);
+                mprLog(7, "kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
 
             } else if (err == EBADF) {
                 /* File descriptor was closed */
