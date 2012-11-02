@@ -272,18 +272,6 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
             }
         }
     }
-#if BIT_DEBUG
-{
-    int     count, i;
-    count = 0;
-    for (i = MPR_CMD_STDIN + 1; i < MPR_CMD_MAX_PIPE; i++) {
-        if (cmd->files[i].fd >= 0) {
-            count++;
-        }
-    }
-    assure(cmd->requiredEof == (cmd->eofCount + count));
-}
-#endif
     mprLog(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
 }
 
