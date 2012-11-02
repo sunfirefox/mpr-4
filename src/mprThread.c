@@ -783,10 +783,11 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
         if ((worker->lastActivity + MPR_TIMEOUT_WORKER) < MPR->eventService->now) {
             changeState(worker, MPR_WORKER_PRUNED);
             pruned++;
+            index--;
         }
     }
     if (pruned) {
-        mprLog(3, "Pruned %d workers, pool has %d workers. Limits %d-%d", 
+        mprLog(2, "Pruned %d workers, pool has %d workers. Limits %d-%d.", 
             pruned, ws->numThreads, ws->minThreads, ws->maxThreads);
     }
     unlock(ws);
@@ -856,7 +857,7 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     worker->idleCond = mprCreateCond();
 
     fmt(name, sizeof(name), "worker.%u", getNextThreadNum(ws));
-    mprLog(3, "Create worker %s, pool has %d workers. Limits %d-%d", name, ws->numThreads, ws->minThreads, ws->maxThreads);
+    mprLog(2, "Create %s, pool has %d workers. Limits %d-%d.", name, ws->numThreads, ws->minThreads, ws->maxThreads);
     worker->thread = mprCreateThread(name, (MprThreadProc) workerMain, worker, stackSize);
     return worker;
 }
