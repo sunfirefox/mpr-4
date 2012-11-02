@@ -126,6 +126,8 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     assure(dispatcher);
     assure(event);
     assure(event->timestamp);
+    assure(dispatcher->enabled);
+    assure(!dispatcher->destroyed);
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assure(event->magic == MPR_EVENT_MAGIC);
 
@@ -226,10 +228,8 @@ PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
     MprEvent            *event, *next;
 
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-
     es = dispatcher->service;
     event = 0;
-
     lock(es);
     next = dispatcher->eventQ->next;
     if (next != dispatcher->eventQ) {
