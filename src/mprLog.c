@@ -269,6 +269,10 @@ PUBLIC void mprAssure(cchar *loc, cchar *msg)
     }
     mprLog(0, "%s", buf);
     mprBreakpoint();
+#if WATSON_PAUSE
+    printf("Stop for WATSON\n");
+    mprNap(60 * 1000);
+#endif
 #endif
 }
 
