@@ -1918,7 +1918,6 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
                 break;
             }
         }
-        //  assure(np < &lp->names[MPR_TRACK_NAMES]);
         if (np < &lp->names[MPR_TRACK_NAMES]) {
             *np = (char*) name;
         }

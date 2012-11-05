@@ -122,6 +122,8 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
         return;
     }
     if (signo == SIGINT) {
+        /* Fixes command line recall to complete the line */
+        printf("\n");
         exit(1);
         return;
     }

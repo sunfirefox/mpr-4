@@ -176,7 +176,7 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 
     lock(wp->service);
     if (wp->flags & MPR_WAIT_NEW_DISPATCHER) {
-        dispatcher = mprCreateDispatcher("IO", 1);
+        dispatcher = mprCreateDispatcher("IO", MPR_DISPATCHER_ENABLED | MPR_DISPATCHER_AUTO_CREATE);
     } else {
         dispatcher = (wp->dispatcher) ? wp->dispatcher: mprGetDispatcher();
     }

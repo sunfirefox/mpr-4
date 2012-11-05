@@ -86,8 +86,8 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->waitService = mprCreateWaitService();
     mpr->socketService = mprCreateSocketService();
 
-    mpr->dispatcher = mprCreateDispatcher("main", 1);
-    mpr->nonBlock = mprCreateDispatcher("nonblock", 1);
+    mpr->dispatcher = mprCreateDispatcher("main", MPR_DISPATCHER_ENABLED);
+    mpr->nonBlock = mprCreateDispatcher("nonblock", MPR_DISPATCHER_ENABLED);
     mpr->pathEnv = sclone(getenv("PATH"));
 
     if (flags & MPR_USER_EVENTS_THREAD) {

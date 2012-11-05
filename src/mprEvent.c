@@ -126,8 +126,8 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     assure(dispatcher);
     assure(event);
     assure(event->timestamp);
-    assure(dispatcher->enabled);
-    assure(!dispatcher->destroyed);
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assure(event->magic == MPR_EVENT_MAGIC);
 
@@ -149,7 +149,7 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     
     queueEvent(prior, event);
     es->eventCount++;
-    if (dispatcher->enabled) {
+    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         mprScheduleDispatcher(dispatcher);
     }
     unlock(es);
@@ -168,7 +168,8 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
         if (event->next) {
             dequeueEvent(event);
         }
-        if (dispatcher->enabled && event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
+        if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
+                event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
         event->dispatcher = 0;

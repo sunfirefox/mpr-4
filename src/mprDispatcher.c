@@ -101,7 +101,7 @@ PUBLIC void mprStopEventService()
 /*
     Create a disabled dispatcher. A dispatcher schedules events on a single dispatch queue.
  */
-PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
+PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -111,11 +111,11 @@ PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
     }
     dispatcher->name = sclone(name);
     dispatcher->cond = mprCreateCond();
-    dispatcher->enabled = enable;
+    dispatcher->flags = flags;
     dispatcher->magic = MPR_DISPATCHER_MAGIC;
     es = dispatcher->service = MPR->eventService;
     dispatcher->eventQ = mprCreateEventQueue();
-    if (enable) {
+    if (flags & MPR_DISPATCHER_ENABLED) {
         queueDispatcher(es->idleQ, dispatcher);
     } else {
         initDispatcher(dispatcher);
@@ -124,20 +124,16 @@ PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int enable)
 }
 
 
-/*
-    This can be called explicitly or via the GC/sweep.
-    It is idempotent.
- */
-PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher)
+static void mprDestroyDispatcher(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *q, *event, *next;
 
-    if (dispatcher && !dispatcher->destroyed) {
+    if (dispatcher && !(dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
         es = dispatcher->service;
         assure(es == MPR->eventService);
         lock(es);
-        assure(!dispatcher->destroyed);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         assure(dispatcher->service == MPR->eventService);
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         q = dispatcher->eventQ;
@@ -148,13 +144,17 @@ PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher)
                 mprRemoveEvent(event);
             }
         }
+#if UNUSED
         if (dispatcher->parent != es->runQ) {
+#endif
             dequeueDispatcher(dispatcher);
             assure(dispatcher->parent == dispatcher);
+#if UNUSED
         }
-        dispatcher->enabled = 0;
-        dispatcher->destroyed = 1;
-        dispatcher->magic = MPR_DISPATCHER_DESTROYED;
+#endif
+        dispatcher->flags = MPR_DISPATCHER_DESTROYED;
+        dispatcher->owner = 0;
+        dispatcher->magic = MPR_DISPATCHER_FREE;
         unlock(es);
     }
 }
@@ -167,9 +167,6 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 
     es = dispatcher->service;
 
-    /*
-        Note: mprDestroyDispatcher may have been called. The memory is still intact.
-     */
     if (flags & MPR_MANAGE_MARK) {
         mprMark(dispatcher->name);
         mprMark(dispatcher->eventQ);
@@ -190,7 +187,33 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         
     } else if (flags & MPR_MANAGE_FREE) {
         mprDestroyDispatcher(dispatcher);
-        assure(dispatcher->destroyed);
+    }
+}
+
+
+PUBLIC void mprDisableDispatcher(MprDispatcher *dispatcher)
+{
+    MprEventService     *es;
+    MprEvent            *q, *event, *next;
+
+    if (dispatcher && !(dispatcher->flags & (MPR_DISPATCHER_DESTROYED | MPR_DISPATCHER_ENABLED))) {
+        es = dispatcher->service;
+        lock(es);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+        assure(dispatcher->service == MPR->eventService);
+        assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        q = dispatcher->eventQ;
+        for (event = q->next; event != q; event = next) {
+            assure(event->magic == MPR_EVENT_MAGIC);
+            next = event->next;
+            if (event->dispatcher) {
+                mprRemoveEvent(event);
+            }
+        }
+        dequeueDispatcher(dispatcher);
+        assure(dispatcher->parent == dispatcher);
+        dispatcher->flags &= ~MPR_DISPATCHER_ENABLED;
+        unlock(es);
     }
 }
 
@@ -206,9 +229,9 @@ PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher)
     es = dispatcher->service;
     mustWake = 0;
     lock(es);
-    assure(!dispatcher->destroyed);
-    if (!dispatcher->enabled) {
-        dispatcher->enabled = 1;
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    if (!(dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
+        dispatcher->flags |= MPR_DISPATCHER_ENABLED;
         LOG(7, "mprEnableDispatcher: %s", dispatcher->name);
         if (!isEmpty(dispatcher) && !isReady(dispatcher) && !isRunning(dispatcher)) {
             queueDispatcher(es->readyQ, dispatcher);
@@ -262,7 +285,7 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
             mprServiceSignals();
         }
         while ((dp = getNextReadyDispatcher(es)) != NULL) {
-            assure(!dp->destroyed);
+            assure(!(dp->flags & MPR_DISPATCHER_DESTROYED));
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
             if (!serviceDispatcher(dp)) {
                 queueDispatcher(es->pendingQ, dp);
@@ -314,7 +337,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
     int                 claimed, signalled, wasRunning, runEvents;
 
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = MPR->eventService;
     es->now = mprGetTime();
@@ -322,8 +345,8 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
     if (dispatcher == NULL) {
         dispatcher = MPR->dispatcher;
     }
-    assure(!dispatcher->waitingOnCond);
-    if (dispatcher->waitingOnCond) {
+    assure(!(dispatcher->flags & MPR_DISPATCHER_WAITING));
+    if (dispatcher->flags & MPR_DISPATCHER_WAITING) {
         return MPR_ERR_BUSY;
     }
     thread = mprGetCurrentOsThread();
@@ -346,7 +369,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
     unlock(es);
 
     while (es->now < expires && !mprIsStoppingCore()) {
-        assure(!dispatcher->destroyed);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         if (runEvents) {
             makeRunnable(dispatcher);
             if (dispatchEvents(dispatcher)) {
@@ -356,8 +379,8 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
         }
         lock(es);
         delay = getDispatcherIdleTime(dispatcher, expires - es->now);
-        dispatcher->waitingOnCond = 1;
-        assure(!dispatcher->destroyed);
+        dispatcher->flags |= MPR_DISPATCHER_WAITING;
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         unlock(es);
         
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
@@ -367,7 +390,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
         if (mprWaitForCond(dispatcher->cond, delay) == 0) {
             assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
             mprResetYield();
-            dispatcher->waitingOnCond = 0;
+            dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
             if (runEvents) {
                 makeRunnable(dispatcher);
                 dispatchEvents(dispatcher);
@@ -378,7 +401,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
         }
         mprResetYield();
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-        dispatcher->waitingOnCond = 0;
+        dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
         es->now = mprGetTime();
     }
     if (!wasRunning) {
@@ -437,7 +460,7 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
     mprNop(tp);
 #endif
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     if (isRunning(dispatcher) && dispatcher->owner != mprGetCurrentOsThread()) {
         mprError("Relay to a running dispatcher owned by another thread");
@@ -445,12 +468,22 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
     if (event) {
         event->timestamp = dispatcher->service->now;
     }
-    dispatcher->enabled = 1;
+    //  MOB - remove
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    dispatcher->flags |= MPR_DISPATCHER_ENABLED;
+
     dispatcher->owner = mprGetCurrentOsThread();
     makeRunnable(dispatcher);
     ((MprEventProc) proc)(data, event);
-    scheduleDispatcher(dispatcher);
-    dispatcher->owner = 0;
+
+    /*
+        The event may have disabled the dispatcher. Don't reschedule if disabled
+     */
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
+        scheduleDispatcher(dispatcher);
+        dispatcher->owner = 0;
+    }
 }
 
 
@@ -467,17 +500,20 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
    
     assure(dispatcher);
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->name);
     assure(dispatcher->cond);
     es = dispatcher->service;
 
     lock(es);
-    assure(!dispatcher->destroyed);
-    if (isRunning(dispatcher) || !dispatcher->enabled) {
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+
+    //  MOB - remove
+    assure((dispatcher->flags & MPR_DISPATCHER_ENABLED));
+    if (isRunning(dispatcher) || !(dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
         /* Wake up if waiting in mprWaitForIO */
         mustWakeWaitService = es->waiting;
-        mustWakeCond = dispatcher->waitingOnCond;
+        mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
 
     } else {
         if (isEmpty(dispatcher)) {
@@ -489,16 +525,16 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
         assure(event->magic == MPR_EVENT_MAGIC);
         mustWakeWaitService = mustWakeCond = 0;
         if (event->due > es->now) {
-            assure(!dispatcher->destroyed);
+            assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
             queueDispatcher(es->waitQ, dispatcher);
             if (event->due < es->willAwake) {
                 mustWakeWaitService = 1;
-                mustWakeCond = dispatcher->waitingOnCond;
+                mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
             }
         } else {
             queueDispatcher(es->readyQ, dispatcher);
             mustWakeWaitService = es->waiting;
-            mustWakeCond = dispatcher->waitingOnCond;
+            mustWakeCond = dispatcher->flags & MPR_DISPATCHER_WAITING;
         }
     }
     unlock(es);
@@ -520,17 +556,16 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     MprEvent            *event;
     int                 count;
 
-    assure(dispatcher->enabled);
     assure(dispatcher->cond);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = dispatcher->service;
     LOG(7, "dispatchEvents for %s", dispatcher->name);
     lock(es);
-    assure(dispatcher->enabled);
     assure(dispatcher->cond);
-    assure(!dispatcher->destroyed);
-    for (count = 0; !dispatcher->destroyed && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
         /* Hold for GC */
         dispatcher->current = event;
@@ -561,7 +596,7 @@ static bool serviceDispatcher(MprDispatcher *dispatcher)
     assure(isRunning(dispatcher));
     assure(dispatcher->owner == 0);
     assure(dispatcher->cond);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     dispatcher->owner = mprGetCurrentOsThread();
 
     if (dispatcher == MPR->nonBlock) {
@@ -584,8 +619,10 @@ static void serviceDispatcherMain(MprDispatcher *dispatcher)
     assure(dispatcher->parent);
     es = dispatcher->service;
     lock(es);
-    if (dispatcher->destroyed) {
-        /* Dispatcher may have been destroyed after starting the worker */
+    //  MOB - should never be destroyed as it runs from gc when all threads give their ascent
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    if (!(dispatcher->flags & MPR_DISPATCHER_ENABLED) || (dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
+        /* Dispatcher may have been disabled after starting the worker */
         unlock(es);
         return;
     }
@@ -594,12 +631,14 @@ static void serviceDispatcherMain(MprDispatcher *dispatcher)
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assure(dispatcher->cond);
     assure(dispatcher->name);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->parent);
 
     dispatcher->owner = mprGetCurrentOsThread();
     dispatchEvents(dispatcher);
-    if (!dispatcher->destroyed) {
+    //  MOB remove
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         dispatcher->owner = 0;
         scheduleDispatcher(dispatcher);
     }
@@ -635,9 +674,9 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     lock(es);
     if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
         dispatcher = pendingQ->next;
-        assure(!dispatcher->destroyed);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
-        assure(dispatcher->enabled);
+        assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
         dispatcher->owner = 0;
 
     } else if (readyQ->next == readyQ) {
@@ -646,11 +685,11 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
          */
         for (dp = waitQ->next; dp != waitQ; dp = next) {
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
-            assure(!dp->destroyed);
+            assure(!(dp->flags & MPR_DISPATCHER_DESTROYED));
             next = dp->next;
             event = dp->eventQ->next;
             assure(event->magic == MPR_EVENT_MAGIC);
-            if (event->due <= es->now && dp->enabled) {
+            if (event->due <= es->now && dp->flags & MPR_DISPATCHER_ENABLED) {
                 queueDispatcher(es->readyQ, dp);
                 break;
             }
@@ -658,15 +697,15 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     }
     if (!dispatcher && readyQ->next != readyQ) {
         dispatcher = readyQ->next;
-        assure(!dispatcher->destroyed);
+        assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
-        assure(dispatcher->enabled);
+        assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
         dispatcher->owner = 0;
     }
     unlock(es);
     assure(dispatcher == NULL || isRunning(dispatcher));
     assure(dispatcher == NULL || dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    assure(dispatcher == NULL || !dispatcher->destroyed);
+    assure(dispatcher == NULL || !(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher == NULL || dispatcher->cond);
     return dispatcher;
 }
@@ -695,7 +734,8 @@ static MprTime getIdleTime(MprEventService *es, MprTime timeout)
          */
         for (dp = waitQ->next; dp != waitQ; dp = dp->next) {
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
-            assure(!dp->destroyed);
+            assure(!(dp->flags & MPR_DISPATCHER_DESTROYED));
+            assure(dp->flags & MPR_DISPATCHER_ENABLED);
             event = dp->eventQ->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             if (event != dp->eventQ) {
@@ -735,14 +775,14 @@ static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout)
 }
 
 
-static void initDispatcher(MprDispatcher *q)
+static void initDispatcher(MprDispatcher *dispatcher)
 {
-    assure(q->magic == MPR_DISPATCHER_MAGIC);
-    assure(!q->destroyed);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(!(dispatcher->flags == MPR_DISPATCHER_DESTROYED));
            
-    q->next = q;
-    q->prev = q;
-    q->parent = q;
+    dispatcher->next = dispatcher;
+    dispatcher->prev = dispatcher;
+    dispatcher->parent = dispatcher;
 }
 
 
@@ -752,7 +792,8 @@ static void queueDispatcher(MprDispatcher *prior, MprDispatcher *dispatcher)
     lock(dispatcher->service);
 
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
 
     if (dispatcher->parent) {
         dequeueDispatcher(dispatcher);
@@ -767,16 +808,13 @@ static void queueDispatcher(MprDispatcher *prior, MprDispatcher *dispatcher)
 }
 
 
-/*
-    Remove an dispatcher
- */
 static void dequeueDispatcher(MprDispatcher *dispatcher)
 {
     assure(dispatcher->service == MPR->eventService);
     lock(dispatcher->service);
 
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
            
     if (dispatcher->next) {
         dispatcher->next->prev = dispatcher->prev;
@@ -803,7 +841,7 @@ static void scheduleDispatcher(MprDispatcher *dispatcher)
 
     lock(es);
     assure(dispatcher->cond);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     dequeueDispatcher(dispatcher);
     mprScheduleDispatcher(dispatcher);
     unlock(es);
@@ -818,7 +856,7 @@ static int makeRunnable(MprDispatcher *dispatcher)
     es = dispatcher->service;
 
     lock(es);
-    assure(!dispatcher->destroyed);
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     wasRunning = isRunning(dispatcher);
     if (!isRunning(dispatcher)) {
         queueDispatcher(es->runQ, dispatcher);
