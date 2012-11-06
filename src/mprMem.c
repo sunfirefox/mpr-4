@@ -1456,17 +1456,17 @@ static int pauseThreads()
 {
     MprThreadService    *ts;
     MprThread           *tp;
-    MprTime             mark;
+    MprTicks            mark;
     int                 i, allYielded, timeout;
 
 #if BIT_DEBUG
-    uint64  ticks = mprGetTicks();
+    uint64  hticks = mprGetHiResTicks();
 #endif
     ts = MPR->threadService;
     timeout = MPR_TIMEOUT_GC_SYNC;
 
     LOG(7, "pauseThreads: wait for threads to yield, timeout %d", timeout);
-    mark = mprGetTime();
+    mark = mprGetTicks();
     if (mprGetDebugMode()) {
         timeout = timeout * 500;
     }
@@ -1482,7 +1482,7 @@ static int pauseThreads()
                 tp = (MprThread*) mprGetItem(ts->threads, i);
                 if (!tp->yielded) {
                     allYielded = 0;
-                    if (mprGetElapsedTime(mark) > 1000) {
+                    if (mprGetElapsedTicks(mark) > 1000) {
                         LOG(7, "Thread %s is not yielding", tp->name);
                     }
                     break;
@@ -1500,10 +1500,10 @@ static int pauseThreads()
         LOG(7, "pauseThreads: waiting for threads to yield");
         mprWaitForCond(ts->cond, 20);
 
-    } while (!allYielded && mprGetElapsedTime(mark) < timeout);
+    } while (!allYielded && mprGetElapsedTicks(mark) < timeout);
 
 #if BIT_DEBUG
-    LOG(7, "TIME: pauseThreads elapsed %,d msec, %,d ticks", mprGetElapsedTime(mark), mprGetTicks() - ticks);
+    LOG(7, "TIME: pauseThreads elapsed %,Ld msec, %,Ld hticks", mprGetElapsedTicks(mark), mprGetHiResTicks() - hticks);
 #endif
     if (allYielded) {
         checkYielded();

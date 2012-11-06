@@ -217,7 +217,7 @@ static void testClient(MprTestGroup *gp)
 static void testClientServer(MprTestGroup *gp, cchar *host)
 {
     TestSocket      *ts;
-    MprTime         mark;
+    MprTicks        mark;
     ssize           len, thisLen, nbytes;
     char            *buf, *thisBuf;
     int             i, rc, count;
@@ -263,16 +263,16 @@ static void testClientServer(MprTestGroup *gp, cchar *host)
     mprCloseSocket(ts->client, 1);
     ts->client = 0;
 
-    mark = mprGetTime();
+    mark = mprGetTicks();
     do {
         if (mprWaitForTestToComplete(gp, MPR_TEST_SLEEP)) {
             break;
         }
-    } while (mprGetRemainingTime(mark, MPR_TEST_SLEEP) > 0);
+    } while (mprGetRemainingTicks(mark, MPR_TEST_SLEEP) > 0);
 
     if (mprGetBufLength(ts->inBuf) != (count * len)) {
         print("i %d count %d, remaining %d, buflen %d, cmp %d", i, count, thisLen, mprGetBufLength(ts->inBuf), count * len);
-        print("ELAPSED %d", mprGetElapsedTime(mark));
+        print("ELAPSED %d", mprGetElapsedTicks(mark));
     }
     assert(mprGetBufLength(ts->inBuf) == (count * len));
     mprFlushBuf(ts->inBuf);

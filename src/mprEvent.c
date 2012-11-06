@@ -13,7 +13,7 @@
 /***************************** Forward Declarations ***************************/
 
 static void dequeueEvent(MprEvent *event);
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, 
         void *data, int flgs);
 static void initEventQ(MprEvent *q);
 static void manageEvent(MprEvent *event, int flags);
@@ -40,7 +40,7 @@ PUBLIC MprEvent *mprCreateEventQueue()
     Create and queue a new event for service. Period is used as the delay before running the event and as the period 
     between events for continuous events.
  */
-PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)
 {
     MprEvent    *event;
 
@@ -84,7 +84,7 @@ static void manageEvent(MprEvent *event, int flags)
 }
 
 
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, void *data, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, void *data, 
     int flags)
 {
     assure(dispatcher);
@@ -93,7 +93,7 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     assure(event->next == 0);
     assure(event->prev == 0);
 
-    dispatcher->service->now = mprGetTime();
+    dispatcher->service->now = mprGetTicks();
     event->name = sclone(name);
     event->timestamp = dispatcher->service->now;
     event->proc = proc;
@@ -111,7 +111,7 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
 /*
     Create an interval timer
  */
-PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, 
+PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, 
     void *data, int flags)
 {
     return mprCreateEvent(dispatcher, name, period, proc, data, MPR_EVENT_CONTINUOUS | flags);
@@ -178,7 +178,7 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
 }
 
 
-PUBLIC void mprRescheduleEvent(MprEvent *event, MprTime period)
+PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;

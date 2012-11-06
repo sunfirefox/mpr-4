@@ -12,15 +12,18 @@
 
 static void testTimeBasics(MprTestGroup *gp)
 {
-    MprTime     mark, now, remaining, elapsed;
+    MprTime     now;
+    MprTicks    mark, remaining, elapsed;
 
-    mark = mprGetTime();
-    assert(mark != 0);
+    now = mprGetTime();
+    assert(now != 0);
     
-    remaining = mprGetRemainingTime(mark, 30000);
+    mark = mprGetTicks();
+    assert(mark != 0);
+    remaining = mprGetRemainingTicks(mark, 30000);
     assert(0 <= remaining && remaining <= 30000);
 
-    elapsed = mprGetElapsedTime(mark);
+    elapsed = mprGetElapsedTicks(mark);
     assert(0 <= elapsed && elapsed < 30000);
 
     mprSleep(21);

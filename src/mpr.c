@@ -381,12 +381,12 @@ PUBLIC bool mprIsFinished()
 }
 
 
-PUBLIC int mprWaitTillIdle(MprTime timeout)
+PUBLIC int mprWaitTillIdle(MprTicks timeout)
 {
-    MprTime     mark, remaining, lastTrace;
+    MprTicks    mark, remaining, lastTrace;
 
-    lastTrace = mark = mprGetTime(); 
-    while (!mprIsIdle() && (remaining = mprGetRemainingTime(mark, timeout)) > 0) {
+    lastTrace = mark = mprGetTicks(); 
+    while (!mprIsIdle() && (remaining = mprGetRemainingTicks(mark, timeout)) > 0) {
         mprSleep(1);
         if ((lastTrace - remaining) > MPR_TICKS_PER_SEC) {
             mprLog(1, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
@@ -711,7 +711,7 @@ PUBLIC void mprSetEnv(cchar *key, cchar *value)
 }
 
 
-PUBLIC void mprSetExitTimeout(MprTime timeout)
+PUBLIC void mprSetExitTimeout(MprTicks timeout)
 {
     MPR->exitTimeout = timeout;
 }

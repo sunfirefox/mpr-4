@@ -100,7 +100,7 @@ PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *
         mp->entry = sclone(entry);
     }
     mp->moduleData = data;
-    mp->lastActivity = mprGetTime();
+    mp->lastActivity = mprGetTicks();
     index = mprAddItem(ms->modules, mp);
     if (index < 0 || mp->name == 0) {
         return 0;
@@ -183,7 +183,7 @@ PUBLIC void *mprLookupModuleData(cchar *name)
 }
 
 
-PUBLIC void mprSetModuleTimeout(MprModule *module, MprTime timeout)
+PUBLIC void mprSetModuleTimeout(MprModule *module, MprTicks timeout)
 {
     assure(module);
     if (module) {

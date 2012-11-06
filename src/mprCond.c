@@ -60,10 +60,13 @@ static void manageCond(MprCond *cp, int flags)
     Wait for the event to be triggered. Should only be used when there are single waiters. If the event is already
     triggered, then it will return immediately. Timeout of -1 means wait forever. Timeout of 0 means no wait.
     Returns 0 if the event was signalled. Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
 {
-    MprTime             now, expire;
+    MprTicks            now, expire;
     int                 rc;
 #if BIT_UNIX_LIKE
     struct timespec     waitTill;
@@ -72,11 +75,11 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
 #endif
 
     /*
-        Avoid doing a mprGetTime() if timeout is < 0
+        Avoid doing a mprGetTicks() if timeout is < 0
      */
     rc = 0;
     if (timeout >= 0) {
-        now = mprGetTime();
+        now = mprGetTicks();
         expire = now + timeout;
 #if BIT_UNIX_LIKE
         gettimeofday(&current, NULL);
@@ -150,7 +153,7 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTime timeout)
             }
         }
 #endif
-    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTime()) < expire));
+    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTicks()) < expire));
 
     if (cp->triggered) {
         cp->triggered = 0;
@@ -206,8 +209,11 @@ PUBLIC void mprResetCond(MprCond *cp)
     triggered, then it will return immediately. This call will not reset cp->triggered and must be reset manually.
     A timeout of -1 means wait forever. Timeout of 0 means no wait.  Returns 0 if the event was signalled. 
     Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTicks timeout)
 {
     int         rc;
 #if BIT_UNIX_LIKE
@@ -215,7 +221,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     struct timeval      current;
     int                 usec;
 #else
-    MprTime             now, expire;
+    MprTicks            now, expire;
 #endif
 
     if (timeout < 0) {
@@ -227,7 +233,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
     waitTill.tv_nsec = (usec % 1000000) * 1000;
 #else
-    now = mprGetTime();
+    now = mprGetTicks();
     expire = now + timeout;
 #endif
 

@@ -218,13 +218,13 @@ PUBLIC void mprSetSocketMessage(int socketMessage)
 #endif /* WINCE */
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     Sleep((int) timeout);
 }
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);

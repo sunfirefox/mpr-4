@@ -134,27 +134,27 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
 /*
     This routine does not yield
  */
-PUBLIC void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTicks timeout)
 {
-    MprTime         remaining, mark;
+    MprTicks        remaining, mark;
     struct timespec t;
     int             rc;
 
     assure(timeout >= 0);
     
-    mark = mprGetTime();
+    mark = mprGetTicks();
     remaining = timeout;
     do {
         /* MAC OS X corrupts the timeout if using the 2nd paramater, so recalc each time */
         t.tv_sec = ((int) (remaining / 1000));
         t.tv_nsec = ((int) ((remaining % 1000) * 1000000));
         rc = nanosleep(&t, NULL);
-        remaining = mprGetRemainingTime(mark, timeout);
+        remaining = mprGetRemainingTicks(mark, timeout);
     } while (rc < 0 && errno == EINTR && remaining > 0);
 }
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);

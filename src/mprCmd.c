@@ -90,7 +90,7 @@ PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     }
 #if UNUSED && KEEP
     cmd->timeoutPeriod = MPR_TIMEOUT_CMD;
-    cmd->timestamp = mprGetTime();
+    cmd->timestamp = mprGetTicks();
 #endif
     cmd->forkCallback = (MprForkCallback) closeFiles;
     cmd->dispatcher = dispatcher ? dispatcher : MPR->dispatcher;
@@ -293,7 +293,7 @@ PUBLIC int mprIsCmdComplete(MprCmd *cmd)
 /*
     Run a simple blocking command. See arg usage below in mprRunCmdV.
  */
-PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char **err, MprTicks timeout, int flags)
 {
     cchar   **argv;
     int     argc;
@@ -332,7 +332,7 @@ PUBLIC void mprSetCmdSearchPath(MprCmd *cmd, cchar *search)
         MPR_CMD_SHOW            Show the commands window on Windows
         MPR_CMD_IN              Connect to stdin
  */
-PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTime timeout, int flags)
+PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **out, char **err, MprTicks timeout, int flags)
 {
     int     rc, status;
 
@@ -621,12 +621,12 @@ PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
     WARNING: this should not be called from a dispatcher other than cmd->dispatcher. If so, then the calls to
     mprWaitForEvent may occur after the event has been processed.
  */
-static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
+static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
 {
-    MprTime     mark, remaining, delay;
+    MprTicks    mark, remaining, delay;
     int         i, rc, nbytes;
 
-    mark = mprGetTime();
+    mark = mprGetTicks();
     if (cmd->stopped) {
         timeout = 0;
     }
@@ -656,7 +656,7 @@ static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
         }
         mprResetYield();
         if (cmd->eofCount == cmd->requiredEof) {
-            remaining = mprGetRemainingTime(mark, timeout);
+            remaining = mprGetRemainingTicks(mark, timeout);
             mprYield(MPR_YIELD_STICKY);
             rc = WaitForSingleObject(cmd->process, (DWORD) remaining);
             mprResetYield();
@@ -676,9 +676,9 @@ static void waitForWinEvent(MprCmd *cmd, MprTime timeout)
 /*
     Wait for a command to complete. Return 0 if the command completed, otherwise it will return MPR_ERR_TIMEOUT. 
  */
-PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
+PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTime     expires, remaining;
+    MprTicks    expires, remaining;
 
     assure(cmd);
 
@@ -691,7 +691,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
     if (cmd->stopped) {
         timeout = 0;
     }
-    expires = mprGetTime() + timeout;
+    expires = mprGetTicks() + timeout;
     remaining = timeout;
 
     /* Add root to allow callers to use mprRunCmd without first managing the cmd */
@@ -706,7 +706,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTime timeout)
 #else
         mprWaitForEvent(cmd->dispatcher, remaining);
 #endif
-        remaining = (expires - mprGetTime());
+        remaining = (expires - mprGetTicks());
     }
     mprRemoveRoot(cmd);
     if (cmd->pid) {
@@ -947,7 +947,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 
 /* FUTURE - not yet supported */
 
-PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTime timeout)
+PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTicks timeout)
 {
     assure(0);
 #if UNUSED && KEEP
@@ -1309,7 +1309,7 @@ static int makeChannel(MprCmd *cmd, int index)
     SECURITY_ATTRIBUTES clientAtt, serverAtt, *att;
     HANDLE              readHandle, writeHandle;
     MprCmdFile          *file;
-    MprTime             now;
+    MprTicks            now;
     char                *pipeName;
     int                 openMode, pipeMode, readFd, writeFd;
     static int          tempSeed = 0;
@@ -1326,7 +1326,7 @@ static int makeChannel(MprCmd *cmd, int index)
     serverAtt.bInheritHandle = 0;
 
     file = &cmd->files[index];
-    now = ((int) mprGetTime() & 0xFFFF) % 64000;
+    now = ((int) mprGetTicks() & 0xFFFF) % 64000;
 
     lock(MPR->cmdService);
     pipeName = sfmt("\\\\.\\pipe\\MPR_%d_%d_%d.tmp", getpid(), (int) now, ++tempSeed);

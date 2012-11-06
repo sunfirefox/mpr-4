@@ -886,9 +886,9 @@ PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 }
 
 
-PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
+PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
 {
-    MprTime     expires, remaining;
+    MprTicks    expires, remaining;
     int         rc;
     
     assure(gp->dispatcher);
@@ -897,11 +897,11 @@ PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
     if (mprGetDebugMode()) {
         timeout *= 100;
     }
-    expires = mprGetTime() + timeout;
+    expires = mprGetTicks() + timeout;
     remaining = timeout;
     do {
         mprWaitForEvent(gp->dispatcher, remaining);
-        remaining = expires - mprGetTime();
+        remaining = expires - mprGetTicks();
     } while (!gp->testComplete && remaining > 0);
     rc = gp->testComplete;
     gp->testComplete = 0;

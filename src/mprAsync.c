@@ -55,7 +55,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single descriptor. Return the number of I/O events found. Mask is the events of interest.
     Timeout is in milliseconds.
  */
-PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTicks timeout)
 {
     HANDLE      h;
     int         winMask;
@@ -85,7 +85,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     Wait for I/O on all registered descriptors. Timeout is in milliseconds. Return the number of events serviced.
     Should only be called by the thread that calls mprServiceEvents
  */
-PUBLIC void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     MSG     msg;
 

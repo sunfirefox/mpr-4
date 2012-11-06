@@ -16,10 +16,10 @@ typedef struct CacheItem
 {
     char        *key;                   /* Original key */
     char        *data;                  /* Cache data */
-    MprTime     lastAccessed;           /* Last accessed time */
-    MprTime     lastModified;           /* Last update time */
-    MprTime     expires;                /* Fixed expiry date. If zero, key is imortal */
-    MprTime     lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lastAccessed;           /* Last accessed time */
+    MprTicks    expires;                /* Fixed expiry date. If zero, key is imortal. */
+    MprTime     lastModified;           /* Last update time. This is an MprTime and records world-time. */
     int64       version;
 } CacheItem;
 
@@ -77,7 +77,7 @@ PUBLIC void *mprDestroyCache(MprCache *cache)
 }
 
 
-PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
+PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTicks expires)
 {
     CacheItem   *item;
 
@@ -131,7 +131,7 @@ PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
     item->data = itos(value);
     cache->usedMem += slen(item->data);
     item->version++;
-    item->lastAccessed = mprGetTime();
+    item->lastAccessed = mprGetTicks();
     item->expires = item->lastAccessed + item->lifespan;
     unlock(cache);
     return value;
@@ -155,7 +155,7 @@ PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 
         unlock(cache);
         return 0;
     }
-    if (item->expires && item->expires <= mprGetTime()) {
+    if (item->expires && item->expires <= mprGetTicks()) {
         unlock(cache);
         return 0;
     }
@@ -165,7 +165,7 @@ PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 
     if (modified) {
         *modified = item->lastModified;
     }
-    item->lastAccessed = mprGetTime();
+    item->lastAccessed = mprGetTicks();
     item->expires = item->lastAccessed + item->lifespan;
     result = item->data;
     unlock(cache);
@@ -206,7 +206,7 @@ PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key)
 }
 
 
-PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memory, int resolution)
+PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution)
 {
     assure(cache);
 
@@ -238,8 +238,7 @@ PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int
 }
 
 
-PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
-    int64 version, int options)
+PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, int64 version, int options)
 {
     CacheItem   *item;
     MprKey      *kp;
@@ -297,8 +296,8 @@ PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
     if (lifespan >= 0) {
         item->lifespan = lifespan;
     }
-    item->lastAccessed = mprGetTime();
-    item->lastAccessed = item->lastModified = modified ? modified : item->lastAccessed;
+    item->lastModified = modified ? modified : mprGetTime();
+    item->lastAccessed = mprGetTicks();
     item->expires = item->lastAccessed + item->lifespan;
     item->version++;
     len = slen(item->key) + slen(item->data);
@@ -331,7 +330,7 @@ static void removeItem(MprCache *cache, CacheItem *item)
 
 static void pruneCache(MprCache *cache, MprEvent *event)
 {
-    MprTime         when, factor;
+    MprTicks        when, factor;
     MprKey          *kp;
     CacheItem       *item;
     ssize           excessKeys;
@@ -343,7 +342,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
         }
     }
     if (event) {
-        when = mprGetTime();
+        when = mprGetTicks();
     } else {
         /* Expire all items by setting event to NULL */
         when = MAXINT64;

@@ -110,7 +110,7 @@ PUBLIC int mprUnloadNativeModule(MprModule *mp)
 }
 
 
-PUBLIC void mprNap(MprTime milliseconds)
+PUBLIC void mprNap(MprTicks milliseconds)
 {
     struct timespec timeout;
     int             rc;
@@ -124,7 +124,7 @@ PUBLIC void mprNap(MprTime milliseconds)
 }
 
 
-PUBLIC void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);

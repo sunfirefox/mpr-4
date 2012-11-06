@@ -14,8 +14,8 @@
 
 static void dequeueDispatcher(MprDispatcher *dispatcher);
 static int dispatchEvents(MprDispatcher *dispatcher);
-static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout);
-static MprTime getIdleTime(MprEventService *es, MprTime timeout);
+static MprTicks getDispatcherIdleTicks(MprDispatcher *dispatcher, MprTicks timeout);
+static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout);
 static MprDispatcher *getNextReadyDispatcher(MprEventService *es);
 static void initDispatcher(MprDispatcher *q);
 static int makeRunnable(MprDispatcher *dispatcher);
@@ -43,7 +43,7 @@ PUBLIC MprEventService *mprCreateEventService()
         return 0;
     }
     MPR->eventService = es;
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
     es->mutex = mprCreateLock();
     es->waitCond = mprCreateCond();
     es->runQ = mprCreateDispatcher("running", 0);
@@ -256,11 +256,11 @@ PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher)
     @param timeout Time in milliseconds to wait. Set to zero for no wait. Set to -1 to wait forever.
     @returns Zero if not events occurred. Otherwise returns non-zero.
  */
-PUBLIC int mprServiceEvents(MprTime timeout, int flags)
+PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 {
     MprEventService     *es;
     MprDispatcher       *dp;
-    MprTime             expires, delay;
+    MprTicks            expires, delay;
     int                 beginEventCount, eventCount, justOne;
 
     if (MPR->eventing) {
@@ -272,7 +272,7 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
     es = MPR->eventService;
     beginEventCount = eventCount = es->eventCount;
 
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
     expires = timeout < 0 ? MAXINT64 : (es->now + timeout);
     if (expires < 0) {
         expires = MAXINT64;
@@ -298,7 +298,7 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
         } 
         if (es->eventCount == eventCount) {
             lock(es);
-            delay = getIdleTime(es, expires - es->now);
+            delay = getIdleTicks(es, expires - es->now);
             if (delay > 0) {
                 es->waiting = 1;
                 es->willAwake = es->now + delay;
@@ -314,7 +314,7 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
                 unlock(es);
             }
         }
-        es->now = mprGetTime();
+        es->now = mprGetTicks();
         if (justOne) {
             break;
         }
@@ -329,10 +329,10 @@ PUBLIC int mprServiceEvents(MprTime timeout, int flags)
     WARNING: this will enable GC while sleeping
     Return Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
  */
-PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
+PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
 {
     MprEventService     *es;
-    MprTime             expires, delay;
+    MprTicks            expires, delay;
     MprOsThread         thread;
     int                 claimed, signalled, wasRunning, runEvents;
 
@@ -340,7 +340,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = MPR->eventService;
-    es->now = mprGetTime();
+    es->now = mprGetTicks();
 
     if (dispatcher == NULL) {
         dispatcher = MPR->dispatcher;
@@ -378,7 +378,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
             }
         }
         lock(es);
-        delay = getDispatcherIdleTime(dispatcher, expires - es->now);
+        delay = getDispatcherIdleTicks(dispatcher, expires - es->now);
         dispatcher->flags |= MPR_DISPATCHER_WAITING;
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         unlock(es);
@@ -402,7 +402,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTime timeout)
         mprResetYield();
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         dispatcher->flags &= ~MPR_DISPATCHER_WAITING;
-        es->now = mprGetTime();
+        es->now = mprGetTicks();
     }
     if (!wasRunning) {
         scheduleDispatcher(dispatcher);
@@ -714,11 +714,11 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
 /*
     Get the time to sleep till the next pending event. Must be called locked.
  */
-static MprTime getIdleTime(MprEventService *es, MprTime timeout)
+static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
 {
     MprDispatcher   *readyQ, *waitQ, *dp;
     MprEvent        *event;
-    MprTime         delay;
+    MprTicks        delay;
 
     waitQ = es->waitQ;
     readyQ = es->readyQ;
@@ -751,10 +751,10 @@ static MprTime getIdleTime(MprEventService *es, MprTime timeout)
 }
 
 
-static MprTime getDispatcherIdleTime(MprDispatcher *dispatcher, MprTime timeout)
+static MprTicks getDispatcherIdleTicks(MprDispatcher *dispatcher, MprTicks timeout)
 {
     MprEvent    *next;
-    MprTime     delay;
+    MprTicks    delay;
 
     assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 

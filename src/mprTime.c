@@ -183,6 +183,11 @@ static int leapMonthStart[] = {
     0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 0
 };
 
+#if !LINUX && !MACOSX && !BIT_WIN_LIKE
+static MprTime lastTicks;
+static MprTime adjustTicks = 0;
+#endif
+
 static MprTime daysSinceEpoch(int year);
 static void decodeTime(struct tm *tp, MprTime when, bool local);
 static int getTimeZoneOffsetFromTm(struct tm *tp);
@@ -201,6 +206,9 @@ PUBLIC int mprCreateTimeService()
     TimeToken           *tt;
 
     mpr = MPR;
+#if !LINUX && !MACOSX && !BIT_WIN_LIKE
+    lastTicks = mprGetTime();
+#endif
     mpr->timeTokens = mprCreateHash(59, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
     for (tt = days; tt->name; tt++) {
         mprAddKey(mpr->timeTokens, tt->name, (void*) tt);
@@ -302,13 +310,74 @@ PUBLIC MprTime mprGetTime()
 
 
 /*
+    High resolution timer
+ */
+#if MPR_HIGH_RES_TIMER
+    #if (LINUX || MACOSX) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
+        uint64 mprGetHiResTime() {
+            uint64  now;
+            __asm__ __volatile__ ("rdtsc" : "=A" (now));
+            return now;
+        }
+    #elif WINDOWS
+        uint64 mprGetHiResTime() {
+            LARGE_INTEGER  now;
+            QueryPerformanceCounter(&now);
+            return (((uint64) now.HighPart) << 32) + now.LowPart;
+        }
+    #else
+        uint64 mprGetHiResTime() {
+            return (uint64) mprGetTicks();
+        }
+    #endif
+#else 
+    uint64 mprGetHiResTime() {
+        return (uint64) mprGetTicks();
+    }
+#endif
+
+
+/*
+    Return time in milliseconds that never goes backwards. This is used for timers and not for time of day.
+    The actual value returned is system dependant and does not represent time since Jan 1 1970.
+ */
+PUBLIC MprTicks mprGetTicks()
+{
+#if BIT_WIN_LIKE
+    return GetTickCount64();
+#elif MACOSX
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    return mach_absolute_time() * info.numer / info.denom / (1000 * 1000);
+#elif CLOCK_MONOTONIC_RAW
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#elif CLOCK_MONOTONIC
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#else
+    MprTime     result, diff;
+    result = mprGetTime() - adjustTicks;
+    if ((diff = (result < lastTicks)) < 0) {
+        adjustTicks += diff;
+        result += diff;
+    }
+    lastTicks = result;
+    return result;
+#endif
+}
+
+
+/*
     Return the number of milliseconds until the given timeout has expired.
  */
-PUBLIC MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
+PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
 {
-    MprTime     now, diff;
+    MprTicks    now, diff;
 
-    now = mprGetTime();
+    now = mprGetTicks();
     diff = (now - mark);
 
     if (diff < 0) {
@@ -321,9 +390,12 @@ PUBLIC MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
 }
 
 
-/*
-    Get the elapsed time since a time marker
- */
+PUBLIC MprTicks mprGetElapsedTicks(MprTicks mark)
+{
+    return mprGetTicks() - mark;
+}
+
+
 PUBLIC MprTime mprGetElapsedTime(MprTime mark)
 {
     return mprGetTime() - mark;
@@ -1680,35 +1752,6 @@ PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
     #endif
 }
 #endif /* BIT_WIN_LIKE || VXWORKS */
-
-/********************************* Measurement **********************************/
-/*
-    High resolution timer
- */
-#if MPR_HIGH_RES_TIMER
-    #if BIT_UNIX_LIKE
-        uint64 mprGetTicks() {
-            uint64  now;
-            __asm__ __volatile__ ("rdtsc" : "=A" (now));
-            return now;
-        }
-    #elif BIT_WIN_LIKE
-        uint64 mprGetTicks() {
-            LARGE_INTEGER  now;
-            QueryPerformanceCounter(&now);
-            return (((uint64) now.HighPart) << 32) + now.LowPart;
-        }
-    #else
-        uint64 mprGetTicks() {
-            return (uint64) mprGetTime();
-        }
-    #endif
-#else 
-    uint64 mprGetTicks() {
-        return (uint64) mprGetTime();
-    }
-#endif
-
 
 /*
     @copy   default
