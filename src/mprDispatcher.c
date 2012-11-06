@@ -196,7 +196,7 @@ PUBLIC void mprDisableDispatcher(MprDispatcher *dispatcher)
     MprEventService     *es;
     MprEvent            *q, *event, *next;
 
-    if (dispatcher && !(dispatcher->flags & (MPR_DISPATCHER_DESTROYED | MPR_DISPATCHER_ENABLED))) {
+    if (dispatcher && (dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
         es = dispatcher->service;
         lock(es);
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
@@ -636,8 +636,9 @@ static void serviceDispatcherMain(MprDispatcher *dispatcher)
 
     dispatcher->owner = mprGetCurrentOsThread();
     dispatchEvents(dispatcher);
-    //  MOB remove
-    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    /*
+        The dispatcher may be disabled in an event above
+     */
     if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         dispatcher->owner = 0;
         scheduleDispatcher(dispatcher);
