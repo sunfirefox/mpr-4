@@ -72,7 +72,7 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
     #else
         mprGlobalLock();
         if (*addr == expected) {
-            *addr = value;
+            *addr = (void*) value;
             mprGlobalUnlock();
             return 1;
         }
