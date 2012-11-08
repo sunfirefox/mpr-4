@@ -107,7 +107,7 @@
     #define BIT_CPU_ARCH MPR_CPU_MIPS
     #define CPU_ENDIAN MPR_BIG_ENDIAN
 
-#elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__)
+#elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__) || defined(__ppc)
     #define BIT_CPU "PPC"
     #define BIT_CPU_ARCH MPR_CPU_PPC
     #define CPU_ENDIAN MPR_BIG_ENDIAN
@@ -116,6 +116,9 @@
     #define BIT_CPU "SPARC"
     #define BIT_CPU_ARCH MPR_CPU_SPARC
     #define CPU_ENDIAN MPR_BIG_ENDIAN
+
+#else
+    #error "Cannot determine CPU type in mpr.h"
 #endif
 
 /*
