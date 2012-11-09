@@ -383,8 +383,9 @@ PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
 
     if (diff < 0) {
         /*
-            Detect time going backwards
+            Detect time going backwards. MOB - should never happen now.
          */
+        assure(diff >= 0);
         diff = 0;
     }
     return (timeout - diff);
