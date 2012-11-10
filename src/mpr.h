@@ -3550,7 +3550,7 @@ PUBLIC void mprAdjustBufStart(MprBuf *buf, ssize count);
     @returns Allocated string
     @ingroup MprBuf
 */
-PUBLIC char *mprBufToString(MprBuf *bp);
+PUBLIC char *mprBufToString(MprBuf *buf);
 
 /**
     Create a new buffer
@@ -8201,7 +8201,7 @@ typedef struct MprCmd {
     Return true if command events are enabled.
     @param cmd MprCmd object created via mprCreateCmd
     @param channel Channel number to close. Should be either MPR_CMD_STDIN, MPR_CMD_STDOUT or MPR_CMD_STDERR.
-    @param Return true if I/O events are enabled for the given channel.
+    @return true if I/O events are enabled for the given channel.
     @ingroup MprCmd
  */
 PUBLIC bool mprAreCmdEventsEnabled(MprCmd *cmd, int channel);
@@ -8256,7 +8256,7 @@ PUBLIC void mprEnableCmdEvents(MprCmd *cmd, int channel);
     Enable command I/O events for the command's STDOUT and STDERR channels
     @param cmd MprCmd object created via mprCreateCmd
     @param on Set to true to enable events. Set to false to disable.
-    @param Return true if I/O events are enabled for the given channel.
+    @return true if I/O events are enabled for the given channel.
     @ingroup MprCmd
  */
 PUBLIC void mprEnableCmdOutputEvents(MprCmd *cmd, bool on);
