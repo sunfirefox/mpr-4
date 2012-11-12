@@ -515,6 +515,13 @@ PUBLIC void mprResetBufIfEmpty(MprBuf *bp)
 }
 
 
+PUBLIC char *mprBufToString(MprBuf *bp)
+{
+    mprAddNullToBuf(bp);
+    return sclone(mprGetBufStart(bp));
+}
+
+
 #if BIT_CHAR_LEN > 1 && UNUSED
 PUBLIC void mprAddNullToWideBuf(MprBuf *bp)
 {
