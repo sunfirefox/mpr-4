@@ -325,9 +325,9 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 
 
 /*
-    Wait for an event to occur. Expect the event to signal the cond var.
-    WARNING: this will enable GC while sleeping
+    Wait for an event to occur and dispatch the event. This is the primary event dispatch routine.
     Return Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
+    WARNING: this will enable GC while sleeping
  */
 PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
 {

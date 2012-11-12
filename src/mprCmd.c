@@ -186,11 +186,13 @@ static void vxCmdManager(MprCmd *cmd)
 PUBLIC void mprDestroyCmd(MprCmd *cmd)
 {
     assure(cmd);
+    slock(cmd);
     resetCmd(cmd);
     if (cmd->signal) {
         mprRemoveSignalHandler(cmd->signal);
         cmd->signal = 0;
     }
+    sunlock(cmd);
 }
 
 
@@ -660,8 +662,6 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
                 rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
                 if (rc && nbytes > 0 || cmd->process == 0) {
                     mprQueueIOEvent(wp);
-                    mprWaitForEvent(cmd->dispatcher, 0);
-                    return;
                 }
             }
         }
@@ -670,33 +670,22 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
         wp = cmd->handlers[MPR_CMD_STDIN];
         if (wp->desiredMask & MPR_WRITABLE) {
             mprQueueIOEvent(wp);
-            mprWaitForEvent(cmd->dispatcher, 0);
-            return;
         }
     }
     if (cmd->process) {
         delay = (cmd->eofCount == cmd->requiredEof && cmd->files[MPR_CMD_STDIN].handle == 0) ? timeout : 0;
-        mprYield(MPR_YIELD_STICKY);
-        if (WaitForSingleObject(cmd->process, (DWORD) delay) == WAIT_OBJECT_0) {
-            mprResetYield();
-            reapCmd(cmd, 0);
-            return;
-        }
-        mprResetYield();
-        if (cmd->eofCount == cmd->requiredEof) {
-            remaining = mprGetRemainingTicks(mark, timeout);
+        do {
             mprYield(MPR_YIELD_STICKY);
-            rc = WaitForSingleObject(cmd->process, (DWORD) remaining);
-            mprResetYield();
-            if (rc == WAIT_OBJECT_0) {
+            if (WaitForSingleObject(cmd->process, (DWORD) delay) == WAIT_OBJECT_0) {
+                mprResetYield();
                 reapCmd(cmd, 0);
-                return;
+                break;
+            } else {
+                mprResetYield();
             }
-            mprError("Error waiting CGI I/O, error %d", mprGetOsError());
-        }
+            delay = mprGetRemainingTicks(mark, timeout);
+        } while (cmd->eofCount == cmd->requiredEof);
     }
-    /* Stop busy waiting */
-    mprSleep(1);
 }
 #endif
 
@@ -729,8 +718,9 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
         if (mprShouldAbortRequests()) {
             break;
         }
-#if BIT_WIN_LIKE
+#if BIT_WIN_LIKE && !WINCE
         waitForWinEvent(cmd, remaining);
+        mprWaitForEvent(cmd->dispatcher, 10);
 #else
         mprWaitForEvent(cmd->dispatcher, remaining);
 #endif
