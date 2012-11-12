@@ -641,13 +641,14 @@ PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
 
 #if BIT_WIN_LIKE && !WINCE
 /*
-    Windows only routine to wait for I/O on the channels to the CGI program. NamedPipes can't use WaitForMultipleEvents 
-    (can use overlapped I/O). WARNING: this should not be called from a dispatcher other than cmd->dispatcher. If so, 
-    then the calls to mprWaitForEvent may occur after the event has been processed.
+    Windows only routine to wait for I/O on the channels to the gateway and the child process.
+    This will queue events on the dispatcher queue when I/O occurs or the process dies.
+    NOTE: NamedPipes can't use WaitForMultipleEvents, so we dedicate a thread to polling.
+    WARNING: this should not be called from a dispatcher other than cmd->dispatcher. 
  */
-static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
+PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTicks        mark, remaining, delay;
+    MprTicks        mark, delay;
     MprWaitHandler  *wp;
     int             i, rc, nbytes;
 
@@ -655,10 +656,11 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
     if (cmd->stopped) {
         timeout = 0;
     }
+    slock(cmd);
     for (i = MPR_CMD_STDOUT; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->files[i].handle) {
             wp = cmd->handlers[i];
-            if (wp->desiredMask & MPR_READABLE) {
+            if (wp && wp->desiredMask & MPR_READABLE) {
                 rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
                 if (rc && nbytes > 0 || cmd->process == 0) {
                     mprQueueIOEvent(wp);
@@ -668,7 +670,7 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
     }
     if (cmd->files[MPR_CMD_STDIN].handle) {
         wp = cmd->handlers[MPR_CMD_STDIN];
-        if (wp->desiredMask & MPR_WRITABLE) {
+        if (wp && wp->desiredMask & MPR_WRITABLE) {
             mprQueueIOEvent(wp);
         }
     }
@@ -686,6 +688,7 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
             delay = mprGetRemainingTicks(mark, timeout);
         } while (cmd->eofCount == cmd->requiredEof);
     }
+    sunlock(cmd);
 }
 #endif
 
@@ -719,7 +722,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
             break;
         }
 #if BIT_WIN_LIKE && !WINCE
-        waitForWinEvent(cmd, remaining);
+        mprPollWinCmd(cmd, remaining);
         mprWaitForEvent(cmd->dispatcher, 10);
 #else
         mprWaitForEvent(cmd->dispatcher, remaining);

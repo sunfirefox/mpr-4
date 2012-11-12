@@ -12,7 +12,6 @@
 
 /***************************** Forward Declarations ***************************/
 
-static void dequeueEvent(MprEvent *event);
 static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, 
         void *data, int flgs);
 static void initEventQ(MprEvent *q);
@@ -166,7 +165,7 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
         es = dispatcher->service;
         lock(es);
         if (event->next) {
-            dequeueEvent(event);
+            mprDequeueEvent(event);
         }
         if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
                 event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
@@ -236,7 +235,7 @@ PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
     if (next != dispatcher->eventQ) {
         if (next->due <= es->now) {
             event = next;
-            dequeueEvent(event);
+            queueEvent(dispatcher->currentQ, event);
             assure(event->magic == MPR_EVENT_MAGIC);
         }
     }
@@ -288,7 +287,7 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
     assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     if (event->next) {
-        dequeueEvent(event);
+        mprDequeueEvent(event);
     }
     event->prev = prior;
     event->next = prior->next;
@@ -300,7 +299,7 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
 /*
     Remove an event. Must be locked when called.
  */
-static void dequeueEvent(MprEvent *event)
+PUBLIC void mprDequeueEvent(MprEvent *event)
 {
     assure(event);
     assure(event->next);

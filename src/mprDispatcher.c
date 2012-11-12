@@ -115,6 +115,7 @@ PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags)
     dispatcher->magic = MPR_DISPATCHER_MAGIC;
     es = dispatcher->service = MPR->eventService;
     dispatcher->eventQ = mprCreateEventQueue();
+    dispatcher->currentQ = mprCreateEventQueue();
     if (flags & MPR_DISPATCHER_ENABLED) {
         queueDispatcher(es->idleQ, dispatcher);
     } else {
@@ -144,14 +145,9 @@ static void mprDestroyDispatcher(MprDispatcher *dispatcher)
                 mprRemoveEvent(event);
             }
         }
-#if UNUSED
-        if (dispatcher->parent != es->runQ) {
-#endif
-            dequeueDispatcher(dispatcher);
-            assure(dispatcher->parent == dispatcher);
-#if UNUSED
-        }
-#endif
+        dequeueDispatcher(dispatcher);
+        assure(dispatcher->parent == dispatcher);
+
         dispatcher->flags = MPR_DISPATCHER_DESTROYED;
         dispatcher->owner = 0;
         dispatcher->magic = MPR_DISPATCHER_FREE;
@@ -170,7 +166,7 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(dispatcher->name);
         mprMark(dispatcher->eventQ);
-        mprMark(dispatcher->current);
+        mprMark(dispatcher->currentQ);
         mprMark(dispatcher->cond);
         mprMark(dispatcher->parent);
         mprMark(dispatcher->service);
@@ -179,6 +175,11 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         //  MOB - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
+        for (event = q->next; event != q; event = event->next) {
+            assure(event->magic == MPR_EVENT_MAGIC);
+            mprMark(event);
+        }
+        q = dispatcher->currentQ;
         for (event = q->next; event != q; event = event->next) {
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
@@ -567,20 +568,21 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
-        /* Hold for GC */
-        dispatcher->current = event;
+        unlock(es);
+
+        LOG(7, "Call event %s", event->name);
+        assure(event->proc);
+        (event->proc)(event->data, event);
+
+        lock(es);
+        /* Remove from currentQ - GC can then collect */
+        mprDequeueEvent(event);
         if (event->continuous) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
             mprQueueEvent(dispatcher, event);
         }
-        assure(event->proc);
-        unlock(es);
-        LOG(7, "Call event %s", event->name);
-        (event->proc)(event->data, event);
-        dispatcher->current = 0;
-        lock(es);
     }
     unlock(es);
     if (count && es->waiting) {
