@@ -616,15 +616,15 @@ PUBLIC void mprDisableCmdEvents(MprCmd *cmd, int channel)
 
 #if BIT_WIN_LIKE && !WINCE
 /*
-    Windows only routine to wait for I/O on the channels to the gateway and the child process.
-    NamedPipes can't use WaitForMultipleEvents (can use overlapped I/O)
-    WARNING: this should not be called from a dispatcher other than cmd->dispatcher. If so, then the calls to
-    mprWaitForEvent may occur after the event has been processed.
+    Windows only routine to wait for I/O on the channels to the CGI program. NamedPipes can't use WaitForMultipleEvents 
+    (can use overlapped I/O). WARNING: this should not be called from a dispatcher other than cmd->dispatcher. If so, 
+    then the calls to mprWaitForEvent may occur after the event has been processed.
  */
 static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
 {
-    MprTicks    mark, remaining, delay;
-    int         i, rc, nbytes;
+    MprTicks        mark, remaining, delay;
+    MprWaitHandler  *wp;
+    int             i, rc, nbytes;
 
     mark = mprGetTicks();
     if (cmd->stopped) {
@@ -632,19 +632,24 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
     }
     for (i = MPR_CMD_STDOUT; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->files[i].handle) {
-            rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
-            if (rc && nbytes > 0 || cmd->process == 0) {
-                mprQueueIOEvent(cmd->handlers[i]);
-                mprWaitForEvent(cmd->dispatcher, timeout);
-                return;
+            wp = cmd->handlers[i];
+            if (wp->desiredMask & MPR_READABLE) {
+                rc = PeekNamedPipe(cmd->files[i].handle, NULL, 0, NULL, &nbytes, NULL);
+                if (rc && nbytes > 0 || cmd->process == 0) {
+                    mprQueueIOEvent(wp);
+                    mprWaitForEvent(cmd->dispatcher, 0);
+                    return;
+                }
             }
         }
     }
     if (cmd->files[MPR_CMD_STDIN].handle) {
-        /* Not finalized */
-        mprQueueIOEvent(cmd->handlers[MPR_CMD_STDIN]);
-        mprWaitForEvent(cmd->dispatcher, timeout);
-        return;
+        wp = cmd->handlers[MPR_CMD_STDIN];
+        if (wp->desiredMask & MPR_WRITABLE) {
+            mprQueueIOEvent(wp);
+            mprWaitForEvent(cmd->dispatcher, 0);
+            return;
+        }
     }
     if (cmd->process) {
         delay = (cmd->eofCount == cmd->requiredEof && cmd->files[MPR_CMD_STDIN].handle == 0) ? timeout : 0;
@@ -668,7 +673,7 @@ static void waitForWinEvent(MprCmd *cmd, MprTicks timeout)
         }
     }
     /* Stop busy waiting */
-    mprSleep(10);
+    mprSleep(1);
 }
 #endif
 

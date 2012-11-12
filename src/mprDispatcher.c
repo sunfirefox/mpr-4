@@ -368,7 +368,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
     }
     unlock(es);
 
-    while (es->now < expires && !mprIsStoppingCore()) {
+    while (es->now <= expires && !mprIsStoppingCore()) {
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         if (runEvents) {
             makeRunnable(dispatcher);
