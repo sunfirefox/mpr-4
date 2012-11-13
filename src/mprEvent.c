@@ -302,10 +302,10 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
 PUBLIC void mprDequeueEvent(MprEvent *event)
 {
     assure(event);
-    assure(event->next);
     assure(event->magic == MPR_EVENT_MAGIC);
     assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
+    /* If a continuous event is removed, next may already be null */
     if (event->next) {
         event->next->prev = event->prev;
         event->prev->next = event->next;
