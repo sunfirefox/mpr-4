@@ -30,6 +30,9 @@ static bool serviceDispatcher(MprDispatcher *dp);
 #define isReady(dispatcher) (dispatcher->parent == dispatcher->service->readyQ)
 #define isWaiting(dispatcher) (dispatcher->parent == dispatcher->service->waitQ)
 #define isEmpty(dispatcher) (dispatcher->eventQ->next == dispatcher->eventQ)
+#if KEEP
+static int dqlen(MprDispatcher *dq);
+#endif
 
 /************************************* Code ***********************************/
 /*
@@ -867,6 +870,21 @@ static int makeRunnable(MprDispatcher *dispatcher)
     unlock(es);
     return wasRunning;
 }
+
+
+#if KEEP
+static int dqlen(MprDispatcher *dq)
+{
+    MprDispatcher   *dp;
+    int             count;
+
+    count = 0;
+    for (dp = dq->next; dp != dq; dp = dp->next) {
+        count++;
+    }
+    return count;
+}
+#endif
 
 
 #if UNUSED && KEEP
