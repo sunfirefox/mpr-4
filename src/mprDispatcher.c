@@ -578,13 +578,14 @@ static int dispatchEvents(MprDispatcher *dispatcher)
         (event->proc)(event->data, event);
 
         lock(es);
-        /* Remove from currentQ - GC can then collect */
-        mprDequeueEvent(event);
         if (event->continuous) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
             mprQueueEvent(dispatcher, event);
+        } else {
+            /* Remove from currentQ - GC can then collect */
+            mprDequeueEvent(event);
         }
     }
     unlock(es);

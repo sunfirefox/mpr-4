@@ -141,12 +141,11 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
             break;
         }
     }
-    assure(event->next == 0);
-    assure(event->prev == 0);
     assure(prior->next);
     assure(prior->prev);
     
     queueEvent(prior, event);
+    event->dispatcher = dispatcher;
     es->eventCount++;
     if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         mprScheduleDispatcher(dispatcher);
