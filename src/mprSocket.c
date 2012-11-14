@@ -162,9 +162,6 @@ static void manageSocket(MprSocket *sp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(sp->service);
-#if UNUSED
-        mprMark(sp->dispatcher);
-#endif
         mprMark(sp->errorMsg);
         mprMark(sp->handler);
         mprMark(sp->acceptIp);
@@ -193,9 +190,6 @@ static void resetSocket(MprSocket *sp)
         mprCloseSocket(sp, 0);
     }
     if (sp->flags & MPR_SOCKET_CLOSED) {
-#if UNUSED
-        sp->error = 0;
-#endif
         sp->flags = 0;
         sp->port = -1;
         sp->fd = -1;
