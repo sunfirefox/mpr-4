@@ -1,13 +1,13 @@
 #
-#   mpr-windows.sh -- Build It Shell Script to build Multithreaded Portable Runtime
+#   mpr-windows-debug.sh -- Build It Shell Script to build Multithreaded Portable Runtime
 #
 
 export PATH="$(SDK)/Bin:$(VS)/VC/Bin:$(VS)/Common7/IDE:$(VS)/Common7/Tools:$(VS)/SDK/v3.5/bin:$(VS)/VC/VCPackages;$(PATH)"
-export INCLUDE="$(INCLUDE);$(SDK)/INCLUDE:$(VS)/VC/INCLUDE"
-export LIB="$(LIB);$(SDK)/lib:$(VS)/VC/lib"
+export INCLUDE="$(INCLUDE);$(SDK)/Include:$(VS)/VC/INCLUDE"
+export LIB="$(LIB);$(SDK)/Lib:$(VS)/VC/lib"
 
 ARCH="x86"
-ARCH="$(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/')"
+ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/'`"
 OS="windows"
 PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
@@ -22,15 +22,13 @@ LIBS="ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib sh
 
 [ ! -x ${CONFIG}/inc ] && mkdir -p ${CONFIG}/inc ${CONFIG}/obj ${CONFIG}/lib ${CONFIG}/bin
 
-[ ! -f ${CONFIG}/inc/bit.h ] && cp projects/mpr-${OS}-bit.h ${CONFIG}/inc/bit.h
-if ! diff ${CONFIG}/inc/bit.h projects/mpr-${OS}-bit.h >/dev/null ; then
-	cp projects/mpr-${OS}-bit.h ${CONFIG}/inc/bit.h
+[ ! -f ${CONFIG}/inc/bit.h ] && cp projects/mpr-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
+if ! diff ${CONFIG}/inc/bit.h projects/mpr-${OS}-${PROFILE}-bit.h >/dev/null ; then
+	cp projects/mpr-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi
 
 rm -rf ${CONFIG}/inc/mpr.h
 cp -r src/mpr.h ${CONFIG}/inc/mpr.h
-
-"${CC}" -c -Fo${CONFIG}/obj/dtoa.obj -Fd${CONFIG}/obj/dtoa.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/dtoa.c
 
 "${CC}" -c -Fo${CONFIG}/obj/mpr.obj -Fd${CONFIG}/obj/mpr.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mpr.c
 
@@ -118,11 +116,11 @@ cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
 "${CC}" -c -Fo${CONFIG}/obj/mprXml.obj -Fd${CONFIG}/obj/mprXml.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprXml.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libmpr.dll -entry:_DllMainCRTStartup@12 -def:${CONFIG}/bin/libmpr.def ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/dtoa.obj ${CONFIG}/obj/mpr.obj ${CONFIG}/obj/mprAsync.obj ${CONFIG}/obj/mprAtomic.obj ${CONFIG}/obj/mprBuf.obj ${CONFIG}/obj/mprCache.obj ${CONFIG}/obj/mprCmd.obj ${CONFIG}/obj/mprCond.obj ${CONFIG}/obj/mprCrypt.obj ${CONFIG}/obj/mprDisk.obj ${CONFIG}/obj/mprDispatcher.obj ${CONFIG}/obj/mprEncode.obj ${CONFIG}/obj/mprEpoll.obj ${CONFIG}/obj/mprEvent.obj ${CONFIG}/obj/mprFile.obj ${CONFIG}/obj/mprFileSystem.obj ${CONFIG}/obj/mprHash.obj ${CONFIG}/obj/mprJSON.obj ${CONFIG}/obj/mprKqueue.obj ${CONFIG}/obj/mprList.obj ${CONFIG}/obj/mprLock.obj ${CONFIG}/obj/mprLog.obj ${CONFIG}/obj/mprMem.obj ${CONFIG}/obj/mprMime.obj ${CONFIG}/obj/mprMixed.obj ${CONFIG}/obj/mprModule.obj ${CONFIG}/obj/mprPath.obj ${CONFIG}/obj/mprPoll.obj ${CONFIG}/obj/mprPrintf.obj ${CONFIG}/obj/mprRomFile.obj ${CONFIG}/obj/mprSelect.obj ${CONFIG}/obj/mprSignal.obj ${CONFIG}/obj/mprSocket.obj ${CONFIG}/obj/mprString.obj ${CONFIG}/obj/mprTest.obj ${CONFIG}/obj/mprThread.obj ${CONFIG}/obj/mprTime.obj ${CONFIG}/obj/mprUnix.obj ${CONFIG}/obj/mprVxworks.obj ${CONFIG}/obj/mprWait.obj ${CONFIG}/obj/mprWide.obj ${CONFIG}/obj/mprWin.obj ${CONFIG}/obj/mprWince.obj ${CONFIG}/obj/mprXml.obj ${LIBS}
+"${LD}" -dll -out:${CONFIG}/bin/libmpr.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mpr.obj ${CONFIG}/obj/mprAsync.obj ${CONFIG}/obj/mprAtomic.obj ${CONFIG}/obj/mprBuf.obj ${CONFIG}/obj/mprCache.obj ${CONFIG}/obj/mprCmd.obj ${CONFIG}/obj/mprCond.obj ${CONFIG}/obj/mprCrypt.obj ${CONFIG}/obj/mprDisk.obj ${CONFIG}/obj/mprDispatcher.obj ${CONFIG}/obj/mprEncode.obj ${CONFIG}/obj/mprEpoll.obj ${CONFIG}/obj/mprEvent.obj ${CONFIG}/obj/mprFile.obj ${CONFIG}/obj/mprFileSystem.obj ${CONFIG}/obj/mprHash.obj ${CONFIG}/obj/mprJSON.obj ${CONFIG}/obj/mprKqueue.obj ${CONFIG}/obj/mprList.obj ${CONFIG}/obj/mprLock.obj ${CONFIG}/obj/mprLog.obj ${CONFIG}/obj/mprMem.obj ${CONFIG}/obj/mprMime.obj ${CONFIG}/obj/mprMixed.obj ${CONFIG}/obj/mprModule.obj ${CONFIG}/obj/mprPath.obj ${CONFIG}/obj/mprPoll.obj ${CONFIG}/obj/mprPrintf.obj ${CONFIG}/obj/mprRomFile.obj ${CONFIG}/obj/mprSelect.obj ${CONFIG}/obj/mprSignal.obj ${CONFIG}/obj/mprSocket.obj ${CONFIG}/obj/mprString.obj ${CONFIG}/obj/mprTest.obj ${CONFIG}/obj/mprThread.obj ${CONFIG}/obj/mprTime.obj ${CONFIG}/obj/mprUnix.obj ${CONFIG}/obj/mprVxworks.obj ${CONFIG}/obj/mprWait.obj ${CONFIG}/obj/mprWide.obj ${CONFIG}/obj/mprWin.obj ${CONFIG}/obj/mprWince.obj ${CONFIG}/obj/mprXml.obj ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/benchMpr.obj -Fd${CONFIG}/obj/benchMpr.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/benchMpr.c
 
-"${LD}" -out:${CONFIG}/bin/benchMpr.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/benchMpr.obj ${LIBS} libmpr.lib
+"${LD}" -out:${CONFIG}/bin/benchMpr.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/benchMpr.obj libmpr.lib ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/runProgram.obj -Fd${CONFIG}/obj/runProgram.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/runProgram.c
 
@@ -134,7 +132,7 @@ cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
 "${CC}" -c -Fo${CONFIG}/obj/mprSsl.obj -Fd${CONFIG}/obj/mprSsl.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprSsl.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libmprssl.dll -entry:_DllMainCRTStartup@12 -def:${CONFIG}/bin/libmprssl.def ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprMatrixssl.obj ${CONFIG}/obj/mprOpenssl.obj ${CONFIG}/obj/mprSsl.obj ${LIBS} libmpr.lib
+"${LD}" -dll -out:${CONFIG}/bin/libmprssl.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprMatrixssl.obj ${CONFIG}/obj/mprOpenssl.obj ${CONFIG}/obj/mprSsl.obj libmpr.lib ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/testArgv.obj -Fd${CONFIG}/obj/testArgv.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/testArgv.c
 
@@ -170,17 +168,17 @@ cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
 "${CC}" -c -Fo${CONFIG}/obj/testUnicode.obj -Fd${CONFIG}/obj/testUnicode.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/testUnicode.c
 
-"${LD}" -out:${CONFIG}/bin/testMpr.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/testArgv.obj ${CONFIG}/obj/testBuf.obj ${CONFIG}/obj/testCmd.obj ${CONFIG}/obj/testCond.obj ${CONFIG}/obj/testEvent.obj ${CONFIG}/obj/testFile.obj ${CONFIG}/obj/testHash.obj ${CONFIG}/obj/testList.obj ${CONFIG}/obj/testLock.obj ${CONFIG}/obj/testMem.obj ${CONFIG}/obj/testMpr.obj ${CONFIG}/obj/testPath.obj ${CONFIG}/obj/testSocket.obj ${CONFIG}/obj/testSprintf.obj ${CONFIG}/obj/testThread.obj ${CONFIG}/obj/testTime.obj ${CONFIG}/obj/testUnicode.obj ${LIBS} libmpr.lib libmprssl.lib
+"${LD}" -out:${CONFIG}/bin/testMpr.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/testArgv.obj ${CONFIG}/obj/testBuf.obj ${CONFIG}/obj/testCmd.obj ${CONFIG}/obj/testCond.obj ${CONFIG}/obj/testEvent.obj ${CONFIG}/obj/testFile.obj ${CONFIG}/obj/testHash.obj ${CONFIG}/obj/testList.obj ${CONFIG}/obj/testLock.obj ${CONFIG}/obj/testMem.obj ${CONFIG}/obj/testMpr.obj ${CONFIG}/obj/testPath.obj ${CONFIG}/obj/testSocket.obj ${CONFIG}/obj/testSprintf.obj ${CONFIG}/obj/testThread.obj ${CONFIG}/obj/testTime.obj ${CONFIG}/obj/testUnicode.obj libmprssl.lib libmpr.lib ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/manager.obj -Fd${CONFIG}/obj/manager.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/manager.c
 
-"${LD}" -out:${CONFIG}/bin/manager.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/manager.obj ${LIBS} libmpr.lib
+"${LD}" -out:${CONFIG}/bin/manager.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/manager.obj libmpr.lib ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/makerom.obj -Fd${CONFIG}/obj/makerom.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/makerom.c
 
-"${LD}" -out:${CONFIG}/bin/makerom.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/makerom.obj ${LIBS} libmpr.lib
+"${LD}" -out:${CONFIG}/bin/makerom.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/makerom.obj libmpr.lib ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/charGen.obj -Fd${CONFIG}/obj/charGen.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/charGen.c
 
-"${LD}" -out:${CONFIG}/bin/chargen.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/charGen.obj ${LIBS} libmpr.lib
+"${LD}" -out:${CONFIG}/bin/chargen.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/charGen.obj libmpr.lib ${LIBS}
 

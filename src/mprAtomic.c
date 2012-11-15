@@ -10,7 +10,7 @@
 
 /************************************ Code ************************************/
 
-void mprAtomicBarrier()
+PUBLIC void mprAtomicBarrier()
 {
     #ifdef VX_MEM_BARRIER_RW
         VX_MEM_BARRIER_RW();
@@ -18,7 +18,7 @@ void mprAtomicBarrier()
         OSMemoryBarrier();
     #elif BIT_WIN_LIKE
         MemoryBarrier();
-    #elif BIT_CC_SYNC
+    #elif BIT_HAS_SYNC
         __sync_synchronize();
     #elif __GNUC__ && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
         asm volatile ("mfence" : : : "memory");
@@ -37,7 +37,7 @@ void mprAtomicBarrier()
 /*
     Atomic Compare and swap a pointer with a full memory barrier
  */
-int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
+PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 {
     #if MACOSX
         return OSAtomicCompareAndSwapPtrBarrier(expected, (void*) value, (void*) addr);
@@ -47,9 +47,9 @@ int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
             prev = InterlockedCompareExchangePointer(addr, (void*) value, expected);
             return expected == prev;
         }
-    #elif BIT_CC_SYNC_CAS
+    #elif BIT_HAS_SYNC_CAS
         return __sync_bool_compare_and_swap(addr, expected, value);
-    #elif VXWORKS && _VX_ATOMIC_INIT && !MPR_64BIT
+    #elif VXWORKS && _VX_ATOMIC_INIT && !BIT_64
         /* vxCas operates with integer values */
         return vxCas((atomic_t*) addr, (atomicVal_t) expected, (atomicVal_t) value);
     #elif BIT_CPU_ARCH == MPR_CPU_X86
@@ -72,7 +72,7 @@ int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
     #else
         mprGlobalLock();
         if (*addr == expected) {
-            *addr = value;
+            *addr = (void*) value;
             mprGlobalUnlock();
             return 1;
         }
@@ -85,7 +85,7 @@ int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 /*
     Atomic add of a signed value. Used for add, subtract, inc, dec
  */
-void mprAtomicAdd(volatile int *ptr, int value)
+PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
 {
     #if MACOSX
         OSAtomicAdd32(value, ptr);
@@ -109,11 +109,11 @@ void mprAtomicAdd(volatile int *ptr, int value)
 /*
     On some platforms, this operation is only atomic with respect to other calls to mprAtomicAdd64
  */
-void mprAtomicAdd64(volatile int64 *ptr, int value)
+PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
 {
 #if MACOSX
     OSAtomicAdd64(value, ptr);
-#elif BIT_WIN_LIKE && MPR_64_BIT
+#elif BIT_WIN_LIKE && BIT_64
     InterlockedExchangeAdd64(ptr, value);
 #elif BIT_UNIX_LIKE && FUTURE
     asm volatile ("lock; xaddl %0,%1"
@@ -128,7 +128,7 @@ void mprAtomicAdd64(volatile int64 *ptr, int value)
 }
 
 
-void *mprAtomicExchange(void * volatile *addr, cvoid *value)
+PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 {
 #if MACOSX && 0
     return OSAtomicCompareAndSwapPtrBarrier(expected, value, addr);
@@ -152,7 +152,7 @@ void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 /*
     Atomic list insertion. Inserts "item" at the "head" of the list. The "link" field is the next field in item.
  */
-void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item)
+PUBLIC void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item)
 {
     do {
         *link = *head;
@@ -163,28 +163,12 @@ void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

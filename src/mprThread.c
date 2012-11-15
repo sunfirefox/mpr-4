@@ -12,7 +12,7 @@
 
 /*************************** Forward Declarations ****************************/
 
-static int changeState(MprWorker *worker, int state);
+static void changeState(MprWorker *worker, int state);
 static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize);
 static int getNextThreadNum(MprWorkerService *ws);
 static void manageThreadService(MprThreadService *ts, int flags);
@@ -25,16 +25,11 @@ static void workerMain(MprWorker *worker, MprThread *tp);
 
 /************************************ Code ***********************************/
 
-MprThreadService *mprCreateThreadService()
+PUBLIC MprThreadService *mprCreateThreadService()
 {
     MprThreadService    *ts;
 
-    ts = mprAllocObj(MprThreadService, manageThreadService);
-    if (ts == 0) {
-        return 0;
-    }
-    //  TODO - not used
-    if ((ts->mutex = mprCreateLock()) == 0) {
+    if ((ts = mprAllocObj(MprThreadService, manageThreadService)) == 0) {
         return 0;
     }
     if ((ts->cond = mprCreateCond()) == 0) {
@@ -58,7 +53,7 @@ MprThreadService *mprCreateThreadService()
 }
 
 
-void mprStopThreadService()
+PUBLIC void mprStopThreadService()
 {
 }
 
@@ -68,7 +63,6 @@ static void manageThreadService(MprThreadService *ts, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ts->threads);
         mprMark(ts->mainThread);
-        mprMark(ts->mutex);
         mprMark(ts->cond);
 
     } else if (flags & MPR_MANAGE_FREE) {
@@ -77,13 +71,13 @@ static void manageThreadService(MprThreadService *ts, int flags)
 }
 
 
-void mprSetThreadStackSize(ssize size)
+PUBLIC void mprSetThreadStackSize(ssize size)
 {
     MPR->threadService->stackSize = size;
 }
 
 
-MprThread *mprGetCurrentThread()
+PUBLIC MprThread *mprGetCurrentThread()
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -92,9 +86,7 @@ MprThread *mprGetCurrentThread()
 
     ts = MPR->threadService;
     id = mprGetCurrentOsThread();
-    if (ts->threads->mutex) {
-        lock(ts->threads);
-    }
+    lock(ts->threads);
     for (i = 0; i < ts->threads->length; i++) {
         tp = mprGetItem(ts->threads, i);
         if (tp->osThread == id) {
@@ -102,14 +94,12 @@ MprThread *mprGetCurrentThread()
             return tp;
         }
     }
-    if (ts->threads->mutex) {
-        unlock(ts->threads);
-    }
+    unlock(ts->threads);
     return 0;
 }
 
 
-cchar *mprGetCurrentThreadName()
+PUBLIC cchar *mprGetCurrentThreadName()
 {
     MprThread       *tp;
 
@@ -123,7 +113,7 @@ cchar *mprGetCurrentThreadName()
 /*
     Return the current thread object
  */
-void mprSetCurrentThreadPriority(int pri)
+PUBLIC void mprSetCurrentThreadPriority(int pri)
 {
     MprThread       *tp;
 
@@ -137,7 +127,7 @@ void mprSetCurrentThreadPriority(int pri)
 /*
     Create a main thread
  */
-MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize)
+PUBLIC MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize)
 {
     MprThreadService    *ts;
     MprThread           *tp;
@@ -163,8 +153,8 @@ MprThread *mprCreateThread(cchar *name, void *entry, void *data, ssize stackSize
 #if BIT_WIN_LIKE
     tp->threadHandle = 0;
 #endif
-    mprAssert(ts);
-    mprAssert(ts->threads);
+    assure(ts);
+    assure(ts->threads);
     if (mprAddItem(ts->threads, tp) < 0) {
         return 0;
     }
@@ -215,7 +205,7 @@ static int threadProcWrapper(void *data)
 }
 
 #else
-void *threadProcWrapper(void *data) 
+PUBLIC void *threadProcWrapper(void *data) 
 {
     threadProc((MprThread*) data);
     return 0;
@@ -229,7 +219,7 @@ void *threadProcWrapper(void *data)
  */
 static void threadProc(MprThread *tp)
 {
-    mprAssert(tp);
+    assure(tp);
 
     tp->osThread = mprGetCurrentOsThread();
 
@@ -246,9 +236,8 @@ static void threadProc(MprThread *tp)
 /*
     Start a thread
  */
-int mprStartThread(MprThread *tp)
+PUBLIC int mprStartThread(MprThread *tp)
 {
-    //  TODO - lock not needed
     lock(tp);
 
 #if BIT_WIN_LIKE
@@ -262,6 +251,7 @@ int mprStartThread(MprThread *tp)
     h = (HANDLE) _beginthreadex(NULL, 0, threadProcWrapper, (void*) tp, 0, &threadId);
 #endif
     if (h == NULL) {
+        unlock(tp);
         return MPR_ERR_CANT_INITIALIZE;
     }
     tp->osThread = (int) threadId;
@@ -276,6 +266,7 @@ int mprStartThread(MprThread *tp)
         0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (taskHandle < 0) {
         mprError("Can't create thread %s\n", tp->name);
+        unlock(tp);
         return MPR_ERR_CANT_INITIALIZE;
     }
 }
@@ -289,8 +280,9 @@ int mprStartThread(MprThread *tp)
     pthread_attr_setstacksize(&attr, tp->stackSize);
 
     if (pthread_create(&h, &attr, threadProcWrapper, (void*) tp) != 0) { 
-        mprAssert(0);
+        assure(0);
         pthread_attr_destroy(&attr);
+        unlock(tp);
         return MPR_ERR_CANT_CREATE;
     }
     pthread_attr_destroy(&attr);
@@ -301,7 +293,7 @@ int mprStartThread(MprThread *tp)
 }
 
 
-MprOsThread mprGetCurrentOsThread()
+PUBLIC MprOsThread mprGetCurrentOsThread()
 {
 #if BIT_UNIX_LIKE
     return (MprOsThread) pthread_self();
@@ -313,7 +305,7 @@ MprOsThread mprGetCurrentOsThread()
 }
 
 
-void mprSetThreadPriority(MprThread *tp, int newPriority)
+PUBLIC void mprSetThreadPriority(MprThread *tp, int newPriority)
 {
     int     osPri;
 
@@ -352,7 +344,7 @@ static void manageThreadLocal(MprThreadLocal *tls, int flags)
 }
 
 
-MprThreadLocal *mprCreateThreadLocal()
+PUBLIC MprThreadLocal *mprCreateThreadLocal()
 {
     MprThreadLocal      *tls;
 
@@ -377,7 +369,7 @@ MprThreadLocal *mprCreateThreadLocal()
 }
 
 
-int mprSetThreadData(MprThreadLocal *tls, void *value)
+PUBLIC int mprSetThreadData(MprThreadLocal *tls, void *value)
 {
     bool    err;
 
@@ -396,7 +388,7 @@ int mprSetThreadData(MprThreadLocal *tls, void *value)
 }
 
 
-void *mprGetThreadData(MprThreadLocal *tls)
+PUBLIC void *mprGetThreadData(MprThreadLocal *tls)
 {
 #if BIT_UNIX_LIKE
     return pthread_getspecific(tls->key);
@@ -418,9 +410,9 @@ void *mprGetThreadData(MprThreadLocal *tls)
     Warning: +15 will not yield the CPU, -15 may get starved. We should be very wary going above +11.
  */
 
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
-    mprAssert(mprPriority >= 0 && mprPriority <= 100);
+    assure(mprPriority >= 0 && mprPriority <= 100);
  
     if (mprPriority <= MPR_BACKGROUND_PRIORITY) {
         return THREAD_PRIORITY_LOWEST;
@@ -439,7 +431,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map Windows priority to Mpr priority
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -459,11 +451,11 @@ int mprMapOsPriorityToMpr(int nativePriority)
     Map MPR priority to VxWorks native priority.
  */
 
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
     int     nativePriority;
 
-    mprAssert(mprPriority >= 0 && mprPriority < 100);
+    assure(mprPriority >= 0 && mprPriority < 100);
 
     nativePriority = (100 - mprPriority) * 5 / 2;
 
@@ -479,7 +471,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map O/S priority to Mpr priority.
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -498,9 +490,9 @@ int mprMapOsPriorityToMpr(int nativePriority)
 /*
     Map MR priority to linux native priority. Unix priorities range from -19 to +19. Linux does -20 to +19. 
  */
-int mprMapMprPriorityToOs(int mprPriority)
+PUBLIC int mprMapMprPriorityToOs(int mprPriority)
 {
-    mprAssert(mprPriority >= 0 && mprPriority < 100);
+    assure(mprPriority >= 0 && mprPriority < 100);
 
     if (mprPriority <= MPR_BACKGROUND_PRIORITY) {
         return 19;
@@ -513,7 +505,7 @@ int mprMapMprPriorityToOs(int mprPriority)
     } else {
         return -19;
     }
-    mprAssert(0);
+    assure(0);
     return 0;
 }
 
@@ -521,7 +513,7 @@ int mprMapMprPriorityToOs(int mprPriority)
 /*
     Map O/S priority to Mpr priority.
  */ 
-int mprMapOsPriorityToMpr(int nativePriority)
+PUBLIC int mprMapOsPriorityToMpr(int nativePriority)
 {
     int     priority;
 
@@ -538,7 +530,7 @@ int mprMapOsPriorityToMpr(int nativePriority)
 #endif /* UNIX */
 
 
-MprWorkerService *mprCreateWorkerService()
+PUBLIC MprWorkerService *mprCreateWorkerService()
 {
     MprWorkerService      *ws;
 
@@ -572,7 +564,7 @@ static void manageWorkerService(MprWorkerService *ws, int flags)
 }
 
 
-int mprStartWorkerService()
+PUBLIC int mprStartWorkerService()
 {
     MprWorkerService    *ws;
 
@@ -586,14 +578,14 @@ int mprStartWorkerService()
 }
 
 
-void mprWakeWorkers()
+PUBLIC void mprWakeWorkers()
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
     int                 next;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
     if (ws->pruneTimer) {
         mprRemoveEvent(ws->pruneTimer);
     }
@@ -605,20 +597,20 @@ void mprWakeWorkers()
     for (next = -1; (worker = (MprWorker*) mprGetPrevItem(ws->idleThreads, &next)) != 0; ) {
         changeState(worker, MPR_WORKER_BUSY);
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
 /*
     Define the new minimum number of workers. Pre-allocate the minimum.
  */
-void mprSetMinWorkers(int n)
+PUBLIC void mprSetMinWorkers(int n)
 { 
     MprWorker           *worker;
     MprWorkerService    *ws;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
     ws->minThreads = n; 
     mprLog(4, "Pre-start %d workers", ws->minThreads);
     
@@ -629,20 +621,20 @@ void mprSetMinWorkers(int n)
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
 /*
     Define a new maximum number of theads. Prune if currently over the max.
  */
-void mprSetMaxWorkers(int n)
+PUBLIC void mprSetMaxWorkers(int n)
 {
     MprWorkerService  *ws;
 
     ws = MPR->workerService;
 
-    mprLock(ws->mutex);
+    lock(ws);
     ws->maxThreads = n; 
     if (ws->numThreads > ws->maxThreads) {
         pruneWorkers(ws, 0);
@@ -650,11 +642,11 @@ void mprSetMaxWorkers(int n)
     if (ws->minThreads > ws->maxThreads) {
         ws->minThreads = ws->maxThreads;
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
-int mprGetMaxWorkers()
+PUBLIC int mprGetMaxWorkers()
 {
     return MPR->workerService->maxThreads;
 }
@@ -663,7 +655,7 @@ int mprGetMaxWorkers()
 /*
     Return the current worker thread object
  */
-MprWorker *mprGetCurrentWorker()
+PUBLIC MprWorker *mprGetCurrentWorker()
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
@@ -672,106 +664,68 @@ MprWorker *mprGetCurrentWorker()
 
     ws = MPR->workerService;
 
-    mprLock(ws->mutex);
+    lock(ws);
     thread = mprGetCurrentThread();
     for (next = -1; (worker = (MprWorker*) mprGetPrevItem(ws->busyThreads, &next)) != 0; ) {
         if (worker->thread == thread) {
-            mprUnlock(ws->mutex);
+            unlock(ws);
             return worker;
         }
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return 0;
 }
 
 
-#if UNUSED && FUTURE && KEEP
-/*
-    Set the worker as dedicated to the current task
- */
-void mprDedicateWorker(MprWorker *worker)
-{
-    mprLock(worker->workerService->mutex);
-    worker->flags |= MPR_WORKER_DEDICATED;
-    mprUnlock(worker->workerService->mutex);
-}
-
-
-void mprReleaseWorker(MprWorker *worker)
-{
-    mprLock(worker->workerService->mutex);
-    worker->flags &= ~MPR_WORKER_DEDICATED;
-    mprUnlock(worker->workerService->mutex);
-}
-#endif
-
-
-void mprActivateWorker(MprWorker *worker, MprWorkerProc proc, void *data)
+PUBLIC void mprActivateWorker(MprWorker *worker, MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
 
     ws = worker->workerService;
 
-    mprLock(ws->mutex);
+    lock(ws);
     worker->proc = proc;
     worker->data = data;
-#if UNUSED && FUTURE && KEEP
-    mprAssert(worker->flags & MPR_WORKER_DEDICATED);
-#endif
     changeState(worker, MPR_WORKER_BUSY);
-    mprUnlock(ws->mutex);
+    unlock(ws);
 }
 
 
-void mprSetWorkerStartCallback(MprWorkerProc start)
+PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start)
 {
     MPR->workerService->startWorker = start;
 }
 
 
-int mprAvailableWorkers()
+PUBLIC int mprAvailableWorkers()
 {
     MprWorkerService    *ws;
     int                 count;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
     count = mprGetListLength(ws->idleThreads) + (ws->maxThreads - ws->numThreads);
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return count;
-
-#if FUTURE && UNUSED && KEEP
-    for (next = 0; (worker = (MprWorker*) mprGetNextItem(ws->idleThreads, &next)) != 0; ) {
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-            count++;
-        }
-    }
-#endif
 }
 
 
-int mprStartWorker(MprWorkerProc proc, void *data)
+PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
+    static int          warnOnceWorkers = 0;
 
     ws = MPR->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
 
     /*
         Try to find an idle thread and wake it up. It will wakeup in workerMain(). If not any available, then add 
         another thread to the worker. Must account for workers we've already created but have not yet gone to work 
-        and inserted themselves in the idle/busy queues.
+        and inserted themselves in the idle/busy queues. Get most recently used idle worker so we tend to reuse 
+        active threads. This lets the pruner trim idle workers.
      */
-#if UNUSED
-    for (next = 0; (worker = (MprWorker*) mprGetNextItem(ws->idleThreads, &next)) != 0; ) {
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-            break;
-        }
-    }
-#else
-    worker = mprGetFirstItem(ws->idleThreads);
-#endif
+    worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
         worker->proc = proc;
         worker->data = data;
@@ -797,11 +751,14 @@ int mprStartWorker(MprWorkerProc proc, void *data)
         /*
             No free workers and can't create anymore
          */
-        mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
-        mprUnlock(ws->mutex);
+        if (!warnOnceWorkers) {
+            warnOnceWorkers = 1;
+            mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
+        }
+        unlock(ws);
         return MPR_ERR_BUSY;
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return 0;
 }
 
@@ -812,14 +769,13 @@ int mprStartWorker(MprWorkerProc proc, void *data)
 static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 {
     MprWorker     *worker;
-    int           index;
+    int           index, pruned;
 
     if (mprGetDebugMode()) {
         return;
     }
-    mprLog(6, "Check to prune idle workers. Pool has %d workers. Limits %d-%d", 
-        ws->numThreads, ws->minThreads, ws->maxThreads);
-    mprLock(ws->mutex);
+    lock(ws);
+    pruned = 0;
     for (index = 0; index < ws->idleThreads->length; index++) {
         if (ws->numThreads <= ws->minThreads) {
             break;
@@ -827,13 +783,19 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
         worker = mprGetItem(ws->idleThreads, index);
         if ((worker->lastActivity + MPR_TIMEOUT_WORKER) < MPR->eventService->now) {
             changeState(worker, MPR_WORKER_PRUNED);
+            pruned++;
+            index--;
         }
     }
-    mprUnlock(ws->mutex);
+    if (pruned) {
+        mprLog(2, "Pruned %d workers, pool has %d workers. Limits %d-%d.", 
+            pruned, ws->numThreads - pruned, ws->minThreads, ws->maxThreads);
+    }
+    unlock(ws);
 }
 
 
-int mprGetAvailableWorkers()
+PUBLIC int mprGetAvailableWorkers()
 {
     MprWorkerService  *ws;
 
@@ -846,9 +808,9 @@ static int getNextThreadNum(MprWorkerService *ws)
 {
     int     rc;
 
-    mprLock(ws->mutex);
+    lock(ws);
     rc = ws->nextThreadNum++;
-    mprUnlock(ws->mutex);
+    unlock(ws);
     return rc;
 }
 
@@ -856,15 +818,15 @@ static int getNextThreadNum(MprWorkerService *ws)
 /*
     Define a new stack size for new workers. Existing workers unaffected.
  */
-void mprSetWorkerStackSize(int n)
+PUBLIC void mprSetWorkerStackSize(int n)
 {
     MPR->workerService->stackSize = n; 
 }
 
 
-void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
+PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
 {
-    mprAssert(ws);
+    assure(ws);
 
     stats->maxThreads = ws->maxThreads;
     stats->minThreads = ws->minThreads;
@@ -895,7 +857,8 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     worker->workerService = ws;
     worker->idleCond = mprCreateCond();
 
-    mprSprintf(name, sizeof(name), "worker.%u", getNextThreadNum(ws));
+    fmt(name, sizeof(name), "worker.%u", getNextThreadNum(ws));
+    mprLog(2, "Create %s, pool has %d workers. Limits %d-%d.", name, ws->numThreads + 1, ws->minThreads, ws->maxThreads);
     worker->thread = mprCreateThread(name, (MprThreadProc) workerMain, worker, stackSize);
     return worker;
 }
@@ -917,31 +880,39 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     MprWorkerService    *ws;
 
     ws = MPR->workerService;
-    mprAssert(worker->state == MPR_WORKER_BUSY);
-    mprAssert(!worker->idleCond->triggered);
+    assure(worker->state == MPR_WORKER_BUSY);
+    assure(!worker->idleCond->triggered);
 
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
-    mprLock(ws->mutex);
+#if !BIT_LOCK_FIX
+    lock(ws);
+#endif
 
     while (!(worker->state & MPR_WORKER_PRUNED) && !mprIsStopping()) {
         if (worker->proc) {
-            mprUnlock(ws->mutex);
+#if !BIT_LOCK_FIX
+            unlock(ws);
+#endif
             (*worker->proc)(worker->data, worker);
-            mprLock(ws->mutex);
+#if !BIT_LOCK_FIX
+            lock(ws);
+#endif
             worker->proc = 0;
         }
         worker->lastActivity = MPR->eventService->now;
         changeState(worker, MPR_WORKER_IDLE);
 
-        mprAssert(worker->cleanup == 0);
+        assure(worker->cleanup == 0);
         if (worker->cleanup) {
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
         }
         worker->data = 0;
-        mprUnlock(ws->mutex);
+#if !BIT_LOCK_FIX
+        unlock(ws);
+#endif
 
         /*
             Sleep till there is more work to do. Yield for GC first.
@@ -949,28 +920,34 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         mprYield(MPR_YIELD_STICKY);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
-        mprLock(ws->mutex);
+#if !BIT_LOCK_FIX
+        lock(ws);
+#endif
     }
+#if BIT_LOCK_FIX
+    lock(ws);
+#endif
     changeState(worker, 0);
     worker->thread = 0;
     ws->numThreads--;
-    mprUnlock(ws->mutex);
+    unlock(ws);
     mprLog(4, "Worker exiting. There are %d workers remaining in the pool.", ws->numThreads);
 }
 
 
-static int changeState(MprWorker *worker, int state)
+static void changeState(MprWorker *worker, int state)
 {
     MprWorkerService    *ws;
     MprList             *lp;
     int                 wake;
 
-    mprAssert(worker->state != state);
-
+    if (state == worker->state) {
+        return;
+    }
     wake = 0;
     lp = 0;
     ws = worker->workerService;
-    mprLock(ws->mutex);
+    lock(ws);
 
     switch (worker->state) {
     case MPR_WORKER_BUSY:
@@ -978,13 +955,7 @@ static int changeState(MprWorker *worker, int state)
         break;
 
     case MPR_WORKER_IDLE:
-#if UNUSED && FUTURE && KEEP
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-#endif
-            lp = ws->idleThreads;
-#if UNUSED && FUTURE && KEEP
-        }
-#endif
+        lp = ws->idleThreads;
         wake = 1;
         break;
         
@@ -1005,13 +976,7 @@ static int changeState(MprWorker *worker, int state)
         break;
 
     case MPR_WORKER_IDLE:
-#if UNUSED && FUTURE && KEEP
-        if (!(worker->flags & MPR_WORKER_DEDICATED)) {
-#endif
-            lp = ws->idleThreads;
-#if UNUSED && FUTURE && KEEP
-        }
-#endif
+        lp = ws->idleThreads;
         mprWakePendingDispatchers();
         break;
 
@@ -1024,46 +989,29 @@ static int changeState(MprWorker *worker, int state)
 
     if (lp) {
         if (mprAddItem(lp, worker) < 0) {
-            mprUnlock(ws->mutex);
-            mprAssert(!MPR_ERR_MEMORY);
-            return MPR_ERR_MEMORY;
+            unlock(ws);
+            assure(!MPR_ERR_MEMORY);
+            return;
         }
     }
-    mprUnlock(ws->mutex);
+    unlock(ws);
     if (wake) {
         mprSignalCond(worker->idleCond); 
     }
-    return 0;
 }
 
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

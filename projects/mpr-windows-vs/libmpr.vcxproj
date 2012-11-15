@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5611bc38-e374-4b55-a790-cd19aeb8b65e}</ProjectGuid>
+    <ProjectGuid>{fd1e5b7f-6cf4-462e-80de-4ece9e6e081d}</ProjectGuid>
     <RootNamespace />
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -38,19 +38,19 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
 
@@ -83,69 +83,85 @@
     <_ProjectFileVersion>10</_ProjectFileVersion>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\testMpr\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ObjDir)\libmpr\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\testMpr\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ObjDir)\libmpr\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PreBuildEvent</CustomBuildBeforeTargets>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\testMpr\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ObjDir)\libmpr\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PreBuildEvent</CustomBuildBeforeTargets>
 
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(BinDir)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\testMpr\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ObjDir)\libmpr\</IntDir>
     <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PreBuildEvent</CustomBuildBeforeTargets>
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\test\testArgv.c" />
-    <ClCompile Include="..\..\test\testBuf.c" />
-    <ClCompile Include="..\..\test\testCmd.c" />
-    <ClCompile Include="..\..\test\testCond.c" />
-    <ClCompile Include="..\..\test\testEvent.c" />
-    <ClCompile Include="..\..\test\testFile.c" />
-    <ClCompile Include="..\..\test\testHash.c" />
-    <ClCompile Include="..\..\test\testList.c" />
-    <ClCompile Include="..\..\test\testLock.c" />
-    <ClCompile Include="..\..\test\testMem.c" />
-    <ClCompile Include="..\..\test\testMpr.c" />
-    <ClCompile Include="..\..\test\testPath.c" />
-    <ClCompile Include="..\..\test\testSocket.c" />
-    <ClCompile Include="..\..\test\testSprintf.c" />
-    <ClCompile Include="..\..\test\testThread.c" />
-    <ClCompile Include="..\..\test\testTime.c" />
-    <ClCompile Include="..\..\test\testUnicode.c" />
+    <ClCompile Include="..\..\src\mpr.c" />
+    <ClCompile Include="..\..\src\mprAsync.c" />
+    <ClCompile Include="..\..\src\mprAtomic.c" />
+    <ClCompile Include="..\..\src\mprBuf.c" />
+    <ClCompile Include="..\..\src\mprCache.c" />
+    <ClCompile Include="..\..\src\mprCmd.c" />
+    <ClCompile Include="..\..\src\mprCond.c" />
+    <ClCompile Include="..\..\src\mprCrypt.c" />
+    <ClCompile Include="..\..\src\mprDisk.c" />
+    <ClCompile Include="..\..\src\mprDispatcher.c" />
+    <ClCompile Include="..\..\src\mprEncode.c" />
+    <ClCompile Include="..\..\src\mprEpoll.c" />
+    <ClCompile Include="..\..\src\mprEvent.c" />
+    <ClCompile Include="..\..\src\mprFile.c" />
+    <ClCompile Include="..\..\src\mprFileSystem.c" />
+    <ClCompile Include="..\..\src\mprHash.c" />
+    <ClCompile Include="..\..\src\mprJSON.c" />
+    <ClCompile Include="..\..\src\mprKqueue.c" />
+    <ClCompile Include="..\..\src\mprList.c" />
+    <ClCompile Include="..\..\src\mprLock.c" />
+    <ClCompile Include="..\..\src\mprLog.c" />
+    <ClCompile Include="..\..\src\mprMem.c" />
+    <ClCompile Include="..\..\src\mprMime.c" />
+    <ClCompile Include="..\..\src\mprMixed.c" />
+    <ClCompile Include="..\..\src\mprModule.c" />
+    <ClCompile Include="..\..\src\mprPath.c" />
+    <ClCompile Include="..\..\src\mprPoll.c" />
+    <ClCompile Include="..\..\src\mprPrintf.c" />
+    <ClCompile Include="..\..\src\mprRomFile.c" />
+    <ClCompile Include="..\..\src\mprSelect.c" />
+    <ClCompile Include="..\..\src\mprSignal.c" />
+    <ClCompile Include="..\..\src\mprSocket.c" />
+    <ClCompile Include="..\..\src\mprString.c" />
+    <ClCompile Include="..\..\src\mprTest.c" />
+    <ClCompile Include="..\..\src\mprThread.c" />
+    <ClCompile Include="..\..\src\mprTime.c" />
+    <ClCompile Include="..\..\src\mprUnix.c" />
+    <ClCompile Include="..\..\src\mprVxworks.c" />
+    <ClCompile Include="..\..\src\mprWait.c" />
+    <ClCompile Include="..\..\src\mprWide.c" />
+    <ClCompile Include="..\..\src\mprWin.c" />
+    <ClCompile Include="..\..\src\mprWince.c" />
+    <ClCompile Include="..\..\src\mprXml.c" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="$(IncDir)\mpr.h" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libmpr.lib;libmprssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
+
+  <CustomBuildStep>
+    <Command>cd ..\..
+copy /Y src\mpr.h $(IncDir)
+cd projects\mpr-windows-vs</Command>
+    <Outputs>$(BinDir)\libmpr.dll</Outputs>
+  </CustomBuildStep>
   </ItemDefinitionGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmpr.vcxproj">
-  <Project>fd1e5b7f-6cf4-462e-80de-4ece9e6e081d</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmprssl.vcxproj">
-  <Project>736b5724-a6f3-4c06-a404-858cff510878</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
-
-<ItemGroup>
-  <ProjectReference Include="runProgram.vcxproj">
-  <Project>66d3a6c1-a2d5-4f52-ab00-d5859ac5df05</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
 
   <Import Project="$(VCTargetsPath)Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

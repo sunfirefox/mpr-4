@@ -9,16 +9,18 @@
 #include    "mpr.h"
 
 #if BIT_CHAR_LEN > 1
+#if UNUSED
 /************************************ Code ************************************/
 /*
     Format a number as a string. Support radix 10 and 16.
+    Count is the length of buf in characters.
  */
-MprChar *itow(MprChar *buf, ssize count, int64 value, int radix)
+PUBLIC wchar *itow(wchar *buf, ssize count, int64 value, int radix)
 {
-    MprChar     numBuf[32];
-    MprChar     *cp, *dp, *endp;
-    char        digits[] = "0123456789ABCDEF";
-    int         negative;
+    wchar   numBuf[32];
+    wchar   *cp, *dp, *endp;
+    char    digits[] = "0123456789ABCDEF";
+    int     negative;
 
     if (radix != 10 && radix != 16) {
         return 0;
@@ -51,9 +53,9 @@ MprChar *itow(MprChar *buf, ssize count, int64 value, int radix)
 }
 
 
-MprChar *wchr(MprChar *str, int c)
+PUBLIC wchar *wchr(wchar *str, int c)
 {
-    MprChar     *s;
+    wchar   *s;
 
     if (str == NULL) {
         return 0;
@@ -67,7 +69,7 @@ MprChar *wchr(MprChar *str, int c)
 }
 
 
-int wcasecmp(MprChar *s1, MprChar *s2)
+PUBLIC int wcasecmp(wchar *s1, wchar *s2)
 {
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -80,26 +82,26 @@ int wcasecmp(MprChar *s1, MprChar *s2)
 }
 
 
-MprChar *wclone(MprChar *str)
+PUBLIC wchar *wclone(wchar *str)
 {
-    MprChar     *result, nullBuf[1];
-    ssize       len, size;
+    wchar   *result, nullBuf[1];
+    ssize   len, size;
 
     if (str == NULL) {
         nullBuf[0] = 0;
         str = nullBuf;
     }
     len = wlen(str);
-    size = (len + 1) * sizeof(MprChar);
+    size = (len + 1) * sizeof(wchar);
     if ((result = mprAlloc(size)) != NULL) {
-        memcpy(result, str, len * sizeof(MprChar));
+        memcpy(result, str, len * sizeof(wchar));
     }
     result[len] = '\0';
     return result;
 }
 
 
-int wcmp(MprChar *s1, MprChar *s2)
+PUBLIC int wcmp(wchar *s1, wchar *s2)
 {
     if (s1 == s2) {
         return 0;
@@ -112,15 +114,18 @@ int wcmp(MprChar *s1, MprChar *s2)
 }
 
 
-MprChar *wcontains(MprChar *str, MprChar *pattern, ssize limit)
+/*
+    Count is the maximum number of characters to compare
+ */
+PUBLIC wchar *wncontains(wchar *str, wchar *pattern, ssize count)
 {
-    MprChar     *cp, *s1, *s2;
-    ssize       lim;
+    wchar   *cp, *s1, *s2;
+    ssize   lim;
 
-    mprAssert(0 <= limit && limit < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
-    if (limit < 0) {
-        limit = MAXINT;
+    if (count < 0) {
+        count = MAXINT;
     }
     if (str == 0) {
         return 0;
@@ -128,10 +133,10 @@ MprChar *wcontains(MprChar *str, MprChar *pattern, ssize limit)
     if (pattern == 0 || *pattern == '\0') {
         return str;
     }
-    for (cp = str; *cp && limit > 0; cp++, limit--) {
+    for (cp = str; *cp && count > 0; cp++, count--) {
         s1 = cp;
         s2 = pattern;
-        for (lim = limit; *s1 && *s2 && (*s1 == *s2) && lim > 0; lim--) {
+        for (lim = count; *s1 && *s2 && (*s1 == *s2) && lim > 0; lim--) {
             s1++;
             s2++;
         }
@@ -143,28 +148,34 @@ MprChar *wcontains(MprChar *str, MprChar *pattern, ssize limit)
 }
 
 
+PUBLIC wchar *wcontains(wchar *str, wchar *pattern)
+{
+    return wncontains(str, pattern, -1);
+}
+
+
 /*
-    destMax and len are character counts, not sizes in bytes
+    count is the size of dest in characters
  */
-ssize wcopy(MprChar *dest, ssize destMax, MprChar *src)
+PUBLIC ssize wcopy(wchar *dest, ssize count, wchar *src)
 {
     ssize      len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < count && count < MAXINT);
 
     len = wlen(src);
-    if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+    if (count <= len) {
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
-    memcpy(dest, src, (len + 1) * sizeof(MprChar));
+    memcpy(dest, src, (len + 1) * sizeof(wchar));
     return len;
 }
 
 
-int wends(MprChar *str, MprChar *suffix)
+PUBLIC int wends(wchar *str, wchar *suffix)
 {
     if (str == NULL || suffix == NULL) {
         return 0;
@@ -176,12 +187,12 @@ int wends(MprChar *str, MprChar *suffix)
 }
 
 
-MprChar *wfmt(MprChar *fmt, ...)
+PUBLIC wchar *wfmt(wchar *fmt, ...)
 {
     va_list     ap;
     char        *mfmt, *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     mfmt = awtom(fmt, NULL);
@@ -191,11 +202,11 @@ MprChar *wfmt(MprChar *fmt, ...)
 }
 
 
-MprChar *wfmtv(MprChar *fmt, va_list arg)
+PUBLIC wchar *wfmtv(wchar *fmt, va_list arg)
 {
     char        *mfmt, *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
     mfmt = awtom(fmt, NULL);
     mresult = sfmtv(mfmt, arg);
     return amtow(mresult, NULL);
@@ -205,21 +216,22 @@ MprChar *wfmtv(MprChar *fmt, va_list arg)
 /*
     Compute a hash for a Unicode string 
     (Based on work by Paul Hsieh, see http://www.azillionmonkeys.com/qed/hash.html)
+    Count is the length of name in characters
  */
-uint whash(MprChar *name, ssize len)
+PUBLIC uint whash(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
-    mprAssert(name);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(name);
+    assure(0 <= count && count < MAXINT);
 
-    if (len < 0) {
-        len = wlen(name);
+    if (count < 0) {
+        count = wlen(name);
     }
-    hash = len;
-    rem = len & 3;
+    hash = count;
+    rem = count & 3;
 
-    for (len >>= 2; len > 0; len--, name += 4) {
+    for (count >>= 2; count > 0; count--, name += 4) {
         hash  += name[0] | (name[1] << 8);
         tmp   =  ((name[2] | (name[3] << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
@@ -252,39 +264,42 @@ uint whash(MprChar *name, ssize len)
 }
 
 
-uint whashlower(MprChar *name, ssize len)
+/*
+    Count is the length of name in characters
+ */
+PUBLIC uint whashlower(wchar *name, ssize count)
 {
     uint    tmp, rem, hash;
 
-    mprAssert(name);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(name);
+    assure(0 <= count && count < MAXINT);
 
-    if (len < 0) {
-        len = wlen(name);
+    if (count < 0) {
+        count = wlen(name);
     }
-    hash = len;
-    rem = len & 3;
+    hash = count;
+    rem = count & 3;
 
-    for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+    for (count >>= 2; count > 0; count--, name += 4) {
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -298,9 +313,9 @@ uint whashlower(MprChar *name, ssize len)
 }
 
 
-MprChar *wjoin(MprChar *str, ...)
+PUBLIC wchar *wjoin(wchar *str, ...)
 {
-    MprChar     *result;
+    wchar       *result;
     va_list     ap;
 
     va_start(ap, str);
@@ -310,10 +325,10 @@ MprChar *wjoin(MprChar *str, ...)
 }
 
 
-MprChar *wjoinv(MprChar *buf, va_list args)
+PUBLIC wchar *wjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp, nullBuf[1];
+    wchar       *dest, *str, *dp, nullBuf[1];
     int         required, len, blen;
 
     va_copy(ap, args);
@@ -322,12 +337,12 @@ MprChar *wjoinv(MprChar *buf, va_list args)
     if (buf) {
         required += blen;
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
-    if ((dest = mprAlloc(required * sizeof(MprChar))) == 0) {
+    if ((dest = mprAlloc(required * sizeof(wchar))) == 0) {
         return 0;
     }
     dp = dest;
@@ -337,20 +352,23 @@ MprChar *wjoinv(MprChar *buf, va_list args)
         required -= blen;
     }
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
 }
 
 
-ssize wlen(MprChar *s)
+/*
+    Return the length of "s" in characters
+ */
+PUBLIC ssize wlen(wchar *s)
 {
     ssize  i;
 
@@ -365,17 +383,17 @@ ssize wlen(MprChar *s)
 /*  
     Map a string to lower case 
  */
-MprChar *wlower(MprChar *str)
+PUBLIC wchar *wlower(wchar *str)
 {
-    MprChar *cp, *s;
+    wchar   *cp, *s;
 
-    mprAssert(str);
+    assure(str);
 
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
-                *cp = (MprChar) tolower(*cp);
+            if (isupper((uchar) *cp)) {
+                *cp = (wchar) tolower((uchar) *cp);
             }
         }
         str = s;
@@ -384,11 +402,14 @@ MprChar *wlower(MprChar *str)
 }
 
 
-int wncasecmp(MprChar *s1, MprChar *s2, ssize n)
+/*
+    Count is the maximum number of characters to compare
+ */
+PUBLIC int wncasecmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -397,8 +418,8 @@ int wncasecmp(MprChar *s1, MprChar *s2, ssize n)
     } else if (s2 == 0) {
         return 1;
     }
-    for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower(*s1) - tolower(*s2);
+    for (rc = 0; count > 0 && *s1 && rc == 0; s1++, s2++, count--) {
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -415,11 +436,14 @@ int wncasecmp(MprChar *s1, MprChar *s2, ssize n)
 }
 
 
-int wncmp(MprChar *s1, MprChar *s2, ssize n)
+/*
+    Count is the maximum number of characters to compare
+ */
+PUBLIC int wncmp(wchar *s1, wchar *s2, ssize count)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= count && count < MAXINT);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -428,7 +452,7 @@ int wncmp(MprChar *s1, MprChar *s2, ssize n)
     } else if (s2 == 0) {
         return 1;
     }
-    for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
+    for (rc = 0; count > 0 && *s1 && rc == 0; s1++, s2++, count--) {
         rc = *s1 - *s2;
     }
     if (rc) {
@@ -448,27 +472,27 @@ int wncmp(MprChar *s1, MprChar *s2, ssize n)
 
 /*
     This routine copies at most "count" characters from a string. It ensures the result is always null terminated and 
-    the buffer does not overflow. Returns MPR_ERR_WONT_FIT if the buffer is too small.
-    destMax and len are character counts, not sizes in bytes
+    the buffer does not overflow. DestCount is the maximum size of dest in characters.
+    Returns MPR_ERR_WONT_FIT if the buffer is too small.
  */
-ssize wncopy(MprChar *dest, ssize destMax, MprChar *src, ssize count)
+PUBLIC ssize wncopy(wchar *dest, ssize destCount, wchar *src, ssize count)
 {
     ssize      len;
 
-    mprAssert(dest);
-    mprAssert(src);
-    mprAssert(dest != src);
-    mprAssert(0 <= count && count < MAXINT);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(dest);
+    assure(src);
+    assure(dest != src);
+    assure(0 <= count && count < MAXINT);
+    assure(0 < destCount && destCount < MAXINT);
 
     len = wlen(src);
     len = min(len, count);
-    if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+    if (destCount <= len) {
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (len > 0) {
-        memcpy(dest, src, len * sizeof(MprChar));
+        memcpy(dest, src, len * sizeof(wchar));
         dest[len] = '\0';
     } else {
         *dest = '\0';
@@ -478,10 +502,10 @@ ssize wncopy(MprChar *dest, ssize destMax, MprChar *src, ssize count)
 }
 
 
-MprChar *wpbrk(MprChar *str, MprChar *set)
+PUBLIC wchar *wpbrk(wchar *str, wchar *set)
 {
-    MprChar     *sp;
-    int         count;
+    wchar   *sp;
+    int     count;
 
     if (str == NULL || set == NULL) {
         return 0;
@@ -497,9 +521,9 @@ MprChar *wpbrk(MprChar *str, MprChar *set)
 }
 
 
-MprChar *wrchr(MprChar *str, int c)
+PUBLIC wchar *wrchr(wchar *str, int c)
 {
-    MprChar     *s;
+    wchar   *s;
 
     if (str == NULL) {
         return 0;
@@ -513,9 +537,9 @@ MprChar *wrchr(MprChar *str, int c)
 }
 
 
-MprChar *wrejoin(MprChar *buf, ...)
+PUBLIC wchar *wrejoin(wchar *buf, ...)
 {
-    MprChar     *result;
+    wchar       *result;
     va_list     ap;
 
     va_start(ap, buf);
@@ -525,44 +549,44 @@ MprChar *wrejoin(MprChar *buf, ...)
 }
 
 
-MprChar *wrejoinv(MprChar *buf, va_list args)
+PUBLIC wchar *wrejoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp, nullBuf[1];
+    wchar       *dest, *str, *dp, nullBuf[1];
     int         required, len, n;
 
     va_copy(ap, args);
     len = wlen(buf);
     required = len + 1;
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
-    if ((dest = mprRealloc(buf, required * sizeof(MprChar))) == 0) {
+    if ((dest = mprRealloc(buf, required * sizeof(wchar))) == 0) {
         return 0;
     }
     dp = &dest[len];
     required -= len;
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         n = wlen(str);
         dp += n;
         required -= n;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
-    mprAssert(required >= 0);
+    assure(required >= 0);
     *dp = '\0';
     return dest;
 }
 
 
-ssize wspn(MprChar *str, MprChar *set)
+PUBLIC ssize wspn(wchar *str, wchar *set)
 {
-    MprChar     *sp;
-    int         count;
+    wchar   *sp;
+    int     count;
 
     if (str == NULL || set == NULL) {
         return 0;
@@ -581,7 +605,7 @@ ssize wspn(MprChar *str, MprChar *set)
 }
  
 
-int wstarts(MprChar *str, MprChar *prefix)
+PUBLIC int wstarts(wchar *str, wchar *prefix)
 {
     if (str == NULL || prefix == NULL) {
         return 0;
@@ -593,13 +617,13 @@ int wstarts(MprChar *str, MprChar *prefix)
 }
 
 
-int64 wtoi(MprChar *str)
+PUBLIC int64 wtoi(wchar *str)
 {
     return wtoiradix(str, 10, NULL);
 }
 
 
-int64 wtoiradix(MprChar *str, int radix, int *err)
+PUBLIC int64 wtoiradix(wchar *str, int radix, int *err)
 {
     char    *bp, buf[32];
 
@@ -611,10 +635,10 @@ int64 wtoiradix(MprChar *str, int radix, int *err)
 }
 
 
-MprChar *wtok(MprChar *str, MprChar *delim, MprChar **last)
+PUBLIC wchar *wtok(wchar *str, wchar *delim, wchar **last)
 {
-    MprChar    *start, *end;
-    ssize      i;
+    wchar   *start, *end;
+    ssize   i;
 
     start = str ? str : *last;
 
@@ -639,31 +663,34 @@ MprChar *wtok(MprChar *str, MprChar *delim, MprChar **last)
 }
 
 
-MprChar *wsub(MprChar *str, ssize offset, ssize len)
+/*
+    Count is the length in characters to extract
+ */
+PUBLIC wchar *wsub(wchar *str, ssize offset, ssize count)
 {
-    MprChar    *result;
-    ssize      size;
+    wchar   *result;
+    ssize   size;
 
-    mprAssert(str);
-    mprAssert(offset >= 0);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(str);
+    assure(offset >= 0);
+    assure(0 <= count && count < MAXINT);
 
     if (str == 0) {
         return 0;
     }
-    size = (len + 1) * sizeof(MprChar);
+    size = (count + 1) * sizeof(wchar);
     if ((result = mprAlloc(size)) == NULL) {
         return NULL;
     }
-    wncopy(result, len + 1, &str[offset], len);
+    wncopy(result, count + 1, &str[offset], count);
     return result;
 }
 
 
-MprChar *wtrim(MprChar *str, MprChar *set, int where)
+PUBLIC wchar *wtrim(wchar *str, wchar *set, int where)
 {
-    MprChar     s;
-    ssize       len, i;
+    wchar   s;
+    ssize   len, i;
 
     if (str == NULL || set == NULL) {
         return str;
@@ -689,63 +716,59 @@ MprChar *wtrim(MprChar *str, MprChar *set, int where)
 /*  
     Map a string to upper case
  */
-char *wupper(MprChar *str)
+PUBLIC char *wupper(wchar *str)
 {
-    MprChar     *cp, *s;
+    wchar   *cp, *s;
 
-    mprAssert(str);
+    assure(str);
     if (str) {
         s = wclone(str);
         for (cp = s; *cp; cp++) {
-            if (islower(*cp)) {
-                *cp = (MprChar) toupper(*cp);
+            if (islower((uchar) *cp)) {
+                *cp = (wchar) toupper((uchar) *cp);
             }
         }
         str = s;
     }
     return str;
 }
+#endif /* UNUSED */
 
 /*********************************** Conversions *******************************/
 /*
-    Convert a wide unicode string into a multibyte string buffer. If len is supplied, it is used as the source length. 
-    DestCount is the max size of the dest buffer. At most destCount - 1 characters will be stored. The dest buffer will
-    always have a trailing null appended.  If dest is NULL, don't copy the string, just return the length.  
-    Return a count of characters copied or -1 if an invalid multibyte sequence was provided in src.
+    Convert a wide unicode string into a multibyte string buffer. If count is supplied, it is used as the source length 
+    in characters. Otherwise set to -1. DestCount is the max size of the dest buffer in bytes. At most destCount - 1 
+    characters will be stored. The dest buffer will always have a trailing null appended.  If dest is NULL, don't copy 
+    the string, just return the length of characters. Return a count of bytes copied to the destination or -1 if an 
+    invalid unicode sequence was provided in src.
     NOTE: does not allocate.
  */
-ssize wtom(char *dest, ssize destCount, MprChar *src, ssize len)
+PUBLIC ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
 {
-    ssize      size;
-
-    mprAssert(0 <= len && len < MAXINT);
+    ssize   len;
 
     if (destCount < 0) {
         destCount = MAXSSIZE;
     }
-    if (len < 0) {
-        len = MAXSSIZE;
-    }
-    size = min(destCount, len + 1);
-    if (size > 0) {
+    if (count > 0) {
 #if BIT_CHAR_LEN == 1
         if (dest) {
-            scopy(dest, size, src);
+            len = scopy(dest, destCount, src);
         } else {
-            len = min(slen(src), size - 1);
+            len = min(slen(src), destCount - 1);
         }
 #elif BIT_WIN_LIKE
-        //  TODO -- use destCount
-        len = WideCharToMultiByte(CP_ACP, 0, src, -1, dest, (DWORD) size, NULL, NULL);
+        len = WideCharToMultiByte(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1, NULL, NULL);
 #else
-        len = wcstombs(dest, src, size);
+        len = wcstombs(dest, src, destCount - 1);
 #endif
-        if (len >= destCount) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+        if (dest) {
+            if (len >= 0) {
+                dest[len] = 0;
+            }
+        } else if (len >= destCount) {
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
-        }
-        if (len >= 0) {
-            dest[len] = 0;
         }
     }
     return len;
@@ -753,56 +776,56 @@ ssize wtom(char *dest, ssize destCount, MprChar *src, ssize len)
 
 
 /*
-    Convert a multibyte string to a unicode string. If len is supplied, it is used as the source length. 
-    If dest is NULL, don't copy the string, just return the length.
-    NOTE: does not allocate
+    Convert a multibyte string to a unicode string. If count is supplied, it is used as the source length in bytes.
+    Otherwise set to -1. DestCount is the max size of the dest buffer in characters. At most destCount - 1 
+    characters will be stored. The dest buffer will always have a trailing null characters appended.  If dest is NULL, 
+    don't copy the string, just return the length of characters. Return a count of characters copied to the destination 
+    or -1 if an invalid multibyte sequence was provided in src.
+    NOTE: does not allocate.
  */
-ssize mtow(MprChar *dest, ssize destCount, cchar *src, ssize len) 
+PUBLIC ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count) 
 {
-    ssize      size;
-
-    mprAssert(0 < destCount && len < MAXINT);
-    mprAssert(0 <= len && len < MAXINT);
+    ssize      len;
 
     if (destCount < 0) {
         destCount = MAXSSIZE;
     }
-    size = min(destCount, len + 1);
-    if (size > 0) {
+    if (destCount > 0) {
 #if BIT_CHAR_LEN == 1
         if (dest) {
-            scopy(dest, size, src);
+            len = scopy(dest, destCount, src);
         } else {
-            len = min(slen(src), size - 1);
+            len = min(slen(src), destCount - 1);
         }
 #elif BIT_WIN_LIKE
-        len = MultiByteToWideChar(CP_ACP, 0, src, -1, dest, size);
+        len = MultiByteToWideChar(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1);
 #else
-        len = mbstowcs(dest, src, size);
+        len = mbstowcs(dest, src, destCount - 1);
 #endif
-        if (len >= destCount) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+        if (dest) {
+            if (len >= 0) {
+                dest[len] = 0;
+            }
+        } else if (len >= destCount) {
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
-        }
-        if (len >= 0) {
-            dest[len] = 0;
         }
     }
     return len;
 }
 
 
-MprChar *amtow(cchar *src, ssize *lenp)
+PUBLIC wchar *amtow(cchar *src, ssize *lenp)
 {
-    MprChar     *dest;
-    ssize       len;
+    wchar   *dest;
+    ssize   len;
 
-    len = mtow(NULL, MAXSSIZE, src, 0);
+    len = mtow(NULL, MAXSSIZE, src, -1);
     if (len < 0) {
         return NULL;
     }
-    if ((dest = mprAlloc((len + 1) * sizeof(MprChar))) != NULL) {
-        mtow(dest, len + 1, src, len);
+    if ((dest = mprAlloc((len + 1) * sizeof(wchar))) != NULL) {
+        mtow(dest, len + 1, src, -1);
     }
     if (lenp) {
         *lenp = len;
@@ -811,18 +834,19 @@ MprChar *amtow(cchar *src, ssize *lenp)
 }
 
 
-//  MOB - need a version that can supply a length
-char *awtom(MprChar *src, ssize *lenp)
+//  FUTURE UNICODE - need a version that can supply a length
+
+PUBLIC char *awtom(wchar *src, ssize *lenp)
 {
     char    *dest;
     ssize   len;
 
-    len = wtom(NULL, MAXSSIZE, src, 0);
+    len = wtom(NULL, MAXSSIZE, src, -1);
     if (len < 0) {
         return NULL;
     }
     if ((dest = mprAlloc(len + 1)) != 0) {
-        wtom(dest, len + 1, src, len);
+        wtom(dest, len + 1, src, -1);
     }
     if (lenp) {
         *lenp = len;
@@ -905,16 +929,15 @@ static int isValidUtf8(cuchar *src, int len)
 }
 
 
-//  TODO - CLEAN
 static int offsets[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080UL, 0x03C82080UL, 0xFA082080UL, 0x82082080UL };
 
-ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len) 
+PUBLIC ssize xmtow(wchar *dest, ssize destMax, cchar *src, ssize len) 
 {
-    MprChar     *dp, *dend;
-    cchar       *sp, *send;
-    int         i, c, count;
+    wchar   *dp, *dend;
+    cchar   *sp, *send;
+    int     i, c, count;
 
-    mprAssert(0 <= len && len < MAXINT);
+    assure(0 <= len && len < MAXINT);
 
     if (len < 0) {
         len = slen(src);
@@ -938,7 +961,7 @@ ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len)
         c -= offsets[len];
         count++;
         if (dp >= dend) {
-            mprAssert(!MPR_ERR_WONT_FIT);
+            assure(!MPR_ERR_WONT_FIT);
             return MPR_ERR_WONT_FIT;
         }
         if (c <= 0xFFFF) {
@@ -955,7 +978,7 @@ ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len)
             c -= 0x0010000UL;
             *dp++ = (c >> 10) + 0xD800;
             if (dp >= dend) {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
             *dp++ = (c & 0x3FF) + 0xDC00;
@@ -965,7 +988,6 @@ ssize xmtow(MprChar *dest, ssize destMax, cchar *src, ssize len)
     return count;
 }
 
-//  TODO - CLEAN
 static cuchar marks[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
 
 /*
@@ -992,13 +1014,13 @@ static cuchar marks[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
    end if
 */
 
-ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
+PUBLIC ssize xwtom(char *dest, ssize destMax, wchar *src, ssize len)
 {
-    MprChar     *sp, *send;
-    char        *dp, *dend;
-    int         i, c, c2, count, bytes, mark, mask;
+    wchar   *sp, *send;
+    char    *dp, *dend;
+    int     i, c, c2, count, bytes, mark, mask;
 
-    mprAssert(0 <= len && len < MAXINT);
+    assure(0 <= len && len < MAXINT);
 
     if (len < 0) {
         len = wlen(src);
@@ -1018,7 +1040,7 @@ ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
                     c = ((c - 0xD800) << 10) + (c2 - 0xDC00) + 0x10000;
                 }
             } else {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
         }
@@ -1035,7 +1057,7 @@ ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
         if (dest) {
             dp += bytes;
             if (dp >= dend) {
-                mprAssert(!MPR_ERR_WONT_FIT);
+                assure(!MPR_ERR_WONT_FIT);
                 return MPR_ERR_WONT_FIT;
             }
             for (i = 1; i < bytes; i++) {
@@ -1055,16 +1077,16 @@ ssize xwtom(char *dest, ssize destMax, MprChar *src, ssize len)
 
 #else /* BIT_CHAR_LEN == 1 */
 
-MprChar *amtow(cchar *src, ssize *len)
+PUBLIC wchar *amtow(cchar *src, ssize *len)
 {
     if (len) {
         *len = slen(src);
     }
-    return (MprChar*) sclone(src);
+    return (wchar*) sclone(src);
 }
 
 
-char *awtom(MprChar *src, ssize *len)
+PUBLIC char *awtom(wchar *src, ssize *len)
 {
     if (len) {
         *len = slen((char*) src);
@@ -1079,28 +1101,12 @@ char *awtom(MprChar *src, ssize *len)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -1110,4 +1116,3 @@ char *awtom(MprChar *src, ssize *len)
 
     @end
  */
-

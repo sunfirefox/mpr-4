@@ -10,7 +10,7 @@
 
 #include    "mpr.h"
 
-#if !BIT_FEATURE_ROMFS
+#if !BIT_ROM
 /*********************************** Defines **********************************/
 
 #if WINDOWS
@@ -18,6 +18,13 @@
     Open/Delete retries to circumvent windows pending delete problems
  */
 #define RETRIES 40
+
+/*
+    Windows only permits owner bits
+ */
+#define MASK_PERMS(perms)    perms & 0600
+#else
+#define MASK_PERMS(perms)    perms
 #endif
 
 /********************************** Forwards **********************************/
@@ -35,13 +42,13 @@ static int cygOpen(MprFileSystem *fs, cchar *path, int omode, int perms)
 {
     int     fd;
 
-    fd = open(path, omode, perms);
+    fd = open(path, omode, MASK_PERMS(perms));
 #if WINDOWS
     if (fd < 0) {
         if (*path == '/') {
             path = sjoin(fs->cygwin, path, NULL);
         }
-        fd = open(path, omode, perms);
+        fd = open(path, omode, MASK_PERMS(perms));
     }
 #endif
     return fd;
@@ -52,13 +59,13 @@ static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
 {
     MprFile     *file;
     
-    mprAssert(path);
+    assure(path);
 
     if ((file = mprAllocObj(MprFile, manageDiskFile)) == 0) {
         return NULL;
     }
     file->path = sclone(path);
-    file->fd = open(path, omode, perms);
+    file->fd = open(path, omode, MASK_PERMS(perms));
     if (file->fd < 0) {
 #if WINDOWS
         /*
@@ -67,7 +74,7 @@ static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
         int i, err = GetLastError();
         if (err == ERROR_ACCESS_DENIED) {
             for (i = 0; i < RETRIES; i++) {
-                file->fd = open(path, omode, perms);
+                file->fd = open(path, omode, MASK_PERMS(perms));
                 if (file->fd >= 0) {
                     break;
                 }
@@ -93,7 +100,7 @@ static void manageDiskFile(MprFile *file, int flags)
         mprMark(file->path);
         mprMark(file->fileSystem);
         mprMark(file->buf);
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
         mprMark(file->inode);
 #endif
 
@@ -107,7 +114,7 @@ static int closeFile(MprFile *file)
 {
     MprBuf  *bp;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return 0;
@@ -126,8 +133,8 @@ static int closeFile(MprFile *file)
 
 static ssize readFile(MprFile *file, void *buf, ssize size)
 {
-    mprAssert(file);
-    mprAssert(buf);
+    assure(file);
+    assure(buf);
 
     return read(file->fd, buf, (uint) size);
 }
@@ -135,8 +142,8 @@ static ssize readFile(MprFile *file, void *buf, ssize size)
 
 static ssize writeFile(MprFile *file, cvoid *buf, ssize count)
 {
-    mprAssert(file);
-    mprAssert(buf);
+    assure(file);
+    assure(buf);
 
 #if VXWORKS
     return write(file->fd, (void*) buf, count);
@@ -148,14 +155,14 @@ static ssize writeFile(MprFile *file, cvoid *buf, ssize count)
 
 static MprOff seekFile(MprFile *file, int seekType, MprOff distance)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
 #if BIT_WIN_LIKE
     return (MprOff) _lseeki64(file->fd, (int64) distance, seekType);
-#elif HAS_OFF64
+#elif BIT_HAS_OFF64
     return (MprOff) lseek64(file->fd, (off64_t) distance, seekType);
 #else
     return (MprOff) lseek(file->fd, (off_t) distance, seekType);
@@ -190,7 +197,7 @@ static int deletePath(MprDiskFileSystem *fs, cchar *path)
      */
     int i, err;
     for (i = 0; i < RETRIES; i++) {
-        if (DeleteFile((char*) path) != 0) {
+        if (DeleteFile(wide(path)) != 0) {
             return 0;
         }
         err = GetLastError();
@@ -249,8 +256,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     struct stat s;
     cchar       *ext;
 
-    mprAssert(path);
-    mprAssert(info);
+    assure(path);
+    assure(info);
 
     info->checked = 1;
     info->valid = 0;
@@ -281,8 +288,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     struct __stat64     s;
     cchar               *ext;
 
-    mprAssert(path);
-    mprAssert(info);
+    assure(path);
+    assure(info);
     info->checked = 1;
     info->valid = 0;
     info->isReg = 0;
@@ -328,7 +335,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     if (info->isReg) {
         long    att;
 
-        if ((att = GetFileAttributes(path)) == -1) {
+        if ((att = GetFileAttributes(wide(path))) == -1) {
             return -1;
         }
         if (att & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_ENCRYPTED |
@@ -340,7 +347,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
         }
         if (info->isReg) {
             HANDLE handle;
-            handle = CreateFile(path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
+            handle = CreateFile(wide(path), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
             if (handle == INVALID_HANDLE_VALUE) {
                 info->isReg = 0;
             } else {
@@ -447,7 +454,7 @@ static int truncateFile(MprDiskFileSystem *fs, cchar *path, MprOff size)
 {
     HANDLE  h;
 
-    h = CreateFile(path, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    h = CreateFile(wide(path), GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     SetFilePointer(h, (LONG) size, 0, FILE_BEGIN);
     if (h == INVALID_HANDLE_VALUE || SetEndOfFile(h) == 0) {
         CloseHandle(h);
@@ -493,7 +500,7 @@ static void manageDiskFileSystem(MprDiskFileSystem *dfs, int flags)
 }
 
 
-MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
+PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 {
     MprFileSystem       *fs;
     MprDiskFileSystem   *dfs;
@@ -546,36 +553,20 @@ MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 #endif
     return dfs;
 }
-#endif /* !BIT_FEATURE_ROMFS */
+#endif /* !BIT_ROM */
 
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4
@@ -584,4 +575,3 @@ MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path)
 
     @end
  */
-

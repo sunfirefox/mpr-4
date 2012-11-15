@@ -8,16 +8,17 @@
 
 #include    "bit.h"
 
-#if BIT_FEATURE_MATRIXSSL
+#if BIT_PACK_MATRIXSSL
+/*
+    Matrixssl defines int32, uint32, int64 and uint64, but does not provide HAS_XXX to disable. 
+    So must include matrixsslApi.h first and then workaround. 
+ */
 #if WIN32
  #include   <winsock2.h>
  #include   <windows.h>
 #endif
  #include    "matrixsslApi.h"
 
-/*
-    Matrixssl defines int32, uint32, int64 and uint64. Disable these in the mpr
- */
 #define     HAS_INT32 1
 #define     HAS_UINT32 1
 #define     HAS_INT64 1
@@ -47,7 +48,7 @@ typedef struct MprMatrixSocket {
     MprSocket       *sock;
     ssl_t           *handle;            /* MatrixSSL ssl_t structure */
     char            *outbuf;            /* Pending output data */
-    ssize           outlen;             /* Length of outlen */
+    ssize           outlen;             /* Length of outbuf */
     ssize           written;            /* Number of unencoded bytes written */
     int             more;               /* MatrixSSL stack has buffered data */
 } MprMatrixSocket;
@@ -111,29 +112,25 @@ static uchar CAcertSrvBuf[] = {
 
 /***************************** Forward Declarations ***************************/
 
-static MprSocket *acceptMss(MprSocket *sp);
 static void     closeMss(MprSocket *sp, bool gracefully);
-static int      configureMss(MprSsl *ssl);
-static int      connectMss(MprSocket *sp, cchar *host, int port, int flags);
-static MprMatrixSsl *createMatrixSsl(MprSsl *ssl);
+static MprMatrixSsl *createMatrixSslConfig(MprSsl *ssl, int server);
 static MprSocketProvider *createMatrixSslProvider();
-static MprSocket *createMss(MprSsl *ssl);
 static void     disconnectMss(MprSocket *sp);
 static int      doHandshake(MprSocket *sp, short cipherSuite);
 static ssize    flushMss(MprSocket *sp);
-static MprSsl   *getDefaultMatrixSsl();
 static ssize    innerRead(MprSocket *sp, char *userBuf, ssize len);
 static int      listenMss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMatrixSocket(MprMatrixSocket *msp, int flags);
-static void     manageMatrixProvider(MprSocketProvider *provider, int flags);
 static void     manageMatrixSsl(MprMatrixSsl *mssl, int flags);
 static ssize    processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, int *readMore);
 static ssize    readMss(MprSocket *sp, void *buf, ssize len);
+static int      upgradeMss(MprSocket *sp, MprSsl *ssl, int server);
+static int      verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert);
 static ssize    writeMss(MprSocket *sp, cvoid *buf, ssize len);
 
 /************************************ Code ************************************/
 
-int mprCreateMatrixSslModule(bool lazy)
+PUBLIC int mprCreateMatrixSslModule()
 {
     MprSocketProvider   *provider;
 
@@ -143,100 +140,33 @@ int mprCreateMatrixSslModule(bool lazy)
     if ((provider = createMatrixSslProvider()) == 0) {
         return 0;
     }
-    mprSetSecureProvider(provider);
     if (matrixSslOpen() < 0) {
         return 0;
-    }
-    if (!lazy) {
-        getDefaultMatrixSsl();
     }
     return 0;
 }
 
 
 /*
-    Create the default MatrixSSL configuration state structure.
-    This is used for client connections and for server connections in the absense of a per-route configuration.
+    Initialize the SSL configuration. An application can have multiple different SSL
+    configurations for different routes. There is default SSL configuration that is used
+    when a route does not define a configuration and also for clients.
  */
-static MprSsl *getDefaultMatrixSsl()
-{
-    MprSocketService    *ss;
-    MprSsl              *ssl;
-
-    ss = MPR->socketService;
-    if (ss->secureProvider->defaultSsl) {
-        return ss->secureProvider->defaultSsl;
-    }
-    if ((ssl = mprCreateSsl()) == 0) {
-        return 0;
-    }
-    if (!createMatrixSsl(ssl)) {
-        return 0;
-    }
-    ss->secureProvider->defaultSsl = ssl;
-    return ssl;
-}
-
-
-static MprMatrixSsl *createMatrixSsl(MprSsl *ssl)
-{
-    MprMatrixSsl    *mssl;
-
-    if ((mssl = mprAllocObj(MprMatrixSsl, manageMatrixSsl)) == 0) {
-        return 0;
-    }
-    ssl->extendedSsl = mssl;
-    if (matrixSslNewKeys(&mssl->keys) < 0) {
-        return 0;
-    }
-    return mssl;
-}
-
-
-static MprSocketProvider *createMatrixSslProvider()
-{
-    MprSocketProvider   *provider;
-
-    if ((provider = mprAllocObj(MprSocketProvider, manageMatrixProvider)) == NULL) {
-        return 0;
-    }
-    provider->name = sclone("MatrixSsl");
-    provider->acceptSocket = acceptMss;
-    provider->closeSocket = closeMss;
-    provider->configureSsl = configureMss;
-    provider->connectSocket = connectMss;
-    provider->createSocket = createMss;
-    provider->disconnectSocket = disconnectMss;
-    provider->flushSocket = flushMss;
-    provider->listenSocket = listenMss;
-    provider->readSocket = readMss;
-    provider->writeSocket = writeMss;
-    return provider;
-}
-
-
-static void manageMatrixProvider(MprSocketProvider *provider, int flags)
-{
-    if (flags & MPR_MANAGE_MARK) {
-        mprMark(provider->defaultSsl);
-        mprMark(provider->name);
-        mprMark(provider->data);
-    }
-}
-
-
-/*
-    Initialize a server-side SSL configuration. An application can have multiple different SSL configurations
-    for different routes.
- */
-static int configureMss(MprSsl *ssl)
+static MprMatrixSsl *createMatrixSslConfig(MprSsl *ssl, int server)
 {
     MprMatrixSsl    *mssl;
     char            *password;
 
-    mprAssert(ssl);
+    assure(ssl);
 
-    if ((mssl = createMatrixSsl(ssl)) == 0) {
+    if ((ssl->pconfig = mprAllocObj(MprMatrixSsl, manageMatrixSsl)) == 0) {
+        return 0;
+    }
+    mssl = ssl->pconfig;
+
+    //  OPT - does this need to be done for each MprSsl or just once?
+    if (matrixSslNewKeys(&mssl->keys) < 0) {
+        mprError("MatrixSSL: Can't create new MatrixSSL keys");
         return 0;
     }
     /*
@@ -247,24 +177,28 @@ static int configureMss(MprSsl *ssl)
     password = NULL;
     if (matrixSslLoadRsaKeys(mssl->keys, ssl->certFile, ssl->keyFile, password, NULL) < 0) {
         mprError("MatrixSSL: Could not read or decode certificate or key file."); 
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-
-    /*
-        Select the required protocols. MatrixSSL supports only SSLv3.
-     */
-    if (ssl->protocols & MPR_PROTO_SSLV2) {
-        mprError("MatrixSSL: SSLv2 unsupported"); 
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-#if UNUSED
-    //  MOB - what is this
-    if ((mssl->session = mprAllocObj(sslSessionId_t, NULL)) == 0) {
         return 0;
     }
-    mprMark(mssl->session);
-#endif
-    return 0;
+    return mssl;
+}
+
+
+static MprSocketProvider *createMatrixSslProvider()
+{
+    MprSocketProvider   *provider;
+
+    if ((provider = mprAllocObj(MprSocketProvider, 0)) == NULL) {
+        return 0;
+    }
+    provider->closeSocket = closeMss;
+    provider->disconnectSocket = disconnectMss;
+    provider->flushSocket = flushMss;
+    provider->listenSocket = listenMss;
+    provider->readSocket = readMss;
+    provider->writeSocket = writeMss;
+    provider->upgradeSocket = upgradeMss;
+    mprAddSocketProvider("matrixssl", provider);
+    return provider;
 }
 
 
@@ -277,39 +211,8 @@ static void manageMatrixSsl(MprMatrixSsl *mssl, int flags)
             matrixSslDeleteKeys(mssl->keys);
             mssl->keys = 0;
         }
+        matrixSslClose();
     }
-}
-
-
-/*
-    Create a new Matrix socket
- */
-static MprSocket *createMss(MprSsl *ssl)
-{
-    MprSocketService    *ss;
-    MprSocket           *sp;
-    MprMatrixSocket     *msp;
-    
-    if (ssl == MPR_SECURE_CLIENT) {
-        /* Use the default SSL provider and configuration */
-        ssl = 0;
-    }
-    /*
-        First get a standard socket
-     */
-    ss = MPR->socketService;
-    if ((sp = ss->standardProvider->createSocket(ssl)) == 0) {
-        return 0;
-    }
-    sp->provider = ss->secureProvider;
-    if ((msp = (MprMatrixSocket*) mprAllocObj(MprMatrixSocket, manageMatrixSocket)) == 0) {
-        return 0;
-    }
-    msp->sock = sp;
-    sp->sslSocket = msp;
-    sp->ssl = ssl;
-    mprAddItem(ss->secureSockets, sp);
-    return sp;
 }
 
 
@@ -335,15 +238,15 @@ static void manageMatrixSocket(MprMatrixSocket *msp, int flags)
  */
 static void closeMss(MprSocket *sp, bool gracefully)
 {
-    MprMatrixSocket    *msp;
-    uchar           *obuf;
-    int             nbytes;
+    MprMatrixSocket     *msp;
+    uchar               *obuf;
+    int                 nbytes;
 
-    mprAssert(sp);
+    assure(sp);
 
     lock(sp);
     msp = sp->sslSocket;
-    mprAssert(msp);
+    assure(msp);
 
     if (!(sp->flags & MPR_SOCKET_EOF) && msp->handle) {
         /*
@@ -367,43 +270,69 @@ static int listenMss(MprSocket *sp, cchar *host, int port, int flags)
 }
 
 
-/*
-    Called to accept an incoming connection request
- */
-static MprSocket *acceptMss(MprSocket *listen)
+static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
 {
-    MprSocket           *sp;
+    MprSocketService    *ss;
     MprMatrixSocket     *msp;
     MprMatrixSsl        *mssl;
+    uint32              cipherSuite;
 
-    /*
-        Do the standard accept stuff
-     */
-    if ((sp = listen->service->standardProvider->acceptSocket(listen)) == 0) {
-        return 0;
+    ss = sp->service;
+    assure(ss);
+    assure(sp);
+
+    if ((msp = (MprMatrixSocket*) mprAllocObj(MprMatrixSocket, manageMatrixSocket)) == 0) {
+        return MPR_ERR_MEMORY;
     }
+    lock(sp);
+    msp->sock = sp;
+    sp->sslSocket = msp;
+    sp->ssl = ssl;
+
+    mprAddItem(ss->secureSockets, sp);
+
+    if (!ssl->pconfig && (ssl->pconfig = createMatrixSslConfig(ssl, server)) == 0) {
+        unlock(sp);
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    mssl = ssl->pconfig;
+
     /* 
         Associate a new ssl session with this socket. The session represents the state of the ssl protocol 
         over this socket. Session caching is handled automatically by this api.
      */
-    lock(sp);
-    msp = sp->sslSocket;
-    mprAssert(msp);
-    mssl = sp->ssl->extendedSsl;
-    if (matrixSslNewServerSession(&msp->handle, mssl->keys, NULL) < 0) {
-        unlock(sp);
-        return 0;
+    if (server) {
+        if (matrixSslNewServerSession(&msp->handle, mssl->keys, NULL) < 0) {
+            unlock(sp);
+            return MPR_ERR_CANT_CREATE;
+        }
+    } else {
+        if (matrixSslLoadRsaKeysMem(mssl->keys, NULL, 0, NULL, 0, CAcertSrvBuf, sizeof(CAcertSrvBuf)) < 0) {
+            mprError("MatrixSSL: Could not read or decode certificate or key file."); 
+            unlock(sp);
+            return MPR_ERR_CANT_INITIALIZE;
+        }
+        /* This means negotiate ciphers with the server */
+        cipherSuite = 0;
+        if (matrixSslNewClientSession(&msp->handle, mssl->keys, NULL, cipherSuite, verifyCert, NULL, NULL) < 0) {
+            unlock(sp);
+            return MPR_ERR_CANT_CONNECT;
+        }
+        if (doHandshake(sp, 0) < 0) {
+            unlock(sp);
+            return MPR_ERR_CANT_CONNECT;
+        }
     }
     unlock(sp);
-    return sp;
+    return 0;
 }
 
 
 /*
-    Validate the server certificate
+    Validate certificates
     UGLY: really need a MprMatrixSsl handle here
  */
-static int verifyServer(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
+static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
 {
     MprSocketService    *ss;
     MprSocket           *sp;
@@ -413,6 +342,7 @@ static int verifyServer(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
 
     ss = MPR->socketService;
     lock(ss);
+    sp = 0;
     for (ITERATE_ITEMS(ss->secureSockets, sp, next)) {
         if (sp->ssl && ((MprMatrixSocket*) sp->sslSocket)->handle == ssl) {
             break;
@@ -421,11 +351,11 @@ static int verifyServer(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     unlock(ss);
     if (!sp) {
         /* Should not get here */
-        mprAssert(sp);
+        assure(sp);
         return SSL_ALLOW_ANON_CONNECTION;
     }
     if (alert > 0) {
-        if (!sp->ssl->verifyServer) {
+        if (!sp->ssl->verifyPeer) {
             return SSL_ALLOW_ANON_CONNECTION;
         }
         return alert;
@@ -496,83 +426,30 @@ static int verifyServer(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
 }
 
 
-/*
-    Connect as a client
- */
-static int connectMss(MprSocket *sp, cchar *host, int port, int flags)
-{
-    MprSocketService    *ss;
-    MprMatrixSocket     *msp;
-    MprMatrixSsl        *mssl;
-    MprSsl              *ssl;
-    uint32              cipherSuite;
-    
-    lock(sp);
-    ss = sp->service;
-    if (sp->service->standardProvider->connectSocket(sp, host, port, flags) < 0) {
-        unlock(sp);
-        return MPR_ERR_CANT_CONNECT;
-    }
-    msp = sp->sslSocket;
-    mprAssert(msp);
-
-    if (!sp->ssl) {
-        if ((ssl = ss->secureProvider->defaultSsl) == 0) {
-            if ((ssl = getDefaultMatrixSsl()) == 0) {
-                unlock(sp);
-                return MPR_ERR_CANT_INITIALIZE;
-            }
-        }
-    }
-    sp->ssl = ssl;
-    mssl = ssl->extendedSsl;
-
-    if (matrixSslLoadRsaKeysMem(mssl->keys, NULL, 0, NULL, 0, CAcertSrvBuf, sizeof(CAcertSrvBuf)) < 0) {
-        mprError("MatrixSSL: Could not read or decode certificate or key file."); 
-        unlock(sp);
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-    cipherSuite = 0;
-    if (matrixSslNewClientSession(&msp->handle, mssl->keys, NULL, cipherSuite, verifyServer, NULL, NULL) < 0) {
-        unlock(sp);
-        return MPR_ERR_CANT_CONNECT;
-    }
-    if (doHandshake(sp, 0) < 0) {
-        unlock(sp);
-        return MPR_ERR_CANT_CONNECT;
-    }
-    unlock(sp);
-    return 0;
-}
-
-
 static void disconnectMss(MprSocket *sp)
 {
     sp->service->standardProvider->disconnectSocket(sp);
 }
 
 
-/*
-    Low level blocking write
- */
-static ssize blockingWrite(MprSocket *sp, cchar *buf, ssize len)
+static ssize blockingWrite(MprSocket *sp, cvoid *buf, ssize len)
 {
     MprSocketProvider   *standard;
     ssize               written, bytes;
-    int                 mode;
+    int                 prior;
 
     standard = sp->service->standardProvider;
-    mode = mprSetSocketBlockingMode(sp, 1);
+    prior = mprSetSocketBlockingMode(sp, 1);
     for (written = 0; len > 0; ) {
         if ((bytes = standard->writeSocket(sp, buf, len)) < 0) {
-            mprSetSocketBlockingMode(sp, mode);
+            mprSetSocketBlockingMode(sp, prior);
             return bytes;
         }
-        buf += bytes;
+        buf = (char*) buf + bytes;
         len -= bytes;
         written += bytes;
     }
-    mprSetSocketBlockingMode(sp, mode);
+    mprSetSocketBlockingMode(sp, prior);
     return written;
 }
 
@@ -649,7 +526,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
 
         case MATRIXSSL_REQUEST_SEND:
             toWrite = matrixSslGetOutdata(msp->handle, &obuf);
-            if ((written = blockingWrite(sp, (cchar*) obuf, (int) toWrite)) < 0) {
+            if ((written = blockingWrite(sp, obuf, toWrite)) < 0) {
                 mprError("MatrixSSL: Error in process");
                 return MPR_ERR_CANT_INITIALIZE;
             }
@@ -664,11 +541,11 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
             return 0;
 
         case MATRIXSSL_HANDSHAKE_COMPLETE:
-            *readMore = 1;
+            *readMore = 0;
             return 0;
 
         case MATRIXSSL_RECEIVED_ALERT:
-            mprAssert(dlen == 2);
+            assure(dlen == 2);
             if (data[0] == SSL_ALERT_LEVEL_FATAL) {
                 return MPR_ERR;
             } else if (data[1] == SSL_ALERT_CLOSE_NOTIFY) {
@@ -746,10 +623,6 @@ static ssize readMss(MprSocket *sp, void *buf, ssize len)
         return -1;
     }
     lock(sp);
-    /*
-        If there is more data buffered by MatrixSSL, then ensure the select handler will recall us again even 
-        if there is no more IO events
-     */
     bytes = innerRead(sp, buf, len);
     msp = (MprMatrixSocket*) sp->sslSocket;
     if (msp->more) {
@@ -796,8 +669,8 @@ static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
                 msp->outlen = len;
                 msp->written = 0;
                 len = 0;
-                nbytes = min(msp->outlen, SSL_MAX_PLAINTEXT_LEN);
             }
+            nbytes = min(msp->outlen, SSL_MAX_PLAINTEXT_LEN);
             if ((encoded = matrixSslEncodeToOutdata(msp->handle, (uchar*) buf, (int) nbytes)) < 0) {
                 return encoded;
             }
@@ -820,60 +693,26 @@ static ssize writeMss(MprSocket *sp, cvoid *buf, ssize len)
 
 
 /*
-    Flush write data. This is blocking.
+    Blocking flush
  */
 static ssize flushMss(MprSocket *sp)
 {
-    MprMatrixSocket     *msp;
-    ssize               written, bytes;
-    int                 mode;
-
-    msp = (MprMatrixSocket*) sp->sslSocket;
-    written = 0;
-    mode = mprSetSocketBlockingMode(sp, 1);
-    while (msp->outlen > 0) {
-        if ((bytes = writeMss(sp, NULL, 0)) < 0) {
-            mprSetSocketBlockingMode(sp, mode);
-            return bytes;
-        }
-        written += bytes;
-    }
-    mprSetSocketBlockingMode(sp, mode);
-    return written;
+    return blockingWrite(sp, 0, 0);
 }
 
-#else
-
-int mprCreateMatrixSslModule() { return -1; }
-#endif /* BIT_FEATURE_MATRIXSSL */
+#endif /* BIT_PACK_MATRIXSSL */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

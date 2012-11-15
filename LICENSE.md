@@ -1,13 +1,13 @@
-Embedthis MPR GPL License Agreement
+Embedthis MPR Licensing
 ===
 
-This software is licensed according to the provisions of GNU GENERAL PUBLIC LICENSE below. 
+This software is distributed under commercial and open source licenses. You may use the GPLv2 License below License or
+you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either
+license. The GPLv2 License does NOT generally permit incorporating this software into non-open source programs. If you
+are unable to comply with the GPLv2, you must acquire a commercial license to use this software.
 
-Commercial license are also available for those who require them.  The Embedthis Commercial License, allows you to provide commercial software licenses for products containing Embedthis software. This is for individuals or organizations that do not want to release their source code as open source / free software as governed by the GPL license below. For more information on licensing, please see:
-
-http://embedthis.com/downloads/licensing.html
-
-Some components of the sofware are licensed from third parties. See the end of this document for a list of licensed third party software.
+Commercial licenses for this software and support services are available from Embedthis Software at:
+    http://embedthis.com/licensing/index.html
 
 GNU GENERAL PUBLIC LICENSE, Version 2, June 1991.
 ===
@@ -101,18 +101,12 @@ NO WARRANTY
 
 - END OF TERMS AND CONDITIONS -
 
-
-Third Party Components
----
-
-1) MatrixSSL. The MatrixSSL interface contains some licensed code from PeerSec. MatrixSSL is an optional component.
-2) DTOA (Decimal to Ascii conversion code). This is used in the runtime core. It is licensed by Lucent with a BSD style license.
-3) Hashing algorithm inspired by Paul Hsieh at http://www.azillionmonkeys.com/qed/hash.html.
-
-Contributors have provided other portions of the software that are covered by the Embedthis Contributor license that grants Embedthis sufficient rights to execute this license Agreement.
-
 Trademarks and Copyrights
 ---
 Copyright (c) 2003-2012 Embedthis Software, LLC. All Rights Reserved.
-Embedthis, Appweb, Ejscript and ESP are trademarks of Embedthis Software, LLC. Other brands and their products 
-are trademarks of their respective holders.
+Embedthis and MPR are trademarks of Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.
+
+Third Party Licenses
+---
+See doc/licenses for other licenses. Contributors have provided portions of the software that are covered by the Embedthis Contributor license that grants Embedthis sufficient rights to execute this license Agreement.
+

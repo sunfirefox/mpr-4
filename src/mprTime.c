@@ -195,7 +195,7 @@ static void validateTime(struct tm *tm, struct tm *defaults);
 /*
     Initialize the time service
  */
-int mprCreateTimeService()
+PUBLIC int mprCreateTimeService()
 {
     Mpr                 *mpr;
     TimeToken           *tt;
@@ -227,7 +227,7 @@ int mprCreateTimeService()
 }
 
 
-int mprCompareTime(MprTime t1, MprTime t2)
+PUBLIC int mprCompareTime(MprTime t1, MprTime t2)
 {
     if (t1 < t2) {
         return -1;
@@ -238,56 +238,56 @@ int mprCompareTime(MprTime t1, MprTime t2)
 }
 
 
-void mprDecodeLocalTime(struct tm *tp, MprTime when)
+PUBLIC void mprDecodeLocalTime(struct tm *tp, MprTime when)
 {
     decodeTime(tp, when, 1);
 }
 
 
-void mprDecodeUniversalTime(struct tm *tp, MprTime when)
+PUBLIC void mprDecodeUniversalTime(struct tm *tp, MprTime when)
 {
     decodeTime(tp, when, 0);
 }
 
 
-char *mprGetDate(char *fmt)
+PUBLIC char *mprGetDate(char *format)
 {
     struct tm   tm;
 
     mprDecodeLocalTime(&tm, mprGetTime());
-    if (fmt == 0 || *fmt == '\0') {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0 || *format == '\0') {
+        format = MPR_DEFAULT_DATE;
     }
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
-char *mprFormatLocalTime(cchar *fmt, MprTime time)
+PUBLIC char *mprFormatLocalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     mprDecodeLocalTime(&tm, time);
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
-char *mprFormatUniversalTime(cchar *fmt, MprTime time)
+PUBLIC char *mprFormatUniversalTime(cchar *format, MprTime time)
 {
     struct tm   tm;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     mprDecodeUniversalTime(&tm, time);
-    return mprFormatTm(fmt, &tm);
+    return mprFormatTm(format, &tm);
 }
 
 
 /*
     Returns time in milliseconds since the epoch: 0:0:0 UTC Jan 1 1970.
  */
-MprTime mprGetTime()
+PUBLIC MprTime mprGetTime()
 {
 #if VXWORKS
     struct timespec  tv;
@@ -302,29 +302,103 @@ MprTime mprGetTime()
 
 
 /*
+    High resolution timer
+ */
+#if MPR_HIGH_RES_TIMER
+    #if (LINUX || MACOSX) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
+        uint64 mprGetHiResTime() {
+            uint64  now;
+            __asm__ __volatile__ ("rdtsc" : "=A" (now));
+            return now;
+        }
+    #elif WINDOWS
+        uint64 mprGetHiResTime() {
+            LARGE_INTEGER  now;
+            QueryPerformanceCounter(&now);
+            return (((uint64) now.HighPart) << 32) + now.LowPart;
+        }
+    #else
+        uint64 mprGetHiResTime() {
+            return (uint64) mprGetTicks();
+        }
+    #endif
+#else 
+    uint64 mprGetHiResTime() {
+        return (uint64) mprGetTicks();
+    }
+#endif
+
+
+/*
+    Return time in milliseconds that never goes backwards. This is used for timers and not for time of day.
+    The actual value returned is system dependant and does not represent time since Jan 1 1970.
+ */
+PUBLIC MprTicks mprGetTicks()
+{
+#if BIT_WIN_LIKE && _WIN32_WINNT >= 0x0600
+    /* Windows Vista and later */
+    return GetTickCount64();
+#elif MACOSX
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
+    return mach_absolute_time() * info.numer / info.denom / (1000 * 1000);
+#elif CLOCK_MONOTONIC_RAW
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#elif CLOCK_MONOTONIC
+    struct timespec tv;
+    clock_gettime(CLOCK_MONOTONIC, &tv);
+    return (MprTicks) (((MprTicks) tv.tv_sec) * 1000) + (tv.tv_nsec / (1000 * 1000));
+#else
+    static MprTime lastTicks;
+    static MprTime adjustTicks = 0;
+    MprTime     result, diff;
+    if (lastTicks == 0) {
+        lastTicks = mprGetTime();
+    }
+    result = mprGetTime() + adjustTicks;
+    /*
+        Handle time reversals. Don't handle jumps forward. Sorry.
+     */
+    if ((diff = (result - lastTicks)) < 0) {
+        adjustTicks += diff;
+        result -= diff;
+    }
+    lastTicks = result;
+    return result;
+#endif
+}
+
+
+/*
     Return the number of milliseconds until the given timeout has expired.
  */
-MprTime mprGetRemainingTime(MprTime mark, MprTime timeout)
+PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
 {
-    MprTime     now, diff;
+    MprTicks    now, diff;
 
-    now = mprGetTime();
+    now = mprGetTicks();
     diff = (now - mark);
 
     if (diff < 0) {
         /*
-            Detect time going backwards
+            Detect time going backwards. Should never happen now.
          */
+        assure(diff >= 0);
         diff = 0;
     }
     return (timeout - diff);
 }
 
 
-/*
-    Get the elapsed time since a time marker
- */
-MprTime mprGetElapsedTime(MprTime mark)
+PUBLIC MprTicks mprGetElapsedTicks(MprTicks mark)
+{
+    return mprGetTicks() - mark;
+}
+
+
+PUBLIC MprTime mprGetElapsedTime(MprTime mark)
 {
     return mprGetTime() - mark;
 }
@@ -334,7 +408,7 @@ MprTime mprGetElapsedTime(MprTime mark)
     Get the timezone offset including DST
     Return the timezone offset (including DST) in msec. local == (UTC + offset)
  */
-int mprGetTimeZoneOffset(MprTime when)
+PUBLIC int mprGetTimeZoneOffset(MprTime when)
 {
     MprTime     alternate, secs;
     struct tm   t;
@@ -360,7 +434,7 @@ int mprGetTimeZoneOffset(MprTime when)
 /*
     Make a time value interpreting "tm" as a local time
  */
-MprTime mprMakeTime(struct tm *tp)
+PUBLIC MprTime mprMakeTime(struct tm *tp)
 {
     MprTime     when, alternate;
     struct tm   t;
@@ -382,7 +456,7 @@ MprTime mprMakeTime(struct tm *tp)
 }
 
 
-MprTime mprMakeUniversalTime(struct tm *tp)
+PUBLIC MprTime mprMakeUniversalTime(struct tm *tp)
 {
     return makeTime(tp);
 }
@@ -550,7 +624,7 @@ static int getYear(MprTime when)
 }
 
 
-MprTime floorDiv(MprTime x, MprTime divisor)
+PUBLIC MprTime floorDiv(MprTime x, MprTime divisor)
 {
     if (x < 0) {
         return (x - divisor + 1) / divisor;
@@ -574,7 +648,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     offset = dst = 0;
 
     if (local) {
-        //  TODO -- cache the results somehow
+        //  OPT -- cache the results somehow
         timeForZoneCalc = when;
         secs = when / MS_PER_SEC;
         if (secs < MIN_TIME || secs > MAX_TIME) {
@@ -630,15 +704,15 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     } else {
         tp->tm_mday = tp->tm_yday - normalMonthStart[tp->tm_mon] + 1;
     }
-    mprAssert(tp->tm_hour >= 0);
-    mprAssert(tp->tm_min >= 0);
-    mprAssert(tp->tm_sec >= 0);
-    mprAssert(tp->tm_wday >= 0);
-    mprAssert(tp->tm_mon >= 0);
+    assure(tp->tm_hour >= 0);
+    assure(tp->tm_min >= 0);
+    assure(tp->tm_sec >= 0);
+    assure(tp->tm_wday >= 0);
+    assure(tp->tm_mon >= 0);
     /* This asserts with some calculating some intermediate dates <= year 100 */
-    mprAssert(tp->tm_yday >= 0);
-    mprAssert(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
-    mprAssert(tp->tm_mday >= 1);
+    assure(tp->tm_yday >= 0);
+    assure(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
+    assure(tp->tm_mday >= 1);
 }
 
 
@@ -710,7 +784,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 /*
     Preferred implementation as strftime() will be localized
  */
-char *mprFormatTm(cchar *fmt, struct tm *tp)
+PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     char            localFmt[MPR_MAX_STRING];
@@ -721,8 +795,8 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     int             value;
 
     dp = localFmt;
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     if (tp == 0) {
         mprDecodeLocalTime(&tm, mprGetTime());
@@ -730,7 +804,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     }
     endp = &localFmt[sizeof(localFmt) - 1];
     size = sizeof(localFmt) - 1;
-    for (cp = fmt; *cp && dp < &localFmt[sizeof(localFmt) - 32]; size = (int) (endp - dp - 1)) {
+    for (cp = format; *cp && dp < &localFmt[sizeof(localFmt) - 32]; size = (int) (endp - dp - 1)) {
         if (*cp == '%') {
             *dp++ = *cp++;
         again:
@@ -738,7 +812,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
             case '+':
                 if (tp->tm_mday < 10) {
                     /* Some platforms don't support 'e' so avoid it here. Put a double space before %d */
-                    mprSprintf(dp, size, "%s  %d %s", "a %b", tp->tm_mday, "%H:%M:%S %Z %Y");
+                    fmt(dp, size, "%s  %d %s", "a %b", tp->tm_mday, "%H:%M:%S %Z %Y");
                 } else {
                     strcpy(dp, "a %b %d %H:%M:%S %Z %Y");
                 }
@@ -887,7 +961,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
                 if (value < 0) {
                     value = -value;
                 }
-                mprSprintf(dp, size, "%s%02d%02d", sign, value / 60, value % 60);
+                fmt(dp, size, "%s%02d%02d", sign, value / 60, value % 60);
                 dp += slen(dp);
                 cp++;
                 break;
@@ -906,11 +980,11 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
         }
     }
     *dp = '\0';
-    fmt = localFmt;
-    if (*fmt == '\0') {
-        fmt = "%a %b %d %H:%M:%S %Z %Y";
+    format = localFmt;
+    if (*format == '\0') {
+        format = "%a %b %d %H:%M:%S %Z %Y";
     }
-    if (strftime(buf, sizeof(buf) - 1, fmt, tp) > 0) {
+    if (strftime(buf, sizeof(buf) - 1, format, tp) > 0) {
         buf[sizeof(buf) - 1] = '\0';
         return sclone(buf);
     }
@@ -961,15 +1035,15 @@ static char *getTimeZoneName(struct tm *tp)
 }
 
 
-char *mprFormatTm(cchar *fmt, struct tm *tp)
+PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
     MprBuf          *buf;
     char            *zone;
     int             w, value;
 
-    if (fmt == 0) {
-        fmt = MPR_DEFAULT_DATE;
+    if (format == 0) {
+        format = MPR_DEFAULT_DATE;
     }
     if (tp == 0) {
         mprDecodeLocalTime(&tm, mprGetTime());
@@ -978,13 +1052,13 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
     if ((buf = mprCreateBuf(64, -1)) == 0) {
         return 0;
     }
-    while ((*fmt != '\0')) {
-        if (*fmt++ != '%') {
-            mprPutCharToBuf(buf, fmt[-1]);
+    while ((*format != '\0')) {
+        if (*format++ != '%') {
+            mprPutCharToBuf(buf, format[-1]);
             continue;
         }
     again:
-        switch (*fmt++) {
+        switch (*format++) {
         case '%' :                                      /* percent */
             mprPutCharToBuf(buf, '%');
             break;
@@ -1235,7 +1309,7 @@ char *mprFormatTm(cchar *fmt, struct tm *tp)
 
         default:
             mprPutCharToBuf(buf, '%');
-            mprPutCharToBuf(buf, fmt[-1]);
+            mprPutCharToBuf(buf, format[-1]);
             break;
         }
     }
@@ -1283,12 +1357,12 @@ static int getNumOrSym(char **token, int sep, int kind, int *isAlpah)
     char    *cp;
     int     num;
 
-    mprAssert(token && *token);
+    assure(token && *token);
 
     if (*token == 0) {
         return 0;
     }
-    if (isalpha((int) **token)) {
+    if (isalpha((uchar) **token)) {
         *isAlpah = 1;
         cp = strchr(*token, sep);
         if (cp) {
@@ -1322,7 +1396,7 @@ static void swapDayMonth(struct tm *tp)
     Parse the a date/time string according to the given zoneFlags and return the result in *time. Missing date items 
     may be provided via the defaults argument.
  */ 
-int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *defaults)
+PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *defaults)
 {
     TimeToken       *tt;
     struct tm       tm;
@@ -1395,7 +1469,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
             /*
                 Timezone. Format: [GMT|UTC][+-]NN[:]NN
              */
-            if (!isalpha((int) *token)) {
+            if (!isalpha((uchar) *token)) {
                 cp = token;
             }
             negate = *cp == '-' ? -1 : 1;
@@ -1408,7 +1482,7 @@ int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct tm *def
             zoneOffset = negate * (hour * 60 + min);
             explicitZone = 1;
 
-        } else if (isalpha((int) *token)) {
+        } else if (isalpha((uchar) *token)) {
             if ((tt = (TimeToken*) mprLookupKey(MPR->timeTokens, token)) != 0) {
                 kind = tt->value & TOKEN_MASK;
                 value = tt->value & ~TOKEN_MASK; 
@@ -1625,7 +1699,7 @@ static void validateTime(struct tm *tp, struct tm *defaults)
     Compatibility for windows and VxWorks
  */
 #if BIT_WIN_LIKE || VXWORKS
-int gettimeofday(struct timeval *tv, struct timezone *tz)
+PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
     #if BIT_WIN_LIKE
         FILETIME        fileTime;
@@ -1681,61 +1755,16 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 }
 #endif /* BIT_WIN_LIKE || VXWORKS */
 
-/********************************* Measurement **********************************/
-/*
-    High resolution timer
- */
-#if MPR_HIGH_RES_TIMER
-    #if BIT_UNIX_LIKE
-        uint64 mprGetTicks() {
-            uint64  now;
-            __asm__ __volatile__ ("rdtsc" : "=A" (now));
-            return now;
-        }
-    #elif BIT_WIN_LIKE
-        uint64 mprGetTicks() {
-            LARGE_INTEGER  now;
-            QueryPerformanceCounter(&now);
-            return (((uint64) now.HighPart) << 32) + now.LowPart;
-        }
-    #else
-        uint64 mprGetTicks() {
-            return (uint64) mprGetTime();
-        }
-    #endif
-#else 
-    uint64 mprGetTicks() {
-        return (uint64) mprGetTime();
-    }
-#endif
-
-
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

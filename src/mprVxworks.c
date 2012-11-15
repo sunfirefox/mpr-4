@@ -4,38 +4,38 @@
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
-#if VXWORKS
 /********************************* Includes ***********************************/
 
 #include    "mpr.h"
 
+#if VXWORKS
 /*********************************** Code *************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     return 0;
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     return 0;
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
 }
 
 
-int access(const char *path, int mode)
+PUBLIC int access(const char *path, int mode)
 {
     struct stat sbuf;
     return stat((char*) path, &sbuf);
 }
 
 
-int mprGetRandomBytes(char *buf, int length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 {
     int     i;
 
@@ -46,7 +46,7 @@ int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
-int mprLoadNativeModule(MprModule *mp)
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     SYM_TYPE        symType;
@@ -55,7 +55,7 @@ int mprLoadNativeModule(MprModule *mp)
     void            *handle;
     int             fd;
 
-    mprAssert(mp);
+    assure(mp);
     fn = 0;
     handle = 0;
 
@@ -69,7 +69,7 @@ int mprLoadNativeModule(MprModule *mp)
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
 
-        mprLog(2, "Loading native module %s", mp->name);
+        mprLog(2, "Loading native module %s", mp->path);
         if ((fd = open(mp->path, O_RDONLY, 0664)) < 0) {
             mprError("Can't open module \"%s\"", mp->path);
             return MPR_ERR_CANT_OPEN;
@@ -103,19 +103,19 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
     unldByModuleId((MODULE_ID) mp->handle, 0);
     return 0;
 }
 
 
-void mprNap(MprTime milliseconds)
+PUBLIC void mprNap(MprTicks milliseconds)
 {
     struct timespec timeout;
     int             rc;
 
-    mprAssert(milliseconds >= 0);
+    assure(milliseconds >= 0);
     timeout.tv_sec = milliseconds / 1000;
     timeout.tv_nsec = (milliseconds % 1000) * 1000000;
     do {
@@ -124,7 +124,7 @@ void mprNap(MprTime milliseconds)
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -132,27 +132,27 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
 }
 
 
-uint mprGetpid(void) {
+PUBLIC uint mprGetpid(void) {
     return taskIdSelf();
 }
 
 
-int fsync(int fd) { 
+PUBLIC int fsync(int fd) { 
     return 0; 
 }
 
 
-int ftruncate(int fd, off_t offset) { 
+PUBLIC int ftruncate(int fd, off_t offset) { 
     return 0; 
 }
 
 
-int usleep(uint msec)
+PUBLIC int usleep(uint msec)
 {
     struct timespec     timeout;
     int                 rc;
@@ -166,13 +166,12 @@ int usleep(uint msec)
 }
 
 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     return 0;
 }
 
 
-//  TODO - is this still needed?
 /*
     Create a routine to pull in the GCC support routines for double and int64 manipulations for some platforms. Do this
     incase modules reference these routines. Without this, the modules have to reference them. Which leads to multiple 
@@ -185,37 +184,19 @@ double  __mpr_floating_point_resolution(double a, double b, int64 c, int64 d, ui
 }
 
 
-#else
-void stubMprVxWorks() {}
 #endif /* VXWORKS */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

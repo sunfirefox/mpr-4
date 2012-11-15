@@ -17,7 +17,7 @@ static void serviceEventsThread(void *data, MprThread *tp);
 /*
     Create and initialize the MPR service.
  */
-Mpr *mprCreate(int argc, char **argv, int flags)
+PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
 {
     MprFileSystem   *fs;
     Mpr             *mpr;
@@ -25,13 +25,14 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     srand((uint) time(NULL));
 
     if ((mpr = mprCreateMemService((MprManager) manageMpr, flags)) == 0) {
-        mprAssert(mpr);
+        assure(mpr);
         return 0;
     }
+    mpr->start = mprGetTime(); 
     mpr->exitStrategy = MPR_EXIT_NORMAL;
     mpr->emptyString = sclone("");
     mpr->exitTimeout = MPR_TIMEOUT_STOP;
-    mpr->title = sclone(BIT_NAME);
+    mpr->title = sclone(BIT_TITLE);
     mpr->version = sclone(BIT_VERSION);
     mpr->idleCallback = mprServicesAreIdle;
     mpr->mimeTypes = mprCreateMimeTypes(NULL);
@@ -41,8 +42,7 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     mprCreateOsService();
     mpr->mutex = mprCreateLock();
     mpr->spin = mprCreateSpinLock();
-    mpr->dtoaSpin[0] = mprCreateSpinLock();
-    mpr->dtoaSpin[1] = mprCreateSpinLock();
+    mpr->verifySsl = 1;
 
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);
@@ -86,8 +86,8 @@ Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->waitService = mprCreateWaitService();
     mpr->socketService = mprCreateSocketService();
 
-    mpr->dispatcher = mprCreateDispatcher("main", 1);
-    mpr->nonBlock = mprCreateDispatcher("nonblock", 1);
+    mpr->dispatcher = mprCreateDispatcher("main", MPR_DISPATCHER_ENABLED);
+    mpr->nonBlock = mprCreateDispatcher("nonblock", MPR_DISPATCHER_ENABLED);
     mpr->pathEnv = sclone(getenv("PATH"));
 
     if (flags & MPR_USER_EVENTS_THREAD) {
@@ -147,11 +147,8 @@ static void manageMpr(Mpr *mpr, int flags)
         mprMark(mpr->terminators);
         mprMark(mpr->mutex);
         mprMark(mpr->spin);
-        mprMark(mpr->dtoaSpin[0]);
-        mprMark(mpr->dtoaSpin[1]);
         mprMark(mpr->cond);
         mprMark(mpr->emptyString);
-        mprMark(mpr->markerCond);
         mprMark(mpr->argBuf);
     }
 }
@@ -164,7 +161,7 @@ static void wgc(int mode)
 /*
     Destroy the Mpr and all services
  */
-void mprDestroy(int how)
+PUBLIC void mprDestroy(int how)
 {
     int         gmode;
 
@@ -224,7 +221,7 @@ void mprDestroy(int how)
 /*
     Start termination of the Mpr. May be called by mprDestroy or elsewhere.
  */
-void mprTerminate(int how, int status)
+PUBLIC void mprTerminate(int how, int status)
 {
     MprTerminator   terminator;
     int             next;
@@ -273,19 +270,19 @@ void mprTerminate(int how, int status)
 }
 
 
-int mprGetExitStatus()
+PUBLIC int mprGetExitStatus()
 {
     return MPR->exitStatus;
 }
 
 
-void mprAddTerminator(MprTerminator terminator)
+PUBLIC void mprAddTerminator(MprTerminator terminator)
 {
     mprAddItem(MPR->terminators, terminator);
 }
 
 
-void mprRestart()
+PUBLIC void mprRestart()
 {
 #if BIT_UNIX_LIKE
     int     i;
@@ -308,7 +305,7 @@ void mprRestart()
 }
 
 
-int mprStart()
+PUBLIC int mprStart()
 {
     int     rc;
 
@@ -325,7 +322,7 @@ int mprStart()
 }
 
 
-int mprStartEventsThread()
+PUBLIC int mprStartEventsThread()
 {
     MprThread   *tp;
 
@@ -354,42 +351,42 @@ static void serviceEventsThread(void *data, MprThread *tp)
 /*
     Services should call this to determine if they should accept new services
  */
-bool mprShouldAbortRequests()
+PUBLIC bool mprShouldAbortRequests()
 {
     return (mprIsStopping() && !(MPR->exitStrategy & MPR_EXIT_GRACEFUL));
 }
 
 
-bool mprShouldDenyNewRequests()
+PUBLIC bool mprShouldDenyNewRequests()
 {
     return mprIsStopping();
 }
 
 
-bool mprIsStopping()
+PUBLIC bool mprIsStopping()
 {
     return MPR->state >= MPR_STOPPING;
 }
 
 
-bool mprIsStoppingCore()
+PUBLIC bool mprIsStoppingCore()
 {
     return MPR->state >= MPR_STOPPING_CORE;
 }
 
 
-bool mprIsFinished()
+PUBLIC bool mprIsFinished()
 {
     return MPR->state >= MPR_FINISHED;
 }
 
 
-int mprWaitTillIdle(MprTime timeout)
+PUBLIC int mprWaitTillIdle(MprTicks timeout)
 {
-    MprTime     mark, remaining, lastTrace;
+    MprTicks    mark, remaining, lastTrace;
 
-    lastTrace = mark = mprGetTime(); 
-    while (!mprIsIdle() && (remaining = mprGetRemainingTime(mark, timeout)) > 0) {
+    lastTrace = mark = mprGetTicks(); 
+    while (!mprIsIdle() && (remaining = mprGetRemainingTicks(mark, timeout)) > 0) {
         mprSleep(1);
         if ((lastTrace - remaining) > MPR_TICKS_PER_SEC) {
             mprLog(1, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
@@ -403,7 +400,7 @@ int mprWaitTillIdle(MprTime timeout)
 /*
     Test if the Mpr services are idle. Use mprIsIdle to determine if the entire process is idle.
  */
-bool mprServicesAreIdle()
+PUBLIC bool mprServicesAreIdle()
 {
     bool    idle;
 
@@ -420,7 +417,7 @@ bool mprServicesAreIdle()
 }
 
 
-bool mprIsIdle()
+PUBLIC bool mprIsIdle()
 {
     return (MPR->idleCallback)();
 }
@@ -431,7 +428,7 @@ bool mprIsIdle()
     then the args will be extracted, back-quotes removed and argv will be set to point to all the args.
     NOTE: this routine does not allocate.
  */
-int mprParseArgs(char *args, char **argv, int maxArgc)
+PUBLIC int mprParseArgs(char *args, char **argv, int maxArgc)
 {
     char    *dest, *src, *start;
     int     quote, argc;
@@ -491,13 +488,13 @@ int mprParseArgs(char *args, char **argv, int maxArgc)
     Set MPR_ARGV_ARGS_ONLY if not passing in a program name. 
     Always returns and argv[0] reserved for the program name or empty string.  First arg starts at argv[1].
  */
-int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
+PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
 {
     char    **argv, *vector, *args;
     ssize   len;
     int     argc;
 
-    mprAssert(command);
+    assure(command);
 
     /*
         Allocate one vector for argv and the actual args themselves
@@ -508,7 +505,7 @@ int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
         argc++;
     }
     if ((vector = (char*) mprAlloc(((argc + 1) * sizeof(char*)) + len)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     args = &vector[(argc + 1) * sizeof(char*)];
@@ -527,7 +524,7 @@ int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
 }
 
 
-MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
+PUBLIC MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
 {
     MprIdleCallback old;
     
@@ -537,7 +534,7 @@ MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
 }
 
 
-int mprSetAppName(cchar *name, cchar *title, cchar *version)
+PUBLIC int mprSetAppName(cchar *name, cchar *title, cchar *version)
 {
     char    *cp;
 
@@ -563,13 +560,13 @@ int mprSetAppName(cchar *name, cchar *title, cchar *version)
 }
 
 
-cchar *mprGetAppName()
+PUBLIC cchar *mprGetAppName()
 {
     return MPR->name;
 }
 
 
-cchar *mprGetAppTitle()
+PUBLIC cchar *mprGetAppTitle()
 {
     return MPR->title;
 }
@@ -578,7 +575,7 @@ cchar *mprGetAppTitle()
 /*
     Full host name with domain. E.g. "server.domain.com"
  */
-void mprSetHostName(cchar *s)
+PUBLIC void mprSetHostName(cchar *s)
 {
     MPR->hostName = sclone(s);
 }
@@ -587,7 +584,7 @@ void mprSetHostName(cchar *s)
 /*
     Return the fully qualified host name
  */
-cchar *mprGetHostName()
+PUBLIC cchar *mprGetHostName()
 {
     return MPR->hostName;
 }
@@ -596,25 +593,25 @@ cchar *mprGetHostName()
 /*
     Server name portion (no domain name)
  */
-void mprSetServerName(cchar *s)
+PUBLIC void mprSetServerName(cchar *s)
 {
     MPR->serverName = sclone(s);
 }
 
 
-cchar *mprGetServerName()
+PUBLIC cchar *mprGetServerName()
 {
     return MPR->serverName;
 }
 
 
-void mprSetDomainName(cchar *s)
+PUBLIC void mprSetDomainName(cchar *s)
 {
     MPR->domainName = sclone(s);
 }
 
 
-cchar *mprGetDomainName()
+PUBLIC cchar *mprGetDomainName()
 {
     return MPR->domainName;
 }
@@ -623,7 +620,7 @@ cchar *mprGetDomainName()
 /*
     Set the IP address
  */
-void mprSetIpAddr(cchar *s)
+PUBLIC void mprSetIpAddr(cchar *s)
 {
     MPR->ip = sclone(s);
 }
@@ -632,50 +629,50 @@ void mprSetIpAddr(cchar *s)
 /*
     Return the IP address
  */
-cchar *mprGetIpAddr()
+PUBLIC cchar *mprGetIpAddr()
 {
     return MPR->ip;
 }
 
 
-cchar *mprGetAppVersion()
+PUBLIC cchar *mprGetAppVersion()
 {
     return MPR->version;
 }
 
 
-bool mprGetDebugMode()
+PUBLIC bool mprGetDebugMode()
 {
     return MPR->debugMode;
 }
 
 
-void mprSetDebugMode(bool on)
+PUBLIC void mprSetDebugMode(bool on)
 {
     MPR->debugMode = on;
 }
 
 
-MprDispatcher *mprGetDispatcher()
+PUBLIC MprDispatcher *mprGetDispatcher()
 {
     return MPR->dispatcher;
 }
 
 
-MprDispatcher *mprGetNonBlockDispatcher()
+PUBLIC MprDispatcher *mprGetNonBlockDispatcher()
 {
     return MPR->nonBlock;
 }
 
 
-cchar *mprCopyright()
+PUBLIC cchar *mprCopyright()
 {
     return  "Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.\n"
             "Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.";
 }
 
 
-int mprGetEndian()
+PUBLIC int mprGetEndian()
 {
     char    *probe;
     int     test;
@@ -686,31 +683,19 @@ int mprGetEndian()
 }
 
 
-char *mprEmptyString()
+PUBLIC char *mprEmptyString()
 {
     return MPR->emptyString;
 }
 
 
-void mprSetExitStrategy(int strategy)
+PUBLIC void mprSetExitStrategy(int strategy)
 {
     MPR->exitStrategy = strategy;
 }
 
 
-void mprLockDtoa(int n)
-{
-    mprSpinLock(MPR->dtoaSpin[n]);
-}
-
-
-void mprUnlockDtoa(int n)
-{
-    mprSpinUnlock(MPR->dtoaSpin[n]);
-}
-
-
-void mprSetEnv(cchar *key, cchar *value)
+PUBLIC void mprSetEnv(cchar *key, cchar *value)
 {
 #if !WINCE
 #if BIT_UNIX_LIKE
@@ -720,46 +705,30 @@ void mprSetEnv(cchar *key, cchar *value)
     putenv(cmd);
 #endif
 #endif
-    if (scasematch(key, "PATH")) {
+    if (scaselessmatch(key, "PATH")) {
         MPR->pathEnv = sclone(value);
     }
 }
 
 
-void mprSetExitTimeout(MprTime timeout)
+PUBLIC void mprSetExitTimeout(MprTicks timeout)
 {
     MPR->exitTimeout = timeout;
 }
 
 
-void mprNop(void *ptr) {}
+PUBLIC void mprNop(void *ptr) {}
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

@@ -18,11 +18,15 @@ Bit.load({
         product: 'mpr',
         title: 'Multithreaded Portable Runtime',
         company: 'Embedthis',
-        version: '4.0.0',
-        buildNumber: 'B0',
+        version: '4.0.1',
+        buildNumber: '0',
+        assert: true,
+        ciphers: "HIGH:MEDIUM",
+        float: true,
         manager: 'manager',
         '+optional': [ 'doxygen', 'dsi', 'ejs', 'http', 'man', 'man2html', 'md5', 'matrixssl', 'openssl', 'ssl', 'utest' ],
-        'without-all': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl'],
+        'without-all': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl', 'openssl', 'matrixssl'],
+        'without-own': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'matrixssl'],
     },
 
     usage: {
@@ -78,8 +82,7 @@ Bit.load({
                 safeRemove(bit.dir.pkg)
                 install('package/mpr.bit', d.join('src/deps/mpr/mpr.bit'), {hidden: true})
                 install(['src/utils/makerom.c', 'src/manager.c'], d.join('src/deps/mpr'))
-                install(['doc/api/mpr.html', 'doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], 
-                    d.join('doc/api'))
+                install(['doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], d.join('doc/api'))
                 install('doc/man/*.1', d.join('doc/man'))
                 install('src/mpr.h', d.join('src/deps/mpr/mpr.h'))
                 install(['src/mprMem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
@@ -103,13 +106,6 @@ Bit.load({
                 Path('dh.new').write(cmd.response)
                 cmd = run('openssl dhparam -out dh1024.pem -C -2 1024', {})
                 Path('dh.new').append(cmd.response)
-            ",
-        },
-
-        api: {
-            action: "
-                apidoc('${SRC}/doc/api/mpr.dox', '${SRC}/src/mpr.h', 'MPR API')
-                apiwrap('${SRC}/doc/api/mpr.html')
             ",
         },
     },

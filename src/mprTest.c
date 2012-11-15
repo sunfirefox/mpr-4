@@ -32,7 +32,7 @@ static int      setLogging(char *logSpec);
 
 /******************************************************************************/
 
-MprTestService *mprCreateTestService()
+PUBLIC MprTestService *mprCreateTestService()
 {
     MprTestService      *sp;
 
@@ -65,7 +65,7 @@ static void manageTestService(MprTestService *ts, int flags)
 }
 
 
-int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser extraParser)
+PUBLIC int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser extraParser)
 {
     cchar       *programName;
     char        *argp;
@@ -113,7 +113,6 @@ int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser e
             sp->echoCmdLine = 1;
 
         } else if (strcmp(argp, "--filter") == 0 || strcmp(argp, "-f") == 0) {
-            //  TODO DEPRECATE
             if (nextArg >= argc) {
                 err++;
             } else {
@@ -228,7 +227,7 @@ int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestParser e
         return MPR_ERR_BAD_ARGS;
     }
     if (outputVersion) {
-        mprPrintfError("%s: Version: %s\n", BIT_NAME, BIT_VERSION);
+        mprPrintfError("%s: Version: %s\n", BIT_TITLE, BIT_VERSION);
         return MPR_ERR_BAD_ARGS;
     }
     sp->argc = argc;
@@ -244,7 +243,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
 {
     char    *str, *word, *tok;
 
-    mprAssert(filter);
+    assure(filter);
     if (filter == 0 || *filter == '\0') {
         return 0;
     }
@@ -254,7 +253,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
     word = stok(str, " \t\r\n", &tok);
     while (word) {
         if (mprAddItem(sp->testFilter, sclone(word)) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         word = stok(0, " \t\r\n", &tok);
@@ -268,21 +267,21 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
     MprModule   *mp;
     char        *cp, *base, entry[MPR_MAX_FNAME], path[MPR_MAX_FNAME];
 
-    mprAssert(fileName && *fileName);
+    assure(fileName && *fileName);
 
     base = mprGetPathBase(fileName);
-    mprAssert(base);
+    assure(base);
     if ((cp = strrchr(base, '.')) != 0) {
         *cp = '\0';
     }
     if (mprLookupModule(base)) {
         return 0;
     }
-    mprSprintf(entry, sizeof(entry), "%sInit", base);
+    fmt(entry, sizeof(entry), "%sInit", base);
     if (fileName[0] == '/' || (*fileName && fileName[1] == ':')) {
-        mprSprintf(path, sizeof(path), "%s%s", fileName, BIT_SHOBJ);
+        fmt(path, sizeof(path), "%s%s", fileName, BIT_SHOBJ);
     } else {
-        mprSprintf(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
+        fmt(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
     }
     if ((mp = mprCreateModule(base, path, entry, sp)) == 0) {
         mprError("Can't create module %s", path);
@@ -296,7 +295,7 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
 }
 
 
-int mprRunTests(MprTestService *sp)
+PUBLIC int mprRunTests(MprTestService *sp)
 {
     MprTestGroup    *gp;
     MprThread       *tp;
@@ -325,13 +324,13 @@ int mprRunTests(MprTestService *sp)
         Create worker threads for each test thread. 
      */
     for (i = 0; i < sp->numThreads; i++) {
-        mprSprintf(tName, sizeof(tName), "test.%d", i);
+        fmt(tName, sizeof(tName), "test.%d", i);
         if ((lp = copyGroups(sp, sp->groups)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprAddItem(sp->threadData, lp) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         /*
@@ -342,7 +341,7 @@ int mprRunTests(MprTestService *sp)
             buildFullNames(gp, gp->name);
         }
         if ((tp = mprCreateThread(tName, relayEvent, lp, 0)) == 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprStartThread(tp) < 0) {
@@ -386,7 +385,7 @@ static void relayEvent(MprList *groups, MprThread *tp)
     MprTestGroup    *gp;
 
     gp = mprGetFirstItem(groups);
-    mprAssert(gp);
+    assure(gp);
 
     mprRelayEvent(gp->dispatcher, runTestThread, groups, NULL);
     if (tp) {
@@ -405,7 +404,7 @@ static void runTestThread(MprList *groups, MprThread *tp)
     int             next, i, count;
 
     sp = MPR->testService;
-    mprAssert(sp);
+    assure(sp);
 
     for (next = 0; (gp = mprGetNextItem(groups, &next)) != 0; ) {
         runInit(gp);
@@ -427,7 +426,7 @@ static void runTestThread(MprList *groups, MprThread *tp)
 }
 
 
-void mprReportTestResults(MprTestService *sp)
+PUBLIC void mprReportTestResults(MprTestService *sp)
 {
     if (sp->totalFailedCount == 0 && sp->verbose >= 1) {
         mprPrintf("%12s All tests PASSED for \"%s\"\n", "[REPORT]", sp->name);
@@ -465,7 +464,7 @@ static void buildFullNames(MprTestGroup *gp, cchar *name)
     while (--tos >= 0) {
         nameBuf = sjoin(nameBuf, ".", nameStack[tos], NULL);
     }
-    mprAssert(gp->fullName == 0);
+    assure(gp->fullName == 0);
     gp->fullName = sclone(nameBuf);
 
     /*
@@ -483,7 +482,7 @@ static void buildFullNames(MprTestGroup *gp, cchar *name)
 /*
     Used by main program to add the top level test group(s)
  */
-MprTestGroup *mprAddTestGroup(MprTestService *sp, MprTestDef *def)
+PUBLIC MprTestGroup *mprAddTestGroup(MprTestService *sp, MprTestDef *def)
 {
     MprTestGroup    *gp;
 
@@ -527,8 +526,8 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
     char            name[80];
     static int      counter = 0;
 
-    mprAssert(sp);
-    mprAssert(def);
+    assure(sp);
+    assure(def);
 
     gp = mprAllocObj(MprTestGroup, manageTestGroup);
     if (gp == 0) {
@@ -538,7 +537,7 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
     if (parent) {
         gp->dispatcher = parent->dispatcher;
     } else {
-        mprSprintf(name, sizeof(name), "Test-%d", counter++);
+        fmt(name, sizeof(name), "Test-%d", counter++);
         gp->dispatcher = mprCreateDispatcher(name, 1);
     }
 
@@ -580,7 +579,7 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
 }
 
 
-void mprResetTestGroup(MprTestGroup *gp)
+PUBLIC void mprResetTestGroup(MprTestGroup *gp)
 {
     gp->success = 1;
     gp->mutex = mprCreateLock();
@@ -718,7 +717,7 @@ static bool filterTestGroup(MprTestGroup *gp)
         pattern = mprGetNextItem(testFilter, &next);
         while (pattern) {
             len = min(slen(pattern), slen(gp->fullName));
-            if (sncasecmp(gp->fullName, pattern, len) == 0) {
+            if (sncaselesscmp(gp->fullName, pattern, len) == 0) {
                 break;
             }
             pattern = mprGetNextItem(testFilter, &next);
@@ -758,7 +757,7 @@ static bool filterTestCast(MprTestGroup *gp, MprTestCase *tc)
         pattern = mprGetNextItem(testFilter, &next);
         while (pattern) {
             len = min(slen(pattern), slen(fullName));
-            if (sncasecmp(fullName, pattern, len) == 0) {
+            if (sncaselesscmp(fullName, pattern, len) == 0) {
                 break;
             }
             pattern = mprGetNextItem(testFilter, &next);
@@ -823,7 +822,7 @@ static char *getErrorMessage(MprTestGroup *gp)
     errorMsg = sclone("");
     fp = mprGetNextItem(gp->failures, &next);
     while (fp) {
-        mprSprintf(msg, sizeof(msg), "Failure in %s\nAssertion: \"%s\"\n", fp->loc, fp->message);
+        fmt(msg, sizeof(msg), "Failure in %s\nAssertion: \"%s\"\n", fp->loc, fp->message);
         if ((errorMsg = sjoin(errorMsg, msg, NULL)) == NULL) {
             break;
         }
@@ -839,8 +838,8 @@ static int addFailure(MprTestGroup *gp, cchar *loc, cchar *message)
 
     fp = createFailure(gp, loc, message);
     if (fp == 0) {
-        mprAssert(fp);
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(fp);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     mprAddItem(gp->failures, fp);
@@ -870,7 +869,7 @@ static MprTestFailure *createFailure(MprTestGroup *gp, cchar *loc, cchar *messag
 }
 
 
-bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
+PUBLIC bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 {
     if (! isTrue) {
         gp->success = isTrue;
@@ -887,22 +886,22 @@ bool assertTrue(MprTestGroup *gp, cchar *loc, bool isTrue, cchar *msg)
 }
 
 
-bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
+PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
 {
-    MprTime     expires, remaining;
+    MprTicks    expires, remaining;
     int         rc;
     
-    mprAssert(gp->dispatcher);
-    mprAssert(timeout >= 0);
+    assure(gp->dispatcher);
+    assure(timeout >= 0);
 
     if (mprGetDebugMode()) {
         timeout *= 100;
     }
-    expires = mprGetTime() + timeout;
+    expires = mprGetTicks() + timeout;
     remaining = timeout;
     do {
         mprWaitForEvent(gp->dispatcher, remaining);
-        remaining = expires - mprGetTime();
+        remaining = expires - mprGetTicks();
     } while (!gp->testComplete && remaining > 0);
     rc = gp->testComplete;
     gp->testComplete = 0;
@@ -910,7 +909,7 @@ bool mprWaitForTestToComplete(MprTestGroup *gp, MprTime timeout)
 }
 
 
-void mprSignalTestComplete(MprTestGroup *gp)
+PUBLIC void mprSignalTestComplete(MprTestGroup *gp)
 {
     gp->testComplete = 1;
     mprSignalDispatcher(gp->dispatcher);
@@ -1003,31 +1002,15 @@ static int setLogging(char *logSpec)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

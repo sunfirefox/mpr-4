@@ -13,7 +13,7 @@
 
 /*********************************** Locals ***********************************/
 /*
-    Constants for transform routine.
+    MD5 Constants for transform routine.
  */
 #define S11 7
 #define S12 12
@@ -39,7 +39,7 @@ static uchar PADDING[64] = {
 };
 
 /*
-   F, G, H and I are basic MD5 functions.
+   MD5 F, G, H and I are basic MD5 functions.
  */
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
@@ -47,35 +47,34 @@ static uchar PADDING[64] = {
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
 
 /*
-   ROTATE_LEFT rotates x left n bits.
+   MD5 ROTATE_LEFT rotates x left n bits.
  */
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32-(n))))
 
 /*
-     FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
+     MD5 - FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.
      Rotation is separate from addition to prevent recomputation.
  */
- 
 #define FF(a, b, c, d, x, s, ac) { \
- (a) += F ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += F ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define GG(a, b, c, d, x, s, ac) { \
- (a) += G ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += G ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define HH(a, b, c, d, x, s, ac) { \
- (a) += H ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += H ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 #define II(a, b, c, d, x, s, ac) { \
- (a) += I ((b), (c), (d)) + (x) + (uint)(ac); \
- (a) = ROTATE_LEFT ((a), (s)); \
- (a) += (b); \
-  }
+    (a) += I ((b), (c), (d)) + (x) + (uint)(ac); \
+    (a) = ROTATE_LEFT ((a), (s)); \
+    (a) += (b); \
+}
 
 typedef struct {
     uint state[4];
@@ -128,6 +127,19 @@ static signed char decodeMap[] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
+
+#define SHA_SIZE   20
+
+typedef struct MprSha {
+    uint    hash[SHA_SIZE / 4];     /* Message Digest */
+    uint    lowLength;              /* Message length in bits */
+    uint    highLength;             /* Message length in bits */
+    int     index;                  /* Index into message block array   */
+    uchar   block[64];              /* 512-bit message blocks */
+} MprSha;
+
+#define shaShift(bits,word) (((word) << (bits)) | ((word) >> (32-(bits))))
+
 /*************************** Forward Declarations *****************************/
 
 static void decode(uint *output, uchar *input, uint len);
@@ -137,9 +149,15 @@ static void initMD5(MD5CONTEXT *context);
 static void transform(uint state[4], uchar block[64]);
 static void update(MD5CONTEXT *context, uchar *input, uint inputLen);
 
+static void shaInit(MprSha *sha);
+static void shaUpdate(MprSha *sha, cuchar *msg, ssize len);
+static void shaFinalize(uchar *digest, MprSha *sha);
+static void shaPad(MprSha *sha);
+static void shaProcess(MprSha *sha);
+
 /*********************************** Code *************************************/
 
-int mprRandom()
+PUBLIC int mprRandom()
 {
 #if WINDOWS || VXWORKS
     return rand();
@@ -153,7 +171,7 @@ int mprRandom()
     Decode a null terminated string and returns a null terminated string.
     Stops decoding at the end of string or '='
  */
-char *mprDecode64(cchar *s)
+PUBLIC char *mprDecode64(cchar *s)
 {
     return mprDecode64Block(s, NULL, MPR_DECODE_TOKEQ);
 }
@@ -163,7 +181,7 @@ char *mprDecode64(cchar *s)
     Decode a null terminated string and return a block with length.
     Stops decoding at the end of the block or '=' if MPR_DECODE_TOKEQ is specified.
  */
-char *mprDecode64Block(cchar *s, ssize *len, int flags)
+PUBLIC char *mprDecode64Block(cchar *s, ssize *len, int flags)
 {
     uint    bitBuf;
     char    *buffer, *bp;
@@ -190,7 +208,7 @@ char *mprDecode64Block(cchar *s, ssize *len, int flags)
             shift -= 6;
         }
         --i;
-        mprAssert((bp + i) < &buffer[size]);
+        assure((bp + i) < &buffer[size]);
         for (j = 0; j < i; j++) {
             *bp++ = (char) ((bitBuf >> (8 * (2 - j))) & 0xff);
         }
@@ -207,7 +225,7 @@ char *mprDecode64Block(cchar *s, ssize *len, int flags)
     Encode a null terminated string.
     Returns a null terminated block
  */
-char *mprEncode64(cchar *s)
+PUBLIC char *mprEncode64(cchar *s)
 {
     return mprEncode64Block(s, slen(s));
 }
@@ -217,7 +235,7 @@ char *mprEncode64(cchar *s)
     Encode a block of a given length
     Returns a null terminated block
  */
-char *mprEncode64Block(cchar *s, ssize len)
+PUBLIC char *mprEncode64Block(cchar *s, ssize len)
 {
     uint    shiftbuf;
     char    *buffer, *bp;
@@ -234,7 +252,7 @@ char *mprEncode64Block(cchar *s, ssize len)
     end = &s[len];
     while (s < end) {
         shiftbuf = 0;
-        for (j = 2; j >= 0 && *s; j--, s++) {
+        for (j = 2; s < end && j >= 0; j--, s++) {
             shiftbuf |= ((*s & 0xff) << (j * 8));
         }
         shift = 18;
@@ -251,7 +269,7 @@ char *mprEncode64Block(cchar *s, ssize len)
 }
 
 
-char *mprGetMD5(cchar *s)
+PUBLIC char *mprGetMD5(cchar *s)
 {
     return mprGetMD5WithPrefix(s, slen(s), NULL);
 }
@@ -260,7 +278,7 @@ char *mprGetMD5(cchar *s)
 /*
     Return the MD5 hash of a block. Returns allocated string. A prefix for the result can be supplied.
  */
-char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
+PUBLIC char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
 {
     MD5CONTEXT      context;
     uchar           hash[CRYPT_HASH_SIZE];
@@ -282,7 +300,6 @@ char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
         *r++ = hex[hash[i] & 0xF];
     }
     *r = '\0';
-
     len = (prefix) ? slen(prefix) : 0;
     str = mprAlloc(sizeof(result) + len);
     if (str) {
@@ -301,10 +318,6 @@ char *mprGetMD5WithPrefix(cchar *buf, ssize length, cchar *prefix)
 static void initMD5(MD5CONTEXT *context)
 {
     context->count[0] = context->count[1] = 0;
-
-    /*
-        Load constants
-     */
     context->state[0] = 0x67452301;
     context->state[1] = 0xefcdab89;
     context->state[2] = 0x98badcfe;
@@ -331,7 +344,6 @@ static void update(MD5CONTEXT *context, uchar *input, uint inputLen)
     if (inputLen >= partLen) {
         memcpy((uchar*) &context->buffer[index], (uchar*) input, partLen);
         transform(context->state, context->buffer);
-
         for (i = partLen; i + 63 < inputLen; i += 64) {
             transform(context->state, &input[i]);
         }
@@ -489,60 +501,205 @@ static void decode(uint *output, uchar *input, uint len)
 }
 
 
-/********************************** Copyright *********************************/
+/************************************* Sha1 **********************************/
+
+PUBLIC char *mprGetSHA(cchar *s)
+{
+    return mprGetSHAWithPrefix(s, slen(s), NULL);
+}
+
+
+PUBLIC char *mprGetSHABase64(cchar *s)
+{
+    MprSha  sha;
+    uchar   hash[SHA_SIZE + 1];
+
+    shaInit(&sha);
+    shaUpdate(&sha, (cuchar*) s, slen(s));
+    shaFinalize(hash, &sha);
+    hash[SHA_SIZE] = '\0';
+    return mprEncode64Block((char*) hash, SHA_SIZE);
+}
+
+
+PUBLIC char *mprGetSHAWithPrefix(cchar *buf, ssize length, cchar *prefix)
+{
+    MprSha  sha;
+    uchar   hash[SHA_SIZE];
+    cchar   *hex = "0123456789abcdef";
+    char    *r, *str;
+    char    result[(SHA_SIZE * 2) + 1];
+    ssize   len;
+    int     i;
+
+    if (length < 0) {
+        length = slen(buf);
+    }
+    shaInit(&sha);
+    shaUpdate(&sha, (cuchar*) buf, length);
+    shaFinalize(hash, &sha);
+
+    for (i = 0, r = result; i < SHA_SIZE; i++) {
+        *r++ = hex[hash[i] >> 4];
+        *r++ = hex[hash[i] & 0xF];
+    }
+    *r = '\0';
+    len = (prefix) ? slen(prefix) : 0;
+    str = mprAlloc(sizeof(result) + len);
+    if (str) {
+        if (prefix) {
+            strcpy(str, prefix);
+        }
+        strcpy(str + len, result);
+    }
+    return str;
+}
+
+
+static void shaInit(MprSha *sha)
+{
+    sha->lowLength = 0;
+    sha->highLength = 0;
+    sha->index = 0;
+    sha->hash[0] = 0x67452301;
+    sha->hash[1] = 0xEFCDAB89;
+    sha->hash[2] = 0x98BADCFE;
+    sha->hash[3] = 0x10325476;
+    sha->hash[4] = 0xC3D2E1F0;
+}
+
+
+static void shaUpdate(MprSha *sha, cuchar *msg, ssize len)
+{
+    while (len--) {
+        sha->block[sha->index++] = (*msg & 0xFF);
+        sha->lowLength += 8;
+        if (sha->lowLength == 0) {
+            sha->highLength++;
+        }
+        if (sha->index == 64) {
+            shaProcess(sha);
+        }
+        msg++;
+    }
+}
+
+
+static void shaFinalize(uchar *digest, MprSha *sha)
+{
+    int i;
+
+    shaPad(sha);
+    memset(sha->block, 0, 64);
+    sha->lowLength = 0;
+    sha->highLength = 0;
+    for  (i = 0; i < SHA_SIZE; i++) {
+        digest[i] = sha->hash[i >> 2] >> 8 * (3 - (i & 0x03));
+    }
+}
+
+
+static void shaProcess(MprSha *sha)
+{
+    uint    K[] = { 0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6 };
+    uint    temp, W[80], A, B, C, D, E;
+    int     t;
+
+    for  (t = 0; t < 16; t++) {
+        W[t] = sha->block[t * 4] << 24;
+        W[t] |= sha->block[t * 4 + 1] << 16;
+        W[t] |= sha->block[t * 4 + 2] << 8;
+        W[t] |= sha->block[t * 4 + 3];
+    }
+    for (t = 16; t < 80; t++) {
+       W[t] = shaShift(1, W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16]);
+    }
+    A = sha->hash[0];
+    B = sha->hash[1];
+    C = sha->hash[2];
+    D = sha->hash[3];
+    E = sha->hash[4];
+
+    for (t = 0; t < 20; t++) {
+        temp =  shaShift(5, A) + ((B & C) | ((~B) & D)) + E + W[t] + K[0];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 20; t < 40; t++) {
+        temp = shaShift(5, A) + (B ^ C ^ D) + E + W[t] + K[1];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 40; t < 60; t++) {
+        temp = shaShift(5, A) + ((B & C) | (B & D) | (C & D)) + E + W[t] + K[2];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    for (t = 60; t < 80; t++) {
+        temp = shaShift(5, A) + (B ^ C ^ D) + E + W[t] + K[3];
+        E = D;
+        D = C;
+        C = shaShift(30, B);
+        B = A;
+        A = temp;
+    }
+    sha->hash[0] += A;
+    sha->hash[1] += B;
+    sha->hash[2] += C;
+    sha->hash[3] += D;
+    sha->hash[4] += E;
+    sha->index = 0;
+}
+
+
+static void shaPad(MprSha *sha)
+{
+    if (sha->index > 55) {
+        sha->block[sha->index++] = 0x80;
+        while(sha->index < 64) {
+            sha->block[sha->index++] = 0;
+        }
+        shaProcess(sha);
+        while (sha->index < 56) {
+            sha->block[sha->index++] = 0;
+        }
+    } else {
+        sha->block[sha->index++] = 0x80;
+        while(sha->index < 56) {
+            sha->block[sha->index++] = 0;
+        }
+    }
+    sha->block[56] = sha->highLength >> 24;
+    sha->block[57] = sha->highLength >> 16;
+    sha->block[58] = sha->highLength >> 8;
+    sha->block[59] = sha->highLength;
+    sha->block[60] = sha->lowLength >> 24;
+    sha->block[61] = sha->lowLength >> 16;
+    sha->block[62] = sha->lowLength >> 8;
+    sha->block[63] = sha->lowLength;
+    shaProcess(sha);
+}
 
 /*
-    @copy   custom
-    
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1994-2012. All Rights Reserved.
-    Portions Copyright (C) 1991-2, RSA Data Security, Inc. All rights reserved. 
-    
-    RSA License:
+    @copy   default
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions
-    are met:
-    
-    1. Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-    
-    THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-    OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-    SUCH DAMAGE.
-    
-    RSA License Details
-    -------------------
-    
-    License to copy and use this software is granted provided that it is 
-    identified as the "RSA Data Security, Inc. MD5 Message-Digest Algorithm" 
-    in all material mentioning or referencing this software or this function.
-    
-    License is also granted to make and use derivative works provided that such
-    works are identified as "derived from the RSA Data Security, Inc. MD5 
-    Message-Digest Algorithm" in all material mentioning or referencing the 
-    derived work.
-    
-    RSA Data Security, Inc. makes no representations concerning either the 
-    merchantability of this software or the suitability of this software for 
-    any particular purpose. It is provided "as is" without express or implied 
-    warranty of any kind.
-    
-    These notices must be retained in any copies of any part of this
-    documentation and/or software.
-    
+    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+
+    This software is distributed under commercial and open source licenses.
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

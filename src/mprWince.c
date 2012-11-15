@@ -21,7 +21,7 @@
 
 static char     *currentDir;            /* Current working directory */
 static MprList  *files;                 /* List of open files */
-int             errno;                  /* Last error */
+PUBLIC int             errno;                  /* Last error */
 static char     timzeone[2][32];        /* Standard and daylight savings zones */
 
 /*
@@ -37,7 +37,7 @@ static void timeToFileTime(uint64 t, FILETIME *ft);
 
 /************************************************ Code **********************************************/
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     files = mprCreateList();
     currentDir = sclone("/");
@@ -45,7 +45,7 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     WSADATA     wsaData;
 
@@ -56,13 +56,13 @@ int mprStartOsService()
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
     WSACleanup();
 }
 
 
-int mprGetRandomBytes(char *buf, int length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
 {
     HCRYPTPROV      prov;
     int             rc;
@@ -79,14 +79,14 @@ int mprGetRandomBytes(char *buf, int length, bool block)
 }
 
 
-int mprLoadModule(MprModule *mp)
+PUBLIC int mprLoadModule(MprModule *mp)
     cchar *moduleName, cchar *initFunction)
 {
     MprModuleEntry  fn;
     void            *handle;
     char            *baseName;
 
-    mprAssert(moduleName && *moduleName);
+    assure(moduleName && *moduleName);
 
     baseName = mprGetPathBase(mp->path);
     if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
@@ -121,7 +121,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     char    key[MPR_MAX_STRING], *cp;
     int     len;
 
-    mprAssert(keyPath && *keyPath);
+    assure(keyPath && *keyPath);
 
     *hive = 0;
 
@@ -153,15 +153,15 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
 }
 
 
-int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
+PUBLIC int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
 {
     HKEY        top, h;
     LPWSTR      wkey, wname;
     char        *value;
     ulong       type, size;
 
-    mprAssert(key && *key);
-    mprAssert(buf);
+    assure(key && *key);
+    assure(buf);
 
     if ((key = getHive(key, &top)) == 0) {
         return MPR_ERR_CANT_ACCESS;
@@ -186,7 +186,7 @@ int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
     value = mprAlloc(size);
     if ((int) size > max) {
         RegCloseKey(h);
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (RegQueryValueEx(h, wname, 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
@@ -199,32 +199,32 @@ int mprReadRegistry(char **buf, int max, cchar *key, cchar *name)
 }
 
 
-void mprSetInst(Mpr *mpr, long inst)
+PUBLIC void mprSetInst(Mpr *mpr, long inst)
 {
     mpr->appInstance = inst;
 }
 
 
-void mprSetHwnd(HWND h)
+PUBLIC void mprSetHwnd(HWND h)
 {
     MPR->service->hwnd = h;
 }
 
 
-void mprSetSocketMessage(int socketMessage)
+PUBLIC void mprSetSocketMessage(int socketMessage)
 {
     MPR->service->socketMessage = socketMessage;
 }
 #endif /* WINCE */
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     Sleep((int) timeout);
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -232,9 +232,9 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprUnloadNativeModule(MprModule *mp)
+PUBLIC void mprUnloadNativeModule(MprModule *mp)
 {
-    mprAssert(mp->handle);
+    assure(mp->handle);
 
     if (FreeLibrary((HINSTANCE) mp->handle) == 0) {
         return MPR_ERR_ABORTED;
@@ -244,7 +244,7 @@ void mprUnloadNativeModule(MprModule *mp)
 
 
 #if KEEP
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     HKEY        hkey;
     void        *event;
@@ -270,8 +270,7 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     if (once == 0) {
         /*  Initialize the registry */
         once = 1;
-        mprSprintf(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",
-            mprGetAppName());
+        fmt(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s", mprGetAppName());
         hkey = 0;
 
         if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, logName, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkey, &exists) == ERROR_SUCCESS) {
@@ -300,14 +299,14 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     }
 }
 
-int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
+PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 {
     HKEY    top, h, subHandle;
     ulong   disposition;
 
-    mprAssert(key && *key);
-    mprAssert(name && *name);
-    mprAssert(value && *value);
+    assure(key && *key);
+    assure(name && *name);
+    assure(value && *value);
 
     /*
         Get the registry hive
@@ -349,7 +348,7 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 /******************************************* Posix Layer ********************************/
 
-int access(cchar *path, int flags)
+PUBLIC int access(cchar *path, int flags)
 {
     char    *tmpPath;
     int     rc;
@@ -364,21 +363,21 @@ int access(cchar *path, int flags)
 }
 
 
-int chdir(cchar *dir)
+PUBLIC int chdir(cchar *dir)
 {
     currentDir = mprGetAbsPath(MPR, dir);
     return 0;
 }
 
 
-int chmod(cchar *path, int mode)
+PUBLIC int chmod(cchar *path, int mode)
 {
     /* CE has no such permissions */
     return 0;
 }
 
 
-int close(int fd)
+PUBLIC int close(int fd)
 {
     int     rc;
 
@@ -389,31 +388,31 @@ int close(int fd)
 }
 
 
-long _get_osfhandle(int handle)
+PUBLIC long _get_osfhandle(int handle)
 {
     return (long) handle;
 }
 
 
-char *getenv(cchar *key)
+PUBLIC char *getenv(cchar *key)
 {
     return 0;
 }
 
 
-char *getcwd(char *buf, int size)
+PUBLIC char *getcwd(char *buf, int size)
 {
     scopy(buf, size, currentDir);
     return buf;
 }
 
 
-uint getpid() {
+PUBLIC uint getpid() {
     return 0;
 }
 
 
-long lseek(int handle, long offset, int origin)
+PUBLIC long lseek(int handle, long offset, int origin)
 {
     switch (origin) {
         case SEEK_SET: offset = FILE_BEGIN; break;
@@ -424,7 +423,7 @@ long lseek(int handle, long offset, int origin)
 }
 
 
-int mkdir(cchar *dir, int mode)
+PUBLIC int mkdir(cchar *dir, int mode)
 {
     char    *tmpDir;
     uni     *wdir;
@@ -464,13 +463,13 @@ static int addHandle(HANDLE h)
 }
 
 
-int _open_osfhandle(int *handle, int flags)
+PUBLIC int _open_osfhandle(int *handle, int flags)
 {
     return addHandle((HANDLE) handle);
 }
 
 
-uint open(cchar *path, int mode, va_list arg)
+PUBLIC uint open(cchar *path, int mode, va_list arg)
 {
     uni     *wpath;
     char    *tmpPath;
@@ -506,7 +505,7 @@ uint open(cchar *path, int mode, va_list arg)
 }
 
 
-int read(int fd, void *buffer, uint length)
+PUBLIC int read(int fd, void *buffer, uint length)
 {
     DWORD   dw;
 
@@ -515,7 +514,7 @@ int read(int fd, void *buffer, uint length)
 }
 
 
-int rename(cchar *oldname, cchar *newname)
+PUBLIC int rename(cchar *oldname, cchar *newname)
 {
     uni     *from, *to;
     char    *tmpOld, *tmpNew;
@@ -538,7 +537,7 @@ int rename(cchar *oldname, cchar *newname)
 }
 
 
-int rmdir(cchar *dir)
+PUBLIC int rmdir(cchar *dir)
 {
     uni     *wdir;
     char    *tmpDir;
@@ -555,7 +554,7 @@ int rmdir(cchar *dir)
 }
 
 
-int stat(cchar *path, struct stat *sbuf)
+PUBLIC int stat(cchar *path, struct stat *sbuf)
 {
     WIN32_FIND_DATAW    fd;
     DWORD               attributes;
@@ -679,8 +678,8 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
     TIME_ZONE_INFORMATION   tz;
     int                     bias, rc;
 
-    mprAssert(when);
-    mprAssert(tp);
+    assure(when);
+    assure(tp);
 
     rc = GetTimeZoneInformation(&tz);
     bias = tz.Bias;
@@ -708,7 +707,7 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
 }
 
 
-time_t mktime(struct tm *tp)
+PUBLIC time_t mktime(struct tm *tp)
 {
     TIME_ZONE_INFORMATION   tz;
     SYSTEMTIME              s;
@@ -716,7 +715,7 @@ time_t mktime(struct tm *tp)
     time_t                  result;
     int                     rc, bias;
 
-    mprAssert(tp);
+    assure(tp);
 
     rc = GetTimeZoneInformation(&tz);
     bias = tz.Bias;
@@ -743,7 +742,7 @@ time_t mktime(struct tm *tp)
 }
 
 
-int write(int fd, cvoid *buffer, uint count)
+PUBLIC int write(int fd, cvoid *buffer, uint count)
 {
     DWORD   dw;
 
@@ -752,7 +751,7 @@ int write(int fd, cvoid *buffer, uint count)
 }
 
 
-int unlink(cchar *file)
+PUBLIC int unlink(cchar *file)
 {
     uni     *wpath;
     int     rc;
@@ -765,7 +764,7 @@ int unlink(cchar *file)
 
 /********************************************** Windows32 Extensions *********************************************/
 
-WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
+PUBLIC WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
     LPSECURITY_ATTRIBUTES security, DWORD create, DWORD flags, HANDLE template)
 {
     LPWSTR  wpath;
@@ -777,7 +776,7 @@ WINBASEAPI HANDLE WINAPI CreateFileA(LPCSTR path, DWORD access, DWORD sharing,
 }
 
 
-BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LPSECURITY_ATTRIBUTES threadatt,
+PUBLIC BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LPSECURITY_ATTRIBUTES threadatt,
     BOOL options, DWORD flags, LPVOID env, LPSTR dir, LPSTARTUPINFO lpsi, LPPROCESS_INFORMATION info)
 {
     LPWSTR      wapp, wcmd, wdir;
@@ -790,7 +789,7 @@ BOOL WINAPI CreateProcessA(LPCSTR app, LPCSTR cmd, LPSECURITY_ATTRIBUTES att, LP
 }
 
 
-HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
+PUBLIC HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 {
     WIN32_FIND_DATAW    wdata;
     LPWSTR              wpath;
@@ -806,7 +805,7 @@ HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 }
 
 
-BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
+PUBLIC BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
 {
     WIN32_FIND_DATAW    wdata;
     char                *file;
@@ -819,7 +818,7 @@ BOOL FindNextFileA(HANDLE handle, WIN32_FIND_DATAA *data)
 }
 
 
-DWORD GetFileAttributesA(cchar *path)
+PUBLIC DWORD GetFileAttributesA(cchar *path)
 {
     LPWSTR      wpath;
     DWORD       result;
@@ -830,7 +829,7 @@ DWORD GetFileAttributesA(cchar *path)
 }
 
 
-DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
+PUBLIC DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
 {
     LPWSTR      wpath;
     LPSTR       mb;
@@ -844,7 +843,7 @@ DWORD GetModuleFileNameA(HMODULE module, LPSTR buf, DWORD size)
 }
 
 
-WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
+PUBLIC WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
 {
     LPWSTR      wpath;
 
@@ -853,7 +852,7 @@ WINBASEAPI HMODULE WINAPI GetModuleHandleA(LPCSTR path)
 }
 
 
-void GetSystemTimeAsFileTime(FILETIME *ft)
+PUBLIC void GetSystemTimeAsFileTime(FILETIME *ft)
 {
     SYSTEMTIME  s;
 
@@ -862,7 +861,7 @@ void GetSystemTimeAsFileTime(FILETIME *ft)
 }
 
 
-HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
+PUBLIC HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
 {
     LPWSTR      wpath;
 
@@ -870,41 +869,22 @@ HINSTANCE WINAPI LoadLibraryA(LPCSTR path)
     return LoadLibraryW(wpath);
 }
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
-    //  TODO
 }
 
-#else
-void stubMprWince() {}
 #endif /* WINCE */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

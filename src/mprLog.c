@@ -17,13 +17,14 @@ static void logOutput(int flags, int level, cchar *msg);
 /*
     Put first in file so it is easy to locate in a debugger
  */
-void mprBreakpoint()
+PUBLIC void mprBreakpoint()
 {
 #if DEBUG_PAUSE
     {
         static int  paused = 1;
         int         i;
         printf("Paused to permit debugger to attach - will awake in 2 minutes\n");
+        fflush(stdout);
         for (i = 0; i < 120 && paused; i++) {
             mprNap(1000);
         }
@@ -32,13 +33,13 @@ void mprBreakpoint()
 }
 
 
-void mprCreateLogService() 
+PUBLIC void mprCreateLogService() 
 {
     MPR->logFile = MPR->stdError;
 }
 
 
-int mprStartLogging(cchar *logSpec, int showConfig)
+PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
 {
     MprFile     *file;
     MprPath     info;
@@ -86,11 +87,11 @@ int mprStartLogging(cchar *logSpec, int showConfig)
 }
 
 
-void mprLogHeader()
+PUBLIC void mprLogHeader()
 {
     mprLog(MPR_CONFIG, "Configuration for %s", mprGetAppTitle());
     mprLog(MPR_CONFIG, "---------------------------------------------");
-    mprLog(MPR_CONFIG, "Version:            %s-%s", BIT_VERSION, BIT_NUMBER);
+    mprLog(MPR_CONFIG, "Version:            %s-%s", BIT_VERSION, BIT_BUILD_NUMBER);
     mprLog(MPR_CONFIG, "BuildType:          %s", BIT_DEBUG ? "Debug" : "Release");
     mprLog(MPR_CONFIG, "CPU:                %s", BIT_CPU);
     mprLog(MPR_CONFIG, "OS:                 %s", BIT_OS);
@@ -101,7 +102,7 @@ void mprLogHeader()
 }
 
 
-int mprBackupLog(cchar *path, int count)
+PUBLIC int mprBackupLog(cchar *path, int count)
 {
     char    *from, *to;
     int     i;
@@ -122,7 +123,7 @@ int mprBackupLog(cchar *path, int count)
 }
 
 
-void mprSetLogBackup(ssize size, int backup, int flags)
+PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 {
     MPR->logBackup = backup;
     MPR->logSize = size;
@@ -130,16 +131,16 @@ void mprSetLogBackup(ssize size, int backup, int flags)
 }
 
 
-void mprLog(int level, cchar *fmt, ...)
+PUBLIC void mprLog(int level, cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
-    if (level > mprGetLogLevel()) {
+    if (level < 0 || level > mprGetLogLevel()) {
         return;
     }
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
     logOutput(MPR_LOG_SRC, level, buf);
 }
@@ -148,7 +149,7 @@ void mprLog(int level, cchar *fmt, ...)
 /*
     RawLog will call alloc. 
  */
-void mprRawLog(int level, cchar *fmt, ...)
+PUBLIC void mprRawLog(int level, cchar *fmt, ...)
 {
     va_list     args;
     char        *buf;
@@ -164,35 +165,33 @@ void mprRawLog(int level, cchar *fmt, ...)
 }
 
 
-void mprError(cchar *fmt, ...)
+PUBLIC void mprError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
     mprBreakpoint();
 }
 
 
-void mprWarn(cchar *fmt, ...)
+PUBLIC void mprWarn(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_ERROR_MSG | MPR_WARN_SRC, 0, buf);
     mprBreakpoint();
 }
 
 
-void mprMemoryError(cchar *fmt, ...)
+PUBLIC void mprMemoryError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
@@ -201,35 +200,33 @@ void mprMemoryError(cchar *fmt, ...)
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, "Memory allocation error");
     } else {
         va_start(args, fmt);
-        mprSprintfv(buf, sizeof(buf), fmt, args);
+        fmtv(buf, sizeof(buf), fmt, args);
         va_end(args);
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
     }
 }
 
 
-void mprUserError(cchar *fmt, ...)
+PUBLIC void mprUserError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_USER_MSG | MPR_ERROR_SRC, 0, buf);
 }
 
 
-void mprFatalError(cchar *fmt, ...)
+PUBLIC void mprFatalError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    
     logOutput(MPR_USER_MSG | MPR_FATAL_SRC, 0, buf);
     exit(2);
 }
@@ -238,27 +235,28 @@ void mprFatalError(cchar *fmt, ...)
 /*
     Handle an error without allocating memory. Bypasses the logging mechanism.
  */
-void mprStaticError(cchar *fmt, ...)
+PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[MPR_MAX_LOG];
 
     va_start(args, fmt);
-    mprSprintfv(buf, sizeof(buf), fmt, args);
+    fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
 #if BIT_UNIX_LIKE || VXWORKS
     if (write(2, (char*) buf, slen(buf)) < 0) {}
     if (write(2, (char*) "\n", 1) < 0) {}
 #elif BIT_WIN_LIKE
     if (fprintf(stderr, "%s\n", buf) < 0) {}
+    fflush(stderr);
 #endif
     mprBreakpoint();
 }
 
 
-void mprAssertError(cchar *loc, cchar *msg)
+PUBLIC void mprAssure(cchar *loc, cchar *msg)
 {
-#if BIT_FEATURE_ASSERT
+#if BIT_ASSERT
     char    buf[MPR_MAX_LOG];
 
     if (loc) {
@@ -270,6 +268,11 @@ void mprAssertError(cchar *loc, cchar *msg)
         msg = buf;
     }
     mprLog(0, "%s", buf);
+    mprBreakpoint();
+#if WATSON_PAUSE
+    printf("Stop for WATSON\n");
+    mprNap(60 * 1000);
+#endif
 #endif
 }
 
@@ -296,18 +299,25 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
     MprPath     info;
     char        *prefix, buf[MPR_MAX_LOG];
     int         mode;
+    static int  check = 0;
 
+#if !BIT_LOCK_FIX
     lock(MPR);
+#endif
     if ((file = MPR->logFile) == 0) {
+#if !BIT_LOCK_FIX
         unlock(MPR);
+#endif
         return;
     }
     prefix = MPR->name;
 
-    if (MPR->logBackup > 0 && MPR->logSize) {
-        //  OPT - slow. Should not check every time
+    if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
         mprGetPathInfo(MPR->logPath, &info);
         if (info.valid && info.size > MPR->logSize) {
+#if BIT_LOCK_FIX
+            lock(MPR);
+#endif
             mprSetLogFile(0);
             mprBackupLog(MPR->logPath, MPR->logBackup);
             mode = O_CREAT | O_WRONLY | O_TEXT;
@@ -317,6 +327,9 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
                 return;
             }
             mprSetLogFile(file);
+#if BIT_LOCK_FIX
+            unlock(MPR);
+#endif
         }
     }
     while (*msg == '\n') {
@@ -324,37 +337,39 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         msg++;
     }
     if (flags & MPR_LOG_SRC) {
-        mprSprintf(buf, sizeof(buf), "%s: %d: %s\n", prefix, level, msg);
+        fmt(buf, sizeof(buf), "%s: %d: %s\n", prefix, level, msg);
         mprWriteFileString(file, buf);
 
     } else if (flags & (MPR_WARN_SRC | MPR_ERROR_SRC)) {
         if (flags & MPR_WARN_SRC) {
-            mprSprintf(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
+            fmt(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
         } else {
-            mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
+            fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         }
-#if BIT_WIN_LIKE
+#if BIT_WIN_LIKE || BIT_UNIX_LIKE
         mprWriteToOsLog(buf, flags, level);
 #endif
-        mprSprintf(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
+        fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         mprWriteFileString(file, buf);
 
     } else if (flags & MPR_FATAL_SRC) {
-        mprSprintf(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
+        fmt(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
         mprWriteToOsLog(buf, flags, level);
         mprWriteFileString(file, buf);
         
     } else if (flags & MPR_RAW) {
         mprWriteFileString(file, msg);
     }
+#if !BIT_LOCK_FIX
     unlock(MPR);
+#endif
 }
 
 
 /*
     Return the raw O/S error code
  */
-int mprGetOsError()
+PUBLIC int mprGetOsError()
 {
 #if BIT_WIN_LIKE
     int     rc;
@@ -378,7 +393,7 @@ int mprGetOsError()
 /*
     Return the mapped (portable, Posix) error code
  */
-int mprGetError()
+PUBLIC int mprGetError()
 {
 #if !BIT_WIN_LIKE
     return mprGetOsError();
@@ -443,7 +458,7 @@ int mprGetError()
 }
 
 
-int mprGetLogLevel()
+PUBLIC int mprGetLogLevel()
 {
     Mpr     *mpr;
 
@@ -453,31 +468,31 @@ int mprGetLogLevel()
 }
 
 
-MprLogHandler mprGetLogHandler()
+PUBLIC MprLogHandler mprGetLogHandler()
 {
     return MPR->logHandler;
 }
 
 
-int mprUsingDefaultLogHandler()
+PUBLIC int mprUsingDefaultLogHandler()
 {
     return MPR->logHandler == defaultLogHandler;
 }
 
 
-MprFile *mprGetLogFile()
+PUBLIC MprFile *mprGetLogFile()
 {
     return MPR->logFile;
 }
 
 
-void mprSetLogHandler(MprLogHandler handler)
+PUBLIC void mprSetLogHandler(MprLogHandler handler)
 {
     MPR->logHandler = handler;
 }
 
 
-void mprSetLogFile(MprFile *file)
+PUBLIC void mprSetLogFile(MprFile *file)
 {
     if (file != MPR->logFile && MPR->logFile != MPR->stdOutput && MPR->logFile != MPR->stdError) {
         mprCloseFile(MPR->logFile);
@@ -486,13 +501,13 @@ void mprSetLogFile(MprFile *file)
 }
 
 
-void mprSetLogLevel(int level)
+PUBLIC void mprSetLogLevel(int level)
 {
     MPR->logLevel = level;
 }
 
 
-bool mprSetCmdlineLogging(bool on)
+PUBLIC bool mprSetCmdlineLogging(bool on)
 {
     bool    wasLogging;
 
@@ -502,7 +517,7 @@ bool mprSetCmdlineLogging(bool on)
 }
 
 
-bool mprGetCmdlineLogging()
+PUBLIC bool mprGetCmdlineLogging()
 {
     return MPR->cmdlineLogging;
 }
@@ -512,7 +527,7 @@ bool mprGetCmdlineLogging()
 /*
     Just for conditional breakpoints when debugging in Xcode
  */
-int _cmp(char *s1, char *s2)
+PUBLIC int _cmp(char *s1, char *s2)
 {
     return !strcmp(s1, s2);
 }
@@ -520,31 +535,15 @@ int _cmp(char *s1, char *s2)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

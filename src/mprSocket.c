@@ -21,10 +21,8 @@
 
 /******************************* Forward Declarations *************************/
 
-static MprSocket *acceptSocket(MprSocket *listen);
 static void closeSocket(MprSocket *sp, bool gracefully);
 static int connectSocket(MprSocket *sp, cchar *ipAddr, int port, int initialFlags);
-static MprSocket *createSocket(MprSsl *ssl);
 static MprSocketProvider *createStandardProvider(MprSocketService *ss);
 static void disconnectSocket(MprSocket *sp);
 static ssize flushSocket(MprSocket *sp);
@@ -32,8 +30,8 @@ static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int siz
 static int ipv6(cchar *ip);
 static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags);
 static void manageSocket(MprSocket *sp, int flags);
-static void manageSocketProvider(MprSocketProvider *provider, int flags);
 static void manageSocketService(MprSocketService *ss, int flags);
+static void manageSsl(MprSsl *ssl, int flags);
 static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize);
 static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
 
@@ -42,7 +40,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
     Open the socket service
  */
 
-MprSocketService *mprCreateSocketService()
+PUBLIC MprSocketService *mprCreateSocketService()
 {
     MprSocketService    *ss;
     char                hostName[MPR_MAX_IP_NAME], serverName[MPR_MAX_IP_NAME], domainName[MPR_MAX_IP_NAME], *dp;
@@ -56,7 +54,6 @@ MprSocketService *mprCreateSocketService()
     if ((ss->standardProvider = createStandardProvider(ss)) == 0) {
         return 0;
     }
-    ss->secureProvider = NULL;
     if ((ss->mutex = mprCreateLock()) == 0) {
         return 0;
     }
@@ -79,9 +76,7 @@ MprSocketService *mprCreateSocketService()
     mprSetServerName(serverName);
     mprSetDomainName(domainName);
     mprSetHostName(hostName);
-#if BIT_FEATURE_SSL
     ss->secureSockets = mprCreateList(0, 0);
-#endif
     return ss;
 }
 
@@ -90,11 +85,10 @@ static void manageSocketService(MprSocketService *ss, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ss->standardProvider);
-        mprMark(ss->secureProvider);
+        mprMark(ss->providers);
+        mprMark(ss->defaultProvider);
         mprMark(ss->mutex);
-#if BIT_FEATURE_SSL
         mprMark(ss->secureSockets);
-#endif
     }
 }
 
@@ -103,14 +97,10 @@ static MprSocketProvider *createStandardProvider(MprSocketService *ss)
 {
     MprSocketProvider   *provider;
 
-    if ((provider = mprAllocObj(MprSocketProvider, manageSocketProvider)) == 0) {
+    if ((provider = mprAllocObj(MprSocketProvider, 0)) == 0) {
         return 0;
     }
-    provider->name = sclone("standard");
-    provider->acceptSocket = acceptSocket;
     provider->closeSocket = closeSocket;
-    provider->connectSocket = connectSocket;
-    provider->createSocket = createSocket;
     provider->disconnectSocket = disconnectSocket;
     provider->flushSocket = flushSocket;
     provider->listenSocket = listenSocket;
@@ -120,44 +110,40 @@ static MprSocketProvider *createStandardProvider(MprSocketService *ss)
 }
 
 
-static void manageSocketProvider(MprSocketProvider *provider, int flags)
+PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider)
 {
-    if (flags & MPR_MANAGE_MARK) {
-        mprMark(provider->name);
-        mprMark(provider->data);
-        mprMark(provider->defaultSsl);
+    MprSocketService    *ss;
+
+    ss = MPR->socketService;
+    
+    if (ss->providers == 0 && (ss->providers = mprCreateHash(0, 0)) == 0) {
+        return;
     }
+    mprAddKey(ss->providers, name, provider);
 }
 
 
-void mprSetSecureProvider(MprSocketProvider *provider)
+PUBLIC bool mprHasSecureSockets()
 {
-    MPR->socketService->secureProvider = provider;
+    return (MPR->socketService->providers != 0);
 }
 
 
-bool mprHasSecureSockets()
+PUBLIC int mprSetMaxSocketAccept(int max)
 {
-    return (MPR->socketService->secureProvider != 0);
-}
-
-
-int mprSetMaxSocketAccept(int max)
-{
-    mprAssert(max >= 0);
+    assure(max >= 0);
 
     MPR->socketService->maxAccept = max;
     return 0;
 }
 
 
-/*  
-    Create a new socket
- */
-static MprSocket *createSocket(struct MprSsl *ssl)
+PUBLIC MprSocket *mprCreateSocket()
 {
-    MprSocket       *sp;
+    MprSocketService    *ss;
+    MprSocket           *sp;
 
+    ss = MPR->socketService;
     if ((sp = mprAllocObj(MprSocket, manageSocket)) == 0) {
         return 0;
     }
@@ -165,8 +151,8 @@ static MprSocket *createSocket(struct MprSsl *ssl)
     sp->fd = -1;
     sp->flags = 0;
 
-    sp->provider = MPR->socketService->standardProvider;
-    sp->service = MPR->socketService;
+    sp->provider = ss->standardProvider;
+    sp->service = ss;
     sp->mutex = mprCreateLock();
     return sp;
 }
@@ -176,7 +162,7 @@ static void manageSocket(MprSocket *sp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(sp->service);
-        mprMark(sp->dispatcher);
+        mprMark(sp->errorMsg);
         mprMark(sp->handler);
         mprMark(sp->acceptIp);
         mprMark(sp->ip);
@@ -195,32 +181,6 @@ static void manageSocket(MprSocket *sp, int flags)
 }
 
 
-MprSocket *mprCreateSocket(struct MprSsl *ssl)
-{
-    MprSocketService    *ss;
-    MprSocket           *sp;
-
-    ss = MPR->socketService;
-
-    if (ssl) {
-#if !BIT_FEATURE_SSL
-        return 0;
-#endif
-        if (ss->secureProvider == NULL || ss->secureProvider->createSocket == NULL) {
-            mprError("Missing socket service provider");
-            return 0;
-        }
-        sp = ss->secureProvider->createSocket(ssl);
-
-    } else {
-        mprAssert(ss->standardProvider->createSocket);
-        sp = ss->standardProvider->createSocket(NULL);
-    }
-    sp->service = ss;
-    return sp;
-}
-
-
 /*  
     Re-initialize all socket variables so the socket can be reused. This closes the socket and removes all wait handlers.
  */
@@ -230,20 +190,19 @@ static void resetSocket(MprSocket *sp)
         mprCloseSocket(sp, 0);
     }
     if (sp->flags & MPR_SOCKET_CLOSED) {
-        sp->error = 0;
         sp->flags = 0;
         sp->port = -1;
         sp->fd = -1;
         sp->ip = 0;
     }
-    mprAssert(sp->provider);
+    assure(sp->provider);
 }
 
 
 /*  
     Open a server connection
  */
-int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
+PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 {
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -316,8 +275,8 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         unlock(sp);
         return MPR_ERR_CANT_OPEN;
     }
-    /*  TODO NOTE: Datagrams have not been used in a long while. Probably broken */
 
+    /* NOTE: Datagrams have not been used in a long while. Maybe broken */
     if (!datagram) {
         sp->flags |= MPR_SOCKET_LISTENER;
         if (listen(sp->fd, SOMAXCONN) < 0) {
@@ -351,11 +310,12 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 }
 
 
-MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
+PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *dispatcher, void *proc, 
+    void *data, int flags)
 {
-    mprAssert(sp);
-    mprAssert(sp->fd >= 0);
-    mprAssert(proc);
+    assure(sp);
+    assure(sp->fd >= 0);
+    assure(proc);
 
     if (sp->fd < 0) {
         return 0;
@@ -368,7 +328,7 @@ MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatcher *disp
 }
 
 
-void mprRemoveSocketHandler(MprSocket *sp)
+PUBLIC void mprRemoveSocketHandler(MprSocket *sp)
 {
     if (sp->handler) {
         mprRemoveWaitHandler(sp->handler);
@@ -377,21 +337,24 @@ void mprRemoveSocketHandler(MprSocket *sp)
 }
 
 
-void mprEnableSocketEvents(MprSocket *sp, int mask)
+PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 {
-    mprWaitOn(sp->handler, mask);
+    assure(sp->handler);
+    if (sp->handler) {
+        mprWaitOn(sp->handler, mask);
+    }
 }
 
 
 /*  
     Open a client socket connection
  */
-int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
+PUBLIC int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
 {
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
     }
-    return sp->provider->connectSocket(sp, ip, port, flags);
+    return connectSocket(sp, ip, port, flags);
 }
 
 
@@ -401,11 +364,10 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     MprSocklen          addrlen;
     int                 broadcast, datagram, family, protocol, rc;
 
-    lock(sp);
-
-    resetSocket(sp);
-
     mprLog(6, "openClient: %s:%d, flags %x", ip, port, initialFlags);
+
+    lock(sp);
+    resetSocket(sp);
 
     sp->port = port;
     sp->flags = (initialFlags &
@@ -426,20 +388,16 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         unlock(sp);
         return MPR_ERR_CANT_ACCESS;
     }
-    sp->fd = (int) socket(family, datagram ? SOCK_DGRAM: SOCK_STREAM, protocol);
-    if (sp->fd < 0) {
+    if ((sp->fd = (int) socket(family, datagram ? SOCK_DGRAM: SOCK_STREAM, protocol)) < 0) {
         unlock(sp);
         return MPR_ERR_CANT_OPEN;
     }
-
 #if !BIT_WIN_LIKE && !VXWORKS
-
     /*  
         Children should not inherit this fd
      */
     fcntl(sp->fd, F_SETFD, FD_CLOEXEC);
 #endif
-
     if (broadcast) {
         int flag = 1;
         if (setsockopt(sp->fd, SOL_SOCKET, SO_BROADCAST, (char *) &flag, sizeof(flag)) < 0) {
@@ -449,7 +407,6 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
             return MPR_ERR_CANT_INITIALIZE;
         }
     }
-
     if (!datagram) {
         sp->flags |= MPR_SOCKET_CONNECTING;
         do {
@@ -495,7 +452,7 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     Abortive disconnect. Thread-safe. (e.g. from a timeout or callback thread). This closes the underlying socket file
     descriptor but keeps the handler and socket object intact. It also forces a recall on the wait handler.
  */
-void mprDisconnectSocket(MprSocket *sp)
+PUBLIC void mprDisconnectSocket(MprSocket *sp)
 {
     if (sp && sp->provider) {
         sp->provider->disconnectSocket(sp);
@@ -522,26 +479,31 @@ static void disconnectSocket(MprSocket *sp)
          */
         mprLog(6, "Disconnect socket %d", sp->fd);
         mprSetSocketBlockingMode(sp, 0);
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < 16; i++) {
             if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
                 break;
             }
         }
         shutdown(sp->fd, SHUT_RDWR);
+        for (i = 0; i < 16; i++) {
+            if (recv(sp->fd, buf, sizeof(buf), 0) <= 0) {
+                break;
+            }
+        }
         fd = sp->fd;
-        sp->flags |= MPR_SOCKET_EOF;
+        sp->flags |= MPR_SOCKET_EOF | MPR_SOCKET_DISCONNECTED;
         mprRecallWaitHandlerByFd(fd);
     }
     unlock(sp);
 }
 
 
-void mprCloseSocket(MprSocket *sp, bool gracefully)
+PUBLIC void mprCloseSocket(MprSocket *sp, bool gracefully)
 {
     if (sp == NULL) {
         return;
     }
-    mprAssert(sp->provider);
+    assure(sp->provider);
     if (sp->provider == 0) {
         return;
     }
@@ -576,9 +538,7 @@ static void closeSocket(MprSocket *sp, bool gracefully)
         mprLog(6, "Close socket %d, graceful %d", sp->fd, gracefully);
         if (gracefully) {
             mprSetSocketBlockingMode(sp, 0);
-            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) {
-                ;
-            }
+            while (recv(sp->fd, buf, sizeof(buf), 0) > 0) { }
         }
         if (shutdown(sp->fd, SHUT_RDWR) == 0) {
             if (gracefully) {
@@ -605,16 +565,7 @@ static void closeSocket(MprSocket *sp, bool gracefully)
 }
 
 
-MprSocket *mprAcceptSocket(MprSocket *listen)
-{
-    if (listen->provider) {
-        return listen->provider->acceptSocket(listen);
-    }
-    return 0;
-}
-
-
-static MprSocket *acceptSocket(MprSocket *listen)
+PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
 {
     MprSocketService            *ss;
     MprSocket                   *nsp;
@@ -641,7 +592,7 @@ static MprSocket *acceptSocket(MprSocket *listen)
         }
         return 0;
     }
-    if ((nsp = mprCreateSocket(listen->ssl)) == 0) {
+    if ((nsp = mprCreateSocket()) == 0) {
         closesocket(fd);
         return 0;
     }
@@ -673,12 +624,11 @@ static MprSocket *acceptSocket(MprSocket *listen)
     if (nsp->flags & MPR_SOCKET_NODELAY) {
         mprSetSocketNoDelay(nsp, 1);
     }
-
     /*
         Get the remote client address
      */
     if (getSocketIpAddr(addr, addrlen, ip, sizeof(ip), &port) != 0) {
-        mprAssert(0);
+        assure(0);
         mprCloseSocket(nsp, 0);
         return 0;
     }
@@ -700,14 +650,14 @@ static MprSocket *acceptSocket(MprSocket *listen)
 
 
 /*  
-    Read data. Return -1 for EOF and errors. On success, return the number of bytes read
+    Read data. Return -1 for EOF and errors. On success, return the number of bytes read.
  */
-ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
+PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 {
-    mprAssert(sp);
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(sp->provider);
+    assure(sp);
+    assure(buf);
+    assure(bufsize > 0);
+    assure(sp->provider);
 
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -727,9 +677,9 @@ static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
     ssize                   bytes;
     int                     errCode;
 
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(~(sp->flags & MPR_SOCKET_CLOSED));
+    assure(buf);
+    assure(bufsize > 0);
+    assure(~(sp->flags & MPR_SOCKET_CLOSED));
 
     lock(sp);
     if (sp->flags & MPR_SOCKET_EOF) {
@@ -790,12 +740,12 @@ again:
     Write data. Return the number of bytes written or -1 on errors. NOTE: this routine will return with a
     short write if the underlying socket can't accept any more data.
  */
-ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
+PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 {
-    mprAssert(sp);
-    mprAssert(buf);
-    mprAssert(bufsize > 0);
-    mprAssert(sp->provider);
+    assure(sp);
+    assure(buf);
+    assure(bufsize > 0);
+    assure(sp->provider);
 
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -814,9 +764,9 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
     ssize               len, written, sofar;
     int                 family, protocol, errCode;
 
-    mprAssert(buf);
-    mprAssert(bufsize >= 0);
-    mprAssert((sp->flags & MPR_SOCKET_CLOSED) == 0);
+    assure(buf);
+    assure(bufsize >= 0);
+    assure((sp->flags & MPR_SOCKET_CLOSED) == 0);
 
     lock(sp);
     if (sp->flags & (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM)) {
@@ -841,18 +791,21 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
             } else {
                 written = send(sp->fd, &((char*) buf)[sofar], (int) len, MSG_NOSIGNAL);
             }
+            /* Get the error code before calling mprResetYield to avoid clearing global error numbers */
+            errCode = mprGetSocketError(sp);
             if (sp->flags & MPR_SOCKET_BLOCK) {
                 mprResetYield();
             }
             lock(sp);
             if (written < 0) {
-                errCode = mprGetSocketError(sp);
+                assure(errCode != 0);
                 if (errCode == EINTR) {
                     continue;
                 } else if (errCode == EAGAIN || errCode == EWOULDBLOCK) {
 #if BIT_WIN_LIKE
                     /*
                         Windows sockets don't support blocking I/O. So we simulate here
+                        OPT - could wait for a writable event
                      */
                     if (sp->flags & MPR_SOCKET_BLOCK) {
                         mprNap(0);
@@ -877,13 +830,13 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 /*  
     Write a string to the socket
  */
-ssize mprWriteSocketString(MprSocket *sp, cchar *str)
+PUBLIC ssize mprWriteSocketString(MprSocket *sp, cchar *str)
 {
     return mprWriteSocket(sp, str, slen(str));
 }
 
 
-ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
+PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
 {
     char        *start;
     ssize       total, len, written;
@@ -895,12 +848,13 @@ ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
     } else
 #endif
     {
+        //  OPT - better to buffer and have fewer raw writes
         if (count <= 0) {
             return 0;
         }
         start = iovec[0].start;
         len = (int) iovec[0].len;
-        mprAssert(len > 0);
+        assure(len > 0);
 
         for (total = i = 0; i < count; ) {
             written = mprWriteSocket(sp, start, len);
@@ -924,7 +878,7 @@ ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
 }
 
 
-#if !BIT_FEATURE_ROMFS
+#if !BIT_ROM
 #if !LINUX || __UCLIBC__
 static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize len)
 {
@@ -933,7 +887,7 @@ static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize le
     mprSeekFile(file, SEEK_SET, (int) offset);
     len = min(len, sizeof(buf));
     if ((len = mprReadFile(file, buf, len)) < 0) {
-        mprAssert(0);
+        assure(0);
         return MPR_ERR_CANT_READ;
     }
     return mprWriteSocket(sp, buf, len);
@@ -945,7 +899,7 @@ static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize le
     Write data from a file to a socket. Includes the ability to write header before and after the file data.
     Works even with a null "file" to just output the headers.
  */
-MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff bytes, MprIOVec *beforeVec, 
+PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff bytes, MprIOVec *beforeVec, 
     int beforeCount, MprIOVec *afterVec, int afterCount)
 {
 #if MACOSX && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1050
@@ -987,7 +941,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
             toWriteAfter += afterVec[i].len;
         }
         toWriteFile = (bytes - toWriteBefore - toWriteAfter);
-        mprAssert(toWriteFile >= 0);
+        assure(toWriteFile >= 0);
 
         /*
             Linux sendfile does not have the integrated ability to send headers. Must do it separately here.
@@ -1004,7 +958,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
         }
 
         if (!done && toWriteFile > 0 && file->fd >= 0) {
-#if LINUX && !__UCLIBC__ && !HAS_OFF64
+#if LINUX && !__UCLIBC__ && !BIT_HAS_OFF64
             off_t off = (off_t) offset;
 #endif
             while (!done && toWriteFile > 0) {
@@ -1013,7 +967,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
                     mprYield(MPR_YIELD_STICKY);
                 }
 #if LINUX && !__UCLIBC__
-    #if HAS_OFF64
+    #if BIT_HAS_OFF64
                 rc = sendfile64(sock->fd, file->fd, &offset, nbytes);
     #else
                 rc = sendfile(sock->fd, file->fd, &off, nbytes);
@@ -1049,7 +1003,7 @@ MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset, MprOff
     }
     return written;
 }
-#endif /* !BIT_FEATURE_ROMFS */
+#endif /* !BIT_ROM */
 
 
 static ssize flushSocket(MprSocket *sp)
@@ -1058,7 +1012,7 @@ static ssize flushSocket(MprSocket *sp)
 }
 
 
-ssize mprFlushSocket(MprSocket *sp)
+PUBLIC ssize mprFlushSocket(MprSocket *sp)
 {
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -1067,7 +1021,7 @@ ssize mprFlushSocket(MprSocket *sp)
 }
 
 
-bool mprSocketHasPendingData(MprSocket *sp)
+PUBLIC bool mprSocketHasPendingData(MprSocket *sp)
 {
     return (sp->flags & MPR_SOCKET_PENDING) ? 1 : 0;
 }
@@ -1075,7 +1029,7 @@ bool mprSocketHasPendingData(MprSocket *sp)
 /*  
     Return true if end of file
  */
-bool mprIsSocketEof(MprSocket *sp)
+PUBLIC bool mprIsSocketEof(MprSocket *sp)
 {
     return ((sp->flags & MPR_SOCKET_EOF) != 0);
 }
@@ -1084,7 +1038,7 @@ bool mprIsSocketEof(MprSocket *sp)
 /*  
     Set the EOF condition
  */
-void mprSetSocketEof(MprSocket *sp, bool eof)
+PUBLIC void mprSetSocketEof(MprSocket *sp, bool eof)
 {
     if (eof) {
         sp->flags |= MPR_SOCKET_EOF;
@@ -1097,7 +1051,7 @@ void mprSetSocketEof(MprSocket *sp, bool eof)
 /*
     Return the O/S socket file handle
  */
-int mprGetSocketFd(MprSocket *sp)
+PUBLIC int mprGetSocketFd(MprSocket *sp)
 {
     return sp->fd;
 }
@@ -1106,18 +1060,18 @@ int mprGetSocketFd(MprSocket *sp)
 /*  
     Return the blocking mode of the socket
  */
-bool mprGetSocketBlockingMode(MprSocket *sp)
+PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
 {
-    mprAssert(sp);
+    assure(sp);
 
-    return sp->flags & MPR_SOCKET_BLOCK;
+    return sp && (sp->flags & MPR_SOCKET_BLOCK);
 }
 
 
 /*  
     Get the socket flags
  */
-int mprGetSocketFlags(MprSocket *sp)
+PUBLIC int mprGetSocketFlags(MprSocket *sp)
 {
     return sp->flags;
 }
@@ -1126,11 +1080,11 @@ int mprGetSocketFlags(MprSocket *sp)
 /*  
     Set whether the socket blocks or not on read/write
  */
-int mprSetSocketBlockingMode(MprSocket *sp, bool on)
+PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on)
 {
     int     oldMode;
 
-    mprAssert(sp);
+    assure(sp);
 
     lock(sp);
     oldMode = sp->flags & MPR_SOCKET_BLOCK;
@@ -1150,7 +1104,6 @@ int mprSetSocketBlockingMode(MprSocket *sp, bool on)
     ioctl(sp->fd, FIONBIO, (int) &flag);
 }
 #else
-    //  TODO - check RC
     if (on) {
         fcntl(sp->fd, F_SETFL, fcntl(sp->fd, F_GETFL) & ~O_NONBLOCK);
     } else {
@@ -1165,7 +1118,7 @@ int mprSetSocketBlockingMode(MprSocket *sp, bool on)
 /*  
     Set the TCP delay behavior (nagle algorithm)
  */
-int mprSetSocketNoDelay(MprSocket *sp, bool on)
+PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on)
 {
     int     oldDelay;
 
@@ -1197,7 +1150,7 @@ int mprSetSocketNoDelay(MprSocket *sp, bool on)
 /*  
     Get the port number
  */
-int mprGetSocketPort(MprSocket *sp)
+PUBLIC int mprGetSocketPort(MprSocket *sp)
 {
     return sp->port;
 }
@@ -1206,7 +1159,7 @@ int mprGetSocketPort(MprSocket *sp)
 /*
     Map the O/S error code to portable error codes.
  */
-int mprGetSocketError(MprSocket *sp)
+PUBLIC int mprGetSocketError(MprSocket *sp)
 {
 #if BIT_WIN_LIKE
     int     rc;
@@ -1246,14 +1199,14 @@ int mprGetSocketError(MprSocket *sp)
     Get a socket address from a host/port combination. If a host provides both IPv4 and IPv6 addresses, 
     prefer the IPv4 address.
  */
-int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, socklen_t *addrlen)
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, socklen_t *addrlen)
 {
     MprSocketService    *ss;
     struct addrinfo     hints, *res, *r;
     char                *portStr;
     int                 v6;
 
-    mprAssert(addr);
+    assure(addr);
     ss = MPR->socketService;
 
     mprLock(ss->mutex);
@@ -1314,7 +1267,7 @@ int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct soc
 }
 #else
 
-int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen)
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen)
 {
     MprSocketService    *ss;
     struct sockaddr_in  *sa;
@@ -1322,7 +1275,7 @@ int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct soc
     ss = MPR->socketService;
 
     if ((sa = mprAllocStruct(struct sockaddr_in)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     memset((char*) sa, '\0', sizeof(struct sockaddr_in));
@@ -1347,7 +1300,7 @@ int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct soc
         sa->sin_addr.s_addr = (ulong) hostGetByName((char*) ip);
         if (sa->sin_addr.s_addr < 0) {
             mprUnlock(ss->mutex);
-            mprAssert(0);
+            assure(0);
             return 0;
         }
 #else
@@ -1410,7 +1363,7 @@ static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int ipL
     uchar   *cp;
     sa = (struct sockaddr_in*) addr;
     cp = (uchar*) &sa->sin_addr;
-    mprSprintf(ip, ipLen, "%d.%d.%d.%d", cp[0], cp[1], cp[2], cp[3]);
+    fmt(ip, ipLen, "%d.%d.%d.%d", cp[0], cp[1], cp[2], cp[3]);
 #endif
     *port = ntohs(sa->sin_port);
 #endif
@@ -1456,35 +1409,38 @@ static int ipv6(cchar *ip)
     If supplied an IPv6 address, the backets are stripped in the returned IP address.
     This routine skips any "protocol://" prefix.
  */
-int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int defaultPort)
+PUBLIC int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int defaultPort)
 {
-    char    *ip;
-    char    *cp;
+    char    *ip, *cp;
 
     ip = 0;
     if (defaultPort < 0) {
         defaultPort = 80;
     }
-    if ((cp = strstr(ipAddrPort, "://")) != 0) {
-        ipAddrPort = &cp[3];
+    ip = sclone(ipAddrPort);
+    if ((cp = strchr(ip, ' ')) != 0) {
+        *cp++ = '\0';
     }
-    if (ipv6(ipAddrPort)) {
+    if ((cp = strstr(ip, "://")) != 0) {
+        ip = sclone(&cp[3]);
+    }
+    if (ipv6(ip)) {
         /*  
             IPv6. If port is present, it will follow a closing bracket ']'
          */
-        if ((cp = strchr(ipAddrPort, ']')) != 0) {
+        if ((cp = strchr(ip, ']')) != 0) {
             cp++;
             if ((*cp) && (*cp == ':')) {
                 *pport = (*++cp == '*') ? -1 : atoi(cp);
 
                 /* Set ipAddr to ipv6 address without brackets */
-                ip = sclone(ipAddrPort+1);
+                ip = sclone(ip + 1);
                 cp = strchr(ip, ']');
                 *cp = '\0';
 
             } else {
                 /* Handles [a:b:c:d:e:f:g:h:i] case (no port)- should not occur */
-                ip = sclone(ipAddrPort + 1);
+                ip = sclone(ip + 1);
                 if ((cp = strchr(ip, ']')) != 0) {
                     *cp = '\0';
                 }
@@ -1496,8 +1452,6 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
             }
         } else {
             /* Handles a:b:c:d:e:f:g:h:i case (no port) */
-            ip = sclone(ipAddrPort);
-
             /* No port present, use callers default */
             *pport = defaultPort;
         }
@@ -1506,7 +1460,6 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
         /*  
             ipv4 
          */
-        ip = sclone(ipAddrPort);
         if ((cp = strchr(ip, ':')) != 0) {
             *cp++ = '\0';
             if (*cp == '*') {
@@ -1517,6 +1470,12 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
             if (*ip == '*') {
                 ip = 0;
             }
+
+        } else if (strchr(ip, '.')) {
+            if ((cp = strchr(ip, ' ')) != 0) {
+                *cp++ = '\0';
+            }
+            *pport = defaultPort;
 
         } else {
             if (isdigit((uchar) *ip)) {
@@ -1535,56 +1494,256 @@ int mprParseSocketAddress(cchar *ipAddrPort, char **pip, int *pport, int default
 }
 
 
-bool mprIsSocketSecure(MprSocket *sp)
+PUBLIC bool mprIsSocketSecure(MprSocket *sp)
 {
     return sp->sslSocket != 0;
 }
 
 
-bool mprIsSocketV6(MprSocket *sp)
+PUBLIC bool mprIsSocketV6(MprSocket *sp)
 {
     return sp->ip && ipv6(sp->ip);
 }
 
 
-bool mprIsIPv6(cchar *ip)
+PUBLIC bool mprIsIPv6(cchar *ip)
 {
     return ip && ipv6(ip);
 }
 
 
-void mprSetSocketPrebindCallback(MprSocketPrebind callback)
+PUBLIC void mprSetSocketPrebindCallback(MprSocketPrebind callback)
 {
     MPR->socketService->prebind = callback;
 }
 
 
+static void manageSsl(MprSsl *ssl, int flags) 
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(ssl->key);
+        mprMark(ssl->cert);
+        mprMark(ssl->keyFile);
+        mprMark(ssl->certFile);
+        mprMark(ssl->caFile);
+        mprMark(ssl->caPath);
+        mprMark(ssl->ciphers);
+        mprMark(ssl->pconfig);
+        mprMark(ssl->provider);
+        mprMark(ssl->providerName);
+    }
+}
+
+
+/*
+    Create a new SSL context object
+ */
+PUBLIC MprSsl *mprCreateSsl(int server)
+{
+    MprSsl      *ssl;
+
+    if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
+        return 0;
+    }
+    ssl->ciphers = sclone(BIT_CIPHERS);
+    ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11;
+    /*
+        The default for servers is not to verify client certificates.
+        The default for clients is to verify unless MPR->verifySsl has been set to false
+     */
+    if (server) {
+        ssl->verifyDepth = 0;
+        ssl->verifyPeer = 0;
+        ssl->verifyIssuer = 0;
+    } else {
+        ssl->verifyDepth = MPR->verifySsl;
+        ssl->verifyPeer = MPR->verifySsl;
+        ssl->verifyIssuer = MPR->verifySsl;
+    }
+    return ssl;
+}
+
+
+/*
+    Clone a SSL context object
+ */
+PUBLIC MprSsl *mprCloneSsl(MprSsl *src)
+{
+    MprSsl      *ssl;
+
+    if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
+        return 0;
+    }
+    if (src) {
+        *ssl = *src;
+    }
+    return ssl;
+}
+
+
+PUBLIC int mprLoadSsl()
+{
+#if BIT_PACK_SSL
+    MprSocketService    *ss;
+    MprModule           *mp;
+    cchar               *path;
+
+    ss = MPR->socketService;
+    if (ss->providers) {
+        return 0;
+    }
+    path = mprJoinPath(mprGetAppDir(), "libmprssl");
+    if ((mp = mprCreateModule("sslModule", path, "mprSslInit", NULL)) == 0) {
+        return MPR_ERR_CANT_CREATE;
+    }
+    if (mprLoadModule(mp) < 0) {
+        mprError("Can't load %s", path);
+        ss->providers = 0;
+        return MPR_ERR_CANT_READ;
+    }
+    return 0;
+#else
+    mprError("SSL communications support not included in build");
+    return MPR_ERR_BAD_STATE;
+#endif
+}
+
+
+static int loadProviders()
+{
+    MprSocketService    *ss;
+
+    ss = MPR->socketService;
+    if (!ss->providers && mprLoadSsl() < 0) {
+        return MPR_ERR_CANT_READ;
+    }
+    if (!ss->providers) {
+        mprError("Can't load SSL provider");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    return 0;
+}
+
+
+/*
+    Upgrade a socket to use SSL
+ */
+PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
+{
+    MprSocketService    *ss;
+    char                *providerName;
+
+    ss  = sp->service;
+    assure(sp);
+
+    if (!ssl) {
+        return MPR_ERR_BAD_ARGS;
+    }
+    if (!ssl->provider) {
+        if (loadProviders() < 0) {
+            return MPR_ERR_CANT_INITIALIZE;
+        }
+        providerName = (ssl->providerName) ? ssl->providerName : ss->defaultProvider;
+        if ((ssl->provider = mprLookupKey(ss->providers, providerName)) == 0) {
+            mprError("Can't use SSL, missing SSL provider %s", providerName);
+            return MPR_ERR_CANT_INITIALIZE;
+        }
+        ssl->providerName = providerName;
+    }
+    mprLog(4, "Using %s SSL provider", ssl->providerName);
+    sp->provider = ssl->provider;
+#if FUTURE
+    /* session resumption can cause problems with Nagle. However, appweb opens sockets with nodelay by default */
+    sp->flags |= MPR_SOCKET_NODELAY;
+    mprSetSocketNoDelay(sp, 1);
+#endif
+    return sp->provider->upgradeSocket(sp, ssl, server);
+}
+
+
+PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
+{
+    assure(ssl);
+    ssl->ciphers = sclone(ciphers);
+}
+
+
+PUBLIC void mprSetSslKeyFile(MprSsl *ssl, cchar *keyFile)
+{
+    assure(ssl);
+    ssl->keyFile = sclone(keyFile);
+}
+
+
+PUBLIC void mprSetSslCertFile(MprSsl *ssl, cchar *certFile)
+{
+    assure(ssl);
+    ssl->certFile = sclone(certFile);
+}
+
+
+PUBLIC void mprSetSslCaFile(MprSsl *ssl, cchar *caFile)
+{
+    assure(ssl);
+    ssl->caFile = sclone(caFile);
+}
+
+
+PUBLIC void mprSetSslCaPath(MprSsl *ssl, cchar *caPath)
+{
+    assure(ssl);
+    ssl->caPath = sclone(caPath);
+}
+
+
+PUBLIC void mprSetSslProtocols(MprSsl *ssl, int protocols)
+{
+    assure(ssl);
+    ssl->protocols = protocols;
+}
+
+
+PUBLIC void mprSetSslProvider(MprSsl *ssl, cchar *provider)
+{
+    assure(ssl);
+    ssl->providerName = (provider && *provider) ? sclone(provider) : 0;
+}
+
+
+PUBLIC void mprVerifySslPeer(MprSsl *ssl, bool on)
+{
+    if (ssl) {
+        ssl->verifyPeer = on;
+    } else {
+        MPR->verifySsl = on;
+    }
+}
+
+
+PUBLIC void mprVerifySslIssuer(MprSsl *ssl, bool on)
+{
+    assure(ssl);
+    ssl->verifyIssuer = on;
+}
+
+
+PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
+{
+    assure(ssl);
+    ssl->verifyDepth = depth;
+}
+
+
 /*
     @copy   default
- 
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

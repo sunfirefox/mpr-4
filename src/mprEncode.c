@@ -41,7 +41,7 @@ static uchar charMatch[256] = {
 /*  
     Uri encode by encoding special characters with hex equivalents. Return an allocated string.
  */
-char *mprUriEncode(cchar *inbuf, int map)
+PUBLIC char *mprUriEncode(cchar *inbuf, int map)
 {
     static cchar    hexTable[] = "0123456789ABCDEF";
     uchar           c;
@@ -49,11 +49,14 @@ char *mprUriEncode(cchar *inbuf, int map)
     char            *result, *op;
     int             len;
 
-    mprAssert(inbuf);
-    mprAssert(inbuf);
+    assure(inbuf);
+    assure(inbuf);
 
+    if (!inbuf) {
+        return MPR->emptyString;
+    }
     for (len = 1, ip = inbuf; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & map) {
+        if (charMatch[(uchar) *ip] & map) {
             len += 2;
         }
     }
@@ -73,7 +76,7 @@ char *mprUriEncode(cchar *inbuf, int map)
             *op++ = c;
         }
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -82,19 +85,18 @@ char *mprUriEncode(cchar *inbuf, int map)
 /*  
     Decode a string using URL encoding. Return an allocated string.
  */
-char *mprUriDecode(cchar *inbuf)
+PUBLIC char *mprUriDecode(cchar *inbuf)
 {
     cchar   *ip;
     char    *result, *op;
     int     num, i, c;
 
-    mprAssert(inbuf);
+    assure(inbuf);
 
     if ((result = sclone(inbuf)) == 0) {
         return 0;
     }
-
-    for (op = result, ip = inbuf; *ip; ip++, op++) {
+    for (op = result, ip = inbuf; ip && *ip; ip++, op++) {
         if (*ip == '+') {
             *op = ' ';
 
@@ -127,17 +129,20 @@ char *mprUriDecode(cchar *inbuf)
 /*  
     Escape a shell command. Not really Http, but useful anyway for CGI
  */
-char *mprEscapeCmd(cchar *cmd, int escChar)
+PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
 {
     uchar   c;
     cchar   *ip;
     char    *result, *op;
     int     len;
 
-    mprAssert(cmd);
+    assure(cmd);
 
+    if (!cmd) {
+        return MPR->emptyString;
+    }
     for (len = 1, ip = cmd; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_SHELL) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_SHELL) {
             len++;
         }
     }
@@ -151,7 +156,7 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
     op = result;
     while ((c = (uchar) *cmd++) != 0) {
 #if BIT_WIN_LIKE
-        //  TODO - should use fs->newline
+        //  MOB - should use fs->newline
         if ((c == '\r' || c == '\n') && *cmd != '\0') {
             c = ' ';
             continue;
@@ -162,7 +167,7 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
         }
         *op++ = c;
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -171,14 +176,17 @@ char *mprEscapeCmd(cchar *cmd, int escChar)
 /*  
     Escape HTML to escape defined characters (prevent cross-site scripting)
  */
-char *mprEscapeHtml(cchar *html)
+PUBLIC char *mprEscapeHtml(cchar *html)
 {
     cchar   *ip;
     char    *result, *op;
     int     len;
 
+    if (!html) {
+        return MPR->emptyString;
+    }
     for (len = 1, ip = html; *ip; ip++, len++) {
-        if (charMatch[(int) (uchar) *ip] & MPR_ENCODE_HTML) {
+        if (charMatch[(uchar) *ip] & MPR_ENCODE_HTML) {
             len += 5;
         }
     }
@@ -217,14 +225,14 @@ char *mprEscapeHtml(cchar *html)
                 strcpy(op, "&#39;");
                 op += 5;
             } else {
-                mprAssert(0);
+                assure(0);
             }
             html++;
         } else {
             *op++ = *html++;
         }
     }
-    mprAssert(op < &result[len]);
+    assure(op < &result[len]);
     *op = '\0';
     return result;
 }
@@ -234,28 +242,12 @@ char *mprEscapeHtml(cchar *html)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

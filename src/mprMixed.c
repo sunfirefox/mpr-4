@@ -8,28 +8,28 @@
 
 #include    "mpr.h"
 
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
 /********************************** Forwards **********************************/
 
-int mcasecmp(MprChar *str1, cchar *str2)
+PUBLIC int mcaselesscmp(wchar *str1, cchar *str2)
 {
-    return mncasecmp(str1, str2, -1);
+    return mncaselesscmp(str1, str2, -1);
 }
 
 
-int mcmp(MprChar *s1, cchar *s2)
+PUBLIC int mcmp(wchar *s1, cchar *s2)
 {
     return mncmp(s1, s2, -1);
 }
 
 
-MprChar *mcontains(MprChar *str, cchar *pattern, ssize limit)
+PUBLIC wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
 {
-    MprChar     *cp, *s1;
-    cchar       *s2;
-    ssize       lim;
+    wchar   *cp, *s1;
+    cchar   *s2;
+    ssize   lim;
 
-    mprAssert(0 <= limit && limit < MAXSSIZE);
+    assure(0 <= limit && limit < MAXSSIZE);
 
     if (limit < 0) {
         limit = MAXINT;
@@ -38,7 +38,7 @@ MprChar *mcontains(MprChar *str, cchar *pattern, ssize limit)
         return 0;
     }
     if (pattern == 0 || *pattern == '\0') {
-        return (MprChar*) str;
+        return (wchar*) str;
     }
     for (cp = str; *cp && limit > 0; cp++, limit--) {
         s1 = cp;
@@ -55,30 +55,36 @@ MprChar *mcontains(MprChar *str, cchar *pattern, ssize limit)
 }
 
 
+PUBLIC wchar *mcontains(wchar *str, cchar *pattern)
+{
+    return mncontains(str, pattern, -1);
+}
+
+
 /*
     destMax and len are character counts, not sizes in bytes
  */
-ssize mcopy(MprChar *dest, cchar *src)
+PUBLIC ssize mcopy(wchar *dest, ssize destMax, cchar *src)
 {
     ssize       len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < destMax && destMax < MAXINT);
 
     len = slen(src);
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     return mtow(dest, len + 1, src, len);
 }
 
 
-int mends(MprChar *str, cchar *suffix)
+PUBLIC int mends(wchar *str, cchar *suffix)
 {
-    MprChar     *cp;
-    cchar       *sp;
+    wchar   *cp;
+    cchar   *sp;
 
     if (str == NULL || suffix == NULL) {
         return 0;
@@ -97,12 +103,12 @@ int mends(MprChar *str, cchar *suffix)
 }
 
 
-MprChar *mfmt(cchar *fmt, ...)
+PUBLIC wchar *mfmt(cchar *fmt, ...)
 {
     va_list     ap;
     char        *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     mresult = sfmtv(fmt, ap);
@@ -111,25 +117,25 @@ MprChar *mfmt(cchar *fmt, ...)
 }
 
 
-MprChar *mfmtv(cchar *fmt, va_list arg)
+PUBLIC wchar *mfmtv(cchar *fmt, va_list arg)
 {
     char    *mresult;
 
-    mprAssert(fmt);
+    assure(fmt);
     mresult = sfmtv(fmt, arg);
     return amtow(mresult, NULL);
 }
 
 
 /*
-    Sep is ascii, args are MprChar
+    Sep is ascii, args are wchar
  */
-MprChar *mjoin(cchar *str, ...)
+PUBLIC wchar *mjoin(wchar *str, ...)
 {
-    MprChar     *result;
+    wchar       *result;
     va_list     ap;
 
-    mprAssert(str);
+    assure(str);
 
     va_start(ap, str);
     result = mjoinv(str, ap);
@@ -138,40 +144,43 @@ MprChar *mjoin(cchar *str, ...)
 }
 
 
-MprChar *mjoinv(MprChar *buf, va_list args)
+/*
+    MOB - comment required. What does this do?
+ */
+PUBLIC wchar *mjoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp;
+    wchar       *dest, *str, *dp;
     int         required, len;
 
-    mprAssert(buf);
+    assure(buf);
 
     va_copy(ap, args);
     required = 1;
     if (buf) {
         required += wlen(buf);
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     if ((dest = mprAlloc(required)) == 0) {
         return 0;
     }
     dp = dest;
     if (buf) {
-        wcopy(dp, buf);
+        wcopy(dp, -1, buf);
         dp += wlen(buf);
     }
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
@@ -181,11 +190,11 @@ MprChar *mjoinv(MprChar *buf, va_list args)
 /*
     Case insensitive string comparison. Limited by length
  */
-int mncasecmp(MprChar *s1, cchar *s2, ssize n)
+PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXSSIZE);
+    assure(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -195,7 +204,7 @@ int mncasecmp(MprChar *s1, cchar *s2, ssize n)
         return 1;
     }
     for (rc = 0; n > 0 && *s1 && rc == 0; s1++, s2++, n--) {
-        rc = tolower(*s1) - tolower(*s2);
+        rc = tolower((uchar) *s1) - tolower((uchar) *s2);
     }
     if (rc) {
         return (rc > 0) ? 1 : -1;
@@ -213,9 +222,9 @@ int mncasecmp(MprChar *s1, cchar *s2, ssize n)
 
 
 
-int mncmp(MprChar *s1, cchar *s2, ssize n)
+PUBLIC int mncmp(wchar *s1, cchar *s2, ssize n)
 {
-    mprAssert(0 <= n && n < MAXSSIZE);
+    assure(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -242,16 +251,16 @@ int mncmp(MprChar *s1, cchar *s2, ssize n)
 }
 
 
-ssize mncopy(MprChar *dest, ssize destMax, cchar *src, ssize len)
+PUBLIC ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
 {
-    mprAssert(0 <= len && len < MAXSSIZE);
-    mprAssert(0 < destMax && destMax < MAXSSIZE);
+    assure(0 <= len && len < MAXSSIZE);
+    assure(0 < destMax && destMax < MAXSSIZE);
 
     return mtow(dest, destMax, src, len);
 }
 
 
-MprChar *mpbrk(MprChar *str, cchar *set)
+PUBLIC wchar *mpbrk(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -271,12 +280,12 @@ MprChar *mpbrk(MprChar *str, cchar *set)
 
 
 /*
-    Sep is ascii, args are MprChar
+    Sep is ascii, args are wchar
  */
-MprChar *mrejoin(MprChar *buf, ...)
+PUBLIC wchar *mrejoin(wchar *buf, ...)
 {
-    MprChar     *result;
     va_list     ap;
+    wchar       *result;
 
     va_start(ap, buf);
     result = mrejoinv(buf, ap);
@@ -285,10 +294,10 @@ MprChar *mrejoin(MprChar *buf, ...)
 }
 
 
-MprChar *mrejoinv(MprChar *buf, va_list args)
+PUBLIC wchar *mrejoinv(wchar *buf, va_list args)
 {
     va_list     ap;
-    MprChar     *dest, *str, *dp;
+    wchar       *dest, *str, *dp;
     int         required, len;
 
     va_copy(ap, args);
@@ -296,30 +305,30 @@ MprChar *mrejoinv(MprChar *buf, va_list args)
     if (buf) {
         required += wlen(buf);
     }
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         required += wlen(str);
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     if ((dest = mprRealloc(buf, required)) == 0) {
         return 0;
     }
     dp = dest;
     va_copy(ap, args);
-    str = va_arg(ap, MprChar*);
+    str = va_arg(ap, wchar*);
     while (str) {
         wcopy(dp, required, str);
         len = wlen(str);
         dp += len;
         required -= len;
-        str = va_arg(ap, MprChar*);
+        str = va_arg(ap, wchar*);
     }
     *dp = '\0';
     return dest;
 }
 
 
-ssize mspn(MprChar *str, cchar *set)
+PUBLIC ssize mspn(wchar *str, cchar *set)
 {
     cchar   *sp;
     int     count;
@@ -341,7 +350,7 @@ ssize mspn(MprChar *str, cchar *set)
 }
  
 
-int mstarts(MprChar *str, cchar *prefix)
+PUBLIC int mstarts(wchar *str, cchar *prefix)
 {
     if (str == NULL || prefix == NULL) {
         return 0;
@@ -353,10 +362,10 @@ int mstarts(MprChar *str, cchar *prefix)
 }
 
 
-MprChar *mtok(MprChar *str, cchar *delim, MprChar **last)
+PUBLIC wchar *mtok(wchar *str, cchar *delim, wchar **last)
 {
-    MprChar    *start, *end;
-    ssize      i;
+    wchar   *start, *end;
+    ssize   i;
 
     start = str ? str : *last;
 
@@ -381,10 +390,10 @@ MprChar *mtok(MprChar *str, cchar *delim, MprChar **last)
 }
 
 
-MprChar *mtrim(MprChar *str, cchar *set, int where)
+PUBLIC wchar *mtrim(wchar *str, cchar *set, int where)
 {
-    MprChar     s;
-    ssize       len, i;
+    wchar   s;
+    ssize   len, i;
 
     if (str == NULL || set == NULL) {
         return str;
@@ -407,35 +416,19 @@ MprChar *mtrim(MprChar *str, cchar *set, int where)
 }
 
 #else
-void dummyWide() {}
+PUBLIC void dummyWide() {}
 #endif /* BIT_CHAR_LEN > 1 */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
@@ -445,4 +438,3 @@ void dummyWide() {}
 
     @end
  */
-

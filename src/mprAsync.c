@@ -13,22 +13,22 @@
 #if MPR_EVENT_ASYNC
 /***************************** Forward Declarations ***************************/
 
-static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp);
+static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {   
     ws->socketMessage = MPR_SOCKET_MESSAGE;
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     int     winMask;
 
-    mprAssert(ws->hwnd);
+    assure(ws->hwnd);
 
     lock(ws);
     winMask = 0;
@@ -41,6 +41,10 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         wp->desiredMask = mask;
         WSAAsyncSelect(wp->fd, ws->hwnd, ws->socketMessage, winMask);
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;
@@ -51,7 +55,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single descriptor. Return the number of I/O events found. Mask is the events of interest.
     Timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int desiredMask, MprTicks timeout)
 {
     HANDLE      h;
     int         winMask;
@@ -66,7 +70,7 @@ int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     if (desiredMask & MPR_WRITABLE) {
         winMask |= FD_WRITE;
     }
-    h = CreateEvent(NULL, FALSE, FALSE, "mprWaitForSingleIO");
+    h = CreateEvent(NULL, FALSE, FALSE, UT("mprWaitForSingleIO"));
     WSAEventSelect(fd, h, winMask);
     if (WaitForSingleObject(h, (DWORD) timeout) == WAIT_OBJECT_0) {
         CloseHandle(h);
@@ -81,11 +85,11 @@ int mprWaitForSingleIO(int fd, int desiredMask, MprTime timeout)
     Wait for I/O on all registered descriptors. Timeout is in milliseconds. Return the number of events serviced.
     Should only be called by the thread that calls mprServiceEvents
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     MSG     msg;
 
-    mprAssert(ws->hwnd);
+    assure(ws->hwnd);
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -114,7 +118,7 @@ void mprWaitForIO(MprWaitService *ws, MprTime timeout)
 }
 
 
-void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
+PUBLIC void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 {
     MprWaitHandler      *wp;
     int                 index;
@@ -155,7 +159,7 @@ void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 /*
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
    
@@ -170,17 +174,20 @@ void mprWakeNotifier()
 /*
     Create a default window if the application has not already created one.
  */ 
-int mprInitWindow()
+PUBLIC int mprInitWindow()
 {
     MprWaitService  *ws;
     WNDCLASS        wc;
     HWND            hwnd;
+	wchar			*name, *title;
     int             rc;
 
     ws = MPR->waitService;
     if (ws->hwnd) {
         return 0;
     }
+	name = (wchar*) wide(mprGetAppName());
+	title = (wchar*) wide(mprGetAppTitle());
     wc.style            = CS_HREDRAW | CS_VREDRAW;
     wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);
@@ -189,14 +196,14 @@ int mprInitWindow()
     wc.hInstance        = 0;
     wc.hIcon            = NULL;
     wc.lpfnWndProc      = (WNDPROC) msgProc;
-    wc.lpszMenuName     = wc.lpszClassName = mprGetAppName();
+    wc.lpszMenuName     = wc.lpszClassName = name;
 
     rc = RegisterClass(&wc);
     if (rc == 0) {
         mprError("Can't register windows class");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    hwnd = CreateWindow(mprGetAppName(), mprGetAppTitle(), WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
+    hwnd = CreateWindow(name, title, WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
     if (!hwnd) {
         mprError("Can't create window");
         return -1;
@@ -210,7 +217,7 @@ int mprInitWindow()
 /*
     Windows message processing loop for wakeup and socket messages
  */
-static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp)
+static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp)
 {
     MprWaitService      *ws;
     int                 sock, winMask;
@@ -235,7 +242,7 @@ static LRESULT msgProc(HWND hwnd, uint msg, uint wp, long lp)
 }
 
 
-void mprSetWinMsgCallback(MprMsgCallback callback)
+PUBLIC void mprSetWinMsgCallback(MprMsgCallback callback)
 {
     MprWaitService  *ws;
 
@@ -244,37 +251,19 @@ void mprSetWinMsgCallback(MprMsgCallback callback)
 }
 
 
-#else
-void stubMprAsync() {}
 #endif /* MPR_EVENT_ASYNC */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

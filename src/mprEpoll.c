@@ -19,7 +19,7 @@ static void serviceIO(MprWaitService *ws, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
@@ -53,7 +53,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManageEpoll(MprWaitService *ws, int flags)
+PUBLIC void mprManageEpoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->events);
@@ -77,19 +77,19 @@ static int growEvents(MprWaitService *ws)
 {
     ws->eventsMax *= 2;
     if ((ws->events = mprRealloc(ws->events, sizeof(struct epoll_event) * ws->eventsMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct epoll_event  ev;
     int                 fd, rc;
 
-    mprAssert(wp);
+    assure(wp);
     fd = wp->fd;
 
     lock(ws);
@@ -104,7 +104,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
-#if UNUSED && KEEP
+#if KEEP
             if (rc != 0) {
                 mprError("Epoll del error %d on fd %d\n", errno, fd);
             }
@@ -126,12 +126,16 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (mask && fd >= ws->handlerMax) {
             ws->handlerMax = fd + 32;
             if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                mprAssert(!MPR_ERR_MEMORY);
+                assure(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     ws->handlerMap[fd] = (mask) ? wp : 0;
     unlock(ws);
@@ -143,7 +147,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct epoll_event  ev, events[2];
     int                 epfd, rc;
@@ -188,7 +192,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected. 
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     int     rc;
 
@@ -232,7 +236,7 @@ static void serviceIO(MprWaitService *ws, int count)
     for (i = 0; i < count; i++) {
         ev = &ws->events[i];
         fd = ev->data.fd;
-        mprAssert(fd < ws->handlerMax);
+        assure(fd < ws->handlerMax);
         if ((wp = ws->handlerMap[fd]) == 0) {
             char    buf[128];
             if ((ev->events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (fd == ws->breakPipe[MPR_READ_PIPE])) {
@@ -248,7 +252,7 @@ static void serviceIO(MprWaitService *ws, int count)
             mask |= MPR_WRITABLE;
         }
         if (mask == 0) {
-            mprAssert(mask);
+            assure(mask);
             continue;
         }
         wp->presentMask = mask & wp->desiredMask;
@@ -270,7 +274,7 @@ static void serviceIO(MprWaitService *ws, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -283,36 +287,18 @@ void mprWakeNotifier()
     }
 }
 
-#else
-void stubMmprEpoll() {}
 #endif /* MPR_EVENT_EPOLL */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

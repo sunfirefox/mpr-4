@@ -16,9 +16,10 @@ typedef struct CacheItem
 {
     char        *key;                   /* Original key */
     char        *data;                  /* Cache data */
-    MprTime     lastModified;           /* Last update time */
-    MprTime     expires;                /* Fixed expiry date. If zero, key is imortal */
-    MprTime     lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lifespan;               /* Lifespan after each access to key (msec) */
+    MprTicks    lastAccessed;           /* Last accessed time */
+    MprTicks    expires;                /* Fixed expiry date. If zero, key is imortal. */
+    MprTime     lastModified;           /* Last update time. This is an MprTime and records world-time. */
     int64       version;
 } CacheItem;
 
@@ -35,7 +36,7 @@ static void removeItem(MprCache *cache, CacheItem *item);
 
 /************************************* Code ***********************************/
 
-MprCache *mprCreateCache(int options)
+PUBLIC MprCache *mprCreateCache(int options)
 {
     MprCache    *cache;
     int         wantShared;
@@ -61,9 +62,9 @@ MprCache *mprCreateCache(int options)
 }
 
 
-void *mprDestroyCache(MprCache *cache)
+PUBLIC void *mprDestroyCache(MprCache *cache)
 {
-    mprAssert(cache);
+    assure(cache);
 
     if (cache->timer && cache != shared) {
         mprRemoveEvent(cache->timer);
@@ -76,16 +77,16 @@ void *mprDestroyCache(MprCache *cache)
 }
 
 
-int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
+PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTicks expires)
 {
     CacheItem   *item;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     lock(cache);
     if ((item = mprLookupKey(cache->store, key)) == 0) {
@@ -102,17 +103,17 @@ int mprExpireCache(MprCache *cache, cchar *key, MprTime expires)
 }
 
 
-int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
+PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
 {
     CacheItem   *item;
     int64       value;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     value = amount;
 
@@ -130,29 +131,31 @@ int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
     item->data = itos(value);
     cache->usedMem += slen(item->data);
     item->version++;
+    item->lastAccessed = mprGetTicks();
+    item->expires = item->lastAccessed + item->lifespan;
     unlock(cache);
     return value;
 }
 
 
-char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
+PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *version)
 {
     CacheItem   *item;
     char        *result;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     lock(cache);
     if ((item = mprLookupKey(cache->store, key)) == 0) {
         unlock(cache);
         return 0;
     }
-    if (item->expires && item->expires <= mprGetTime()) {
+    if (item->expires && item->expires <= mprGetTicks()) {
         unlock(cache);
         return 0;
     }
@@ -162,23 +165,25 @@ char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 *versio
     if (modified) {
         *modified = item->lastModified;
     }
+    item->lastAccessed = mprGetTicks();
+    item->expires = item->lastAccessed + item->lifespan;
     result = item->data;
     unlock(cache);
     return result;
 }
 
 
-bool mprRemoveCache(MprCache *cache, cchar *key)
+PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key)
 {
     CacheItem   *item;
     bool        result;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
+    assure(cache);
+    assure(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     lock(cache);
     if (key) {
@@ -201,13 +206,13 @@ bool mprRemoveCache(MprCache *cache, cchar *key)
 }
 
 
-void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memory, int resolution)
+PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution)
 {
-    mprAssert(cache);
+    assure(cache);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     if (keys > 0) {
         cache->maxKeys = (ssize) keys;
@@ -233,21 +238,20 @@ void mprSetCacheLimits(MprCache *cache, int64 keys, MprTime lifespan, int64 memo
 }
 
 
-ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTime lifespan, 
-    int64 version, int options)
+PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified, MprTicks lifespan, int64 version, int options)
 {
     CacheItem   *item;
     MprKey      *kp;
     ssize       len, oldLen;
     int         exists, add, set, prepend, append, throw;
 
-    mprAssert(cache);
-    mprAssert(key && *key);
-    mprAssert(value);
+    assure(cache);
+    assure(key && *key);
+    assure(value);
 
     if (cache->shared) {
         cache = cache->shared;
-        mprAssert(cache == shared);
+        assure(cache == shared);
     }
     exists = add = prepend = append = throw = 0;
     add = options & MPR_CACHE_ADD;
@@ -293,7 +297,8 @@ ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified,
         item->lifespan = lifespan;
     }
     item->lastModified = modified ? modified : mprGetTime();
-    item->expires = item->lastModified + item->lifespan;
+    item->lastAccessed = mprGetTicks();
+    item->expires = item->lastAccessed + item->lifespan;
     item->version++;
     len = slen(item->key) + slen(item->data);
     cache->usedMem += (len - oldLen);
@@ -313,8 +318,8 @@ ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime modified,
 
 static void removeItem(MprCache *cache, CacheItem *item)
 {
-    mprAssert(cache);
-    mprAssert(item);
+    assure(cache);
+    assure(item);
 
     lock(cache);
     mprRemoveKey(cache->store, item->key);
@@ -325,7 +330,7 @@ static void removeItem(MprCache *cache, CacheItem *item)
 
 static void pruneCache(MprCache *cache, MprEvent *event)
 {
-    MprTime         when, factor;
+    MprTicks        when, factor;
     MprKey          *kp;
     CacheItem       *item;
     ssize           excessKeys;
@@ -337,7 +342,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
         }
     }
     if (event) {
-        when = mprGetTime();
+        when = mprGetTicks();
     } else {
         /* Expire all items by setting event to NULL */
         when = MAXINT64;
@@ -355,7 +360,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 removeItem(cache, item);
             }
         }
-        mprAssert(cache->usedMem >= 0);
+        assure(cache->usedMem >= 0);
 
         /*
             If too many keys or too much memory used, prune keys that expire soonest.
@@ -380,7 +385,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 when += factor;
             }
         }
-        mprAssert(cache->usedMem >= 0);
+        assure(cache->usedMem >= 0);
 
         if (mprGetHashLength(cache->store) == 0) {
             if (event) {
@@ -393,7 +398,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
 }
 
 
-void mprPruneCache(MprCache *cache)
+PUBLIC void mprPruneCache(MprCache *cache)
 {
     pruneCache(cache, NULL);
 }
@@ -428,28 +433,12 @@ static void manageCacheItem(CacheItem *item, int flags)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4
