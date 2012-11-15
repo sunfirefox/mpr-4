@@ -760,8 +760,6 @@ PUBLIC ssize wtom(char *dest, ssize destCount, wchar *src, ssize count)
 #elif BIT_WIN_LIKE
         len = WideCharToMultiByte(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1, NULL, NULL);
 #else
-        //  MOB - does this support dest == NULL?
-        //  MOB - count is ignored
         len = wcstombs(dest, src, destCount - 1);
 #endif
         if (dest) {
@@ -802,8 +800,6 @@ PUBLIC ssize mtow(wchar *dest, ssize destCount, cchar *src, ssize count)
 #elif BIT_WIN_LIKE
         len = MultiByteToWideChar(CP_ACP, 0, src, count, dest, (DWORD) destCount - 1);
 #else
-        //  MOB - does this support dest == NULL
-        //  MOB - count is ignored
         len = mbstowcs(dest, src, destCount - 1);
 #endif
         if (dest) {

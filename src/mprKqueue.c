@@ -302,8 +302,6 @@ PUBLIC void mprWakeNotifier()
     }
 }
 
-#else
-PUBLIC void stubMprKqueue() {}
 #endif /* MPR_EVENT_KQUEUE */
 
 /*

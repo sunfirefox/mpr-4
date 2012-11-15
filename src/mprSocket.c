@@ -1506,7 +1506,6 @@ PUBLIC bool mprIsSocketV6(MprSocket *sp)
 }
 
 
-//  MOB - inconsistent with mprIsSocketV6
 PUBLIC bool mprIsIPv6(cchar *ip)
 {
     return ip && ipv6(ip);
@@ -1654,8 +1653,7 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
     mprLog(4, "Using %s SSL provider", ssl->providerName);
     sp->provider = ssl->provider;
 #if FUTURE
-    //  MOB - session resumption can cause problems with Nagle. 
-    //  However, appweb opens sockets with nodelay by default
+    /* session resumption can cause problems with Nagle. However, appweb opens sockets with nodelay by default */
     sp->flags |= MPR_SOCKET_NODELAY;
     mprSetSocketNoDelay(sp, 1);
 #endif

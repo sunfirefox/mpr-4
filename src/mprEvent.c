@@ -125,7 +125,7 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     assure(dispatcher);
     assure(event);
     assure(event->timestamp);
-#if UNUSED && KEEP
+#if KEEP
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
 #endif
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));

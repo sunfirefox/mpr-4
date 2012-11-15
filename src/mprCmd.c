@@ -88,7 +88,7 @@ PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     if ((cmd = mprAllocObj(MprCmd, manageCmd)) == 0) {
         return 0;
     }
-#if UNUSED && KEEP
+#if KEEP
     cmd->timeoutPeriod = MPR_TIMEOUT_CMD;
     cmd->timestamp = mprGetTicks();
 #endif
@@ -931,7 +931,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTicks timeout)
 {
     assure(0);
-#if UNUSED && KEEP
+#if KEEP
     cmd->timeoutPeriod = timeout;
 #endif
 }

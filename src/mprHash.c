@@ -44,7 +44,7 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     if (!(flags & MPR_HASH_OWN)) {
         hash->mutex = mprCreateLock();
     }
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
         if (hash->flags & MPR_HASH_CASELESS) {
             hash->fn = (MprHashProc) whashlower;
@@ -332,7 +332,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
     prev = 0;
 
     while (sp) {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
         if (hash->flags & MPR_HASH_UNICODE) {
             wchar *u1, *u2;
             u1 = (wchar*) sp->key;
@@ -417,7 +417,7 @@ PUBLIC MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 
 static void *dupKey(MprHash *hash, cvoid *key)
 {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
         return wclone((wchar*) key);
     } else

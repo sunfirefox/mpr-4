@@ -290,8 +290,6 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 }
 
 
-#else /* BIT_ROM */
-PUBLIC void stubRomfs() {}
 #endif /* BIT_ROM */
 
 /*

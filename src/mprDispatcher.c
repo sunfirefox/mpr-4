@@ -888,7 +888,7 @@ static int dqlen(MprDispatcher *dq)
 #endif
 
 
-#if UNUSED && KEEP
+#if KEEP
 /*
     Designate the required worker thread to run the event
  */

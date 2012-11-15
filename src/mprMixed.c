@@ -8,7 +8,7 @@
 
 #include    "mpr.h"
 
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
 /********************************** Forwards **********************************/
 
 PUBLIC int mcaselesscmp(wchar *str1, cchar *str2)

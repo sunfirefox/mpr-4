@@ -574,7 +574,7 @@ static MprMem *allocMem(ssize required, int flags)
             }
             groupMap &= ~(((ssize) 1) << group);
             heap->groupMap &= ~(((ssize) 1) << group);
-#if UNUSED && KEEP
+#if KEEP
             triggerGC(0);
 #endif
         }
@@ -1368,7 +1368,7 @@ static void marker(void *unused, MprThread *tp)
 }
 
 
-#if UNUSED && KEEP
+#if KEEP
 /*
     Sweeper thread main program. May be called from the marker thread.
  */
@@ -2518,6 +2518,7 @@ static void monitorStack()
 #undef mprCopyName
 #undef mprSetAllocName
 
+#if UNUSED
 /*
     Define stubs so windows can use same *.def for debug or release
  */
@@ -2525,6 +2526,7 @@ PUBLIC void mprCheckBlock(MprMem *mp) {}
 PUBLIC void *mprSetName(void *ptr, cchar *name) { return 0; }
 PUBLIC void *mprCopyName(void *dest, void *src) { return 0; }
 PUBLIC void *mprSetAllocName(void *ptr, cchar *name) { return 0; }
+#endif
 
 /*
     Re-instate defines for combo releases, where source will be appended below here

@@ -187,8 +187,6 @@ PUBLIC int mprInitWindow()
     return 0;
 }
 
-#else
-PUBLIC void stubMprUnix() {}
 #endif /* BIT_UNIX_LIKE */
 
 /*

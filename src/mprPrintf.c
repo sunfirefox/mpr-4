@@ -160,7 +160,7 @@ static int  growBuf(Format *fmt);
 static char *sprintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
 static void outNum(Format *fmt, cchar *prefix, uint64 val);
 static void outString(Format *fmt, cchar *str, ssize len);
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
 static void outWideString(Format *fmt, wchar *str, ssize len);
 #endif
 #if BIT_FLOAT
@@ -476,7 +476,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* Name */
                 qname = va_arg(args, MprEjsName);
                 if (qname.name) {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                     outWideString(&fmt, (wchar*) qname.space->value, qname.space->length);
                     BPUT(&fmt, ':');
                     BPUT(&fmt, ':');
@@ -494,7 +494,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'S':
                 /* Safe string */
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
                     //  UNICODE - not right wchar
                     safe = mprEscapeHtml(va_arg(args, wchar*));
@@ -511,7 +511,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* MprEjsString */
                 es = va_arg(args, MprEjsString*);
                 if (es) {
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                     outWideString(&fmt, es->value, es->length);
 #else
                     outString(&fmt, (char*) es->value, es->length);
@@ -523,7 +523,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'w':
                 /* Wide string of wchar characters (Same as %ls"). Null terminated. */
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                 outWideString(&fmt, va_arg(args, wchar*), -1);
                 break;
 #else
@@ -532,7 +532,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 's':
                 /* Standard string */
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
                     outWideString(&fmt, va_arg(args, wchar*), -1);
                 } else
@@ -681,7 +681,7 @@ static void outString(Format *fmt, cchar *str, ssize len)
 }
 
 
-#if BIT_CHAR_LEN > 1 && UNUSED && KEEP
+#if BIT_CHAR_LEN > 1 && KEEP
 static void outWideString(Format *fmt, wchar *str, ssize len)
 {
     wchar     *cp;
@@ -884,148 +884,6 @@ PUBLIC int mprIsZero(double value) {
     return fpclassify(value) == FP_ZERO;
 #endif
 }
-
-
-#if UNUSED
-/*
-    Convert a double to ascii. Caller must free the result. This uses the JavaScript ECMA-262 spec for formatting rules.
-
-    function dtoa(double value, int mode, int ndigits, int *periodOffset, int *sign, char **end)
- */
-PUBLIC char *mprDtoa(double value, int ndigits, int mode, int flags)
-{
-    MprBuf  *buf;
-    char    *intermediate, *ip;
-    int     period, sign, len, exponentForm, fixedForm, exponent, count, totalDigits, npad;
-
-    buf = mprCreateBuf(64, -1);
-    intermediate = 0;
-    exponentForm = 0;
-    fixedForm = 0;
-
-    if (mprIsNan(value)) {
-        mprPutStringToBuf(buf, "NaN");
-
-    } else if (mprIsInfinite(value)) {
-        if (value < 0) {
-            mprPutStringToBuf(buf, "-Infinity");
-        } else {
-            mprPutStringToBuf(buf, "Infinity");
-        }
-    } else if (value == 0) {
-        mprPutCharToBuf(buf, '0');
-
-    } else {
-        if (ndigits <= 0) {
-            if (!(flags & MPR_DTOA_FIXED_FORM)) {
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-            ndigits = 0;
-
-        } else if (mode == MPR_DTOA_ALL_DIGITS) {
-            mode = MPR_DTOA_N_DIGITS;
-        }
-        if (flags & MPR_DTOA_EXPONENT_FORM) {
-            exponentForm = 1;
-            if (ndigits > 0) {
-                ndigits++;
-            } else {
-                ndigits = 0;
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-        } else if (flags & MPR_DTOA_FIXED_FORM) {
-            fixedForm = 1;
-        }
-
-        /*
-            Convert to an intermediate string representation. Period is the offset of the decimal point. NOTE: the
-            intermediate representation may have less digits than period.
-            Note: ndigits < 0 seems to trim N digits from the end with rounding.
-         */
-        ip = intermediate = dtoa(value, mode, ndigits, &period, &sign, NULL);
-        len = (int) slen(intermediate);
-        exponent = period - 1;
-
-        if (mode == MPR_DTOA_ALL_DIGITS && ndigits == 0) {
-            ndigits = len;
-        }
-        if (!fixedForm) {
-            if (period <= -6 || period > 21) {
-                exponentForm = 1;
-            }
-        }
-        if (sign) {
-            mprPutCharToBuf(buf, '-');
-        }
-        if (exponentForm) {
-            mprPutCharToBuf(buf, ip[0] ? ip[0] : '0');
-            if (len > 1) {
-                mprPutCharToBuf(buf, '.');
-                mprPutSubStringToBuf(buf, &ip[1], (ndigits == 0) ? len - 1: ndigits);
-            }
-            mprPutCharToBuf(buf, 'e');
-            mprPutCharToBuf(buf, (period < 0) ? '-' : '+');
-            mprPutFmtToBuf(buf, "%d", (exponent < 0) ? -exponent: exponent);
-
-        } else {
-            if (mode == MPR_DTOA_N_FRACTION_DIGITS) {
-                /* Count of digits */
-                if (period <= 0) {
-                    /* Leading fractional zeros required */
-                    mprPutStringToBuf(buf, "0.");
-                    mprPutPadToBuf(buf, '0', -period);
-                    mprPutStringToBuf(buf, ip);
-                    npad = ndigits - len + period;
-                    if (npad > 0) {
-                        mprPutPadToBuf(buf, '0', npad);
-                    }
-
-                } else {
-                    count = min(len, period);
-                    /* Leading integral digits */
-                    mprPutSubStringToBuf(buf, ip, count);
-                    /* Trailing zero pad */
-                    if (period > len) {
-                        mprPutPadToBuf(buf, '0', period - len);
-                    }
-                    totalDigits = count + ndigits;
-                    if (period < totalDigits) {
-                        count = totalDigits + sign - (int) mprGetBufLength(buf);
-                        mprPutCharToBuf(buf, '.');
-                        mprPutSubStringToBuf(buf, &ip[period], count);
-                        mprPutPadToBuf(buf, '0', count - slen(&ip[period]));
-                    }
-                }
-
-            } else if (len <= period && period <= 21) {
-                /* data shorter than period */
-                mprPutStringToBuf(buf, ip);
-                mprPutPadToBuf(buf, '0', period - len);
-
-            } else if (0 < period && period <= 21) {
-                /* Period shorter than data */
-                mprPutSubStringToBuf(buf, ip, period);
-                mprPutCharToBuf(buf, '.');
-                mprPutStringToBuf(buf, &ip[period]);
-
-            } else if (-6 < period && period <= 0) {
-                /* Small negative exponent */
-                mprPutStringToBuf(buf, "0.");
-                mprPutPadToBuf(buf, '0', -period);
-                mprPutStringToBuf(buf, ip);
-
-            } else {
-                assure(0);
-            }
-        }
-    }
-    mprAddNullToBuf(buf);
-    if (intermediate) {
-        freedtoa(intermediate);
-    }
-    return sclone(mprGetBufStart(buf));
-}
-#endif
 #endif /* BIT_FLOAT */
 
 

@@ -876,7 +876,6 @@ PUBLIC char *ssub(cchar *str, ssize offset, ssize len)
 }
 
 
-//  MOB - need strimSpace(str)
 /*
     Trim characters from the given set. Returns a newly allocated string.
  */

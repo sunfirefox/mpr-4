@@ -297,8 +297,6 @@ PUBLIC void mprWakeNotifier()
     }
 }
 
-#else
-PUBLIC void stubMprPollWait() {}
 #endif /* MPR_EVENT_POLL */
 
 /*

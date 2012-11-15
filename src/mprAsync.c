@@ -251,8 +251,6 @@ PUBLIC void mprSetWinMsgCallback(MprMsgCallback callback)
 }
 
 
-#else
-PUBLIC void stubMprAsync() {}
 #endif /* MPR_EVENT_ASYNC */
 
 /*

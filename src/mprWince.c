@@ -873,8 +873,6 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
 }
 
-#else
-PUBLIC void stubMprWince() {}
 #endif /* WINCE */
 
 /*
