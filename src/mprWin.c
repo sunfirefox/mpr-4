@@ -18,7 +18,7 @@
     Initialize the O/S platform layer
  */ 
 
-int mprCreateOsService()
+PUBLIC int mprCreateOsService()
 {
     WSADATA     wsaData;
 
@@ -29,31 +29,31 @@ int mprCreateOsService()
 }
 
 
-int mprStartOsService()
+PUBLIC int mprStartOsService()
 {
     return 0;
 }
 
 
-void mprStopOsService()
+PUBLIC void mprStopOsService()
 {
     WSACleanup();
 }
 
 
-long mprGetInst()
+PUBLIC long mprGetInst()
 {
     return (long) MPR->appInstance;
 }
 
 
-HWND mprGetHwnd()
+PUBLIC HWND mprGetHwnd()
 {
     return MPR->waitService->hwnd;
 }
 
 
-int mprGetRandomBytes(char *buf, ssize length, bool block)
+PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
 {
     HCRYPTPROV      prov;
     int             rc;
@@ -70,14 +70,14 @@ int mprGetRandomBytes(char *buf, ssize length, bool block)
 }
 
 
-int mprLoadNativeModule(MprModule *mp)
+PUBLIC int mprLoadNativeModule(MprModule *mp)
 {
     MprModuleEntry  fn;
     MprPath         info;
     char            *at, *baseName;
     void            *handle;
 
-    mprAssert(mp);
+    assure(mp);
 
     if ((handle = (HANDLE) MPR->appInstance) == 0) {
         handle = GetModuleHandle(NULL);
@@ -91,9 +91,9 @@ int mprLoadNativeModule(MprModule *mp)
         mp->path = at;
         mprGetPathInfo(mp->path, &info);
         mp->modified = info.mtime;
-        mprLog(2, "Loading native module %s", mp->name);
+        mprLog(2, "Loading native module %s", mp->path);
         baseName = mprGetPathBase(mp->path);
-        if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
+        if ((handle = GetModuleHandle(wide(baseName))) == 0 && (handle = LoadLibrary(wide(mp->path))) == 0) {
             mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
         } 
@@ -118,9 +118,9 @@ int mprLoadNativeModule(MprModule *mp)
 }
 
 
-int mprUnloadNativeModule(MprModule *mp)
+PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
-    mprAssert(mp->handle);
+    assure(mp->handle);
 
     if (FreeLibrary((HINSTANCE) mp->handle) == 0) {
         return MPR_ERR_ABORTED;
@@ -129,31 +129,31 @@ int mprUnloadNativeModule(MprModule *mp)
 }
 
 
-void mprSetInst(HINSTANCE inst)
+PUBLIC void mprSetInst(HINSTANCE inst)
 {
     MPR->appInstance = inst;
 }
 
 
-void mprSetHwnd(HWND h)
+PUBLIC void mprSetHwnd(HWND h)
 {
     MPR->waitService->hwnd = h;
 }
 
 
-void mprSetSocketMessage(int socketMessage)
+PUBLIC void mprSetSocketMessage(int socketMessage)
 {
     MPR->waitService->socketMessage = socketMessage;
 }
 
 
-void mprNap(MprTime timeout)
+PUBLIC void mprNap(MprTicks timeout)
 {
     Sleep((int) timeout);
 }
 
 
-void mprSleep(MprTime timeout)
+PUBLIC void mprSleep(MprTicks timeout)
 {
     mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
@@ -161,13 +161,14 @@ void mprSleep(MprTime timeout)
 }
 
 
-void mprWriteToOsLog(cchar *message, int flags, int level)
+PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     HKEY        hkey;
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *lines[9], *cp, *value;
+    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *cp, *value;
+	wchar		*lines[9];
     int         type;
     static int  once = 0;
 
@@ -177,7 +178,7 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
         *cp-- = '\0';
     }
     type = EVENTLOG_ERROR_TYPE;
-    lines[0] = buf;
+    lines[0] = wide(buf);
     lines[1] = 0;
     lines[2] = lines[3] = lines[4] = lines[5] = 0;
     lines[6] = lines[7] = lines[8] = 0;
@@ -185,19 +186,20 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
     if (once == 0) {
         /*  Initialize the registry */
         once = 1;
-        mprSprintf(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s",
-            mprGetAppName());
+        fmt(logName, sizeof(logName), "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\%s", mprGetAppName());
         hkey = 0;
 
-        if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, logName, 0, NULL, 0, KEY_ALL_ACCESS, NULL, &hkey, &exists) == ERROR_SUCCESS) {
+        if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, wide(logName), 0, NULL, 0, KEY_ALL_ACCESS, NULL, 
+                &hkey, &exists) == ERROR_SUCCESS) {
             value = "%SystemRoot%\\System32\\netmsg.dll";
-            if (RegSetValueEx(hkey, "EventMessageFile", 0, REG_EXPAND_SZ, 
+            if (RegSetValueEx(hkey, UT("EventMessageFile"), 0, REG_EXPAND_SZ, 
                     (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
             errorType = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
-            if (RegSetValueEx(hkey, "TypesSupported", 0, REG_DWORD, (uchar*) &errorType, sizeof(DWORD)) != ERROR_SUCCESS) {
+            if (RegSetValueEx(hkey, UT("TypesSupported"), 0, REG_DWORD, (uchar*) &errorType, 
+                    sizeof(DWORD)) != ERROR_SUCCESS) {
                 RegCloseKey(hkey);
                 return;
             }
@@ -205,13 +207,13 @@ void mprWriteToOsLog(cchar *message, int flags, int level)
         }
     }
 
-    event = RegisterEventSource(0, mprGetAppName());
+    event = RegisterEventSource(0, wide(mprGetAppName()));
     if (event) {
         /*
             3299 is the event number for the generic message in netmsg.dll.
             "%1 %2 %3 %4 %5 %6 %7 %8 %9" -- thanks Apache for the tip
          */
-        ReportEvent(event, EVENTLOG_ERROR_TYPE, 0, 3299, NULL, sizeof(lines) / sizeof(char*), 0, (LPCSTR*) lines, 0);
+        ReportEvent(event, EVENTLOG_ERROR_TYPE, 0, 3299, NULL, sizeof(lines) / sizeof(wchar*), 0, lines, 0);
         DeregisterEventSource(event);
     }
 }
@@ -230,7 +232,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     char    key[MPR_MAX_STRING], *cp;
     ssize   len;
 
-    mprAssert(keyPath && *keyPath);
+    assure(keyPath && *keyPath);
 
     *hive = 0;
 
@@ -243,13 +245,13 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     if (cp == 0 || *cp == '\0') {
         return 0;
     }
-    if (!scasecmp(key, "HKEY_LOCAL_MACHINE") || !scasecmp(key, "HKLM")) {
+    if (!scaselesscmp(key, "HKEY_LOCAL_MACHINE") || !scaselesscmp(key, "HKLM")) {
         *hive = HKEY_LOCAL_MACHINE;
-    } else if (!scasecmp(key, "HKEY_CURRENT_USER") || !scasecmp(key, "HKCU")) {
+    } else if (!scaselesscmp(key, "HKEY_CURRENT_USER") || !scaselesscmp(key, "HKCU")) {
         *hive = HKEY_CURRENT_USER;
-    } else if (!scasecmp(key, "HKEY_USERS")) {
+    } else if (!scaselesscmp(key, "HKEY_USERS")) {
         *hive = HKEY_USERS;
-    } else if (!scasecmp(key, "HKEY_CLASSES_ROOT")) {
+    } else if (!scaselesscmp(key, "HKEY_CLASSES_ROOT")) {
         *hive = HKEY_CLASSES_ROOT;
     } else {
         return 0;
@@ -262,13 +264,13 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
 }
 
 
-char *mprReadRegistry(cchar *key, cchar *name)
+PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
 {
     HKEY        top, h;
     char        *value;
     ulong       type, size;
 
-    mprAssert(key && *key);
+    assure(key && *key);
 
     /*
         Get the registry hive
@@ -276,14 +278,14 @@ char *mprReadRegistry(cchar *key, cchar *name)
     if ((key = getHive(key, &top)) == 0) {
         return 0;
     }
-    if (RegOpenKeyEx(top, key, 0, KEY_READ, &h) != ERROR_SUCCESS) {
+    if (RegOpenKeyEx(top, wide(key), 0, KEY_READ, &h) != ERROR_SUCCESS) {
         return 0;
     }
 
     /*
         Get the type
      */
-    if (RegQueryValueEx(h, name, 0, &type, 0, &size) != ERROR_SUCCESS) {
+    if (RegQueryValueEx(h, wide(name), 0, &type, 0, &size) != ERROR_SUCCESS) {
         RegCloseKey(h);
         return 0;
     }
@@ -294,7 +296,7 @@ char *mprReadRegistry(cchar *key, cchar *name)
     if ((value = mprAlloc(size + 1)) == 0) {
         return 0;
     }
-    if (RegQueryValueEx(h, name, 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
+    if (RegQueryValueEx(h, wide(name), 0, &type, (uchar*) value, &size) != ERROR_SUCCESS) {
         RegCloseKey(h);
         return 0;
     }
@@ -303,13 +305,13 @@ char *mprReadRegistry(cchar *key, cchar *name)
     return value;
 }
 
-int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
+PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 {
     HKEY    top, h, subHandle;
     ulong   disposition;
 
-    mprAssert(key && *key);
-    mprAssert(value && *value);
+    assure(key && *key);
+    assure(value && *value);
 
     /*
         Get the registry hive
@@ -321,10 +323,10 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
         /*
             Write a registry string value
          */
-        if (RegOpenKeyEx(top, key, 0, KEY_ALL_ACCESS, &h) != ERROR_SUCCESS) {
+        if (RegOpenKeyEx(top, wide(key), 0, KEY_ALL_ACCESS, &h) != ERROR_SUCCESS) {
             return MPR_ERR_CANT_ACCESS;
         }
-        if (RegSetValueEx(h, name, 0, REG_SZ, (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
+        if (RegSetValueEx(h, wide(name), 0, REG_SZ, (uchar*) value, (int) slen(value) + 1) != ERROR_SUCCESS) {
             RegCloseKey(h);
             return MPR_ERR_CANT_READ;
         }
@@ -333,10 +335,10 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
         /*
             Create a new sub key
          */
-        if (RegOpenKeyEx(top, key, 0, KEY_CREATE_SUB_KEY, &h) != ERROR_SUCCESS){
+        if (RegOpenKeyEx(top, wide(key), 0, KEY_CREATE_SUB_KEY, &h) != ERROR_SUCCESS){
             return MPR_ERR_CANT_ACCESS;
         }
-        if (RegCreateKeyEx(h, value, 0, NULL, REG_OPTION_NON_VOLATILE,
+        if (RegCreateKeyEx(h, wide(value), 0, NULL, REG_OPTION_NON_VOLATILE,
                 KEY_ALL_ACCESS, NULL, &subHandle, &disposition) != ERROR_SUCCESS) {
             return MPR_ERR_CANT_ACCESS;
         }
@@ -351,31 +353,15 @@ int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

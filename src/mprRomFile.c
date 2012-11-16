@@ -12,7 +12,7 @@
 
 #include    "mpr.h"
 
-#if BIT_FEATURE_ROMFS 
+#if BIT_ROM 
 /****************************** Forward Declarations **************************/
 
 static void manageRomFile(MprFile *file, int flags);
@@ -26,7 +26,7 @@ static MprFile *openFile(MprFileSystem *fileSystem, cchar *path, int flags, int 
     MprRomFileSystem    *rfs;
     MprFile             *file;
     
-    mprAssert(path && *path);
+    assure(path && *path);
 
     rfs = (MprRomFileSystem*) fileSystem;
     file = mprAllocObj(MprFile, manageRomFile);
@@ -63,14 +63,14 @@ static ssize readFile(MprFile *file, void *buf, ssize size)
     MprRomInode     *inode;
     ssize           len;
 
-    mprAssert(buf);
+    assure(buf);
 
     if (file->fd == 0) {
         return read(file->fd, buf, size);
     }
     inode = file->inode;
     len = min(inode->size - file->iopos, size);
-    mprAssert(len >= 0);
+    assure(len >= 0);
     memcpy(buf, &inode->data[file->iopos], len);
     file->iopos += len;
     return len;
@@ -90,7 +90,7 @@ static long seekFile(MprFile *file, int seekType, long distance)
 {
     MprRomInode     *inode;
 
-    mprAssert(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
+    assure(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
 
     inode = file->inode;
 
@@ -145,7 +145,7 @@ static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info)
 {
     MprRomInode *ri;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     info->checked = 1;
 
@@ -204,7 +204,7 @@ static MprRomInode *lookup(MprRomFileSystem *rfs, cchar *path)
 }
 
 
-int mprSetRomFileSystem(MprRomInode *inodeList)
+PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 {
     MprRomFileSystem    *rfs;
     MprRomInode         *ri;
@@ -215,7 +215,7 @@ int mprSetRomFileSystem(MprRomInode *inodeList)
 
     for (ri = inodeList; ri->path; ri++) {
         if (mprAddKey(rfs->fileIndex, ri->path, ri) < 0) {
-            mprAssert(!MPR_ERR_MEMORY);
+            assure(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
     }
@@ -223,7 +223,7 @@ int mprSetRomFileSystem(MprRomInode *inodeList)
 }
 
 
-void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
+PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
 #if !WINCE
@@ -242,7 +242,7 @@ void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
 }
 
 
-MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
+PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 {
     MprFileSystem      *fs;
     MprRomFileSystem   *rfs;
@@ -286,67 +286,23 @@ MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
     MPR->stdOutput->fd = 1;
     MPR->stdOutput->fileSystem = fs;
     MPR->stdOutput->mode = O_WRONLY;
-
-#if UNUSED
-    fs->stdError = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdError == 0) {
-        return NULL;
-    }
-    fs->stdError->fd = 2;
-    fs->stdError->fileSystem = fs;
-    fs->stdError->mode = O_WRONLY;
-
-    fs->stdInput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdInput == 0) {
-        return NULL;
-    }
-    fs->stdInput->fd = 0;
-    fs->stdInput->fileSystem = fs;
-    fs->stdInput->mode = O_RDONLY;
-
-    fs->stdOutput = mprAllocZeroed(sizeof(MprFile));
-    if (fs->stdOutput == 0) {
-        return NULL;
-    }
-    fs->stdOutput->fd = 1;
-    fs->stdOutput->fileSystem = fs;
-    fs->stdOutput->mode = O_WRONLY;
-#endif
     return rfs;
 }
 
 
-#else /* BIT_FEATURE_ROMFS */
-void stubRomfs() {}
-#endif /* BIT_FEATURE_ROMFS */
+#endif /* BIT_ROM */
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

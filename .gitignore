@@ -72,4 +72,9 @@ doc/api/mpr/xml
 /*-*-release/
 .*.guid
 *.dmp
-start.bit
+/start.bit
+*-xcode
+*-vsdebug
+projects/*macosx-full.xcodeproj
+*-mine
+*-mine*

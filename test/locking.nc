@@ -107,7 +107,7 @@ int work(MprThread *tp) {
             exit(255);
         }
     }
-    mprAssert(i == 500);
+    assure(i == 500);
     return z;
 }
 

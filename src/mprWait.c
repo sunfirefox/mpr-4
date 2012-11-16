@@ -23,7 +23,7 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags);
 /*
     Initialize the service
  */
-MprWaitService *mprCreateWaitService()
+PUBLIC MprWaitService *mprCreateWaitService()
 {
     MprWaitService  *ws;
 
@@ -73,18 +73,9 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
 {
     MprWaitService  *ws;
 
-    mprAssert(fd >= 0);
+    assure(fd >= 0);
 
     ws = MPR->waitService;
-    if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
-        mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
-        return 0;
-    }
-#if BIT_UNIX_LIKE || VXWORKS
-    if (fd >= FD_SETSIZE) {
-        mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
-    }
-#endif
     wp->fd              = fd;
     wp->notifierIndex   = -1;
     wp->dispatcher      = dispatcher;
@@ -94,6 +85,15 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     wp->service         = ws;
     wp->flags           = flags;
 
+    if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
+        mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
+        return 0;
+    }
+#if BIT_UNIX_LIKE || VXWORKS
+    if (fd >= FD_SETSIZE) {
+        mprError("File descriptor %d exceeds max io of %d", fd, FD_SETSIZE);
+    }
+#endif
     if (mask) {
         lock(ws);
         if (mprAddItem(ws->handlers, wp) < 0) {
@@ -108,11 +108,11 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
 }
 
 
-MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
+PUBLIC MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dispatcher, void *proc, void *data, int flags)
 {
     MprWaitHandler  *wp;
 
-    mprAssert(fd >= 0);
+    assure(fd >= 0);
 
     if ((wp = mprAllocObj(MprWaitHandler, manageWaitHandler)) == 0) {
         return 0;
@@ -140,7 +140,7 @@ static void manageWaitHandler(MprWaitHandler *wp, int flags)
 }
 
 
-void mprRemoveWaitHandler(MprWaitHandler *wp)
+PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService      *ws;
 
@@ -148,6 +148,10 @@ void mprRemoveWaitHandler(MprWaitHandler *wp)
         return;
     }
     ws = wp->service;
+    if (ws == 0) {
+        /* This wait handler was never initialized. */
+        return;
+    }
     lock(ws);
     if (wp->fd >= 0) {
         if (wp->desiredMask) {
@@ -165,14 +169,14 @@ void mprRemoveWaitHandler(MprWaitHandler *wp)
 }
 
 
-void mprQueueIOEvent(MprWaitHandler *wp)
+PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 {
     MprDispatcher   *dispatcher;
     MprEvent        *event;
 
     lock(wp->service);
     if (wp->flags & MPR_WAIT_NEW_DISPATCHER) {
-        dispatcher = mprCreateDispatcher("IO", 1);
+        dispatcher = mprCreateDispatcher("IO", MPR_DISPATCHER_ENABLED | MPR_DISPATCHER_AUTO_CREATE);
     } else {
         dispatcher = (wp->dispatcher) ? wp->dispatcher: mprGetDispatcher();
     }
@@ -187,11 +191,12 @@ void mprQueueIOEvent(MprWaitHandler *wp)
 
 static void ioEvent(void *data, MprEvent *event)
 {
+    event->handler->event = 0;
     event->handler->proc(data, event);
 }
 
 
-void mprWaitOn(MprWaitHandler *wp, int mask)
+PUBLIC void mprWaitOn(MprWaitHandler *wp, int mask)
 {
     lock(wp->service);
     if (mask != wp->desiredMask) {
@@ -208,7 +213,7 @@ void mprWaitOn(MprWaitHandler *wp, int mask)
 /*
     Set a handler to be recalled without further I/O
  */
-void mprRecallWaitHandlerByFd(int fd)
+PUBLIC void mprRecallWaitHandlerByFd(int fd)
 {
     MprWaitService  *ws;
     MprWaitHandler  *wp;
@@ -228,7 +233,7 @@ void mprRecallWaitHandlerByFd(int fd)
 }
 
 
-void mprRecallWaitHandler(MprWaitHandler *wp)
+PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService  *ws;
 
@@ -244,7 +249,7 @@ void mprRecallWaitHandler(MprWaitHandler *wp)
 /*
     Recall a handler which may have buffered data. Only called by notifiers.
  */
-void mprDoWaitRecall(MprWaitService *ws)
+PUBLIC void mprDoWaitRecall(MprWaitService *ws)
 {
     MprWaitHandler      *wp;
     int                 index;
@@ -267,28 +272,12 @@ void mprDoWaitRecall(MprWaitService *ws)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

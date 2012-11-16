@@ -66,7 +66,7 @@ static void testRunCmd(MprTestGroup *gp)
     /*
         runProgram reads from the input, so it requires stdin to be connected
      */
-    mprSprintf(command, sizeof(command), "%s 0", tc->program);
+    fmt(command, sizeof(command), "%s 0", tc->program);
     status = mprRunCmd(tc->cmd, command, NULL, &result, NULL, -1, MPR_CMD_IN);
     assert(result != NULL);
     assert(status == 0);
@@ -79,7 +79,7 @@ static void testRunCmd(MprTestGroup *gp)
 }
 
 
-static ssize withDataCallback(MprCmd *cmd, int channel, void *data)
+static void withDataCallback(MprCmd *cmd, int channel, void *data)
 {
     MprTestGroup    *gp;
     TestCmd         *tc;
@@ -105,9 +105,9 @@ static ssize withDataCallback(MprCmd *cmd, int channel, void *data)
         space = mprGetBufSpace(buf);
         if (space < (MPR_BUFSIZE / 4)) {
             if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
-                mprAssert(0);
+                assure(0);
                 mprCloseCmdFd(cmd, channel);
-                return 0;
+                return;
             }
             space = mprGetBufSpace(buf);
         }
@@ -120,7 +120,7 @@ static ssize withDataCallback(MprCmd *cmd, int channel, void *data)
             } else {
                 mprEnableCmdEvents(cmd, channel);
             }
-            return len;
+            return;
             
         } else {
             mprAdjustBufEnd(buf, len);
@@ -133,7 +133,6 @@ static ssize withDataCallback(MprCmd *cmd, int channel, void *data)
         /* Child death notification */
         break;
     }
-    return len;
 }
 
 
@@ -195,7 +194,7 @@ static void testWithData(MprTestGroup *gp)
     assert(fd > 0);
 
     for (i = 0; i < 10; i++) {
-        mprSprintf(line, sizeof(line), "line %d\n", i);
+        fmt(line, sizeof(line), "line %d\n", i);
         len = (int) strlen(line);
         rc = write(fd, line, (wsize) len);
         assert(rc == len);
@@ -224,7 +223,7 @@ static void testWithData(MprTestGroup *gp)
         assert(match(s, "CMD_ENV=xyz") == 0);
 
         for (i = 0; i < 10; i++) { 
-            mprSprintf(line, sizeof(line), "line %d", i);
+            fmt(line, sizeof(line), "line %d", i);
             s = stok(0, "\n\r", &tok);
             assert(s != 0);
             assert(match(s, line) == 0);
@@ -251,7 +250,7 @@ static void testExitCode(MprTestGroup *gp)
     assert(tc->cmd != 0);
 
     for (i = 0; i < 1; i++) {
-        mprSprintf(command, sizeof(command), "%s %d", tc->program, i);
+        fmt(command, sizeof(command), "%s %d", tc->program, i);
         status = mprRunCmd(tc->cmd, command, NULL, &result, NULL, -1, MPR_CMD_IN);
         assert(result != NULL);
         assert(status == i);
@@ -277,7 +276,7 @@ static void testNoCapture(MprTestGroup *gp)
     tc->cmd = mprCreateCmd(gp->dispatcher);
     assert(tc->cmd != 0);
 
-    mprSprintf(command, sizeof(command), "%s 99", tc->program);
+    fmt(command, sizeof(command), "%s 99", tc->program);
     status = mprRunCmd(tc->cmd, command, NULL, NULL, NULL, -1, MPR_CMD_IN);
     assert(status == 99);
 
@@ -304,7 +303,7 @@ static void testMultiple(MprTestGroup *gp)
         mprAddRoot(cmds[i]);
     }
     for (i = 0; i < CMD_COUNT; i++) {
-        mprSprintf(command, sizeof(command), "%s 99", tc->program);
+        fmt(command, sizeof(command), "%s 99", tc->program);
         status = mprRunCmd(cmds[i], command, NULL, NULL, NULL, -1, MPR_CMD_IN);
         assert(status == 99);
         status = mprGetCmdExitStatus(cmds[i]);
@@ -334,31 +333,15 @@ MprTestDef testCmd = {
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

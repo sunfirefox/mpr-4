@@ -13,15 +13,16 @@
 
 /************************************ Code ************************************/
 
-char *itos(int64 value)
+PUBLIC char *itos(int64 value)
 {
     return itosradix(value, 10);
 }
 
+
 /*
     Format a number as a string. Support radix 10 and 16.
  */
-char *itosradix(int64 value, int radix)
+PUBLIC char *itosradix(int64 value, int radix)
 {
     char    numBuf[32];
     char    *cp;
@@ -52,7 +53,7 @@ char *itosradix(int64 value, int radix)
 }
 
 
-char *itosbuf(char *buf, ssize size, int64 value, int radix)
+PUBLIC char *itosbuf(char *buf, ssize size, int64 value, int radix)
 {
     char    *cp, *end;
     char    digits[] = "0123456789ABCDEF";
@@ -90,7 +91,7 @@ char *itosbuf(char *buf, ssize size, int64 value, int radix)
 }
 
 
-char *scamel(cchar *str)
+PUBLIC char *scamel(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -111,9 +112,8 @@ char *scamel(cchar *str)
 
 /*
     Case insensitive string comparison. Limited by length
-    MOB rename sacasecmp
  */
-int scasecmp(cchar *s1, cchar *s2)
+PUBLIC int scaselesscmp(cchar *s1, cchar *s2)
 {
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -122,18 +122,17 @@ int scasecmp(cchar *s1, cchar *s2)
     } else if (s2 == 0) {
         return 1;
     }
-    return sncasecmp(s1, s2, max(slen(s1), slen(s2)));
+    return sncaselesscmp(s1, s2, max(slen(s1), slen(s2)));
 }
 
 
-// MOB rename sacasematch
-bool scasematch(cchar *s1, cchar *s2)
+PUBLIC bool scaselessmatch(cchar *s1, cchar *s2)
 {
-    return scasecmp(s1, s2) == 0;
+    return scaselesscmp(s1, s2) == 0;
 }
 
 
-char *schr(cchar *s, int c)
+PUBLIC char *schr(cchar *s, int c)
 {
     if (s == 0) {
         return 0;
@@ -142,8 +141,7 @@ char *schr(cchar *s, int c)
 }
 
 
-//  MOB - this should have no limit and then provide sncontains
-char *scontains(cchar *str, cchar *pattern, ssize limit)
+PUBLIC char *sncontains(cchar *str, cchar *pattern, ssize limit)
 {
     cchar   *cp, *s1, *s2;
     ssize   lim;
@@ -172,17 +170,27 @@ char *scontains(cchar *str, cchar *pattern, ssize limit)
 }
 
 
-ssize scopy(char *dest, ssize destMax, cchar *src)
+PUBLIC char *scontains(cchar *str, cchar *pattern)
+{
+    return sncontains(str, pattern, -1);
+}
+
+
+/*
+    Copy a string into a buffer. Always ensure it is null terminated
+ */
+PUBLIC ssize scopy(char *dest, ssize destMax, cchar *src)
 {
     ssize      len;
 
-    mprAssert(src);
-    mprAssert(dest);
-    mprAssert(0 < dest && destMax < MAXINT);
+    assure(src);
+    assure(dest);
+    assure(0 < dest && destMax < MAXINT);
 
     len = slen(src);
+    /* Must ensure room for null */
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     strcpy(dest, src);
@@ -190,7 +198,7 @@ ssize scopy(char *dest, ssize destMax, cchar *src)
 }
 
 
-char *sclone(cchar *str)
+PUBLIC char *sclone(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -208,7 +216,7 @@ char *sclone(cchar *str)
 }
 
 
-int scmp(cchar *s1, cchar *s2)
+PUBLIC int scmp(cchar *s1, cchar *s2)
 {
     if (s1 == s2) {
         return 0;
@@ -221,8 +229,7 @@ int scmp(cchar *s1, cchar *s2)
 }
 
 
-//  MOB should return bool
-int sends(cchar *str, cchar *suffix)
+PUBLIC bool sends(cchar *str, cchar *suffix)
 {
     if (str == 0 || suffix == 0) {
         return 0;
@@ -234,24 +241,25 @@ int sends(cchar *str, cchar *suffix)
 }
 
 
-char *sfmt(cchar *fmt, ...)
+PUBLIC char *sfmt(cchar *format, ...)
 {
     va_list     ap;
     char        *buf;
 
-    mprAssert(fmt);
-
-    va_start(ap, fmt);
-    buf = mprAsprintfv(fmt, ap);
+    if (format == 0) {
+        format = "%s";
+    }
+    va_start(ap, format);
+    buf = mprAsprintfv(format, ap);
     va_end(ap);
     return buf;
 }
 
 
-char *sfmtv(cchar *fmt, va_list arg)
+PUBLIC char *sfmtv(cchar *format, va_list arg)
 {
-    mprAssert(fmt);
-    return mprAsprintfv(fmt, arg);
+    assure(format);
+    return mprAsprintfv(format, arg);
 }
 
 
@@ -259,13 +267,13 @@ char *sfmtv(cchar *fmt, va_list arg)
     Compute a hash for a C string
     Inspired by Paul Hsieh (c) 2004-2008, see http://www.azillionmonkeys.com/qed/hash.html)
  */
-uint shash(cchar *cname, ssize len)
+PUBLIC uint shash(cchar *cname, ssize len)
 {
     uchar   *name;
     uint    hash, rem, tmp;
 
-    mprAssert(cname);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(cname);
+    assure(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -309,13 +317,13 @@ uint shash(cchar *cname, ssize len)
 /*
     Hash the lower case name
  */
-uint shashlower(cchar *cname, ssize len)
+PUBLIC uint shashlower(cchar *cname, ssize len)
 {
     uchar   *name;
     uint    hash, rem, tmp;
 
-    mprAssert(cname);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(cname);
+    assure(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -325,25 +333,25 @@ uint shashlower(cchar *cname, ssize len)
     name = (uchar*) cname;
 
     for (len >>= 2; len > 0; len--, name += 4) {
-        hash  += tolower(name[0]) | (tolower(name[1]) << 8);
-        tmp   =  ((tolower(name[2]) | (tolower(name[3]) << 8)) << 11) ^ hash;
+        hash  += tolower((uchar) name[0]) | (tolower((uchar) name[1]) << 8);
+        tmp   =  ((tolower((uchar) name[2]) | (tolower((uchar) name[3]) << 8)) << 11) ^ hash;
         hash  =  (hash << 16) ^ tmp;
         hash  += hash >> 11;
     }
     switch (rem) {
     case 3: 
-        hash += tolower(name[0]) + (tolower(name[1]) << 8);
+        hash += tolower((uchar) name[0]) + (tolower((uchar) name[1]) << 8);
         hash ^= hash << 16;
-        hash ^= tolower(name[2]) << 18;
+        hash ^= tolower((uchar) name[2]) << 18;
         hash += hash >> 11;
         break;
     case 2: 
-        hash += tolower(name[0]) + tolower((name[1]) << 8);
+        hash += tolower((uchar) name[0]) + tolower(((uchar) name[1]) << 8);
         hash ^= hash << 11;
         hash += hash >> 17;
         break;
     case 1: 
-        hash += tolower(name[0]);
+        hash += tolower((uchar) name[0]);
         hash ^= hash << 10;
         hash += hash >> 1;
     }
@@ -357,7 +365,7 @@ uint shashlower(cchar *cname, ssize len)
 }
 
 
-char *sjoin(cchar *str, ...)
+PUBLIC char *sjoin(cchar *str, ...)
 {
     va_list     ap;
     char        *result;
@@ -369,7 +377,7 @@ char *sjoin(cchar *str, ...)
 }
 
 
-char *sjoinv(cchar *buf, va_list args)
+PUBLIC char *sjoinv(cchar *buf, va_list args)
 {
     va_list     ap;
     char        *dest, *str, *dp;
@@ -405,7 +413,7 @@ char *sjoinv(cchar *buf, va_list args)
 }
 
 
-ssize slen(cchar *s)
+PUBLIC ssize slen(cchar *s)
 {
     return s ? strlen(s) : 0;
 }
@@ -414,16 +422,16 @@ ssize slen(cchar *s)
 /*  
     Map a string to lower case. Allocates a new string.
  */
-char *slower(cchar *str)
+PUBLIC char *slower(cchar *str)
 {
     char    *cp, *s;
 
-    mprAssert(str);
+    assure(str);
 
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
-            if (isupper((int) *cp)) {
+            if (isupper((uchar) *cp)) {
                 *cp = (char) tolower((uchar) *cp);
             }
         }
@@ -433,19 +441,17 @@ char *slower(cchar *str)
 }
 
 
-bool smatch(cchar *s1, cchar *s2)
+PUBLIC bool smatch(cchar *s1, cchar *s2)
 {
     return scmp(s1, s2) == 0;
 }
 
 
-// MOB rename snacasecmp
-
-int sncasecmp(cchar *s1, cchar *s2, ssize n)
+PUBLIC int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= n && n < MAXINT);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -476,7 +482,7 @@ int sncasecmp(cchar *s1, cchar *s2, ssize n)
     Clone a sub-string of a specified length. The null is added after the length. The given len can be longer than the
     source string.
  */
-char *snclone(cchar *str, ssize len)
+PUBLIC char *snclone(cchar *str, ssize len)
 {
     char    *ptr;
     ssize   size, l;
@@ -498,11 +504,11 @@ char *snclone(cchar *str, ssize len)
 /*
     Case sensitive string comparison. Limited by length
  */
-int sncmp(cchar *s1, cchar *s2, ssize n)
+PUBLIC int sncmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    mprAssert(0 <= n && n < MAXINT);
+    assure(0 <= n && n < MAXINT);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -533,20 +539,21 @@ int sncmp(cchar *s1, cchar *s2, ssize n)
     This routine copies at most "count" characters from a string. It ensures the result is always null terminated and 
     the buffer does not overflow. Returns MPR_ERR_WONT_FIT if the buffer is too small.
  */
-ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
+PUBLIC ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 {
     ssize      len;
 
-    mprAssert(dest);
-    mprAssert(src);
-    mprAssert(src != dest);
-    mprAssert(0 <= count && count < MAXINT);
-    mprAssert(0 < destMax && destMax < MAXINT);
+    assure(dest);
+    assure(src);
+    assure(src != dest);
+    assure(0 <= count && count < MAXINT);
+    assure(0 < destMax && destMax < MAXINT);
 
+    //  OPT use strnlen(src, count);
     len = slen(src);
     len = min(len, count);
     if (destMax <= len) {
-        mprAssert(!MPR_ERR_WONT_FIT);
+        assure(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (len > 0) {
@@ -560,13 +567,13 @@ ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 }
 
 
-bool snumber(cchar *s)
+PUBLIC bool snumber(cchar *s)
 {
     return s && *s && strspn(s, "1234567890") == strlen(s);
 } 
 
 
-char *spascal(cchar *str)
+PUBLIC char *spascal(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -585,7 +592,7 @@ char *spascal(cchar *str)
 }
 
 
-char *spbrk(cchar *str, cchar *set)
+PUBLIC char *spbrk(cchar *str, cchar *set)
 {
     cchar       *sp;
     int         count;
@@ -604,7 +611,7 @@ char *spbrk(cchar *str, cchar *set)
 }
 
 
-char *srchr(cchar *s, int c)
+PUBLIC char *srchr(cchar *s, int c)
 {
     if (s == 0) {
         return 0;
@@ -613,7 +620,7 @@ char *srchr(cchar *s, int c)
 }
 
 
-char *srejoin(char *buf, ...)
+PUBLIC char *srejoin(char *buf, ...)
 {
     va_list     args;
     char        *result;
@@ -625,7 +632,7 @@ char *srejoin(char *buf, ...)
 }
 
 
-char *srejoinv(char *buf, va_list args)
+PUBLIC char *srejoinv(char *buf, va_list args)
 {
     va_list     ap;
     char        *dest, *str, *dp;
@@ -655,7 +662,7 @@ char *srejoinv(char *buf, va_list args)
 }
 
 
-char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
+PUBLIC char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
 {
     MprBuf      *buf;
     cchar       *s;
@@ -678,7 +685,7 @@ char *sreplace(cchar *str, cchar *pattern, cchar *replacement)
 }
 
 
-ssize sspn(cchar *str, cchar *set)
+PUBLIC ssize sspn(cchar *str, cchar *set)
 {
 #if KEEP
     cchar       *sp;
@@ -707,7 +714,7 @@ ssize sspn(cchar *str, cchar *set)
 }
  
 
-bool sstarts(cchar *str, cchar *prefix)
+PUBLIC bool sstarts(cchar *str, cchar *prefix)
 {
     if (str == 0 || prefix == 0) {
         return 0;
@@ -719,7 +726,7 @@ bool sstarts(cchar *str, cchar *prefix)
 }
 
 
-int64 stoi(cchar *str)
+PUBLIC int64 stoi(cchar *str)
 {
     return stoiradix(str, 10, NULL);
 }
@@ -734,7 +741,7 @@ int64 stoi(cchar *str)
         [(+|-)][DIGITS]
 
  */
-int64 stoiradix(cchar *str, int radix, int *err)
+PUBLIC int64 stoiradix(cchar *str, int radix, int *err)
 {
     cchar   *start;
     int64   val;
@@ -817,10 +824,13 @@ int64 stoiradix(cchar *str, int radix, int *err)
     Note "str" is modifed as per strtok()
     WARNING:  this does not allocate
  */
-char *stok(char *str, cchar *delim, char **last)
+PUBLIC char *stok(char *str, cchar *delim, char **last)
 {
     char    *start, *end;
     ssize   i;
+
+    assure(last);
+    assure(delim);
 
     start = str ? str : *last;
 
@@ -845,14 +855,14 @@ char *stok(char *str, cchar *delim, char **last)
 }
 
 
-char *ssub(cchar *str, ssize offset, ssize len)
+PUBLIC char *ssub(cchar *str, ssize offset, ssize len)
 {
     char    *result;
     ssize   size;
 
-    mprAssert(str);
-    mprAssert(offset >= 0);
-    mprAssert(0 <= len && len < MAXINT);
+    assure(str);
+    assure(offset >= 0);
+    assure(0 <= len && len < MAXINT);
 
     if (str == 0) {
         return 0;
@@ -869,7 +879,7 @@ char *ssub(cchar *str, ssize offset, ssize len)
 /*
     Trim characters from the given set. Returns a newly allocated string.
  */
-char *strim(cchar *str, cchar *set, int where)
+PUBLIC char *strim(cchar *str, cchar *set, int where)
 {
     char    *s;
     ssize   len, i;
@@ -894,15 +904,14 @@ char *strim(cchar *str, cchar *set, int where)
 }
 
 
-
 /*  
     Map a string to upper case
  */
-char *supper(cchar *str)
+PUBLIC char *supper(cchar *str)
 {
     char    *cp, *s;
 
-    mprAssert(str);
+    assure(str);
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
@@ -920,7 +929,7 @@ char *supper(cchar *str)
     Expand ${token} references in a path or string.
     Currently support DOCUMENT_ROOT, SERVER_ROOT and PRODUCT, OS and VERSION.
  */
-char *stemplate(cchar *str, MprHash *keys)
+PUBLIC char *stemplate(cchar *str, MprHash *keys)
 {
     MprBuf      *buf;
     char        *src, *result, *cp, *tok, *value;
@@ -968,31 +977,15 @@ char *stemplate(cchar *str, MprHash *keys)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

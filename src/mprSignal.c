@@ -20,7 +20,7 @@ static void unhookSignal(int signo);
 
 /************************************ Code ************************************/
 
-MprSignalService *mprCreateSignalService()
+PUBLIC MprSignalService *mprCreateSignalService()
 {
     MprSignalService    *ssp;
 
@@ -45,7 +45,7 @@ static void manageSignalService(MprSignalService *ssp, int flags)
 }
 
 
-void mprStopSignalService()
+PUBLIC void mprStopSignalService()
 {
     int     i;
 
@@ -64,8 +64,7 @@ static void hookSignal(int signo, MprSignal *sp)
     struct sigaction    act, old;
     int                 rc;
 
-    mprAssert(0 < signo && signo < MPR_MAX_SIGNALS);
-
+    assure(0 < signo && signo < MPR_MAX_SIGNALS);
     ssp = MPR->signalService;
     lock(ssp);
     rc = sigaction(signo, 0, &old);
@@ -123,6 +122,8 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
         return;
     }
     if (signo == SIGINT) {
+        /* Fixes command line recall to complete the line */
+        printf("\n");
         exit(1);
         return;
     }
@@ -139,7 +140,7 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
 /*
     Called by mprServiceEvents after a signal has been received. Create an event and queue on the appropriate dispatcher
  */
-void mprServiceSignals()
+PUBLIC void mprServiceSignals()
 {
     MprSignalService    *ssp;
     MprSignal           *sp;
@@ -171,8 +172,8 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
 {
     MprSignal   *np;
     
-    mprAssert(sp);
-    mprAssert(event);
+    assure(sp);
+    assure(event);
 
     mprLog(7, "signalEvent signo %d, flags %x", sp->signo, sp->flags);
     np = sp->next;
@@ -195,7 +196,7 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
             Call all chained signal handlers. Create new event for each handler so we get the right dispatcher.
             WARNING: sp may have been removed and so sp->next may be null. That is why we capture np = sp->next above.
          */
-        mprCreateEvent(np->dispatcher, "signalEvent", 0, signalEvent, np, 0);
+        mprCreateEvent(np->dispatcher, "signalEvent", 0, signalEvent, np, MPR_EVENT_QUICK);
     }
 }
 
@@ -230,7 +231,7 @@ static void unlinkSignalHandler(MprSignal *sp)
         }
         prev = np;
     }
-    mprAssert(np);
+    assure(np);
     sp->next = 0;
     unlock(ssp);
 }
@@ -241,7 +242,7 @@ static void unlinkSignalHandler(MprSignal *sp)
     normal async-safe strictures of normal signal handlers. This manages a next of signal handlers and ensures
     that prior handlers will be called appropriately.
  */
-MprSignal *mprAddSignalHandler(int signo, void *handler, void *data, MprDispatcher *dispatcher, int flags)
+PUBLIC MprSignal *mprAddSignalHandler(int signo, void *handler, void *data, MprDispatcher *dispatcher, int flags)
 {
     MprSignal           *sp;
 
@@ -276,7 +277,7 @@ static void manageSignal(MprSignal *sp, int flags)
 }
 
 
-void mprRemoveSignalHandler(MprSignal *sp)
+PUBLIC void mprRemoveSignalHandler(MprSignal *sp)
 {
     if (sp) {
         unlinkSignalHandler(sp);
@@ -294,7 +295,7 @@ void mprRemoveSignalHandler(MprSignal *sp)
         SIGUSR2 - toggle trace level (Appweb)
         All others - default exit
  */
-void mprAddStandardSignals()
+PUBLIC void mprAddStandardSignals()
 {
     MprSignalService    *ssp;
 
@@ -337,9 +338,8 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 
 #if MACOSX && BIT_DEBUG
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
-        //  MOB - Review
         printf("PAUSED for watson to debug\n");
-        sleep(86400 * 7);
+        sleep(120);
 #endif
 
     } else {
@@ -360,28 +360,12 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

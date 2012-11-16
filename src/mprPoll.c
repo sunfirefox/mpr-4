@@ -18,7 +18,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count);
 
 /************************************ Code ************************************/
 
-int mprCreateNotifierService(MprWaitService *ws)
+PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct pollfd   *pollfd;
     int             fd;
@@ -51,7 +51,7 @@ int mprCreateNotifierService(MprWaitService *ws)
 }
 
 
-void mprManagePoll(MprWaitService *ws, int flags)
+PUBLIC void mprManagePoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->fds);
@@ -72,7 +72,7 @@ static int growFds(MprWaitService *ws)
 {
     ws->fdMax *= 2;
     if ((ws->fds = mprRealloc(ws->fds, sizeof(struct pollfd) * ws->fdMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -83,14 +83,14 @@ static int growHandlers(MprWaitService *ws, int fd)
 {
     ws->handlerMax = fd + 1;
     if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
 }
 
 
-int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
+PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     struct pollfd   *pollfd;
     int             fd, index;
@@ -105,15 +105,15 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             if (index < 0) {
                 if (ws->fdsCount >= ws->fdMax && growFds(ws) < 0) {
                     unlock(ws);
-                    mprAssert(!MPR_ERR_MEMORY);
+                    assure(!MPR_ERR_MEMORY);
                     return MPR_ERR_MEMORY;
                 }
                 if (fd >= ws->handlerMax && growHandlers(ws, fd) < 0) {
                     unlock(ws);
                     return MPR_ERR_MEMORY;
                 }
-                mprAssert(fd < ws->handlerMax);
-                mprAssert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+                assure(fd < ws->handlerMax);
+                assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
                 ws->handlerMap[fd] = wp;
                 index = wp->notifierIndex = ws->fdsCount++;
                 pollfd = &ws->fds[index];
@@ -137,7 +137,6 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             }
             wp->desiredMask = mask;
         }
-
         /*
             Compact on removal. If not the last entry, copy last poll entry to replace the deleted fd.
          */
@@ -151,6 +150,10 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             wp->notifierIndex = -1;
             wp->desiredMask = 0;
         }
+        if (wp->event) {
+            mprRemoveEvent(wp->event);
+            wp->event = 0;
+        }
     }
     unlock(ws);
     return 0;
@@ -161,7 +164,7 @@ int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     Wait for I/O on a single file descriptor. Return a mask of events found. Mask is the events of interest.
     timeout is in milliseconds.
  */
-int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
+PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct pollfd   fds[1];
     int             rc;
@@ -199,7 +202,7 @@ int mprWaitForSingleIO(int fd, int mask, MprTime timeout)
 /*
     Wait for I/O on all registered file descriptors. Timeout is in milliseconds. Return the number of events detected.
  */
-void mprWaitForIO(MprWaitService *ws, MprTime timeout)
+PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     int     count, rc;
 
@@ -257,8 +260,8 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
         if (fp->revents & POLLOUT) {
             mask |= MPR_WRITABLE;
         }
-        mprAssert(mask);
-        mprAssert(fp->fd >= 0);
+        assure(mask);
+        assure(fp->fd >= 0);
         if ((wp = ws->handlerMap[fp->fd]) == 0) {
             char    buf[128];
             if (fp->fd == ws->breakPipe[MPR_READ_PIPE]) {
@@ -281,7 +284,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
     Wake the wait service. WARNING: This routine must not require locking. MprEvents in scheduleDispatcher depends on this.
     Must be async-safe.
  */
-void mprWakeNotifier()
+PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
     int             c;
@@ -294,36 +297,18 @@ void mprWakeNotifier()
     }
 }
 
-#else
-void stubMprPollWait() {}
 #endif /* MPR_EVENT_POLL */
 
 /*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

@@ -25,7 +25,7 @@ static void trimToken(MprXml *xp);
 
 /************************************ Code ************************************/
 
-MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
+PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
 {
     MprXml  *xp;
 
@@ -49,16 +49,16 @@ static void manageXml(MprXml *xml, int flags)
 }
 
 
-void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h)
+PUBLIC void mprXmlSetParserHandler(MprXml *xp, MprXmlHandler h)
 {
-    mprAssert(xp);
+    assure(xp);
     xp->handler = h;
 }
 
 
-void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
+PUBLIC void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
 {
-    mprAssert(xp);
+    assure(xp);
 
     xp->readFn = s;
     xp->inputArg = arg;
@@ -68,9 +68,9 @@ void mprXmlSetInputStream(MprXml *xp, MprXmlInputStream s, void *arg)
 /*
     Set the parse arg
  */ 
-void mprXmlSetParseArg(MprXml *xp, void *parseArg)
+PUBLIC void mprXmlSetParseArg(MprXml *xp, void *parseArg)
 {
-    mprAssert(xp);
+    assure(xp);
 
     xp->parseArg = parseArg;
 }
@@ -79,9 +79,9 @@ void mprXmlSetParseArg(MprXml *xp, void *parseArg)
 /*
     Set the parse arg
  */ 
-void *mprXmlGetParseArg(MprXml *xp)
+PUBLIC void *mprXmlGetParseArg(MprXml *xp)
 {
-    mprAssert(xp);
+    assure(xp);
 
     return xp->parseArg;
 }
@@ -90,9 +90,9 @@ void *mprXmlGetParseArg(MprXml *xp)
 /*
     Parse an XML file. Return 0 for success, -1 for error.
  */ 
-int mprXmlParse(MprXml *xp)
+PUBLIC int mprXmlParse(MprXml *xp)
 {
-    mprAssert(xp);
+    assure(xp);
 
     return parseNext(xp, MPR_XML_BEGIN);
 }
@@ -109,7 +109,7 @@ static int parseNext(MprXml *xp, int state)
     char            *tname, *aname;
     int             rc;
 
-    mprAssert(state >= 0);
+    assure(state >= 0);
 
     tokBuf = xp->tokBuf;
     handler = xp->handler;
@@ -179,7 +179,7 @@ static int parseNext(MprXml *xp, int state)
                 state = MPR_XML_NEW_ELT;
                 tname = sclone(mprGetBufStart(tokBuf));
                 if (tname == 0) {
-                    mprAssert(!MPR_ERR_MEMORY);
+                    assure(!MPR_ERR_MEMORY);
                     return MPR_ERR_MEMORY;
                 }
                 rc = (*handler)(xp, state, tname, 0, 0);
@@ -328,7 +328,7 @@ static int parseNext(MprXml *xp, int state)
             return MPR_ERR;
         }
     }
-    mprAssert(0);
+    assure(0);
 }
 
 
@@ -344,7 +344,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
     char        *cp;
     int         c, rc;
 
-    mprAssert(state >= 0);
+    assure(state >= 0);
     tokBuf = xp->tokBuf;
 
     if ((c = getNextChar(xp)) < 0) {
@@ -517,7 +517,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
     }
 
     /* Should never get here */
-    mprAssert(0);
+    assure(0);
     return MPR_XMLTOK_ERR;
 }
 
@@ -532,10 +532,10 @@ static int scanFor(MprXml *xp, char *pattern)
     char    *start, *p, *cp;
     int     c;
 
-    mprAssert(pattern);
+    assure(pattern);
 
     tokBuf = xp->tokBuf;
-    mprAssert(tokBuf);
+    assure(tokBuf);
 
     start = mprGetBufStart(tokBuf);
     while (1) {
@@ -601,7 +601,7 @@ static int getNextChar(MprXml *xp)
 static int putLastChar(MprXml *xp, int c)
 {
     if (mprInsertCharToBuf(xp->inBuf, (char) c) < 0) {
-        mprAssert(0);
+        assure(0);
         return MPR_ERR_BAD_STATE;
     }
     if (c == '\n') {
@@ -619,7 +619,7 @@ static void xmlError(MprXml *xp, char *fmt, ...)
     va_list     args;
     char        *buf;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(args, fmt);
     buf = sfmtv(fmt, args);
@@ -633,14 +633,14 @@ static void xmlError(MprXml *xp, char *fmt, ...)
  */
 static void trimToken(MprXml *xp)
 {
-    while (isspace(mprLookAtLastCharInBuf(xp->tokBuf))) {
+    while (isspace((uchar) mprLookAtLastCharInBuf(xp->tokBuf))) {
         mprAdjustBufEnd(xp->tokBuf, -1);
     }
     mprAddNullToBuf(xp->tokBuf);
 }
 
 
-cchar *mprXmlGetErrorMsg(MprXml *xp)
+PUBLIC cchar *mprXmlGetErrorMsg(MprXml *xp)
 {
     if (xp->errMsg == 0) {
         return "";
@@ -649,7 +649,7 @@ cchar *mprXmlGetErrorMsg(MprXml *xp)
 }
 
 
-int mprXmlGetLineNumber(MprXml *xp)
+PUBLIC int mprXmlGetLineNumber(MprXml *xp)
 {
     return xp->lineNumber;
 }
@@ -657,31 +657,15 @@ int mprXmlGetLineNumber(MprXml *xp)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

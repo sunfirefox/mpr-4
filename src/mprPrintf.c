@@ -35,7 +35,7 @@
 #define STATE_TYPE      7               /* Data type */
 #define STATE_COUNT     8
 
-char stateMap[] = {
+PUBLIC char stateMap[] = {
     /*     STATES:  Normal Percent Modifier Width  Dot  Prec Bits Type */
     /* CLASS           0      1       2       3     4     5    6    7  */
     /* Normal   0 */   0,     0,      0,      0,    0,    0,   0,   0,
@@ -54,7 +54,7 @@ char stateMap[] = {
   
     The Class map will map from a specifier letter to a state.
  */
-char classMap[] = {
+PUBLIC char classMap[] = {
     /*   0  ' '    !     "     #     $     %     &     ' */
              2,    0,    0,    2,    0,    1,    0,    0,
     /*  07   (     )     *     +     ,     -     .     / */
@@ -145,7 +145,7 @@ typedef struct MprEjsString {
     void            *next;
     void            *prev;
     ssize           length;
-    MprChar         value[0];
+    wchar         value[0];
 } MprEjsString;
 
 typedef struct MprEjsName {
@@ -160,16 +160,16 @@ static int  growBuf(Format *fmt);
 static char *sprintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
 static void outNum(Format *fmt, cchar *prefix, uint64 val);
 static void outString(Format *fmt, cchar *str, ssize len);
-#if BIT_CHAR_LEN > 1
-static void outWideString(Format *fmt, MprChar *str, ssize len);
+#if BIT_CHAR_LEN > 1 && KEEP
+static void outWideString(Format *fmt, wchar *str, ssize len);
 #endif
-#if BIT_FEATURE_FLOAT
+#if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value);
 #endif
 
 /************************************* Code ***********************************/
 
-ssize mprPrintf(cchar *fmt, ...)
+PUBLIC ssize mprPrintf(cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -189,7 +189,7 @@ ssize mprPrintf(cchar *fmt, ...)
 }
 
 
-ssize mprPrintfError(cchar *fmt, ...)
+PUBLIC ssize mprPrintfError(cchar *fmt, ...)
 {
     va_list     ap;
     ssize       len;
@@ -209,7 +209,7 @@ ssize mprPrintfError(cchar *fmt, ...)
 }
 
 
-ssize mprFprintf(MprFile *file, cchar *fmt, ...)
+PUBLIC ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 {
     ssize       len;
     va_list     ap;
@@ -234,7 +234,7 @@ ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
-int mprStaticPrintf(cchar *fmt, ...)
+PUBLIC int mprStaticPrintf(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
@@ -252,7 +252,7 @@ int mprStaticPrintf(cchar *fmt, ...)
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
-int mprStaticPrintfError(cchar *fmt, ...)
+PUBLIC int mprStaticPrintfError(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
@@ -268,14 +268,14 @@ int mprStaticPrintfError(cchar *fmt, ...)
 #endif
 
 
-char *mprSprintf(char *buf, ssize bufsize, cchar *fmt, ...)
+PUBLIC char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
 {
     va_list     ap;
     char        *result;
 
-    mprAssert(buf);
-    mprAssert(fmt);
-    mprAssert(bufsize > 0);
+    assure(buf);
+    assure(fmt);
+    assure(bufsize > 0);
 
     va_start(ap, fmt);
     result = sprintfCore(buf, bufsize, fmt, ap);
@@ -284,22 +284,23 @@ char *mprSprintf(char *buf, ssize bufsize, cchar *fmt, ...)
 }
 
 
-char *mprSprintfv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
+PUBLIC char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 {
-    mprAssert(buf);
-    mprAssert(fmt);
-    mprAssert(bufsize > 0);
+    assure(buf);
+    assure(fmt);
+    assure(bufsize > 0);
 
     return sprintfCore(buf, bufsize, fmt, arg);
 }
 
 
-char *mprAsprintf(cchar *fmt, ...)
+//  MOB - DEPRECATE
+PUBLIC char *mprAsprintf(cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
 
-    mprAssert(fmt);
+    assure(fmt);
 
     va_start(ap, fmt);
     buf = sprintfCore(NULL, -1, fmt, ap);
@@ -308,9 +309,9 @@ char *mprAsprintf(cchar *fmt, ...)
 }
 
 
-char *mprAsprintfv(cchar *fmt, va_list arg)
+PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg)
 {
-    mprAssert(fmt);
+    assure(fmt);
     return sprintfCore(NULL, -1, fmt, arg);
 }
 
@@ -322,10 +323,10 @@ static int getState(char c, int state)
     if (c < ' ' || c > 'z') {
         chrClass = CLASS_NORMAL;
     } else {
-        mprAssert((c - ' ') < (int) sizeof(classMap));
+        assure((c - ' ') < (int) sizeof(classMap));
         chrClass = classMap[(c - ' ')];
     }
-    mprAssert((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
+    assure((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
     state = stateMap[chrClass * STATE_COUNT + state];
     return state;
 }
@@ -346,7 +347,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         spec = "";
     }
     if (buf != 0) {
-        mprAssert(maxsize > 0);
+        assure(maxsize > 0);
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[maxsize];
         fmt.growBy = -1;
@@ -459,13 +460,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         case STATE_TYPE:
             switch (c) {
             case 'e':
-#if BIT_FEATURE_FLOAT
+#if BIT_FLOAT
             case 'g':
             case 'f':
                 fmt.radix = 10;
                 outFloat(&fmt, c, (double) va_arg(args, double));
                 break;
-#endif /* BIT_FEATURE_FLOAT */
+#endif /* BIT_FLOAT */
 
             case 'c':
                 BPUT(&fmt, (char) va_arg(args, int));
@@ -475,16 +476,16 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* Name */
                 qname = va_arg(args, MprEjsName);
                 if (qname.name) {
-#if BIT_CHAR_LEN == 1
+#if BIT_CHAR_LEN > 1 && KEEP
+                    outWideString(&fmt, (wchar*) qname.space->value, qname.space->length);
+                    BPUT(&fmt, ':');
+                    BPUT(&fmt, ':');
+                    outWideString(&fmt, (wchar*) qname.name->value, qname.name->length);
+#else
                     outString(&fmt, (char*) qname.space->value, qname.space->length);
                     BPUT(&fmt, ':');
                     BPUT(&fmt, ':');
                     outString(&fmt, (char*) qname.name->value, qname.name->length);
-#else
-                    outWideString(&fmt, (MprChar*) qname.space->value, qname.space->length);
-                    BPUT(&fmt, ':');
-                    BPUT(&fmt, ':');
-                    outWideString(&fmt, (MprChar*) qname.name->value, qname.name->length);
 #endif
                 } else {
                     outString(&fmt, NULL, 0);
@@ -493,10 +494,10 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'S':
                 /* Safe string */
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
-                    //  MOB - not right MprChar
-                    safe = mprEscapeHtml(va_arg(args, MprChar*));
+                    //  UNICODE - not right wchar
+                    safe = mprEscapeHtml(va_arg(args, wchar*));
                     outWideString(&fmt, safe, -1);
                 } else
 #endif
@@ -510,10 +511,10 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 /* MprEjsString */
                 es = va_arg(args, MprEjsString*);
                 if (es) {
-#if BIT_CHAR_LEN == 1
-                    outString(&fmt, (char*) es->value, es->length);
-#else
+#if BIT_CHAR_LEN > 1 && KEEP
                     outWideString(&fmt, es->value, es->length);
+#else
+                    outString(&fmt, (char*) es->value, es->length);
 #endif
                 } else {
                     outString(&fmt, NULL, 0);
@@ -521,9 +522,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 break;
 
             case 'w':
-                /* Wide string of MprChar characters (Same as %ls"). Null terminated. */
-#if BIT_CHAR_LEN > 1
-                outWideString(&fmt, va_arg(args, MprChar*), -1);
+                /* Wide string of wchar characters (Same as %ls"). Null terminated. */
+#if BIT_CHAR_LEN > 1 && KEEP
+                outWideString(&fmt, va_arg(args, wchar*), -1);
                 break;
 #else
                 /* Fall through */
@@ -531,9 +532,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 's':
                 /* Standard string */
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
                 if (fmt.flags & SPRINTF_LONG) {
-                    outWideString(&fmt, va_arg(args, MprChar*), -1);
+                    outWideString(&fmt, va_arg(args, wchar*), -1);
                 } else
 #endif
                     outString(&fmt, va_arg(args, char*), -1);
@@ -568,7 +569,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'X':
                 fmt.flags |= SPRINTF_UPPER_CASE;
-#if MPR_64_BIT
+#if BIT_64
                 fmt.flags &= ~(SPRINTF_SHORT|SPRINTF_LONG);
                 fmt.flags |= SPRINTF_INT64;
 #else
@@ -625,7 +626,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
                 break;
 
             case 'p':       /* Pointer */
-#if MPR_64_BIT
+#if BIT_64
                 uValue = (uint64) va_arg(args, void*);
 #else
                 uValue = (uint) PTOI(va_arg(args, void*));
@@ -680,10 +681,10 @@ static void outString(Format *fmt, cchar *str, ssize len)
 }
 
 
-#if BIT_CHAR_LEN > 1
-static void outWideString(Format *fmt, MprChar *str, ssize len)
+#if BIT_CHAR_LEN > 1 && KEEP
+static void outWideString(Format *fmt, wchar *str, ssize len)
 {
-    MprChar     *cp;
+    wchar     *cp;
     int         i;
 
     if (str == 0) {
@@ -803,7 +804,7 @@ static void outNum(Format *fmt, cchar *prefix, uint64 value)
 }
 
 
-#if BIT_FEATURE_FLOAT
+#if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value)
 {
     char    result[MPR_MAX_STRING], *cp;
@@ -812,18 +813,10 @@ static void outFloat(Format *fmt, char specChar, double value)
     result[0] = '\0';
     if (specChar == 'f') {
         sprintf(result, "%.*f", fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, MPR_DTOA_ALL_DIGITS, MPR_DTOA_FIXED_FORM);
-        // sprintf(result, "%*.*f", fmt->width, fmt->precision, value);
-
     } else if (specChar == 'g') {
         sprintf(result, "%*.*g", fmt->width, fmt->precision, value);
-        // sprintf(result, "%*.*g", fmt->width, fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, 0, 0);
-
     } else if (specChar == 'e') {
         sprintf(result, "%*.*e", fmt->width, fmt->precision, value);
-        // result = mprDtoa(value, fmt->precision, MPR_DTOA_N_DIGITS, MPR_DTOA_EXPONENT_FORM);
-        // sprintf(result, "%*.*e", fmt->width, fmt->precision, value);
     }
     len = (int) slen(result);
     fill = fmt->width - len;
@@ -860,7 +853,8 @@ static void outFloat(Format *fmt, char specChar, double value)
     BPUTNULL(fmt);
 }
 
-int mprIsNan(double value) {
+
+PUBLIC int mprIsNan(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_SNAN | _FPCLASS_QNAN);
 #elif VXWORKS
@@ -871,7 +865,7 @@ int mprIsNan(double value) {
 }
 
 
-int mprIsInfinite(double value) {
+PUBLIC int mprIsInfinite(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_PINF | _FPCLASS_NINF);
 #elif VXWORKS
@@ -881,7 +875,7 @@ int mprIsInfinite(double value) {
 #endif
 }
 
-int mprIsZero(double value) {
+PUBLIC int mprIsZero(double value) {
 #if WINDOWS
     return _fpclass(value) & (_FPCLASS_NZ | _FPCLASS_PZ);
 #elif VXWORKS
@@ -890,146 +884,7 @@ int mprIsZero(double value) {
     return fpclassify(value) == FP_ZERO;
 #endif
 }
-
-/*
-    Convert a double to ascii. Caller must free the result. This uses the JavaScript ECMA-262 spec for formatting rules.
-
-    function dtoa(double value, int mode, int ndigits, int *periodOffset, int *sign, char **end)
- */
-char *mprDtoa(double value, int ndigits, int mode, int flags)
-{
-    MprBuf  *buf;
-    char    *intermediate, *ip;
-    int     period, sign, len, exponentForm, fixedForm, exponent, count, totalDigits, npad;
-
-    buf = mprCreateBuf(64, -1);
-    intermediate = 0;
-    exponentForm = 0;
-    fixedForm = 0;
-
-    if (mprIsNan(value)) {
-        mprPutStringToBuf(buf, "NaN");
-
-    } else if (mprIsInfinite(value)) {
-        if (value < 0) {
-            mprPutStringToBuf(buf, "-Infinity");
-        } else {
-            mprPutStringToBuf(buf, "Infinity");
-        }
-    } else if (value == 0) {
-        mprPutCharToBuf(buf, '0');
-
-    } else {
-        if (ndigits <= 0) {
-            if (!(flags & MPR_DTOA_FIXED_FORM)) {
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-            ndigits = 0;
-
-        } else if (mode == MPR_DTOA_ALL_DIGITS) {
-            mode = MPR_DTOA_N_DIGITS;
-        }
-        if (flags & MPR_DTOA_EXPONENT_FORM) {
-            exponentForm = 1;
-            if (ndigits > 0) {
-                ndigits++;
-            } else {
-                ndigits = 0;
-                mode = MPR_DTOA_ALL_DIGITS;
-            }
-        } else if (flags & MPR_DTOA_FIXED_FORM) {
-            fixedForm = 1;
-        }
-
-        /*
-            Convert to an intermediate string representation. Period is the offset of the decimal point. NOTE: the
-            intermediate representation may have less digits than period.
-            Note: ndigits < 0 seems to trim N digits from the end with rounding.
-         */
-        ip = intermediate = dtoa(value, mode, ndigits, &period, &sign, NULL);
-        len = (int) slen(intermediate);
-        exponent = period - 1;
-
-        if (mode == MPR_DTOA_ALL_DIGITS && ndigits == 0) {
-            ndigits = len;
-        }
-        if (!fixedForm) {
-            if (period <= -6 || period > 21) {
-                exponentForm = 1;
-            }
-        }
-        if (sign) {
-            mprPutCharToBuf(buf, '-');
-        }
-        if (exponentForm) {
-            mprPutCharToBuf(buf, ip[0] ? ip[0] : '0');
-            if (len > 1) {
-                mprPutCharToBuf(buf, '.');
-                mprPutSubStringToBuf(buf, &ip[1], (ndigits == 0) ? len - 1: ndigits);
-            }
-            mprPutCharToBuf(buf, 'e');
-            mprPutCharToBuf(buf, (period < 0) ? '-' : '+');
-            mprPutFmtToBuf(buf, "%d", (exponent < 0) ? -exponent: exponent);
-
-        } else {
-            if (mode == MPR_DTOA_N_FRACTION_DIGITS) {
-                /* Count of digits */
-                if (period <= 0) {
-                    /* Leading fractional zeros required */
-                    mprPutStringToBuf(buf, "0.");
-                    mprPutPadToBuf(buf, '0', -period);
-                    mprPutStringToBuf(buf, ip);
-                    npad = ndigits - len + period;
-                    if (npad > 0) {
-                        mprPutPadToBuf(buf, '0', npad);
-                    }
-
-                } else {
-                    count = min(len, period);
-                    /* Leading integral digits */
-                    mprPutSubStringToBuf(buf, ip, count);
-                    /* Trailing zero pad */
-                    if (period > len) {
-                        mprPutPadToBuf(buf, '0', period - len);
-                    }
-                    totalDigits = count + ndigits;
-                    if (period < totalDigits) {
-                        count = totalDigits + sign - (int) mprGetBufLength(buf);
-                        mprPutCharToBuf(buf, '.');
-                        mprPutSubStringToBuf(buf, &ip[period], count);
-                        mprPutPadToBuf(buf, '0', count - slen(&ip[period]));
-                    }
-                }
-
-            } else if (len <= period && period <= 21) {
-                /* data shorter than period */
-                mprPutStringToBuf(buf, ip);
-                mprPutPadToBuf(buf, '0', period - len);
-
-            } else if (0 < period && period <= 21) {
-                /* Period shorter than data */
-                mprPutSubStringToBuf(buf, ip, period);
-                mprPutCharToBuf(buf, '.');
-                mprPutStringToBuf(buf, &ip[period]);
-
-            } else if (-6 < period && period <= 0) {
-                /* Small negative exponent */
-                mprPutStringToBuf(buf, "0.");
-                mprPutPadToBuf(buf, '0', -period);
-                mprPutStringToBuf(buf, ip);
-
-            } else {
-                mprAssert(0);
-            }
-        }
-    }
-    mprAddNullToBuf(buf);
-    if (intermediate) {
-        freedtoa(intermediate);
-    }
-    return sclone(mprGetBufStart(buf));
-}
-#endif /* BIT_FEATURE_FLOAT */
+#endif /* BIT_FLOAT */
 
 
 /*
@@ -1053,7 +908,7 @@ static int growBuf(Format *fmt)
     }
     newbuf = mprAlloc(buflen + fmt->growBy);
     if (newbuf == 0) {
-        mprAssert(!MPR_ERR_MEMORY);
+        assure(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     if (fmt->buf) {
@@ -1078,10 +933,11 @@ static int growBuf(Format *fmt)
 /*
     For easy debug trace
  */
-int print(cchar *fmt, ...)
+PUBLIC int print(cchar *fmt, ...)
 {
-    int             len;
-    va_list         ap;
+    va_list     ap;
+    int         len;
+
     va_start(ap, fmt);
     len = vprintf(fmt, ap);
     va_end(ap);
@@ -1090,31 +946,15 @@ int print(cchar *fmt, ...)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

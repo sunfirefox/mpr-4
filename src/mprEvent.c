@@ -12,8 +12,7 @@
 
 /***************************** Forward Declarations ***************************/
 
-static void dequeueEvent(MprEvent *event);
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, 
         void *data, int flgs);
 static void initEventQ(MprEvent *q);
 static void manageEvent(MprEvent *event, int flags);
@@ -21,10 +20,10 @@ static void queueEvent(MprEvent *prior, MprEvent *event);
 
 /************************************* Code ***********************************/
 /*
-    Create and queue a new event for service. Period is used as the delay before running the event and as the period between 
-    events for continuous events.
+    Create and queue a new event for service. Period is used as the delay before running the event and as the period 
+    between events for continuous events.
  */
-MprEvent *mprCreateEventQueue()
+PUBLIC MprEvent *mprCreateEventQueue()
 {
     MprEvent    *queue;
 
@@ -37,10 +36,10 @@ MprEvent *mprCreateEventQueue()
 
 
 /*
-    Create and queue a new event for service. Period is used as the delay before running the event and as the period between 
-    events for continuous events.
+    Create and queue a new event for service. Period is used as the delay before running the event and as the period 
+    between events for continuous events.
  */
-MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, void *data, int flags)
 {
     MprEvent    *event;
 
@@ -60,13 +59,13 @@ MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTime period,
 
 static void manageEvent(MprEvent *event, int flags)
 {
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
+    assure(event->magic == MPR_EVENT_MAGIC);
 
     if (flags & MPR_MANAGE_MARK) {
         /*
             Events in dispatcher queues are marked by the dispatcher managers, not via event->next,prev
          */
-        mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+        assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
         mprMark(event->name);
         mprMark(event->dispatcher);
         mprMark(event->handler);
@@ -76,7 +75,7 @@ static void manageEvent(MprEvent *event, int flags)
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (event->next) {
-            mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+            assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
             mprRemoveEvent(event);
             event->magic = 1;
         }
@@ -84,16 +83,16 @@ static void manageEvent(MprEvent *event, int flags)
 }
 
 
-static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTime period, void *proc, void *data, 
+static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, MprTicks period, void *proc, void *data, 
     int flags)
 {
-    mprAssert(dispatcher);
-    mprAssert(event);
-    mprAssert(proc);
-    mprAssert(event->next == 0);
-    mprAssert(event->prev == 0);
+    assure(dispatcher);
+    assure(event);
+    assure(proc);
+    assure(event->next == 0);
+    assure(event->prev == 0);
 
-    dispatcher->service->now = mprGetTime();
+    dispatcher->service->now = mprGetTicks();
     event->name = sclone(name);
     event->timestamp = dispatcher->service->now;
     event->proc = proc;
@@ -111,22 +110,27 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
 /*
     Create an interval timer
  */
-MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTime period, void *proc, void *data, int flags)
+PUBLIC MprEvent *mprCreateTimerEvent(MprDispatcher *dispatcher, cchar *name, MprTicks period, void *proc, 
+    void *data, int flags)
 {
     return mprCreateEvent(dispatcher, name, period, proc, data, MPR_EVENT_CONTINUOUS | flags);
 }
 
 
-void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
+PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
 {
     MprEventService     *es;
     MprEvent            *prior, *q;
 
-    mprAssert(dispatcher);
-    mprAssert(event);
-    mprAssert(event->timestamp);
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
+    assure(dispatcher);
+    assure(event);
+    assure(event->timestamp);
+#if KEEP
+    assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+#endif
+    assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(event->magic == MPR_EVENT_MAGIC);
 
     es = dispatcher->service;
 
@@ -139,21 +143,20 @@ void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
             break;
         }
     }
-    mprAssert(event->next == 0);
-    mprAssert(event->prev == 0);
-    mprAssert(prior->next);
-    mprAssert(prior->prev);
+    assure(prior->next);
+    assure(prior->prev);
     
     queueEvent(prior, event);
+    event->dispatcher = dispatcher;
     es->eventCount++;
-    if (dispatcher->enabled) {
+    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
         mprScheduleDispatcher(dispatcher);
     }
     unlock(es);
 }
 
 
-void mprRemoveEvent(MprEvent *event)
+PUBLIC void mprRemoveEvent(MprEvent *event)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -163,9 +166,10 @@ void mprRemoveEvent(MprEvent *event)
         es = dispatcher->service;
         lock(es);
         if (event->next) {
-            dequeueEvent(event);
+            mprDequeueEvent(event);
         }
-        if (dispatcher->enabled && event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
+        if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
+                event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
         event->dispatcher = 0;
@@ -174,14 +178,14 @@ void mprRemoveEvent(MprEvent *event)
 }
 
 
-void mprRescheduleEvent(MprEvent *event, MprTime period)
+PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
 
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
+    assure(event->magic == MPR_EVENT_MAGIC);
     dispatcher = event->dispatcher;
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     es = dispatcher->service;
 
@@ -197,20 +201,20 @@ void mprRescheduleEvent(MprEvent *event, MprTime period)
 }
 
 
-void mprStopContinuousEvent(MprEvent *event)
+PUBLIC void mprStopContinuousEvent(MprEvent *event)
 {
     event->continuous = 0;
 }
 
 
-void mprRestartContinuousEvent(MprEvent *event)
+PUBLIC void mprRestartContinuousEvent(MprEvent *event)
 {
     event->continuous = 1;
     mprRescheduleEvent(event, event->period);
 }
 
 
-void mprEnableContinuousEvent(MprEvent *event, int enable)
+PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable)
 {
     event->continuous = enable;
 }
@@ -219,23 +223,21 @@ void mprEnableContinuousEvent(MprEvent *event, int enable)
 /*
     Get the next due event from the front of the event queue.
  */
-MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
+PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event, *next;
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     es = dispatcher->service;
     event = 0;
-
     lock(es);
     next = dispatcher->eventQ->next;
     if (next != dispatcher->eventQ) {
         if (next->due <= es->now) {
             event = next;
-            dequeueEvent(event);
-            mprAssert(event->magic == MPR_EVENT_MAGIC);
+            queueEvent(dispatcher->currentQ, event);
+            assure(event->magic == MPR_EVENT_MAGIC);
         }
     }
     unlock(es);
@@ -243,20 +245,20 @@ MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
 }
 
 
-int mprGetEventCount(MprDispatcher *dispatcher)
+PUBLIC int mprGetEventCount(MprDispatcher *dispatcher)
 {
     MprEventService     *es;
     MprEvent            *event;
     int                 count;
 
-    mprAssert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     es = dispatcher->service;
 
     lock(es);
 	count = 0;
     for (event = dispatcher->eventQ->next; event != dispatcher->eventQ; event = event->next) {
-        mprAssert(event->magic == MPR_EVENT_MAGIC);
+        assure(event->magic == MPR_EVENT_MAGIC);
         count++;
     }
     unlock(es);
@@ -266,7 +268,7 @@ int mprGetEventCount(MprDispatcher *dispatcher)
 
 static void initEventQ(MprEvent *q)
 {
-    mprAssert(q);
+    assure(q);
 
     q->next = q;
     q->prev = q;
@@ -279,14 +281,14 @@ static void initEventQ(MprEvent *q)
  */
 static void queueEvent(MprEvent *prior, MprEvent *event)
 {
-    mprAssert(prior);
-    mprAssert(event);
-    mprAssert(prior->next);
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
-    mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(prior);
+    assure(event);
+    assure(prior->next);
+    assure(event->magic == MPR_EVENT_MAGIC);
+    assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     if (event->next) {
-        dequeueEvent(event);
+        mprDequeueEvent(event);
     }
     event->prev = prior;
     event->next = prior->next;
@@ -298,13 +300,13 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
 /*
     Remove an event. Must be locked when called.
  */
-static void dequeueEvent(MprEvent *event)
+PUBLIC void mprDequeueEvent(MprEvent *event)
 {
-    mprAssert(event);
-    mprAssert(event->next);
-    mprAssert(event->magic == MPR_EVENT_MAGIC);
-    mprAssert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
+    assure(event);
+    assure(event->magic == MPR_EVENT_MAGIC);
+    assure(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
+    /* If a continuous event is removed, next may already be null */
     if (event->next) {
         event->next->prev = event->prev;
         event->prev->next = event->next;
@@ -316,31 +318,15 @@ static void dequeueEvent(MprEvent *event)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

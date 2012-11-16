@@ -22,7 +22,7 @@ static int setValue(MprJson *jp, MprObj *obj, int index, cchar *name, cchar *val
 
 /************************************ Code ************************************/
 
-MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
+PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
 {
     MprJson     jp;
 
@@ -41,7 +41,7 @@ MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
 /*
     Deserialize a JSON string into an MprHash object. Objects and lists "[]" are stored in hashes. 
  */
-MprObj *mprDeserialize(cchar *str)
+PUBLIC MprObj *mprDeserialize(cchar *str)
 {
     MprJsonCallback cb;
 
@@ -105,37 +105,45 @@ static MprObj *deserialize(MprJson *jp)
             /*
                 Value: String, "{" or "]"
              */
+            value = 0;
             if (index < 0) {
                 if ((name = parseName(jp)) == 0) {
                     return 0;
                 }
-                if (advanceToken(jp) != ':') {
-                    mprJsonParseError(jp, "Bad separator '%c'", *jp->tok);
-                    return 0;
+                if ((token = advanceToken(jp)) != ':') {
+                    if (token == ',' || token == '}' || token == ']') {
+                        valueType = MPR_JSON_STRING;
+                        value = name;
+                    } else {
+                        mprJsonParseError(jp, "Bad separator '%c'", *jp->tok);
+                        return 0;
+                    }
                 }
                 jp->tok++;
             } else {
                 name = 0;
             }
-            advanceToken(jp);
-            if (jp->callback.checkState && jp->callback.checkState(jp, name) < 0) {
-                return 0;
-            }
-            if (*jp->tok == '{') {
-                value = deserialize(jp);
-                valueType = MPR_JSON_OBJ;
+            if (!value) {
+                advanceToken(jp);
+                if (jp->callback.checkState && jp->callback.checkState(jp, name) < 0) {
+                    return 0;
+                }
+                if (*jp->tok == '{') {
+                    value = deserialize(jp);
+                    valueType = MPR_JSON_OBJ;
 
-            } else if (*jp->tok == '[') {
-                value = deserialize(jp);
-                valueType = MPR_JSON_ARRAY;
+                } else if (*jp->tok == '[') {
+                    value = deserialize(jp);
+                    valueType = MPR_JSON_ARRAY;
 
-            } else {
-                value = parseValue(jp);
-                valueType = MPR_JSON_STRING;
-            }
-            if (value == 0) {
-                /* Error already reported */
-                return 0;
+                } else {
+                    value = parseValue(jp);
+                    valueType = MPR_JSON_STRING;
+                }
+                if (!value) {
+                    /* Error already reported */
+                    return 0;
+                }
             }
             if ((rc = jp->callback.setValue(jp, obj, index, name, value, valueType)) < 0) {
                 return 0;
@@ -249,7 +257,15 @@ static int setValue(MprJson *jp, MprObj *obj, int index, cchar *key, cchar *valu
 
 static MprObj *makeObj(MprJson *jp, bool list)
 {
-    return (MprObj*) mprCreateHash(0, 0);
+    MprHash     *hash;
+
+    if ((hash = mprCreateHash(0, 0)) == 0) {
+        return 0;
+    }
+    if (list) {
+        hash->flags |= MPR_HASH_LIST;
+    }
+    return hash;
 }
 
 
@@ -285,7 +301,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
             itosbuf(numbuf, sizeof(numbuf), i, 10);
             if (pretty) mprPutStringToBuf(buf, "    ");
             if ((kp = mprLookupKeyEntry(obj, numbuf)) == 0) {
-                mprAssert(kp);
+                assure(kp);
                 continue;
             }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
@@ -324,7 +340,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
 /*
     Serialize into JSON format.
  */
-cchar *mprSerialize(MprObj *obj, int flags)
+PUBLIC cchar *mprSerialize(MprObj *obj, int flags)
 {
     MprBuf  *buf;
     int     pretty;
@@ -354,7 +370,7 @@ static cchar *findQuote(cchar *tok, int quote)
 {
     cchar   *cp;
 
-    mprAssert(tok);
+    assure(tok);
     for (cp = tok; *cp; cp++) {
         if (*cp == quote && (cp == tok || *cp != '\\')) {
             return cp;
@@ -368,7 +384,7 @@ static cchar *findEndKeyword(MprJson *jp, cchar *str)
 {
     cchar   *cp, *etok;
 
-    mprAssert(str);
+    assure(str);
     for (cp = jp->tok; *cp; cp++) {
         if ((etok = strpbrk(cp, " \t\n\r:,}]")) != 0) {
             if (etok == jp->tok || *etok != '\\') {
@@ -390,7 +406,7 @@ static void jsonParseError(MprJson *jp, cchar *msg)
 }
 
 
-void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
+PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 {
     va_list     args;
     cchar       *msg;
@@ -402,34 +418,17 @@ void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 }
 
 
-
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

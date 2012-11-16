@@ -18,7 +18,7 @@ static void manageFile(MprFile *file, int flags);
 
 /************************************ Code ************************************/
 
-MprFile *mprAttachFileFd(int fd, cchar *name, int omode)
+PUBLIC MprFile *mprAttachFileFd(int fd, cchar *name, int omode)
 {
     MprFileSystem   *fs;
     MprFile         *file;
@@ -50,13 +50,13 @@ static void manageFile(MprFile *file, int flags)
 }
 
 
-int mprFlushFile(MprFile *file)
+PUBLIC int mprFlushFile(MprFile *file)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
     ssize           len, rc;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -80,31 +80,31 @@ int mprFlushFile(MprFile *file)
 }
 
 
-MprOff mprGetFilePosition(MprFile *file)
+PUBLIC MprOff mprGetFilePosition(MprFile *file)
 {
     return file->pos;
 }
 
 
-MprOff mprGetFileSize(MprFile *file)
+PUBLIC MprOff mprGetFileSize(MprFile *file)
 {
     return file->size;
 }
 
 
-MprFile *mprGetStderr()
+PUBLIC MprFile *mprGetStderr()
 {
     return MPR->stdError;
 }
 
 
-MprFile *mprGetStdin()
+PUBLIC MprFile *mprGetStdin()
 {
     return MPR->stdInput;
 }
 
 
-MprFile *mprGetStdout()
+PUBLIC MprFile *mprGetStdout()
 {
     return MPR->stdOutput;
 }
@@ -113,12 +113,12 @@ MprFile *mprGetStdout()
 /*
     Get a character from the file. This will put the file into buffered mode.
  */
-int mprGetFileChar(MprFile *file)
+PUBLIC int mprGetFileChar(MprFile *file)
 {
     MprBuf      *bp;
     ssize     len;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR;
@@ -148,16 +148,16 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
     ssize   newlines;
     int     i;
 
-    mprAssert(str);
-    mprAssert(newline);
-    mprAssert(nlen);
-    mprAssert(len > 0);
+    assure(str);
+    assure(newline);
+    assure(nlen);
+    assure(len > 0);
 
     if (str == NULL || newline == NULL) {
         return NULL;
     }
     newlines = slen(newline);
-    mprAssert(newlines == 1 || newlines == 2);
+    assure(newlines == 1 || newlines == 2);
 
     start = best = NULL;
     *nlen = 0;
@@ -180,7 +180,7 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
     Get a string from the file. This will put the file into buffered mode.
     Return NULL on eof.
  */
-char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
+PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
 {
     MprBuf          *bp;
     MprFileSystem   *fs;
@@ -188,7 +188,7 @@ char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
     cchar           *eol, *newline, *start;
     char            *result;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return NULL;
@@ -239,7 +239,7 @@ char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
 }
 
 
-MprFile *mprOpenFile(cchar *path, int omode, int perms)
+PUBLIC MprFile *mprOpenFile(cchar *path, int omode, int perms)
 {
     MprFileSystem   *fs;
     MprFile         *file;
@@ -265,7 +265,7 @@ MprFile *mprOpenFile(cchar *path, int omode, int perms)
 }
 
 
-int mprCloseFile(MprFile *file)
+PUBLIC int mprCloseFile(MprFile *file)
 {
     MprFileSystem   *fs;
 
@@ -280,13 +280,13 @@ int mprCloseFile(MprFile *file)
 /*
     Put a string to the file. This will put the file into buffered mode.
  */
-ssize mprPutFileString(MprFile *file, cchar *str)
+PUBLIC ssize mprPutFileString(MprFile *file, cchar *str)
 {
     MprBuf  *bp;
     ssize   total, bytes, count;
     char    *buf;
 
-    mprAssert(file);
+    assure(file);
     count = slen(str);
 
     /*
@@ -329,12 +329,12 @@ ssize mprPutFileString(MprFile *file, cchar *str)
 /*
     Peek at a character from the file without disturbing the read position. This will put the file into buffered mode.
  */
-int mprPeekFileChar(MprFile *file)
+PUBLIC int mprPeekFileChar(MprFile *file)
 {
     MprBuf      *bp;
     ssize       len;
 
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR;
@@ -360,9 +360,9 @@ int mprPeekFileChar(MprFile *file)
 /*
     Put a character to the file. This will put the file into buffered mode.
  */
-ssize mprPutFileChar(MprFile *file, int c)
+PUBLIC ssize mprPutFileChar(MprFile *file, int c)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return -1;
@@ -379,14 +379,14 @@ ssize mprPutFileChar(MprFile *file, int c)
 }
 
 
-ssize mprReadFile(MprFile *file, void *buf, ssize size)
+PUBLIC ssize mprReadFile(MprFile *file, void *buf, ssize size)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
     ssize           bytes, totalRead;
     void            *bufStart;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -417,11 +417,11 @@ ssize mprReadFile(MprFile *file, void *buf, ssize size)
 }
 
 
-MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
+PUBLIC MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
 {
     MprFileSystem   *fs;
 
-    mprAssert(file);
+    assure(file);
     fs = file->fileSystem;
 
     if (file->buf) {
@@ -459,11 +459,11 @@ MprOff mprSeekFile(MprFile *file, int seekType, MprOff pos)
 }
 
 
-int mprTruncateFile(cchar *path, MprOff size)
+PUBLIC int mprTruncateFile(cchar *path, MprOff size)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path && *path);
+    assure(path && *path);
 
     if ((fs = mprLookupFileSystem(path)) == 0) {
         return MPR_ERR_CANT_OPEN;
@@ -472,13 +472,13 @@ int mprTruncateFile(cchar *path, MprOff size)
 }
 
 
-ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
+PUBLIC ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
 {
     MprFileSystem   *fs;
     MprBuf          *bp;
     ssize           bytes, written;
 
-    mprAssert(file);
+    assure(file);
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
     }
@@ -512,13 +512,13 @@ ssize mprWriteFile(MprFile *file, cvoid *buf, ssize count)
 }
 
 
-ssize mprWriteFileString(MprFile *file, cchar *str)
+PUBLIC ssize mprWriteFileString(MprFile *file, cchar *str)
 {
     return mprWriteFile(file, str, slen(str));
 }
 
 
-ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...)
+PUBLIC ssize mprWriteFileFmt(MprFile *file, cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
@@ -546,7 +546,7 @@ static ssize fillBuf(MprFile *file)
     bp = file->buf;
     fs = file->fileSystem;
 
-    mprAssert(mprGetBufLength(bp) == 0);
+    assure(mprGetBufLength(bp) == 0);
     mprFlushBuf(bp);
 
     len = fs->readFile(file, mprGetBufStart(bp), mprGetBufSpace(bp));
@@ -554,7 +554,6 @@ static ssize fillBuf(MprFile *file)
         return len;
     }
     mprAdjustBufEnd(bp, len);
-    mprAddNullToBuf(bp);
     return len;
 }
 
@@ -562,9 +561,9 @@ static ssize fillBuf(MprFile *file)
 /*
     Enable and control file buffering
  */
-int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
+PUBLIC int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
 {
-    mprAssert(file);
+    assure(file);
 
     if (file == 0) {
         return MPR_ERR_BAD_STATE;
@@ -585,45 +584,29 @@ int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSize)
 }
 
 
-void mprDisableFileBuffering(MprFile *file)
+PUBLIC void mprDisableFileBuffering(MprFile *file)
 {
     mprFlushFile(file);
     file->buf = 0;
 }
 
 
-int mprGetFileFd(MprFile *file)
+PUBLIC int mprGetFileFd(MprFile *file)
 {
     return file->fd;
 }
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

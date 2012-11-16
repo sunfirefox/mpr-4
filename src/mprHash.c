@@ -17,7 +17,7 @@
 
 /**************************** Forward Declarations ****************************/
 
-static void *dupKey(MprHash *hash, MprKey *sp, cvoid *key);
+static void *dupKey(MprHash *hash, cvoid *key);
 static MprKey *lookupHash(int *index, MprKey **prevSp, MprHash *hash, cvoid *key);
 static void manageHashTable(MprHash *hash, int flags);
 
@@ -25,7 +25,7 @@ static void manageHashTable(MprHash *hash, int flags);
 /*
     Create a new hash hash of a given size. Caller should provide a size that is a prime number for the greatest efficiency.
  */
-MprHash *mprCreateHash(int hashSize, int flags)
+PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
 {
     MprHash     *hash;
 
@@ -39,10 +39,12 @@ MprHash *mprCreateHash(int hashSize, int flags)
         return NULL;
     }
     hash->size = hashSize;
-    hash->flags = flags;
+    hash->flags = flags | MPR_OBJ_HASH;
     hash->length = 0;
-    hash->mutex = mprCreateLock();
-#if BIT_CHAR_LEN > 1
+    if (!(flags & MPR_HASH_OWN)) {
+        hash->mutex = mprCreateLock();
+    }
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
         if (hash->flags & MPR_HASH_CASELESS) {
             hash->fn = (MprHashProc) whashlower;
@@ -73,17 +75,17 @@ static void manageHashTable(MprHash *hash, int flags)
         lock(hash);
         for (i = 0; i < hash->size; i++) {
             for (sp = (MprKey*) hash->buckets[i]; sp; sp = sp->next) {
-                mprAssert(mprIsValid(sp));
+                assure(mprIsValid(sp));
                 mprMark(sp);
                 if (!(hash->flags & MPR_HASH_STATIC_VALUES)) {
                     if (sp->data && !mprIsValid(sp->data)) {
                         mprLog(0, "Data in key %s is not valid", sp->key);
                     }
-                    mprAssert(sp->data == 0 || mprIsValid(sp->data));
+                    assure(sp->data == 0 || mprIsValid(sp->data));
                     mprMark(sp->data);
                 }
                 if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-                    mprAssert(mprIsValid(sp->key));
+                    assure(mprIsValid(sp->key));
                     mprMark(sp->key);
                 }
             }
@@ -97,18 +99,21 @@ static void manageHashTable(MprHash *hash, int flags)
     Insert an entry into the hash hash. If the entry already exists, update its value. 
     Order of insertion is not preserved.
  */
-MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
+PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 {
     MprKey      *sp, *prevSp;
     int         index;
 
     if (hash == 0) {
-        mprAssert(hash);
+        assure(hash);
         return 0;
     }
     lock(hash);
-    sp = lookupHash(&index, &prevSp, hash, key);
-    if (sp != 0) {
+    if ((sp = lookupHash(&index, &prevSp, hash, key)) != 0) {
+        if (hash->flags & MPR_HASH_UNIQUE) {
+            unlock(hash);
+            return 0;
+        }
         /*
             Already exists. Just update the data.
          */
@@ -125,7 +130,7 @@ MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
     }
     sp->data = ptr;
     if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-        sp->key = dupKey(hash, sp, key);
+        sp->key = dupKey(hash, key);
     } else {
         sp->key = (void*) key;
     }
@@ -138,7 +143,7 @@ MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
+PUBLIC MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
 {
     va_list     ap;
     char        *value;
@@ -155,20 +160,20 @@ MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
     Order of insertion is not preserved. Lookup cannot be used to retrieve all duplicate keys, some will be shadowed. 
     Use enumeration to retrieve the keys.
  */
-MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
+PUBLIC MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 {
     MprKey      *sp;
     int         index;
 
-    mprAssert(hash);
-    mprAssert(key);
+    assure(hash);
+    assure(key);
 
     if ((sp = mprAllocStruct(MprKey)) == 0) {
         return 0;
     }
     sp->data = ptr;
     if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {
-        sp->key = dupKey(hash, sp, key);
+        sp->key = dupKey(hash, key);
     } else {
         sp->key = (void*) key;
     }
@@ -183,13 +188,13 @@ MprKey *mprAddDuplicateKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
-int mprRemoveKey(MprHash *hash, cvoid *key)
+PUBLIC int mprRemoveKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp, *prevSp;
     int         index;
 
-    mprAssert(hash);
-    mprAssert(key);
+    assure(hash);
+    assure(key);
 
     lock(hash);
     if ((sp = lookupHash(&index, &prevSp, hash, key)) == 0) {
@@ -207,7 +212,7 @@ int mprRemoveKey(MprHash *hash, cvoid *key)
 }
 
 
-MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
+PUBLIC MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
 {
     MprKey      *kp;
 
@@ -221,13 +226,12 @@ MprHash *mprBlendHash(MprHash *hash, MprHash *extra)
 }
 
 
-MprHash *mprCloneHash(MprHash *master)
+PUBLIC MprHash *mprCloneHash(MprHash *master)
 {
     MprKey      *kp;
     MprHash     *hash;
 
-    hash = mprCreateHash(master->size, master->flags);
-    if (hash == 0) {
+    if ((hash = mprCreateHash(master->size, master->flags)) == 0) {
         return 0;
     }
     kp = mprGetFirstKey(master);
@@ -242,11 +246,8 @@ MprHash *mprCloneHash(MprHash *master)
 /*
     Lookup a key and return the hash entry
  */
-MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
+PUBLIC MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
 {
-    mprAssert(key);
-    mprAssert(hash);
-
     return lookupHash(0, 0, hash, key);
 }
 
@@ -254,12 +255,9 @@ MprKey *mprLookupKeyEntry(MprHash *hash, cvoid *key)
 /*
     Lookup a key and return the hash entry data
  */
-void *mprLookupKey(MprHash *hash, cvoid *key)
+PUBLIC void *mprLookupKey(MprHash *hash, cvoid *key)
 {
     MprKey      *sp;
-
-    mprAssert(key);
-    mprAssert(hash);
 
     if ((sp = lookupHash(0, 0, hash, key)) == 0) {
         return 0;
@@ -298,9 +296,6 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
     MprKey      **buckets;
     int         hashSize, i, index, rc;
 
-    mprAssert(key);
-    mprAssert(hash);
-
     if (key == 0 || hash == 0) {
         return 0;
     }
@@ -312,7 +307,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
                 for (i = 0; i < hash->size; i++) {
                     for (sp = hash->buckets[i]; sp; sp = next) {
                         next = sp->next;
-                        mprAssert(next != sp);
+                        assure(next != sp);
                         index = hash->fn(sp->key, slen(sp->key)) % hashSize;
                         if (buckets[index]) {
                             sp->next = buckets[index];
@@ -337,11 +332,11 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
     prev = 0;
 
     while (sp) {
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
         if (hash->flags & MPR_HASH_UNICODE) {
-            MprChar *u1, *u2;
-            u1 = (MprChar*) sp->key;
-            u2 = (MprChar*) key;
+            wchar *u1, *u2;
+            u1 = (wchar*) sp->key;
+            u2 = (wchar*) key;
             rc = -1;
             if (hash->flags & MPR_HASH_CASELESS) {
                 rc = wcasecmp(u1, u2);
@@ -351,7 +346,7 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
         } else 
 #endif
         if (hash->flags & MPR_HASH_CASELESS) {
-            rc = scasecmp(sp->key, key);
+            rc = scaselesscmp(sp->key, key);
         } else {
             rc = strcmp(sp->key, key);
         }
@@ -362,14 +357,14 @@ static MprKey *lookupHash(int *bucketIndex, MprKey **prevSp, MprHash *hash, cvoi
             return sp;
         }
         prev = sp;
-        mprAssert(sp != sp->next);
+        assure(sp != sp->next);
         sp = sp->next;
     }
     return 0;
 }
 
 
-int mprGetHashLength(MprHash *hash)
+PUBLIC int mprGetHashLength(MprHash *hash)
 {
     return hash->length;
 }
@@ -378,12 +373,12 @@ int mprGetHashLength(MprHash *hash)
 /*
     Return the first entry in the hash.
  */
-MprKey *mprGetFirstKey(MprHash *hash)
+PUBLIC MprKey *mprGetFirstKey(MprHash *hash)
 {
     MprKey      *sp;
     int         i;
 
-    mprAssert(hash);
+    assure(hash);
 
     for (i = 0; i < hash->size; i++) {
         if ((sp = (MprKey*) hash->buckets[i]) != 0) {
@@ -397,7 +392,7 @@ MprKey *mprGetFirstKey(MprHash *hash)
 /*
     Return the next entry in the hash
  */
-MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
+PUBLIC MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 {
     MprKey      *sp;
     int         i;
@@ -420,18 +415,18 @@ MprKey *mprGetNextKey(MprHash *hash, MprKey *last)
 }
 
 
-static void *dupKey(MprHash *hash, MprKey *sp, cvoid *key)
+static void *dupKey(MprHash *hash, cvoid *key)
 {
-#if BIT_CHAR_LEN > 1
+#if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
-        return wclone(sp, (MprChar*) key, -1);
+        return wclone((wchar*) key);
     } else
 #endif
         return sclone(key);
 }
 
 
-MprHash *mprCreateHashFromWords(cchar *str)
+PUBLIC MprHash *mprCreateHashFromWords(cchar *str)
 {
     MprHash     *hash;
     char        *word, *next;
@@ -450,28 +445,12 @@ MprHash *mprCreateHashFromWords(cchar *str)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

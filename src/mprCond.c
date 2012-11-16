@@ -15,7 +15,7 @@ static void manageCond(MprCond *cp, int flags);
     Create a condition variable for use by single or multiple waiters
  */
 
-MprCond *mprCreateCond()
+PUBLIC MprCond *mprCreateCond()
 {
     MprCond     *cp;
 
@@ -38,13 +38,13 @@ MprCond *mprCreateCond()
 
 static void manageCond(MprCond *cp, int flags)
 {
-    mprAssert(cp);
+    assure(cp);
     
     if (flags & MPR_MANAGE_MARK) {
         mprMark(cp->mutex);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        mprAssert(cp->mutex);
+        assure(cp->mutex);
 #if BIT_WIN_LIKE
         CloseHandle(cp->cv);
 #elif VXWORKS
@@ -60,10 +60,13 @@ static void manageCond(MprCond *cp, int flags)
     Wait for the event to be triggered. Should only be used when there are single waiters. If the event is already
     triggered, then it will return immediately. Timeout of -1 means wait forever. Timeout of 0 means no wait.
     Returns 0 if the event was signalled. Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-int mprWaitForCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
 {
-    MprTime             now, expire;
+    MprTicks            now, expire;
     int                 rc;
 #if BIT_UNIX_LIKE
     struct timespec     waitTill;
@@ -71,67 +74,87 @@ int mprWaitForCond(MprCond *cp, MprTime timeout)
     int                 usec;
 #endif
 
+    /*
+        Avoid doing a mprGetTicks() if timeout is < 0
+     */
     rc = 0;
-    if (timeout < 0) {
-        timeout = MAXINT;
-    }
-    now = mprGetTime();
-    expire = now + timeout;
-
+    if (timeout >= 0) {
+        now = mprGetTicks();
+        expire = now + timeout;
 #if BIT_UNIX_LIKE
-    gettimeofday(&current, NULL);
-    usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;
-    waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
-    waitTill.tv_nsec = (usec % 1000000) * 1000;
+        gettimeofday(&current, NULL);
+        usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;
+        waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
+        waitTill.tv_nsec = (usec % 1000000) * 1000;
 #endif
+    } else {
+        expire = -1;
+        now = 0;
+    }
     mprLock(cp->mutex);
-    if (!cp->triggered) {
-        /*
-            WARNING: Can get spurious wakeups on some platforms (Unix + pthreads). 
-         */
-        do {
+    /*
+        NOTE: The WaitForSingleObject and semTake APIs keeps state as to whether the object is signalled.
+        WaitForSingleObject and semTake will not block if the object is already signalled. However, pthread_cond_ 
+        is different and does not keep such state. If it is signalled before pthread_cond_wait, the thread will 
+        still block. Consequently we need to keep our own state in cp->triggered. This also protects against 
+        spurious wakeups which can happen (on windows).
+     */
+    do {
 #if BIT_WIN_LIKE
-            mprUnlock(cp->mutex);
-            rc = WaitForSingleObject(cp->cv, (int) (expire - now));
-            mprLock(cp->mutex);
-            if (rc == WAIT_OBJECT_0) {
-                rc = 0;
-                ResetEvent(cp->cv);
-            } else if (rc == WAIT_TIMEOUT) {
+        /*
+            Regardless of the state of cp->triggered, we must call WaitForSingleObject to consume the signalled
+            internal state of the object.
+         */
+        mprUnlock(cp->mutex);
+        rc = WaitForSingleObject(cp->cv, (int) (expire - now));
+        mprLock(cp->mutex);
+        if (rc == WAIT_OBJECT_0) {
+            rc = 0;
+            ResetEvent(cp->cv);
+        } else if (rc == WAIT_TIMEOUT) {
+            rc = MPR_ERR_TIMEOUT;
+        } else {
+            rc = MPR_ERR;
+        }
+#elif VXWORKS
+        /*
+            Regardless of the state of cp->triggered, we must call semTake to consume the semaphore signalled state
+         */
+        mprUnlock(cp->mutex);
+        rc = semTake(cp->cv, (int) (expire - now));
+        mprLock(cp->mutex);
+        if (rc != 0) {
+            if (errno == S_objLib_OBJ_UNAVAILABLE) {
                 rc = MPR_ERR_TIMEOUT;
             } else {
                 rc = MPR_ERR;
             }
-#elif VXWORKS
-            mprUnlock(cp->mutex);
-            rc = semTake(cp->cv, (int) (expire - now));
-            mprLock(cp->mutex);
-            if (rc != 0) {
-                if (errno == S_objLib_OBJ_UNAVAILABLE) {
-                    rc = MPR_ERR_TIMEOUT;
-                } else {
-                    rc = MPR_ERR;
-                }
-            }
-            
+        }
+        
 #elif BIT_UNIX_LIKE
-            /*
-                NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
-                atomically unlock the mutex before sleeping and will relock on awakening.  
-             */
-            rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
+        /*
+            NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
+            atomically unlock the mutex before sleeping and will relock on awakening.  
+         */
+        if (!cp->triggered) {
+            if (now) {
+                rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
+            } else {
+                rc = pthread_cond_wait(&cp->cv, &cp->mutex->cs);
+            }
             if (rc == ETIMEDOUT) {
                 rc = MPR_ERR_TIMEOUT;
             } else if (rc == EAGAIN) {
                 rc = 0;
             } else if (rc != 0) {
-                mprAssert(rc == 0);
+                assure(rc == 0);
                 mprError("pthread_cond_timedwait error rc %d", rc);
                 rc = MPR_ERR;
             }
+        }
 #endif
-        } while (!cp->triggered && rc == 0 && (now = mprGetTime()) < expire);
-    }
+    } while (!cp->triggered && rc == 0 && (now && (now = mprGetTicks()) < expire));
+
     if (cp->triggered) {
         cp->triggered = 0;
         rc = 0;
@@ -146,7 +169,7 @@ int mprWaitForCond(MprCond *cp, MprTime timeout)
 /*
     Signal a condition and wakeup the waiter. Note: this may be called prior to the waiter waiting.
  */
-void mprSignalCond(MprCond *cp)
+PUBLIC void mprSignalCond(MprCond *cp)
 {
     mprLock(cp->mutex);
     if (!cp->triggered) {
@@ -163,7 +186,7 @@ void mprSignalCond(MprCond *cp)
 }
 
 
-void mprResetCond(MprCond *cp)
+PUBLIC void mprResetCond(MprCond *cp)
 {
     mprLock(cp->mutex);
     cp->triggered = 0;
@@ -186,8 +209,11 @@ void mprResetCond(MprCond *cp)
     triggered, then it will return immediately. This call will not reset cp->triggered and must be reset manually.
     A timeout of -1 means wait forever. Timeout of 0 means no wait.  Returns 0 if the event was signalled. 
     Returns < 0 for a timeout.
+
+    WARNING: On unix, the pthread_cond_timedwait uses an absolute time (Ugh!). So time-warps for daylight-savings may
+    cause waits to prematurely return.
  */
-int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
+PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTicks timeout)
 {
     int         rc;
 #if BIT_UNIX_LIKE
@@ -195,20 +221,19 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     struct timeval      current;
     int                 usec;
 #else
-    MprTime     now, expire;
+    MprTicks            now, expire;
 #endif
 
     if (timeout < 0) {
         timeout = MAXINT;
     }
-
 #if BIT_UNIX_LIKE
     gettimeofday(&current, NULL);
     usec = current.tv_usec + ((int) (timeout % 1000)) * 1000;
     waitTill.tv_sec = current.tv_sec + ((int) (timeout / 1000)) + (usec / 1000000);
     waitTill.tv_nsec = (usec % 1000000) * 1000;
 #else
-    now = mprGetTime();
+    now = mprGetTicks();
     expire = now + timeout;
 #endif
 
@@ -236,7 +261,7 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
     if (rc == ETIMEDOUT) {
         rc = MPR_ERR_TIMEOUT;
     } else if (rc != 0) {
-        mprAssert(rc == 0);
+        assure(rc == 0);
         rc = MPR_ERR;
     }
     mprUnlock(cp->mutex);
@@ -248,7 +273,7 @@ int mprWaitForMultiCond(MprCond *cp, MprTime timeout)
 /*
     Signal a condition and wakeup the all the waiters. Note: this may be called before or after to the waiter waiting.
  */
-void mprSignalMultiCond(MprCond *cp)
+PUBLIC void mprSignalMultiCond(MprCond *cp)
 {
     mprLock(cp->mutex);
 #if BIT_WIN_LIKE
@@ -271,28 +296,12 @@ void mprSignalMultiCond(MprCond *cp)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

@@ -14,15 +14,15 @@
 
 /************************************ Code ************************************/
 
-MprFileSystem *mprCreateFileSystem(cchar *path)
+PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path)
 {
     MprFileSystem   *fs;
     char            *cp;
 
     /*
-        TODO - evolve this to support multiple file systems in a single system
+        FUTURE: evolve this to support multiple file systems in a single system
      */
-#if BIT_FEATURE_ROMFS
+#if BIT_ROM
     fs = (MprFileSystem*) mprCreateRomFileSystem(path);
 #else
     fs = (MprFileSystem*) mprCreateDiskFileSystem(path);
@@ -64,11 +64,11 @@ MprFileSystem *mprCreateFileSystem(cchar *path)
 }
 
 
-void mprAddFileSystem(MprFileSystem *fs)
+PUBLIC void mprAddFileSystem(MprFileSystem *fs)
 {
-    mprAssert(fs);
+    assure(fs);
     
-    //  TODO - this does not currently add a file system. It merely replaces the existing.
+    /* NOTE: this does not currently add a file system. It merely replaces the existing file system. */
     MPR->fileSystem = fs;
 }
 
@@ -76,52 +76,52 @@ void mprAddFileSystem(MprFileSystem *fs)
 /*
     Note: path can be null
  */
-MprFileSystem *mprLookupFileSystem(cchar *path)
+PUBLIC MprFileSystem *mprLookupFileSystem(cchar *path)
 {
     return MPR->fileSystem;
 }
 
 
-cchar *mprGetPathNewline(cchar *path)
+PUBLIC cchar *mprGetPathNewline(cchar *path)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path);
+    assure(path);
 
     fs = mprLookupFileSystem(path);
     return fs->newline;
 }
 
 
-cchar *mprGetPathSeparators(cchar *path)
+PUBLIC cchar *mprGetPathSeparators(cchar *path)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path);
+    assure(path);
 
     fs = mprLookupFileSystem(path);
     return fs->separators;
 }
 
 
-void mprSetPathSeparators(cchar *path, cchar *separators)
+PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 {
     MprFileSystem   *fs;
 
-    mprAssert(path);
-    mprAssert(separators);
+    assure(path);
+    assure(separators);
     
     fs = mprLookupFileSystem(path);
     fs->separators = sclone(separators);
 }
 
 
-void mprSetPathNewline(cchar *path, cchar *newline)
+PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 {
     MprFileSystem   *fs;
     
-    mprAssert(path);
-    mprAssert(newline);
+    assure(path);
+    assure(newline);
     
     fs = mprLookupFileSystem(path);
     fs->newline = sclone(newline);
@@ -130,31 +130,15 @@ void mprSetPathNewline(cchar *path, cchar *newline)
 
 /*
     @copy   default
-    
+
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
-    
+
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire 
-    a commercial license from Embedthis Software. You agree to be fully bound 
-    by the terms of either license. Consult the LICENSE.TXT distributed with 
-    this software for full details.
-    
-    This software is open source; you can redistribute it and/or modify it 
-    under the terms of the GNU General Public License as published by the 
-    Free Software Foundation; either version 2 of the License, or (at your 
-    option) any later version. See the GNU General Public License for more 
-    details at: http://embedthis.com/downloads/gplLicense.html
-    
-    This program is distributed WITHOUT ANY WARRANTY; without even the 
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
-    
-    This GPL license does NOT permit incorporating this software into 
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses 
-    for this software and support services are available from Embedthis 
-    Software at http://embedthis.com 
-    
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
+
     Local variables:
     tab-width: 4
     c-basic-offset: 4

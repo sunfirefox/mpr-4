@@ -17,7 +17,7 @@ static void manageModuleService(MprModuleService *ms, int flags);
 /*
     Open the module service
  */
-MprModuleService *mprCreateModuleService()
+PUBLIC MprModuleService *mprCreateModuleService()
 {
     MprModuleService    *ms;
 
@@ -45,14 +45,14 @@ static void manageModuleService(MprModuleService *ms, int flags)
 /*
     Call the start routine for each module
  */
-int mprStartModuleService()
+PUBLIC int mprStartModuleService()
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 next;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         if (mprStartModule(mp) < 0) {
@@ -66,14 +66,14 @@ int mprStartModuleService()
 }
 
 
-void mprStopModuleService()
+PUBLIC void mprStopModuleService()
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 next;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
     mprLock(ms->mutex);
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         mprStopModule(mp);
@@ -82,14 +82,14 @@ void mprStopModuleService()
 }
 
 
-MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
+PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 index;
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     if ((mp = mprAllocObj(MprModule, manageModule)) == 0) {
         return 0;
@@ -100,7 +100,7 @@ MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *data)
         mp->entry = sclone(entry);
     }
     mp->moduleData = data;
-    mp->lastActivity = mprGetTime();
+    mp->lastActivity = mprGetTicks();
     index = mprAddItem(ms->modules, mp);
     if (index < 0 || mp->name == 0) {
         return 0;
@@ -120,9 +120,9 @@ static void manageModule(MprModule *mp, int flags)
 }
 
 
-int mprStartModule(MprModule *mp)
+PUBLIC int mprStartModule(MprModule *mp)
 {
-    mprAssert(mp);
+    assure(mp);
 
     if (mp->start && !(mp->flags & MPR_MODULE_STARTED)) {
         if (mp->start(mp) < 0) {
@@ -134,9 +134,9 @@ int mprStartModule(MprModule *mp)
 }
 
 
-int mprStopModule(MprModule *mp)
+PUBLIC int mprStopModule(MprModule *mp)
 {
-    mprAssert(mp);
+    assure(mp);
 
     if (mp->stop && (mp->flags & MPR_MODULE_STARTED) && !(mp->flags & MPR_MODULE_STOPPED)) {
         if (mp->stop(mp) < 0) {
@@ -151,19 +151,19 @@ int mprStopModule(MprModule *mp)
 /*
     See if a module is already loaded
  */
-MprModule *mprLookupModule(cchar *name)
+PUBLIC MprModule *mprLookupModule(cchar *name)
 {
     MprModuleService    *ms;
     MprModule           *mp;
     int                 next;
 
-    mprAssert(name && name);
+    assure(name && name);
 
     ms = MPR->moduleService;
-    mprAssert(ms);
+    assure(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
-        mprAssert(mp->name);
+        assure(mp->name);
         if (mp && strcmp(mp->name, name) == 0) {
             return mp;
         }
@@ -172,7 +172,7 @@ MprModule *mprLookupModule(cchar *name)
 }
 
 
-void *mprLookupModuleData(cchar *name)
+PUBLIC void *mprLookupModuleData(cchar *name)
 {
     MprModule   *module;
 
@@ -183,27 +183,30 @@ void *mprLookupModuleData(cchar *name)
 }
 
 
-void mprSetModuleTimeout(MprModule *module, MprTime timeout)
+PUBLIC void mprSetModuleTimeout(MprModule *module, MprTicks timeout)
 {
-    module->timeout = timeout;
+    assure(module);
+    if (module) {
+        module->timeout = timeout;
+    }
 }
 
 
-void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
+PUBLIC void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
 {
-    module->stop = stop;
+    assure(module);
+    if (module) {
+        module->stop = stop;
+    }
 }
 
 
-void mprSetModuleSearchPath(char *searchPath)
+PUBLIC void mprSetModuleSearchPath(char *searchPath)
 {
     MprModuleService    *ms;
 
     ms = MPR->moduleService;
     if (searchPath == 0) {
-#if UNUSED
-        dir = mprJoinPath(mprGetPathParent(mprGetAppDir()), BIT_LIB_NAME);
-#endif
         ms->searchPath = sjoin(mprGetAppDir(), MPR_SEARCH_SEP, mprGetAppDir(), MPR_SEARCH_SEP, BIT_BIN_PREFIX, NULL);
     } else {
         ms->searchPath = sclone(searchPath);
@@ -211,7 +214,7 @@ void mprSetModuleSearchPath(char *searchPath)
 }
 
 
-cchar *mprGetModuleSearchPath()
+PUBLIC cchar *mprGetModuleSearchPath()
 {
     return MPR->moduleService->searchPath;
 }
@@ -220,10 +223,10 @@ cchar *mprGetModuleSearchPath()
 /*
     Load a module. The module is located by searching for the filename by optionally using the module search path.
  */
-int mprLoadModule(MprModule *mp)
+PUBLIC int mprLoadModule(MprModule *mp)
 {
-#if BIT_CC_DYN_LOAD
-    mprAssert(mp);
+#if BIT_HAS_DYN_LOAD
+    assure(mp);
 
     if (mprLoadNativeModule(mp) < 0) {
         return MPR_ERR_CANT_READ;
@@ -237,13 +240,13 @@ int mprLoadModule(MprModule *mp)
 }
 
 
-int mprUnloadModule(MprModule *mp)
+PUBLIC int mprUnloadModule(MprModule *mp)
 {
     mprLog(6, "Unloading native module %s from %s", mp->name, mp->path);
     if (mprStopModule(mp) < 0) {
         return MPR_ERR_NOT_READY;
     }
-#if BIT_CC_DYN_LOAD
+#if BIT_HAS_DYN_LOAD
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
             mprError("Can't unload module %s", mp->name);
@@ -256,7 +259,7 @@ int mprUnloadModule(MprModule *mp)
 }
 
 
-#if BIT_CC_DYN_LOAD
+#if BIT_HAS_DYN_LOAD
 /*
     Return true if the shared library in "file" can be found. Return the actual path in *path. The filename
     may not have a shared library extension which is typical so calling code can be cross platform.
@@ -265,7 +268,7 @@ static char *probe(cchar *filename)
 {
     char    *path;
 
-    mprAssert(filename && *filename);
+    assure(filename && *filename);
 
     mprLog(7, "Probe for native module %s", filename);
     if (mprPathExists(filename, R_OK)) {
@@ -287,9 +290,9 @@ static char *probe(cchar *filename)
 /*
     Search for a module "filename" in the modulePath. Return the result in "result"
  */
-char *mprSearchForModule(cchar *filename)
+PUBLIC char *mprSearchForModule(cchar *filename)
 {
-#if BIT_CC_DYN_LOAD
+#if BIT_HAS_DYN_LOAD
     char    *path, *f, *searchPath, *dir, *tok;
 
     filename = mprNormalizePath(filename);
@@ -316,7 +319,7 @@ char *mprSearchForModule(cchar *filename)
         }
         dir = stok(0, MPR_SEARCH_SEP, &tok);
     }
-#endif /* BIT_CC_DYN_LOAD */
+#endif /* BIT_HAS_DYN_LOAD */
     return 0;
 }
 
@@ -325,28 +328,12 @@ char *mprSearchForModule(cchar *filename)
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
-    Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
-    You may use the GPL open source license described below or you may acquire
-    a commercial license from Embedthis Software. You agree to be fully bound
-    by the terms of either license. Consult the LICENSE.TXT distributed with
-    this software for full details.
-
-    This software is open source; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version. See the GNU General Public License for more
-    details at: http://embedthis.com/downloads/gplLicense.html
-
-    This program is distributed WITHOUT ANY WARRANTY; without even the
-    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-    This GPL license does NOT permit incorporating this software into
-    proprietary programs. If you are unable to comply with the GPL, you must
-    acquire a commercial license to use this software. Commercial licenses
-    for this software and support services are available from Embedthis
-    Software at http://embedthis.com
+    You may use the Embedthis Open Source license or you may acquire a 
+    commercial license from Embedthis Software. You agree to be fully bound
+    by the terms of either license. Consult the LICENSE.md distributed with
+    this software for full details and other copyrights.
 
     Local variables:
     tab-width: 4

@@ -1,32 +1,49 @@
-Embedthis Multithreaded Portable Runtime (MPR)
-==============================================
+Embedthis Multithreaded Portable Runtime (MPR) 4.X
+===
 
-To build, you will need to install Ejscript and Built It (bit). See:
-    https://github.com/embedthis/ejs-2
-    https://github.com/embedthis/bit
+Licensing
+---
+See LICENSE.md for details.
 
-To build:
-<pre>
-    configure
+### To Read Documentation:
+
+  See doc/index.html
+
+### Prerequisites:
+    Ejscript (http://www.ejscript.org/downloads/ejs/download.ejs) for the Bit and Utest tools to configure and build.
+
+### To Build:
+
+    ./configure
     bit
-</pre>
 
-Key Files and Directories
+    Alternatively to build without Ejscript:
 
-* LICENSE.TXT           - Product license.
-* README.md             - This file.
-* configure             - Configure script. Run to initialize.
-* .bit                  - Build It tools and scripts.
-* doc                   - Product documentation.
-* product.bit           - Product Build It definition file.
-* projects              - IDE project files to build the product.
-* releases              - Releases output from 'bit package'
-* src                   - Product source code.
+    make
 
---------------------------------------------------------------------------------
-Copyright (c) 2003-2012 Embedthis Software, LLC. All Rights Reserved.
-Embedthis and MPR are trademarks of Embedthis Software, LLC. Other 
-brands and their products are trademarks of their respective holders.
+Images are built into */bin. The build configuration is saved in */inc/bit.h.
 
-See LICENSE.TXT for software license details.
+### To Test:
 
+    bit test
+
+### To Run:
+
+    bit run
+
+This will run appweb in the src/server directory using the src/server/appweb.conf configuration file.
+
+### To Install:
+
+    bit install
+
+### To Create Packages:
+
+    bit package
+
+Resources
+---
+  - [Embedthis web site](http://embedthis.com/)
+  - [Appweb web site](http://appwebserver.org/)
+  - [MPR GitHub repository](http://github.com/embedthis/mpr-4)
+  - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
