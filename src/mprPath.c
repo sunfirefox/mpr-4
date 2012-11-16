@@ -161,11 +161,11 @@ PUBLIC int mprCopyPath(cchar *fromName, cchar *toName, int mode)
     char        buf[MPR_BUFSIZE];
 
     if ((from = mprOpenFile(fromName, O_RDONLY | O_BINARY, 0)) == 0) {
-        mprError("Can't open %s", fromName);
+        mprError("Cannot open %s", fromName);
         return MPR_ERR_CANT_OPEN;
     }
     if ((to = mprOpenFile(toName, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, mode)) == 0) {
-        mprError("Can't open %s", toName);
+        mprError("Cannot open %s", toName);
         return MPR_ERR_CANT_OPEN;
     }
     while ((count = mprReadFile(from, buf, sizeof(buf))) > 0) {
@@ -1367,7 +1367,7 @@ PUBLIC char *mprReadPathContents(cchar *path, ssize *lenp)
     char        *buf;
 
     if ((file = mprOpenFile(path, O_RDONLY | O_BINARY, 0)) == 0) {
-        mprError("Can't open %s", path);
+        mprError("Cannot open %s", path);
         return 0;
     }
     if (mprGetPathInfo(path, &info) < 0) {
@@ -1682,11 +1682,11 @@ PUBLIC ssize mprWritePathContents(cchar *path, cchar *buf, ssize len, int mode)
         len = slen(buf);
     }
     if ((file = mprOpenFile(path, O_WRONLY | O_TRUNC | O_CREAT | O_BINARY, mode)) == 0) {
-        mprError("Can't open %s", path);
+        mprError("Cannot open %s", path);
         return MPR_ERR_CANT_OPEN;
     }
     if (mprWriteFile(file, buf, len) != len) {
-        mprError("Can't write %s", path);
+        mprError("Cannot write %s", path);
         mprCloseFile(file);
         return MPR_ERR_CANT_WRITE;
     }

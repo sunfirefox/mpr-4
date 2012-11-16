@@ -77,7 +77,7 @@ static void hookSignal(int signo, MprSignal *sp)
         act.sa_flags &= ~SA_NODEFER;
         sigemptyset(&act.sa_mask);
         if (sigaction(signo, &act, 0) != 0) {
-            mprError("Can't hook signal %d, errno %d", signo, mprGetOsError());
+            mprError("Cannot hook signal %d, errno %d", signo, mprGetOsError());
         }
     }
     unlock(ssp);
@@ -95,7 +95,7 @@ static void unhookSignal(int signo)
     rc = sigaction(signo, 0, &act);
     if (rc == 0 && act.sa_sigaction == signalHandler) {
         if (sigaction(signo, &ssp->prior[signo], 0) != 0) {
-            mprError("Can't unhook signal %d, errno %d", signo, mprGetOsError());
+            mprError("Cannot unhook signal %d, errno %d", signo, mprGetOsError());
         }
     }
     unlock(ssp);
@@ -183,7 +183,7 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
     } 
     if (sp->sigaction) {
         /*
-            Call the original (foreign) action handler. Can't pass on siginfo, because there is no reliable and scalable
+            Call the original (foreign) action handler. Cannot pass on siginfo, because there is no reliable and scalable
             way to save siginfo state when the signalHandler is reentrant for a given signal across multiple threads.
          */
         (sp->sigaction)(sp->signo, NULL, NULL);

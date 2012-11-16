@@ -61,7 +61,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 
     if (!mp->entry || symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
             return 0;
         }
@@ -71,7 +71,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 
         mprLog(2, "Loading native module %s", mp->path);
         if ((fd = open(mp->path, O_RDONLY, 0664)) < 0) {
-            mprError("Can't open module \"%s\"", mp->path);
+            mprError("Cannot open module \"%s\"", mp->path);
             return MPR_ERR_CANT_OPEN;
         }
         handle = loadModule(fd, LOAD_GLOBAL_SYMBOLS);
@@ -80,7 +80,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
             if (handle) {
                 unldByModuleId(handle, 0);
             }
-            mprError("Can't load module %s", mp->path);
+            mprError("Cannot load module %s", mp->path);
             return MPR_ERR_CANT_READ;
         }
         close(fd);
@@ -91,7 +91,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     }
     if (mp->entry) {
         if (symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
-            mprError("Can't find symbol %s when loading %s", mp->entry, mp->path);
+            mprError("Cannot find symbol %s when loading %s", mp->entry, mp->path);
             return MPR_ERR_CANT_READ;
         }
         if ((fn)(mp->moduleData, mp) < 0) {

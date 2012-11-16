@@ -284,11 +284,11 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
         fmt(path, sizeof(path), "./%s%s", fileName, BIT_SHOBJ);
     }
     if ((mp = mprCreateModule(base, path, entry, sp)) == 0) {
-        mprError("Can't create module %s", path);
+        mprError("Cannot create module %s", path);
         return -1;
     }
     if (mprLoadModule(mp) < 0) {
-        mprError("Can't load module %s", path);
+        mprError("Cannot load module %s", path);
         return -1;
     }
     return 0;
@@ -345,7 +345,7 @@ PUBLIC int mprRunTests(MprTestService *sp)
             return MPR_ERR_MEMORY;
         }
         if (mprStartThread(tp) < 0) {
-            mprError("Can't start thread %d", i);
+            mprError("Cannot start thread %d", i);
             return MPR_ERR_CANT_INITIALIZE;
         }
     }
@@ -989,7 +989,7 @@ static int setLogging(char *logSpec)
 
     } else {
         if ((file = mprOpenFile(logSpec, O_CREAT | O_WRONLY | O_TRUNC | O_TEXT, 0664)) == 0) {
-            mprPrintfError("Can't open log file %s\n", logSpec);
+            mprPrintfError("Cannot open log file %s\n", logSpec);
             return MPR_ERR_CANT_OPEN;
         }
     }

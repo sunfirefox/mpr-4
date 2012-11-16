@@ -62,7 +62,7 @@ PUBLIC MprSocketService *mprCreateSocketService()
     hostName[0] = '\0';
     if (gethostname(serverName, sizeof(serverName)) < 0) {
         scopy(serverName, sizeof(serverName), "localhost");
-        mprUserError("Can't get host name. Using \"localhost\".");
+        mprUserError("Cannot get host name. Using \"localhost\".");
         /* Keep going */
     }
     if ((dp = strchr(serverName, '.')) != 0) {
@@ -268,7 +268,7 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     if (rc < 0) {
         rc = errno;
         if (rc == EADDRINUSE) {
-            mprLog(3, "Can't bind, address %s:%d already in use", ip, port);
+            mprLog(3, "Cannot bind, address %s:%d already in use", ip, port);
         }
         closesocket(sp->fd);
         sp->fd = -1;
@@ -1597,7 +1597,7 @@ PUBLIC int mprLoadSsl()
         return MPR_ERR_CANT_CREATE;
     }
     if (mprLoadModule(mp) < 0) {
-        mprError("Can't load %s", path);
+        mprError("Cannot load %s", path);
         ss->providers = 0;
         return MPR_ERR_CANT_READ;
     }
@@ -1618,7 +1618,7 @@ static int loadProviders()
         return MPR_ERR_CANT_READ;
     }
     if (!ss->providers) {
-        mprError("Can't load SSL provider");
+        mprError("Cannot load SSL provider");
         return MPR_ERR_CANT_INITIALIZE;
     }
     return 0;
@@ -1645,7 +1645,7 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
         }
         providerName = (ssl->providerName) ? ssl->providerName : ss->defaultProvider;
         if ((ssl->provider = mprLookupKey(ss->providers, providerName)) == 0) {
-            mprError("Can't use SSL, missing SSL provider %s", providerName);
+            mprError("Cannot use SSL, missing SSL provider %s", providerName);
             return MPR_ERR_CANT_INITIALIZE;
         }
         ssl->providerName = providerName;

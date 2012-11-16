@@ -200,12 +200,12 @@ PUBLIC int mprInitWindow()
 
     rc = RegisterClass(&wc);
     if (rc == 0) {
-        mprError("Can't register windows class");
+        mprError("Cannot register windows class");
         return MPR_ERR_CANT_INITIALIZE;
     }
     hwnd = CreateWindow(name, title, WS_OVERLAPPED, CW_USEDEFAULT, 0, 0, 0, NULL, NULL, 0, NULL);
     if (!hwnd) {
-        mprError("Can't create window");
+        mprError("Cannot create window");
         return -1;
     }
     ws->hwnd = hwnd;

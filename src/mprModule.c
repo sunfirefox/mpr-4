@@ -249,7 +249,7 @@ PUBLIC int mprUnloadModule(MprModule *mp)
 #if BIT_HAS_DYN_LOAD
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
-            mprError("Can't unload module %s", mp->name);
+            mprError("Cannot unload module %s", mp->name);
         }
         mp->handle = 0;
     }

@@ -84,7 +84,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     }
     if (!handle || !mp->entry || !GetProcAddress(handle, mp->entry)) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
             return 0;
         }
@@ -94,7 +94,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprLog(2, "Loading native module %s", mp->path);
         baseName = mprGetPathBase(mp->path);
         if ((handle = GetModuleHandle(wide(baseName))) == 0 && (handle = LoadLibrary(wide(mp->path))) == 0) {
-            mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
+            mprError("Cannot load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
             return MPR_ERR_CANT_READ;
         } 
         mp->handle = handle;
@@ -104,7 +104,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     }
     if (mp->entry) {
         if ((fn = (MprModuleEntry) GetProcAddress((HINSTANCE) handle, mp->entry)) == 0) {
-            mprError("Can't load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
+            mprError("Cannot load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
             FreeLibrary((HINSTANCE) handle);
             return MPR_ERR_CANT_ACCESS;
         }

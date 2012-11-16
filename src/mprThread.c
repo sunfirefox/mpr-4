@@ -265,7 +265,7 @@ PUBLIC int mprStartThread(MprThread *tp)
     taskHandle = taskSpawn(tp->name, pri, VX_FP_TASK, tp->stackSize, (FUNCPTR) threadProcWrapper, (int) tp, 
         0, 0, 0, 0, 0, 0, 0, 0, 0);
     if (taskHandle < 0) {
-        mprError("Can't create thread %s\n", tp->name);
+        mprError("Cannot create thread %s\n", tp->name);
         unlock(tp);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -734,7 +734,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
     } else if (ws->numThreads < ws->maxThreads) {
 
         /*
-            Can't find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
+            Cannot find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
             No need to wakeup the thread -- it will immediately go to work.
          */
         worker = createWorker(ws, ws->stackSize);

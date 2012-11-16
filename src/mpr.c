@@ -313,7 +313,7 @@ PUBLIC int mprStart()
     rc += mprStartModuleService();
     rc += mprStartWorkerService();
     if (rc != 0) {
-        mprUserError("Can't start MPR services");
+        mprUserError("Cannot start MPR services");
         return MPR_ERR_CANT_INITIALIZE;
     }
     MPR->state = MPR_STARTED;
@@ -434,8 +434,8 @@ PUBLIC int mprParseArgs(char *args, char **argv, int maxArgc)
     int     quote, argc;
 
     /*
-        Example     "showColors" red 'light blue' "yellow white" 'Can\'t \"render\"'
-        Becomes:    ["showColors", "red", "light blue", "yellow white", "Can't \"render\""]
+        Example     "showColors" red 'light blue' "yellow white" 'Cannot \"render\"'
+        Becomes:    ["showColors", "red", "light blue", "yellow white", "Cannot \"render\""]
      */
     for (argc = 0, src = args; src && *src != '\0' && argc < maxArgc; argc++) {
         while (isspace((uchar) *src)) {
