@@ -90,7 +90,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
 
     baseName = mprGetPathBase(mp->path);
     if ((handle = GetModuleHandle(baseName)) == 0 && (handle = LoadLibrary(mp->path)) == 0) {
-        mprError("Can't load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
+        mprError("Cannot load module %s\nReason: \"%d\"\n", mp->path, mprGetOsError());
         return MPR_ERR_CANT_READ;
     } 
     mp->handle = handle;
@@ -102,7 +102,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
                 return MPR_ERR_CANT_ACCESS;
             }
         } else {
-            mprError("Can't load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
+            mprError("Cannot load module %s\nReason: can't find function \"%s\"\n", mp->name, mp->entry);
             FreeLibrary((HINSTANCE) handle);
             return MPR_ERR_CANT_INITIALIZE;
         }

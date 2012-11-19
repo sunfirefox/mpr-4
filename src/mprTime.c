@@ -654,7 +654,7 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
         if (secs < MIN_TIME || secs > MAX_TIME) {
             /*
                 On some systems, localTime won't work for very small (negative) or very large times. 
-                Can't be certain localTime will work for all O/Ss with this year.  Map to an a date with a valid year.
+                Cannot be certain localTime will work for all O/Ss with this year.  Map to an a date with a valid year.
              */
             decodeTime(&t, when, 0);
             t.tm_year = 111;
@@ -1552,7 +1552,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
                 } else if (value1 > 12 || alpha2) {
                     /* 
                         dd/mm/yy 
-                        Can't detect 01/02/03  This will be evaluated as Jan 2 2003 below.
+                        Cannot detect 01/02/03  This will be evaluated as Jan 2 2003 below.
                      */  
                     tm.tm_mday = value1;
                     tm.tm_mon = value2;
@@ -1613,7 +1613,7 @@ static void validateTime(struct tm *tp, struct tm *defaults)
     struct tm   empty;
 
     /*
-        Fix apparent day-mon-year ordering issues. Can't fix everything!
+        Fix apparent day-mon-year ordering issues. Cannot fix everything!
      */
     if ((12 <= tp->tm_mon && tp->tm_mon <= 31) && 0 <= tp->tm_mday && tp->tm_mday <= 11) {
         /*

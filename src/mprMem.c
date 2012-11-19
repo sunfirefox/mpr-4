@@ -972,7 +972,7 @@ PUBLIC void mprStartGCService()
         if (heap->flags & MPR_MARK_THREAD) {
             LOG(7, "DEBUG: startMemWorkers: start marker");
             if ((heap->marker = mprCreateThread("marker", marker, NULL, 0)) == 0) {
-                mprError("Can't create marker thread");
+                mprError("Cannot create marker thread");
                 MPR->hasError = 1;
             } else {
                 mprStartThread(heap->marker);
@@ -983,7 +983,7 @@ PUBLIC void mprStartGCService()
             LOG(7, "DEBUG: startMemWorkers: start sweeper");
             heap->hasSweeper = 1;
             if ((heap->sweeper = mprCreateThread("sweeper", sweeper, NULL, 0)) == 0) {
-                mprError("Can't create sweeper thread");
+                mprError("Cannot create sweeper thread");
                 MPR->hasError = 1;
             } else {
                 mprStartThread(heap->sweeper);
@@ -1989,11 +1989,11 @@ static void allocException(int cause, ssize size)
 
     if (cause == MPR_MEM_FAIL) {
         heap->hasError = 1;
-        mprLog(0, "%s: Can't allocate memory block of size %,d bytes.", MPR->name, size);
+        mprLog(0, "%s: Cannot allocate memory block of size %,d bytes.", MPR->name, size);
 
     } else if (cause == MPR_MEM_TOO_BIG) {
         heap->hasError = 1;
-        mprLog(0, "%s: Can't allocate memory block of size %,d bytes.", MPR->name, size);
+        mprLog(0, "%s: Cannot allocate memory block of size %,d bytes.", MPR->name, size);
 
     } else if (cause == MPR_MEM_REDLINE) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory red-line.", MPR->name, size);

@@ -90,7 +90,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 #endif
     if (!mp->entry || !dlsym(handle, mp->entry)) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
-            mprError("Can't find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
+            mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
             return 0;
         }
@@ -99,7 +99,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mp->modified = info.mtime;
         mprLog(2, "Loading native module %s", mprGetPathBase(mp->path));
         if ((handle = dlopen(mp->path, RTLD_LAZY | RTLD_GLOBAL)) == 0) {
-            mprError("Can't load module %s\nReason: \"%s\"", mp->path, dlerror());
+            mprError("Cannot load module %s\nReason: \"%s\"", mp->path, dlerror());
             return MPR_ERR_CANT_OPEN;
         } 
         mp->handle = handle;
@@ -115,7 +115,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
                 return MPR_ERR_CANT_INITIALIZE;
             }
         } else {
-            mprError("Can't load module %s\nReason: can't find function \"%s\"", mp->path, mp->entry);
+            mprError("Cannot load module %s\nReason: can't find function \"%s\"", mp->path, mp->entry);
             dlclose(handle);
             return MPR_ERR_CANT_READ;
         }

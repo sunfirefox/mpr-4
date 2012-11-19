@@ -365,11 +365,11 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
     if (rc < 0) {
         if (err) {
             if (rc == MPR_ERR_CANT_ACCESS) {
-                *err = sfmt("Can't access command %s", cmd->program);
+                *err = sfmt("Cannot access command %s", cmd->program);
             } else if (MPR_ERR_CANT_OPEN) {
-                *err = sfmt("Can't open standard I/O for command %s", cmd->program);
+                *err = sfmt("Cannot open standard I/O for command %s", cmd->program);
             } else if (rc == MPR_ERR_CANT_CREATE) {
-                *err = sfmt("Can't create process for %s", cmd->program);
+                *err = sfmt("Cannot create process for %s", cmd->program);
             }
         }
         return rc;
@@ -1142,8 +1142,8 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     
     /*
         Add quotes around all args that have spaces and backquote [", ', \\]
-        Example:    ["showColors", "red", "light blue", "Can't \"render\""]
-        Becomes:    "showColors" "red" "light blue" "Can't \"render\""
+        Example:    ["showColors", "red", "light blue", "Cannot \"render\""]
+        Becomes:    "showColors" "red" "light blue" "Cannot \"render\""
      */
     dp = cmd->command;
     for (ap = &argv[0]; *ap; ) {
@@ -1217,9 +1217,9 @@ static int startProcess(MprCmd *cmd)
     if (! CreateProcess(0, wide(cmd->command), 0, 0, 1, 0, (char*) envBlock, wide(cmd->dir), &startInfo, &procInfo)) {
         err = mprGetOsError();
         if (err == ERROR_DIRECTORY) {
-            mprError("Can't create process: %s, directory %s is invalid", cmd->program, cmd->dir);
+            mprError("Cannot create process: %s, directory %s is invalid", cmd->program, cmd->dir);
         } else {
-            mprError("Can't create process: %s, %d", cmd->program, err);
+            mprError("Cannot create process: %s, %d", cmd->program, err);
         }
         return MPR_ERR_CANT_CREATE;
     }
@@ -1258,7 +1258,7 @@ static int makeChannel(MprCmd *cmd, int index)
     readHandle = CreateFile(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, att, OPEN_ALWAYS, 
         FILE_ATTRIBUTE_NORMAL,0);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError(cmd, "Can't create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((int*) readHandle, 0);
@@ -1269,7 +1269,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((int*) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError(cmd, "Can't create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -1324,7 +1324,7 @@ static int makeChannel(MprCmd *cmd, int index)
     att = (index == MPR_CMD_STDIN) ? &clientAtt : &serverAtt;
     readHandle = CreateNamedPipe(wide(pipeName), openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError("Can't create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((long) readHandle, 0);
@@ -1334,7 +1334,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((long) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError("Can't create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -1360,7 +1360,7 @@ static int makeChannel(MprCmd *cmd, int index)
     file = &cmd->files[index];
 
     if (pipe(fds) < 0) {
-        mprError("Can't create stdio pipes. Err %d", mprGetOsError());
+        mprError("Cannot create stdio pipes. Err %d", mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -1386,7 +1386,7 @@ static int makeChannel(MprCmd *cmd, int index)
     file->name = sfmt("/pipe/%s_%d_%d", BIT_PRODUCT, taskIdSelf(), tempSeed++);
 
     if (pipeDevCreate(file->name, 5, MPR_BUFSIZE) < 0) {
-        mprError("Can't create pipes to run %s", cmd->program);
+        mprError("Cannot create pipes to run %s", cmd->program);
         return MPR_ERR_CANT_OPEN;
     }
     /*
@@ -1398,7 +1398,7 @@ static int makeChannel(MprCmd *cmd, int index)
         file->fd = open(file->name, O_RDONLY, 0644);
     }
     if (file->fd < 0) {
-        mprError("Can't create stdio pipes. Err %d", mprGetOsError());
+        mprError("Cannot create stdio pipes. Err %d", mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     nonBlock = 1;
@@ -1437,7 +1437,7 @@ static int startProcess(MprCmd *cmd)
         }
         if (cmd->dir) {
             if (chdir(cmd->dir) < 0) {
-                mprError("cmd: Can't change directory to %s", cmd->dir);
+                mprError("cmd: Cannot change directory to %s", cmd->dir);
                 return MPR_ERR_CANT_INITIALIZE;
             }
         }
@@ -1472,7 +1472,7 @@ static int startProcess(MprCmd *cmd)
             rc = execv(cmd->program, (char**) cmd->argv);
         }
         err = errno;
-        printf("Can't exec %s, rc %d, err %d\n", cmd->program, rc, err);
+        printf("Cannot exec %s, rc %d, err %d\n", cmd->program, rc, err);
 
         /*
             Use _exit to avoid flushing I/O any other I/O.
@@ -1615,7 +1615,7 @@ static void cmdTaskEntry(char *program, MprCmdTaskFn entry, int cmdArg)
         rc = chdir(dir);
     }
     if (rc < 0) {
-        mprError("cmd: Can't change directory to %s", cmd->dir);
+        mprError("cmd: Cannot change directory to %s", cmd->dir);
         exit(255);
     }
 }

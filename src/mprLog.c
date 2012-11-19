@@ -70,7 +70,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
                 }
             }
             if ((file = mprOpenFile(path, mode, 0664)) == 0) {
-                mprError("Can't open log file %s", path);
+                mprError("Cannot open log file %s", path);
                 return -1;
             }
         }
@@ -322,7 +322,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
             mprBackupLog(MPR->logPath, MPR->logBackup);
             mode = O_CREAT | O_WRONLY | O_TEXT;
             if ((file = mprOpenFile(MPR->logPath, mode, 0664)) == 0) {
-                mprError("Can't open log file %s", MPR->logPath);
+                mprError("Cannot open log file %s", MPR->logPath);
                 unlock(MPR);
                 return;
             }

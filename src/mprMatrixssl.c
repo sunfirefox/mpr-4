@@ -166,7 +166,7 @@ static MprMatrixSsl *createMatrixSslConfig(MprSsl *ssl, int server)
 
     //  OPT - does this need to be done for each MprSsl or just once?
     if (matrixSslNewKeys(&mssl->keys) < 0) {
-        mprError("MatrixSSL: Can't create new MatrixSSL keys");
+        mprError("MatrixSSL: Cannot create new MatrixSSL keys");
         return 0;
     }
     /*
