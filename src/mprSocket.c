@@ -588,7 +588,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     }
     if (fd < 0) {
         if (mprGetError() != EAGAIN) {
-            mprError("socket: accept failed, errno %d", mprGetOsError());
+            mprLog(6, "socket: accept failed, errno %d", mprGetOsError());
         }
         return 0;
     }
@@ -596,7 +596,6 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
         closesocket(fd);
         return 0;
     }
-
     /*  
         Limit the number of simultaneous clients
      */
