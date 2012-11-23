@@ -187,6 +187,40 @@ PUBLIC int mprInitWindow()
     return 0;
 }
 
+
+PUBLIC void mprSetFilesLimit(int limit)
+{
+    struct rlimit r;
+    int           i;
+
+    if (limit == 0 || limit == MAXINT) {
+        /*
+            We need to determine a reasonable maximum possible limit value.
+            There is no #define we can use for this, so we test to determine it empirically
+         */
+        for (limit = 0x40000000; limit > 0; limit >>= 1) {
+            r.rlim_cur = r.rlim_max = limit;
+            if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
+                for (i = (limit >> 4) * 15; i > 0; i--) {
+                    r.rlim_max = r.rlim_cur = limit + i;
+                    if (setrlimit(RLIMIT_NOFILE, &r) == 0) {
+                        limit = 0;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    } else {
+        r.rlim_cur = r.rlim_max = limit;
+        if (setrlimit(RLIMIT_NOFILE, &r) < 0) {
+            mprError("Can't set file limit to %d", limit);
+        }
+    }
+    getrlimit(RLIMIT_NOFILE, &r);
+    mprLog(6, "Set files limit to soft %d, max %d\n", r.rlim_cur, r.rlim_max);
+}
+
 #endif /* BIT_UNIX_LIKE */
 
 /*

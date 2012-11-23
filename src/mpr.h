@@ -9131,6 +9131,12 @@ PUBLIC void mprSetExitStrategy(int strategy);
 PUBLIC void mprSetExitTimeout(MprTicks timeout);
 
 /**
+    Set the maximum number of open file/socket descriptors
+    @param limit Limit to enforce
+ */
+PUBLIC void mprSetFilesLimit(int limit);
+
+/**
     Set the application host name string. This is internal to the application and does not affect the O/S host name.
     @param s New host name to use within the application
     @ingroup Mpr
