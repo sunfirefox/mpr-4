@@ -1409,10 +1409,13 @@ PUBLIC void mprYield(int flags)
     if (flags & MPR_YIELD_STICKY) {
         tp->stickyYield = 1;
     }
-    assure(tp->yielded);
+    //  MOB - remove heap->marker
     while (tp->yielded && (heap->mustYield || (flags & MPR_YIELD_BLOCK)) && heap->marker) {
         if (heap->flags & MPR_MARK_THREAD) {
             mprSignalCond(ts->cond);
+        }
+        if (tp->stickyYield && flags & MPR_YIELD_NO_BLOCK) {
+            return;
         }
         mprWaitForCond(tp->cond, -1);
         flags &= ~MPR_YIELD_BLOCK;

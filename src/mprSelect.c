@@ -226,7 +226,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     maxfd = ws->highestFd + 1;
     unlock(ws);
 
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = select(maxfd, &ws->stableReadMask, &ws->stableWriteMask, NULL, &tval);
     mprResetYield();
 

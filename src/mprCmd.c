@@ -673,7 +673,7 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
     if (cmd->process) {
         delay = (cmd->eofCount == cmd->requiredEof && cmd->files[MPR_CMD_STDIN].handle == 0) ? timeout : 0;
         do {
-            mprYield(MPR_YIELD_STICKY);
+            mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
             if (WaitForSingleObject(cmd->process, (DWORD) delay) == WAIT_OBJECT_0) {
                 mprResetYield();
                 reapCmd(cmd, 0);

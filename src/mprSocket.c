@@ -580,7 +580,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     addrlen = sizeof(addrStorage);
 
     if (listen->flags & MPR_SOCKET_BLOCK) {
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     }
     fd = (int) accept(listen->fd, addr, &addrlen);
     if (listen->flags & MPR_SOCKET_BLOCK) {
@@ -687,7 +687,7 @@ static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
     }
 again:
     if (sp->flags & MPR_SOCKET_BLOCK) {
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     }
     if (sp->flags & MPR_SOCKET_DATAGRAM) {
         len = sizeof(server);
@@ -783,7 +783,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
         while (len > 0) {
             unlock(sp);
             if (sp->flags & MPR_SOCKET_BLOCK) {
-                mprYield(MPR_YIELD_STICKY);
+                mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
             }
             if ((sp->flags & MPR_SOCKET_BROADCAST) || (sp->flags & MPR_SOCKET_DATAGRAM)) {
                 written = sendto(sp->fd, &((char*) buf)[sofar], (int) len, MSG_NOSIGNAL, addr, addrlen);
@@ -919,7 +919,7 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
     if (file && file->fd >= 0) {
         written = bytes;
         if (sock->flags & MPR_SOCKET_BLOCK) {
-            mprYield(MPR_YIELD_STICKY);
+            mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         }
         rc = sendfile(file->fd, sock->fd, offset, &written, &def, 0);
         if (sock->flags & MPR_SOCKET_BLOCK) {
@@ -963,7 +963,7 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
             while (!done && toWriteFile > 0) {
                 nbytes = (ssize) min(MAXSSIZE, toWriteFile);
                 if (sock->flags & MPR_SOCKET_BLOCK) {
-                    mprYield(MPR_YIELD_STICKY);
+                    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
                 }
 #if LINUX && !__UCLIBC__
     #if BIT_HAS_OFF64

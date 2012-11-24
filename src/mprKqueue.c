@@ -213,7 +213,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     unlock(ws);
 
     LOG(8, "kevent sleep for %d", timeout);
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = kevent(ws->kq, ws->stableInterest, ws->stableInterestCount, ws->events, ws->eventsMax, &ts);
     mprResetYield();
     LOG(8, "kevent wakes rc %d", rc);

@@ -388,7 +388,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
         unlock(es);
         
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
         if (mprWaitForCond(dispatcher->cond, delay) == 0) {

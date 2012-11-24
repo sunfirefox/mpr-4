@@ -917,7 +917,7 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         /*
             Sleep till there is more work to do. Yield for GC first.
          */
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
 #if !BIT_LOCK_FIX
