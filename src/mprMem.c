@@ -1089,9 +1089,9 @@ static void mark()
 #else
     heap->mustYield = 1;
     if (!pauseThreads()) {
-        LOG(6, "DEBUG: GC synchronization timed out, some threads did not yield.");
-        LOG(6, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
-        LOG(6, "If debugging, run the process with -D to enable debug mode.");
+        LOG(7, "DEBUG: GC synchronization timed out, some threads did not yield.");
+        LOG(7, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
+        LOG(7, "If debugging, run the process with -D to enable debug mode.");
         return;
     }
     nextGen();

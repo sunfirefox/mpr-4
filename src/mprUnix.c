@@ -218,7 +218,7 @@ PUBLIC void mprSetFilesLimit(int limit)
         }
     }
     getrlimit(RLIMIT_NOFILE, &r);
-    mprLog(6, "Set files limit to soft %d, max %d\n", r.rlim_cur, r.rlim_max);
+    mprLog(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
 }
 
 #endif /* BIT_UNIX_LIKE */
