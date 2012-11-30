@@ -133,7 +133,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
                 pollfd->events |= POLLIN | POLLHUP;
             }
             if (mask & MPR_WRITABLE) {
-                pollfd->events |= POLLOUT;
+                pollfd->events |= POLLOUT | POLLHUP;
             }
             wp->desiredMask = mask;
         }
@@ -180,7 +180,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         fds[0].events |= POLLIN | POLLHUP;
     }
     if (mask & MPR_WRITABLE) {
-        fds[0].events |= POLLOUT;
+        fds[0].events |= POLLOUT | POLLHUP;
     }
     mask = 0;
 
@@ -188,10 +188,10 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     if (rc < 0) {
         mprLog(8, "Poll returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
-        if (fds[0].revents & (POLLIN | POLLHUP)) {
+        if ((fds[0].revents & (POLLIN | POLLHUP)) && (mask & MPR_READABLE)) {
             mask |= MPR_READABLE;
         }
-        if (fds[0].revents & POLLOUT) {
+        if ((fds[0].revents & (POLLOUT | POLLHUP)) && (mask & MPR_WRITABLE)) {
             mask |= MPR_WRITABLE;
         }
     }
@@ -257,7 +257,7 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
         if (fp->revents & (POLLIN | POLLHUP | POLLERR | POLLNVAL)) {
             mask |= MPR_READABLE;
         }
-        if (fp->revents & POLLOUT) {
+        if (fp->revents & (POLLOUT | POLLHUP)) {
             mask |= MPR_WRITABLE;
         }
         assure(mask);

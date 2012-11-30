@@ -168,7 +168,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         mprLog(7, "Kevent returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
-            if (events[0].filter == EVFILT_READ) {
+            if (events[0].filter & EVFILT_READ) {
                 mask |= MPR_READABLE;
             }
             if (events[0].filter == EVFILT_WRITE) {
