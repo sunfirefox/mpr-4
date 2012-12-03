@@ -73,7 +73,7 @@
     #define BIT_TITLE "Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.0.1"
+    #define BIT_VERSION "4.2.0"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 1
@@ -93,10 +93,10 @@
     #define BIT_CFG_PREFIX "/etc/mpr"
 #endif
 #ifndef BIT_BIN_PREFIX
-    #define BIT_BIN_PREFIX "/usr/lib/mpr/4.0.1/bin"
+    #define BIT_BIN_PREFIX "/usr/lib/mpr/4.2.0/bin"
 #endif
 #ifndef BIT_INC_PREFIX
-    #define BIT_INC_PREFIX "/usr/lib/mpr/4.0.1/inc"
+    #define BIT_INC_PREFIX "/usr/lib/mpr/4.2.0/inc"
 #endif
 #ifndef BIT_LOG_PREFIX
     #define BIT_LOG_PREFIX "/var/log/mpr"
@@ -108,10 +108,10 @@
     #define BIT_SPL_PREFIX "/var/spool/mpr"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/mpr-4.0.1"
+    #define BIT_SRC_PREFIX "/usr/src/mpr-4.2.0"
 #endif
 #ifndef BIT_VER_PREFIX
-    #define BIT_VER_PREFIX "/usr/lib/mpr/4.0.1"
+    #define BIT_VER_PREFIX "/usr/lib/mpr/4.2.0"
 #endif
 #ifndef BIT_WEB_PREFIX
     #define BIT_WEB_PREFIX "/var/www/mpr-default"
@@ -150,13 +150,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 0
+    #define BIT_MINOR_VERSION 2
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 1
+    #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400000001
+    #define BIT_VNUM 400020000
 #endif
 
 /* Packs */

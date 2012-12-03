@@ -125,7 +125,8 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
-$(CONFIG)/inc/mpr.h: 
+$(CONFIG)/inc/mpr.h:  \
+        $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/mpr.h
 	cp -r src/mpr.h $(CONFIG)/inc/mpr.h
 
@@ -432,7 +433,7 @@ $(CONFIG)/bin/libmpr.dylib:  \
         $(CONFIG)/obj/mprWin.o \
         $(CONFIG)/obj/mprWince.o \
         $(CONFIG)/obj/mprXml.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.0.1 -current_version 4.0.1 -compatibility_version 4.0.1 -current_version 4.0.1 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/mpr.o $(CONFIG)/obj/mprAsync.o $(CONFIG)/obj/mprAtomic.o $(CONFIG)/obj/mprBuf.o $(CONFIG)/obj/mprCache.o $(CONFIG)/obj/mprCmd.o $(CONFIG)/obj/mprCond.o $(CONFIG)/obj/mprCrypt.o $(CONFIG)/obj/mprDisk.o $(CONFIG)/obj/mprDispatcher.o $(CONFIG)/obj/mprEncode.o $(CONFIG)/obj/mprEpoll.o $(CONFIG)/obj/mprEvent.o $(CONFIG)/obj/mprFile.o $(CONFIG)/obj/mprFileSystem.o $(CONFIG)/obj/mprHash.o $(CONFIG)/obj/mprJSON.o $(CONFIG)/obj/mprKqueue.o $(CONFIG)/obj/mprList.o $(CONFIG)/obj/mprLock.o $(CONFIG)/obj/mprLog.o $(CONFIG)/obj/mprMem.o $(CONFIG)/obj/mprMime.o $(CONFIG)/obj/mprMixed.o $(CONFIG)/obj/mprModule.o $(CONFIG)/obj/mprPath.o $(CONFIG)/obj/mprPoll.o $(CONFIG)/obj/mprPrintf.o $(CONFIG)/obj/mprRomFile.o $(CONFIG)/obj/mprSelect.o $(CONFIG)/obj/mprSignal.o $(CONFIG)/obj/mprSocket.o $(CONFIG)/obj/mprString.o $(CONFIG)/obj/mprTest.o $(CONFIG)/obj/mprThread.o $(CONFIG)/obj/mprTime.o $(CONFIG)/obj/mprUnix.o $(CONFIG)/obj/mprVxworks.o $(CONFIG)/obj/mprWait.o $(CONFIG)/obj/mprWide.o $(CONFIG)/obj/mprWin.o $(CONFIG)/obj/mprWince.o $(CONFIG)/obj/mprXml.o $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.2.0 -current_version 4.2.0 -compatibility_version 4.2.0 -current_version 4.2.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/mpr.o $(CONFIG)/obj/mprAsync.o $(CONFIG)/obj/mprAtomic.o $(CONFIG)/obj/mprBuf.o $(CONFIG)/obj/mprCache.o $(CONFIG)/obj/mprCmd.o $(CONFIG)/obj/mprCond.o $(CONFIG)/obj/mprCrypt.o $(CONFIG)/obj/mprDisk.o $(CONFIG)/obj/mprDispatcher.o $(CONFIG)/obj/mprEncode.o $(CONFIG)/obj/mprEpoll.o $(CONFIG)/obj/mprEvent.o $(CONFIG)/obj/mprFile.o $(CONFIG)/obj/mprFileSystem.o $(CONFIG)/obj/mprHash.o $(CONFIG)/obj/mprJSON.o $(CONFIG)/obj/mprKqueue.o $(CONFIG)/obj/mprList.o $(CONFIG)/obj/mprLock.o $(CONFIG)/obj/mprLog.o $(CONFIG)/obj/mprMem.o $(CONFIG)/obj/mprMime.o $(CONFIG)/obj/mprMixed.o $(CONFIG)/obj/mprModule.o $(CONFIG)/obj/mprPath.o $(CONFIG)/obj/mprPoll.o $(CONFIG)/obj/mprPrintf.o $(CONFIG)/obj/mprRomFile.o $(CONFIG)/obj/mprSelect.o $(CONFIG)/obj/mprSignal.o $(CONFIG)/obj/mprSocket.o $(CONFIG)/obj/mprString.o $(CONFIG)/obj/mprTest.o $(CONFIG)/obj/mprThread.o $(CONFIG)/obj/mprTime.o $(CONFIG)/obj/mprUnix.o $(CONFIG)/obj/mprVxworks.o $(CONFIG)/obj/mprWait.o $(CONFIG)/obj/mprWide.o $(CONFIG)/obj/mprWin.o $(CONFIG)/obj/mprWince.o $(CONFIG)/obj/mprXml.o $(LIBS)
 
 $(CONFIG)/obj/benchMpr.o: \
         test/benchMpr.c \
@@ -477,7 +478,7 @@ $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/obj/mprMatrixssl.o \
         $(CONFIG)/obj/mprOpenssl.o \
         $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.0.1 -current_version 4.0.1 -compatibility_version 4.0.1 -current_version 4.0.1 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprMatrixssl.o $(CONFIG)/obj/mprOpenssl.o $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.2.0 -current_version 4.2.0 -compatibility_version 4.2.0 -current_version 4.2.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprMatrixssl.o $(CONFIG)/obj/mprOpenssl.o $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/testArgv.o: \
         test/testArgv.c \
