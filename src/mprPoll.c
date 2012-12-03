@@ -167,7 +167,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct pollfd   fds[1];
-    int             rc;
+    int             rc, result;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -182,20 +182,20 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     if (mask & MPR_WRITABLE) {
         fds[0].events |= POLLOUT | POLLHUP;
     }
-    mask = 0;
 
+    result = 0;
     rc = poll(fds, 1, (int) timeout);
     if (rc < 0) {
         mprLog(8, "Poll returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
         if ((fds[0].revents & (POLLIN | POLLHUP)) && (mask & MPR_READABLE)) {
-            mask |= MPR_READABLE;
+            result |= MPR_READABLE;
         }
         if ((fds[0].revents & (POLLOUT | POLLHUP)) && (mask & MPR_WRITABLE)) {
-            mask |= MPR_WRITABLE;
+            result |= MPR_WRITABLE;
         }
     }
-    return mask;
+    return result;
 }
 
 
