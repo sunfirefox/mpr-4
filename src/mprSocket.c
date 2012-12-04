@@ -838,7 +838,10 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
                     }
 #endif
                     unlock(sp);
-                    return sofar;
+                    if (sofar) {
+                        return sofar;
+                    }
+                    return -errCode;
                 }
                 unlock(sp);
                 return -errCode;

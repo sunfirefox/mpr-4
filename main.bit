@@ -109,4 +109,34 @@ Bit.load({
             ",
         },
     },
+
+    scripts: {
+        mustRun: true,
+        onload: "
+            let settings
+            if (bit.settings.tune == 'speed') {
+                blend(bit.customSettings, {
+                    limitString: 4096,
+                    limitPath: 2048,
+                    limitUrl: 4096,
+                    limitShortPath: 1024,
+                    limitBuffer: 8192,
+                    limitLogMsg: 16384,
+                    limitRegion: 1048576,
+                })
+
+            } else {
+                /* Tune for size */
+                blend(bit.customSettings, {
+                    limitString: 1024,
+                    limitPath: 512,
+                    limitUrl: 512,
+                    limitShortPath: 256,
+                    limitBuffer: 4096,
+                    limitLogMsg: 8192,
+                    limitRegion: 131072,
+                })
+            }
+        ",
+    },
 })
