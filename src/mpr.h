@@ -290,6 +290,13 @@
 #endif
 
 #if BIT_WIN_LIKE
+    /* 
+        Work-around to allow the windows 7.* SDK to be used with VS 2012 
+     */
+    #if _MSC_VER >= 1700
+        #define SAL_SUPP_H
+        #define SPECSTRING_SUPP_H
+    #endif
     #include    <winsock2.h>
     #include    <windows.h>
     #include    <winbase.h>
