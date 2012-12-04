@@ -887,6 +887,9 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
         for (total = i = 0; i < count; ) {
             written = mprWriteSocket(sp, start, len);
             if (written < 0) {
+                if (total > 0) {
+                    break;
+                }
                 return written;
             } else if (written == 0) {
                 break;
