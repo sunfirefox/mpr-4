@@ -743,7 +743,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
 {
     int     status, rc;
 
-    mprLog(6, "reapCmd CHECK pid %d, eof %d, required %d\n", cmd->pid, cmd->eofCount, cmd->requiredEof);
+    mprLog(6, "reapCmd CHECK pid %d, eof %d, required %d", cmd->pid, cmd->eofCount, cmd->requiredEof);
     
     status = 0;
     if (cmd->pid == 0) {
@@ -810,7 +810,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
         if (cmd->eofCount >= cmd->requiredEof) {
             cmd->complete = 1;
         }
-        mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d\n", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
+        mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
         if (cmd->callback) {
             (cmd->callback)(cmd, -1, cmd->callbackData);
             /* WARNING - this above call may invoke httpPump and complete the request. HttpConn.tx may be null */
@@ -1258,7 +1258,7 @@ static int makeChannel(MprCmd *cmd, int index)
     readHandle = CreateFile(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, att, OPEN_ALWAYS, 
         FILE_ATTRIBUTE_NORMAL,0);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((int*) readHandle, 0);
@@ -1269,7 +1269,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((int*) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError(cmd, "Cannot create stdio pipes %s. Err %d\n", path, mprGetOsError());
+        mprError(cmd, "Cannot create stdio pipes %s. Err %d", path, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
@@ -1324,7 +1324,7 @@ static int makeChannel(MprCmd *cmd, int index)
     att = (index == MPR_CMD_STDIN) ? &clientAtt : &serverAtt;
     readHandle = CreateNamedPipe(wide(pipeName), openMode, pipeMode, 1, 0, 256 * 1024, 1, att);
     if (readHandle == INVALID_HANDLE_VALUE) {
-        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     readFd = (int) (int64) _open_osfhandle((long) readHandle, 0);
@@ -1334,7 +1334,7 @@ static int makeChannel(MprCmd *cmd, int index)
     writeFd = (int) _open_osfhandle((long) writeHandle, 0);
 
     if (readFd < 0 || writeFd < 0) {
-        mprError("Cannot create stdio pipes %s. Err %d\n", pipeName, mprGetOsError());
+        mprError("Cannot create stdio pipes %s. Err %d", pipeName, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
     if (index == MPR_CMD_STDIN) {
