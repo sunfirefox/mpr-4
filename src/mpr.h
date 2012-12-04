@@ -252,7 +252,7 @@
 
 /********************************* O/S Includes *******************************/
 /*
-    Out-of-order definitions and includes. Order really matters in this section
+    Out-of-order definitions and includes. Order really matters in this section.
  */
 #if WINDOWS
     #undef      _CRT_SECURE_NO_DEPRECATE
@@ -289,7 +289,7 @@
     #define     HAS_UINT 1
 #endif
 
-#if BIT_WIN_LIKE
+#if WINDOWS
     /* 
         Work-around to allow the windows 7.* SDK to be used with VS 2012 
      */
@@ -297,6 +297,9 @@
         #define SAL_SUPP_H
         #define SPECSTRING_SUPP_H
     #endif
+#endif
+
+#if BIT_WIN_LIKE
     #include    <winsock2.h>
     #include    <windows.h>
     #include    <winbase.h>
@@ -316,7 +319,7 @@
         #include <crtdbg.h>
     #endif
 #endif
-#undef     _WIN32_WINNT
+//UNUSED #undef     _WIN32_WINNT
 
 /*
     Includes in alphabetic order
@@ -7323,6 +7326,13 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     @ingroup MprSocket
  */
 PUBLIC int mprGetSocketPort(MprSocket *sp);
+
+/**
+    has the system got a dual IPv4 + IPv6 network stack
+    @return True if the network can listen on IPv4 and IPv6 on a single socket
+    @ingroup MprSocket
+ */
+PUBLIC bool mprHasDualNetworkStack() ;
 
 /**
     Determine if the IP address is an IPv6 address
