@@ -887,7 +887,7 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         (*ws->startWorker)(worker->data, worker);
     }
     lock(ws);
-    while (!(worker->state & MPR_WORKER_PRUNED) && !mprIsStopping()) {
+    while (!(worker->state & MPR_WORKER_PRUNED)) {
         if (worker->proc) {
             unlock(ws);
             (*worker->proc)(worker->data, worker);
@@ -895,6 +895,9 @@ static void workerMain(MprWorker *worker, MprThread *tp)
             worker->proc = 0;
         }
         worker->lastActivity = MPR->eventService->now;
+        if (mprIsStopping()) {
+            break;
+        }
         changeState(worker, MPR_WORKER_IDLE);
 
         assure(worker->cleanup == 0);
