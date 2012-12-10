@@ -153,10 +153,12 @@ static void manageMpr(Mpr *mpr, int flags)
     }
 }
 
+
 static void wgc(int mode)
 {
     mprRequestGC(mode);
 }
+
 
 /*
     Destroy the Mpr and all services
@@ -215,7 +217,6 @@ PUBLIC void mprDestroy(int how)
         mprRestart();
     }
 }
-
 
 
 /*

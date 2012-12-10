@@ -221,6 +221,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     }
     memset(heap, 0, sizeof(MprHeap));
     heap->stats.maxMemory = MAXINT;
+    //  MOB - should this be 95%?
     heap->stats.redLine = MAXINT / 100 * 99;
     mprInitSpinLock(&heap->heapLock);
     initGen();
@@ -2001,6 +2002,7 @@ static void allocException(int cause, ssize size)
     } else if (cause == MPR_MEM_REDLINE) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory red-line.", MPR->name, size);
         mprPruneCache(NULL);
+        //  OPT - could trim workers too
 
     } else if (cause == MPR_MEM_LIMIT) {
         mprLog(0, "%s: Memory request for %,d bytes exceeds memory limit.", MPR->name, size);
