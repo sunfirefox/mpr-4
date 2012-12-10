@@ -283,7 +283,11 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
     }
     justOne = (flags & MPR_SERVICE_ONE_THING) ? 1 : 0;
 
-    while (es->now < expires && !mprIsStoppingCore()) {
+    /*
+        Stop serviceing events when doing final shutdown of the core
+        Post-test for mprIsStopping so callers can pump remaining events once stopping has begun
+     */
+    while (es->now < expires) {
         eventCount = es->eventCount;
         if (MPR->signalService->hasSignals) {
             mprServiceSignals();
@@ -308,9 +312,6 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
                 es->willAwake = es->now + delay;
                 unlock(es);
                 if (mprIsStopping()) {
-                    if (mprServicesAreIdle()) {
-                        break;
-                    }
                     delay = 10;
                 }
                 mprWaitForIO(MPR->waitService, delay);
@@ -319,7 +320,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             }
         }
         es->now = mprGetTicks();
-        if (justOne) {
+        if (justOne || mprIsStopping()) {
             break;
         }
     }
