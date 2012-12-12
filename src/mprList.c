@@ -32,7 +32,7 @@ PUBLIC MprList *mprCreateList(int size, int flags)
     }
     lp->maxSize = MAXINT;
     lp->flags = flags | MPR_OBJ_LIST;
-    if (!(flags & MPR_LIST_OWN)) {
+    if (!(flags & MPR_LIST_STABLE)) {
         lp->mutex = mprCreateLock();
     }
     if (size != 0) {
@@ -70,7 +70,7 @@ PUBLIC void mprInitList(MprList *lp, int flags)
     lp->length = 0;
     lp->maxSize = MAXINT;
     lp->items = 0;
-    lp->mutex = (flags & MPR_LIST_OWN) ? 0 : mprCreateLock();
+    lp->mutex = (flags & MPR_LIST_STABLE) ? 0 : mprCreateLock();
 }
 
 
@@ -492,6 +492,28 @@ PUBLIC void *mprGetNextItem(MprList *lp, int *next)
         return item;
     }
     unlock(lp);
+    return 0;
+}
+
+
+PUBLIC void *mprGetNextStableItem(MprList *lp, int *next)
+{
+    void    *item;
+    int     index;
+
+    assure(next);
+    assure(*next >= 0);
+    assure(lp->flags & MPR_LIST_STABLE);
+
+    if (lp == 0) {
+        return 0;
+    }
+    index = *next;
+    if (index < lp->length) {
+        item = lp->items[index];
+        *next = ++index;
+        return item;
+    }
     return 0;
 }
 

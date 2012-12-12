@@ -753,7 +753,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
          */
         if (!warnOnceWorkers) {
             warnOnceWorkers = 1;
-            mprError("No free workers. Increase ThreadLimit. (Count %d of %d)", ws->numThreads, ws->maxThreads);
+            mprLog(1, "No free workers (count %d of %d)", ws->numThreads, ws->maxThreads);
         }
         unlock(ws);
         return MPR_ERR_BUSY;

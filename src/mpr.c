@@ -197,9 +197,9 @@ PUBLIC void mprDestroy(int how)
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_RESTART) {
-        mprLog(1, "Restarting\n\n");
+        mprLog(2, "Restarting\n\n");
     } else {
-        mprLog(1, "Exiting");
+        mprLog(2, "Exiting");
     }
     MPR->state = MPR_FINISHED;
     mprStopGCService();
@@ -713,7 +713,9 @@ PUBLIC void mprSetExitTimeout(MprTicks timeout)
 }
 
 
-PUBLIC void mprNop(void *ptr) {}
+PUBLIC void mprNop(void *ptr) {
+}
+
 
 /*
     @copy   default

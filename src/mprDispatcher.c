@@ -297,6 +297,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
             if (!serviceDispatcher(dp)) {
                 queueDispatcher(es->pendingQ, dp);
+                es->pendingCount++;
                 continue;
             }
             if (justOne) {
@@ -683,6 +684,8 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
         /* No available workers to queue the dispatcher in the pending queue */
         dispatcher = pendingQ->next;
+        dispatcher->service->pendingCount--;
+        assure(dispatcher->service->pendingCount >= 0);
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
         assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);

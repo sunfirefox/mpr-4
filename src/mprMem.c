@@ -220,6 +220,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         return NULL;
     }
     memset(heap, 0, sizeof(MprHeap));
+    heap->stats.numCpu = memStats.numCpu;
+    heap->stats.pageSize = memStats.pageSize;
     heap->stats.maxMemory = MAXINT;
     //  MOB - should this be 95%?
     heap->stats.redLine = MAXINT / 100 * 99;
@@ -265,6 +267,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         heap->track = 1;
     }
     heap->stats.bytesAllocated += size;
+    heap->stats.regions++;
     INC(allocs);
 
     mprInitSpinLock(&heap->heapLock);
@@ -638,7 +641,7 @@ static MprMem *growHeap(ssize required, int flags)
     lockHeap();
     region->next = heap->regions;
     heap->regions = region;
-
+    heap->stats.regions++;
     if (spareLen > 0) {
         assure(spareLen >= sizeof(MprFreeMem));
         spare = (MprMem*) ((char*) mp + required);
@@ -1158,8 +1161,10 @@ static void sweep()
             }
         }
     }
+#if BIT_MEMORY_STATS
     heap->stats.sweepVisited = 0;
     heap->stats.swept = 0;
+#endif
 
     /*
         growHeap() will append new regions to the front of heap->regions and so will not race with this code. This code
@@ -1209,6 +1214,7 @@ static void sweep()
             } else {
                 heap->regions = nextRegion;
             }
+            heap->stats.regions--;
             unlockHeap();
             LOG(9, "DEBUG: Unpin %p to %p size %d, used %d", region, 
                 ((char*) region) + region->size, region->size,fastMemSize());
@@ -1225,8 +1231,10 @@ static void markRoots()
 {
     void    *root;
 
+#if BIT_MEMORY_STATS
     heap->stats.markVisited = 0;
     heap->stats.marked = 0;
+#endif
     mprMark(heap->roots);
     mprMark(heap->mutex);
     mprMark(heap->markerCond);
@@ -1439,9 +1447,10 @@ PUBLIC void mprResetYield()
     }
     /*
         May have been sticky yielded and so marking could be active. If so, must yield here regardless.
+        If GC being requested, then do a blocking pause here.
      */
     lock(ts->threads);
-    if (heap->marking || heap->sweeping) {
+    if (heap->mustYield || heap->marking || heap->sweeping) {
         unlock(ts->threads);
         mprYield(0);
     } else {
@@ -1810,29 +1819,38 @@ static void printGCStats()
 
 PUBLIC void mprPrintMem(cchar *msg, int detail)
 {
-#if BIT_MEMORY_STATS
-    MprMemStats   *ap;
+    MprMemStats     *ap;
+    MprWorkerService    *ws;
 
     ap = mprGetMemStats();
+    ws = MPR->workerService;
 
-    printf("\n\nMPR Memory Report %s\n", msg);
-    printf("------------------------------------------------------------------------------------------\n");
-    printf("  Total memory        %14d K\n",             (int) (mprGetMem() / 1024));
-    printf("  Current heap memory %14d K\n",             (int) (ap->bytesAllocated / 1024));
-    printf("  Free heap memory    %14d K\n",             (int) (ap->bytesFree / 1024));
-    printf("  Allocation errors   %14d\n",               ap->errors);
-    printf("  Memory limit        %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
+    printf("\nMemory Report %s\n", msg);
+    printf("-------------\n");
+    printf("  Total memory      %14d K\n",             (int) (mprGetMem() / 1024));
+
+    printf("  Current heap      %14d K\n",             (int) (ap->bytesAllocated / 1024));
+    printf("  Free heap memory  %14d K\n",             (int) (ap->bytesFree / 1024));
+    printf("  Allocation errors %14d\n",               ap->errors);
+    printf("  Memory limit      %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
-    printf("  Memory redline      %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
+    printf("  Memory redline    %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
 
+    //  MOB - move these into the generic mprPrintStats - which calls mprPrintMem
+
+    printf("  Pending events    %8d\n", (int) MPR->eventService->pendingCount);
+    printf("  Workers           %4d / %d / %d / %d  (busy/idle/total/max)\n",
+        ws->busyThreads->length, ws->idleThreads->length, ws->numThreads, ws->maxThreads);
+
+
+#if BIT_MEMORY_STATS
     printf("  Memory requests     %14d\n",               (int) ap->requests);
     printf("  O/S allocations     %14d %%\n",            percent(ap->allocs, ap->requests));
     printf("  Block unpinns       %14d %%\n",            percent(ap->unpins, ap->requests));
     printf("  Block reuse         %14d %%\n",            percent(ap->reuse, ap->requests));
     printf("  Joins               %14d %%\n",            percent(ap->joins, ap->requests));
     printf("  Splits              %14d %%\n",            percent(ap->splits, ap->requests));
-
     printGCStats();
     if (detail) {
         printQueueStats();
