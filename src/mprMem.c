@@ -1837,13 +1837,6 @@ PUBLIC void mprPrintMem(cchar *msg, int detail)
     printf("  Memory redline    %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
 
-    //  MOB - move these into the generic mprPrintStats - which calls mprPrintMem
-
-    printf("  Pending events    %8d\n", (int) MPR->eventService->pendingCount);
-    printf("  Workers           %4d / %d / %d / %d  (busy/idle/total/max)\n",
-        ws->busyThreads->length, ws->idleThreads->length, ws->numThreads, ws->maxThreads);
-
-
 #if BIT_MEMORY_STATS
     printf("  Memory requests     %14d\n",               (int) ap->requests);
     printf("  O/S allocations     %14d %%\n",            percent(ap->allocs, ap->requests));
