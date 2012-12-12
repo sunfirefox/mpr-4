@@ -899,16 +899,17 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         if (mprIsStopping()) {
             break;
         }
-        changeState(worker, MPR_WORKER_IDLE);
-
         assure(worker->cleanup == 0);
         if (worker->cleanup) {
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
         }
         worker->data = 0;
+
+        changeState(worker, MPR_WORKER_IDLE);
         /// LLLL REMOVE
         unlock(ws);
+
         /*
             Sleep till there is more work to do. Yield for GC first.
          */
@@ -916,7 +917,6 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
     }
-    // LLL use atomic -1
     lock(ws);
     changeState(worker, 0);
     worker->thread = 0;
