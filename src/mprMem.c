@@ -1460,6 +1460,23 @@ PUBLIC void mprResetYield()
 }
 
 
+PUBLIC int mprGetYieldedThreadCount()
+{
+    MprThreadService    *ts;
+    MprThread           *tp;
+    int                 count, next;
+
+    ts = MPR->threadService;
+
+    lock(ts->threads);
+    for (count = 0, ITERATE_ITEMS(ts->threads, tp, next)) {
+        count += tp->yielded;
+    }
+    unlock(ts->threads);
+    return count;
+}
+
+
 /*
     Pause until all threads have yielded. Called by the GC marker only.
     NOTE: this functions differently if parallel. If so, then it will abort waiting. If !parallel, it waits for all

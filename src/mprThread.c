@@ -714,7 +714,7 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
-    static int          warnOnceWorkers = 0;
+    int                 ncpu, activeWorkers;
 
     ws = MPR->workerService;
     lock(ws);
@@ -727,35 +727,33 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
      */
     worker = mprGetLastItem(ws->idleThreads);
     if (worker) {
-        worker->proc = proc;
         worker->data = data;
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
 
     } else if (ws->numThreads < ws->maxThreads) {
-
         /*
-            Cannot find an idle thread. Try to create more workers in the pool. Otherwise, we will have to wait. 
-            No need to wakeup the thread -- it will immediately go to work.
-         */
+            No idle threads. See if we should start a new thread. Add one for the marker() which is always yielded
+            but not busy.
+        */
+        activeWorkers = mprGetListLength(ws->busyThreads) - mprGetYieldedThreadCount() + 1;
+        ncpu = MPR->heap->stats.numCpu;
+        if (activeWorkers >= ncpu) {
+            unlock(ws);
+            LOG(1, "Defer work till cpu becomes available. Busy workers %d, ncpu %d", activeWorkers, ncpu);
+            return MPR_ERR_BUSY;
+        }
         worker = createWorker(ws, ws->stackSize);
-
         ws->numThreads++;
         ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
-        worker->proc = proc;
         worker->data = data;
-
+        worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
 
     } else {
-        /*
-            No free workers and can't create anymore
-         */
-        if (!warnOnceWorkers) {
-            warnOnceWorkers = 1;
-            mprLog(1, "No free workers (count %d of %d)", ws->numThreads, ws->maxThreads);
-        }
         unlock(ws);
+        LOG(1, "Defer work till worker is available. Workers %d, max %d", ws->numThreads, ws->maxThreads);
         return MPR_ERR_BUSY;
     }
     unlock(ws);
@@ -886,11 +884,14 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
-    lock(ws);
     while (!(worker->state & MPR_WORKER_PRUNED)) {
+        lock(ws); //LLLL
+//1. - move outer lock here
         if (worker->proc) {
+            /// LLLL REMOVE
             unlock(ws);
             (*worker->proc)(worker->data, worker);
+            /// LLLL REMOVE
             lock(ws);
             worker->proc = 0;
         }
@@ -906,6 +907,7 @@ static void workerMain(MprWorker *worker, MprThread *tp)
             worker->cleanup = NULL;
         }
         worker->data = 0;
+        /// LLLL REMOVE
         unlock(ws);
         /*
             Sleep till there is more work to do. Yield for GC first.
@@ -913,8 +915,9 @@ static void workerMain(MprWorker *worker, MprThread *tp)
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         mprWaitForCond(worker->idleCond, -1);
         mprResetYield();
-        lock(ws);
     }
+    // LLL use atomic -1
+    lock(ws);
     changeState(worker, 0);
     worker->thread = 0;
     ws->numThreads--;
