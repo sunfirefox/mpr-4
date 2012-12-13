@@ -681,8 +681,7 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     dispatcher = 0;
 
     lock(es);
-    if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
-        /* No available workers to queue the dispatcher in the pending queue */
+    if (pendingQ->next != pendingQ && mprAvailableWorkers() > 0) {
         dispatcher = pendingQ->next;
         dispatcher->service->pendingCount--;
         assure(dispatcher->service->pendingCount >= 0);

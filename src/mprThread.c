@@ -617,7 +617,7 @@ PUBLIC void mprSetMinWorkers(int n)
     while (ws->numThreads < ws->minThreads) {
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         changeState(worker, MPR_WORKER_BUSY);
         mprStartThread(worker->thread);
     }
@@ -697,16 +697,52 @@ PUBLIC void mprSetWorkerStartCallback(MprWorkerProc start)
 }
 
 
-PUBLIC int mprAvailableWorkers()
+PUBLIC void mprGetWorkerStats(MprWorkerStats *stats)
 {
     MprWorkerService    *ws;
-    int                 count;
+    MprWorker           *wp;
+    int                 next;
 
     ws = MPR->workerService;
+
     lock(ws);
-    count = mprGetListLength(ws->idleThreads) + (ws->maxThreads - ws->numThreads);
+    stats->max = ws->maxThreads;
+    stats->min = ws->minThreads;
+    stats->maxUsed = ws->maxUsedThreads;
+
+    stats->idle = (int) ws->idleThreads->length;
+    stats->busy = (int) ws->busyThreads->length;
+
+    stats->yielded = 0;
+    for (ITERATE_ITEMS(ws->busyThreads, wp, next)) {
+        /*
+            Only count as yielded, those workers who call yield from their user code
+            This excludes the yield in worker main
+         */
+        stats->yielded += (wp->thread->yielded && wp->running);
+    }
     unlock(ws);
-    return count;
+}
+
+
+PUBLIC int mprAvailableWorkers()
+{
+    MprWorkerStats  wstats;
+    int             activeWorkers, spareThreads, spareCores, result;
+
+    mprGetWorkerStats(&wstats);
+    spareThreads = wstats.max - wstats.busy - wstats.idle;
+    activeWorkers = wstats.busy - wstats.yielded;
+    spareCores = MPR->heap->stats.numCpu - activeWorkers;
+    if (spareCores <= 0 || spareThreads <= 0) {
+        return 0;
+    }
+    result = wstats.idle + min(spareThreads, spareCores);
+#if KEEP
+    printf("Avail %d, busy %d, yielded %d, idle %d, spare-threads %d, spare-cores %d, mustYield %d\n", result, wstats.busy,
+        wstats.yielded, wstats.idle, spareThreads, spareCores, MPR->heap->mustYield);
+#endif
+    return result;
 }
 
 
@@ -714,7 +750,6 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
-    int                 ncpu, activeWorkers;
 
     ws = MPR->workerService;
     lock(ws);
@@ -732,20 +767,13 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
         changeState(worker, MPR_WORKER_BUSY);
 
     } else if (ws->numThreads < ws->maxThreads) {
-        /*
-            No idle threads. See if we should start a new thread. Add one for the marker() which is always yielded
-            but not busy.
-        */
-        activeWorkers = mprGetListLength(ws->busyThreads) - mprGetYieldedThreadCount() + 1;
-        ncpu = MPR->heap->stats.numCpu;
-        if (activeWorkers >= ncpu) {
+        if (mprAvailableWorkers() == 0) {
             unlock(ws);
-            LOG(1, "Defer work till cpu becomes available. Busy workers %d, ncpu %d", activeWorkers, ncpu);
             return MPR_ERR_BUSY;
         }
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;
-        ws->maxUseThreads = max(ws->numThreads, ws->maxUseThreads);
+        ws->maxUsedThreads = max(ws->numThreads, ws->maxUsedThreads);
         worker->data = data;
         worker->proc = proc;
         changeState(worker, MPR_WORKER_BUSY);
@@ -753,7 +781,6 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
 
     } else {
         unlock(ws);
-        LOG(1, "Defer work till worker is available. Workers %d, max %d", ws->numThreads, ws->maxThreads);
         return MPR_ERR_BUSY;
     }
     unlock(ws);
@@ -793,15 +820,6 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
 }
 
 
-PUBLIC int mprGetAvailableWorkers()
-{
-    MprWorkerService  *ws;
-
-    ws = MPR->workerService;
-    return (int) ws->idleThreads->length + (ws->maxThreads - ws->numThreads); 
-}
-
-
 static int getNextThreadNum(MprWorkerService *ws)
 {
     int     rc;
@@ -822,19 +840,6 @@ PUBLIC void mprSetWorkerStackSize(int n)
 }
 
 
-PUBLIC void mprGetWorkerServiceStats(MprWorkerService *ws, MprWorkerStats *stats)
-{
-    assure(ws);
-
-    stats->maxThreads = ws->maxThreads;
-    stats->minThreads = ws->minThreads;
-    stats->numThreads = ws->numThreads;
-    stats->maxUse = ws->maxUseThreads;
-    stats->idleThreads = (int) ws->idleThreads->length;
-    stats->busyThreads = (int) ws->busyThreads->length;
-}
-
-
 /*
     Create a new thread for the task
  */
@@ -847,11 +852,12 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     if ((worker = mprAllocObj(MprWorker, manageWorker)) == 0) {
         return 0;
     }
-    worker->flags = 0;
+#if UNUSED
     worker->proc = 0;
     worker->cleanup = 0;
     worker->data = 0;
     worker->state = 0;
+#endif
     worker->workerService = ws;
     worker->idleCond = mprCreateCond();
 
@@ -884,16 +890,14 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     if (ws->startWorker) {
         (*ws->startWorker)(worker->data, worker);
     }
+    /*
+        Very important for performance to elimminate to locking the WorkerService
+     */
     while (!(worker->state & MPR_WORKER_PRUNED)) {
-        lock(ws); //LLLL
-//1. - move outer lock here
         if (worker->proc) {
-            /// LLLL REMOVE
-            unlock(ws);
+            worker->running = 1;
             (*worker->proc)(worker->data, worker);
-            /// LLLL REMOVE
-            lock(ws);
-            worker->proc = 0;
+            worker->running = 0;
         }
         worker->lastActivity = MPR->eventService->now;
         if (mprIsStopping()) {
@@ -904,11 +908,9 @@ static void workerMain(MprWorker *worker, MprThread *tp)
             (*worker->cleanup)(worker->data, worker);
             worker->cleanup = NULL;
         }
+        worker->proc = 0;
         worker->data = 0;
-
         changeState(worker, MPR_WORKER_IDLE);
-        /// LLLL REMOVE
-        unlock(ws);
 
         /*
             Sleep till there is more work to do. Yield for GC first.

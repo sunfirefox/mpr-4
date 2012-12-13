@@ -496,7 +496,7 @@ static MprMem *allocMem(ssize required, int flags)
     MprMem      *mp, *after, *spare;
     ssize       size, maxBlock;
     ulong       groupMap, bucketMap;
-    int         bucket, baseGroup, group, index;
+    int         bucket, baseGroup, group, index, miss;
     
 #if BIT_MEMORY_STACK
     monitorStack();
@@ -519,6 +519,7 @@ static MprMem *allocMem(ssize required, int flags)
     lockHeap();
     
     /* Mask groups lower than the base group */
+    miss = 0;
     groupMap = heap->groupMap & ~((((ssize) 1) << baseGroup) - 1);
     while (groupMap) {
         group = (int) (ffsl(groupMap) - 1);
@@ -570,6 +571,11 @@ static MprMem *allocMem(ssize required, int flags)
                             linkBlock(spare);
                         }
                     }
+#if FUTURE
+                    if (miss > 5) {
+                        triggerGC(0);
+                    }
+#endif
                     unlockHeap();
                     return mp;
                 }
@@ -581,6 +587,7 @@ static MprMem *allocMem(ssize required, int flags)
 #if KEEP
             triggerGC(0);
 #endif
+            miss++;
         }
     }
     unlockHeap();
@@ -1187,7 +1194,7 @@ static void sweep()
                 CHECK(mp);
                 BREAKPOINT(mp);
                 INC(swept);
-#if BIT_DEBUG && BIT_MEMORY_STATS
+#if BIT_MEMORY_STATS
                 if (heap->track) {
                     freeLocation(mp->name, GET_SIZE(mp));
                 }
@@ -1457,23 +1464,6 @@ PUBLIC void mprResetYield()
         tp->yielded = 0;
         unlock(ts->threads);
     }
-}
-
-
-PUBLIC int mprGetYieldedThreadCount()
-{
-    MprThreadService    *ts;
-    MprThread           *tp;
-    int                 count, next;
-
-    ts = MPR->threadService;
-
-    lock(ts->threads);
-    for (count = 0, ITERATE_ITEMS(ts->threads, tp, next)) {
-        count += tp->yielded;
-    }
-    unlock(ts->threads);
-    return count;
 }
 
 
@@ -1767,7 +1757,7 @@ static void printTracking()
     MprLocationStats     *lp;
     cchar                **np;
 
-    printf("\nManager Allocation Stats\n Size                       Location\n");
+    printf("\nAllocation Stats\n     Size Location\n");
     memcpy(sortLocations, heap->stats.locations, sizeof(sortLocations));
     qsort(sortLocations, MPR_TRACK_HASH, sizeof(MprLocationStats), sortLocation);
 
@@ -1817,7 +1807,7 @@ static void printGCStats()
             }
         }
         regionCount++;
-        printf("  Region %d is %d bytes, has %d allocated %d free\n", regionCount, (int) region->size, 
+        printf("  Region %3d is %8d bytes, has %4d allocated %3d free\n", regionCount, (int) region->size, 
             allocatedCount, freeCount);
     }
     printf("Regions: %d\n", regionCount);
@@ -1848,19 +1838,19 @@ PUBLIC void mprPrintMem(cchar *msg, int detail)
 
     printf("  Current heap      %14d K\n",             (int) (ap->bytesAllocated / 1024));
     printf("  Free heap memory  %14d K\n",             (int) (ap->bytesFree / 1024));
-    printf("  Allocation errors %14d\n",               ap->errors);
     printf("  Memory limit      %14d MB (%d %%)\n",    (int) (ap->maxMemory / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
     printf("  Memory redline    %14d MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
        percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
+    printf("  Allocation errors %14d\n",               ap->errors);
 
 #if BIT_MEMORY_STATS
-    printf("  Memory requests     %14d\n",               (int) ap->requests);
-    printf("  O/S allocations     %14d %%\n",            percent(ap->allocs, ap->requests));
-    printf("  Block unpinns       %14d %%\n",            percent(ap->unpins, ap->requests));
-    printf("  Block reuse         %14d %%\n",            percent(ap->reuse, ap->requests));
-    printf("  Joins               %14d %%\n",            percent(ap->joins, ap->requests));
-    printf("  Splits              %14d %%\n",            percent(ap->splits, ap->requests));
+    printf("  Memory requests   %14d\n",               (int) ap->requests);
+    printf("  O/S allocations   %14d %%\n",            percent(ap->allocs, ap->requests));
+    printf("  Block unpinns     %14d %%\n",            percent(ap->unpins, ap->requests));
+    printf("  Block reuse       %14d %%\n",            percent(ap->reuse, ap->requests));
+    printf("  Joins             %14d %%\n",            percent(ap->joins, ap->requests));
+    printf("  Splits            %14d %%\n",            percent(ap->splits, ap->requests));
     printGCStats();
     if (detail) {
         printQueueStats();
