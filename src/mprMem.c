@@ -287,6 +287,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     }
     heap->markerCond = mprCreateCond();
     heap->mutex = mprCreateLock();
+    //  MOB - should be stable
+    //  MOB - should preallocate with a large enough size
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
@@ -1681,8 +1683,10 @@ PUBLIC void mprAddRoot(void *root)
 {
     /*
         Need to use root lock because mprAddItem may allocate
+        MOB - heap->roots should be stable
      */
     mprSpinLock(&heap->rootLock);
+    //  MOB OPT - could have an inline MACRO that does this for speed.
     mprAddItem(heap->roots, root);
     mprSpinUnlock(&heap->rootLock);
 }
@@ -1697,6 +1701,7 @@ PUBLIC void mprRemoveRoot(void *root)
     /*
         RemoveItem copies down. If the item was equal or before the current marker root, must adjust the marker rootIndex
         so we don't skip a root.
+        OPT MOB - but only if doing parallel GC
      */
     if (index <= heap->rootIndex && heap->rootIndex > 0) {
         heap->rootIndex--;

@@ -573,14 +573,17 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
+        assure(!(event->flags & MPR_EVENT_RUNNING));
         unlock(es);
 
         LOG(7, "Call event %s", event->name);
         assure(event->proc);
+        event->flags |= MPR_EVENT_RUNNING;
         (event->proc)(event->data, event);
+        event->flags &= ~MPR_EVENT_RUNNING;
 
         lock(es);
-        if (event->continuous) {
+        if (event->flags & MPR_EVENT_CONTINUOUS) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
