@@ -177,7 +177,7 @@ PUBLIC void mprDestroy(int how)
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
-    gmode = MPR_FORCE_GC | MPR_COMPLETE_GC | MPR_WAIT_GC;
+    gmode = MPR_GC_FORCE | MPR_GC_COMPLETE;
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_GRACEFUL) {

@@ -194,7 +194,7 @@ static void doBenchmark(void *thread)
         start = startMark();
         for (i = 0; i < count; i++) {
             mprAlloc(1024);
-            mprRequestGC(MPR_WAIT_GC);
+            mprRequestGC(0);
         }
         endMark(start, count, "Alloc mprAlloc(1K)");
     }
@@ -377,7 +377,7 @@ static void endMark(MprTime start, int count, char *msg)
 
     elapsed = mprGetElapsedTime(start);
     mprPrintf("\t%-30s\t%13.2f\t%12.2f\n", msg, elapsed * 1000.0 / count, elapsed / 1000.0);
-    mprRequestGC(MPR_FORCE_GC | MPR_COMPLETE_GC | MPR_WAIT_GC);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 }
 
 
