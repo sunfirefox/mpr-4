@@ -566,11 +566,22 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = dispatcher->service;
+    /*
+        OPT - mprGetNextEvent locks anyway, so should be able to get away without a lock here
+     */
     LOG(7, "dispatchEvents for %s", dispatcher->name);
     lock(es);
     assure(dispatcher->cond);
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    /*
+        Events are removed from the dispatcher queue and put onto the currentQ. This is so they will be marked for GC.
+        If the callback calls mprRemoveEvent, it will not remove from the currentQ. If it was a continuous event, 
+        mprRemoveEvent will clear the continuous flag.
+
+        OPT - this could all be simpler if dispatchEvents was never called recursively. Then a currentQ would not be needed,
+        and neither would a running flag. See mprRemoveEvent().
+     */
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
         assure(!(event->flags & MPR_EVENT_RUNNING));
