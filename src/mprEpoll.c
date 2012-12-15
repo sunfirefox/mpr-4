@@ -97,10 +97,13 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         memset(&ev, 0, sizeof(ev));
         ev.data.fd = fd;
         if (wp->desiredMask & MPR_READABLE) {
-            ev.events |= (EPOLLIN | EPOLLHUP);
+            ev.events |= EPOLLIN | EPOLLHUP;
         }
         if (wp->desiredMask & MPR_WRITABLE) {
             ev.events |= EPOLLOUT;
+        }
+        if (wp->desiredMask == (MPR_READABLE | MPR_WRITABLE)) {
+            ev.events |= EPOLLHUP;
         }
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
@@ -115,7 +118,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ev.events |= (EPOLLIN | EPOLLHUP);
         }
         if (mask & MPR_WRITABLE) {
-            ev.events |= EPOLLOUT;
+            ev.events |= EPOLLOUT | EPOLLHUP;
         }
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_ADD, fd, &ev);
@@ -150,7 +153,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct epoll_event  ev, events[2];
-    int                 epfd, rc;
+    int                 epfd, rc, result;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -162,30 +165,32 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
+    ev.events = 0;
     if (mask & MPR_READABLE) {
-        ev.events = (EPOLLIN | EPOLLHUP);
-        epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+        ev.events = EPOLLIN | EPOLLHUP;
     }
     if (mask & MPR_WRITABLE) {
-        ev.events = EPOLLOUT;
+        ev.events = EPOLLOUT | EPOLLHUP;
+    }
+    if (ev.events) {
         epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
     }
-    mask = 0;
+    result = 0;
     rc = epoll_wait(epfd, events, sizeof(events) / sizeof(struct epoll_event), timeout);
     close(epfd);
     if (rc < 0) {
         mprLog(2, "Epoll returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
-            if (events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) {
-                mask |= MPR_READABLE;
+            if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
+                result |= MPR_READABLE;
             }
-            if (events[0].events & (EPOLLOUT)) {
-                mask |= MPR_WRITABLE;
+            if ((events[0].events & (EPOLLOUT | EPOLLHUP)) && (mask & MPR_WRITABLE)) {
+                result |= MPR_WRITABLE;
             }
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -208,7 +213,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         mprDoWaitRecall(ws);
         return;
     }
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = epoll_wait(ws->epoll, ws->events, ws->eventsMax, timeout);
     mprResetYield();
 
@@ -248,7 +253,7 @@ static void serviceIO(MprWaitService *ws, int count)
         if (ev->events & (EPOLLIN | EPOLLERR | EPOLLHUP)) {
             mask |= MPR_READABLE;
         }
-        if (ev->events & EPOLLOUT) {
+        if (ev->events & (EPOLLOUT | EPOLLHUP)) {
             mask |= MPR_WRITABLE;
         }
         if (mask == 0) {

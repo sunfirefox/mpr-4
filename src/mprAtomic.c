@@ -130,12 +130,14 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
 
 PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 {
-#if MACOSX && 0
-    return OSAtomicCompareAndSwapPtrBarrier(expected, value, addr);
+#if MACOSX
+    void *old = *(void**) addr;
+    OSAtomicCompareAndSwapPtrBarrier(old, (void*) value, addr);
+    return old;
 #elif BIT_WIN_LIKE
     return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
-#elif BIT_UNIX_LIKE && FUTURE
-    return __sync_lock_test_and_set(addr, value);
+#elif BIT_HAS_SYNC
+    return __sync_lock_test_and_set(addr, (void*) value);
 #else
     {
         void    *old;

@@ -105,7 +105,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     }
     SetTimer(ws->hwnd, 0, (UINT) timeout, NULL);
 
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     if (GetMessage(&msg, NULL, 0, 0) == 0) {
         mprResetYield();
         mprTerminate(MPR_EXIT_DEFAULT, -1);

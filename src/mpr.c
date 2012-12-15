@@ -153,10 +153,6 @@ static void manageMpr(Mpr *mpr, int flags)
     }
 }
 
-static void wgc(int mode)
-{
-    mprRequestGC(mode);
-}
 
 /*
     Destroy the Mpr and all services
@@ -181,7 +177,7 @@ PUBLIC void mprDestroy(int how)
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
-    gmode = MPR_FORCE_GC | MPR_COMPLETE_GC | MPR_WAIT_GC;
+    gmode = MPR_GC_FORCE | MPR_GC_COMPLETE;
     mprRequestGC(gmode);
 
     if (how & MPR_EXIT_GRACEFUL) {
@@ -198,12 +194,12 @@ PUBLIC void mprDestroy(int how)
     mprStopSignalService();
 
     /* Final GC to run all finalizers */
-    wgc(gmode);
+    mprRequestGC(gmode);
 
     if (how & MPR_EXIT_RESTART) {
-        mprLog(3, "Restarting\n\n");
+        mprLog(2, "Restarting\n\n");
     } else {
-        mprLog(3, "Exiting");
+        mprLog(2, "Exiting");
     }
     MPR->state = MPR_FINISHED;
     mprStopGCService();
@@ -215,7 +211,6 @@ PUBLIC void mprDestroy(int how)
         mprRestart();
     }
 }
-
 
 
 /*
@@ -388,6 +383,7 @@ PUBLIC int mprWaitTillIdle(MprTicks timeout)
     lastTrace = mark = mprGetTicks(); 
     while (!mprIsIdle() && (remaining = mprGetRemainingTicks(mark, timeout)) > 0) {
         mprSleep(1);
+        mprServiceEvents(10, MPR_SERVICE_ONE_THING);
         if ((lastTrace - remaining) > MPR_TICKS_PER_SEC) {
             mprLog(1, "Waiting for requests to complete, %d secs remaining ...", remaining / MPR_TICKS_PER_SEC);
             lastTrace = remaining;
@@ -717,7 +713,9 @@ PUBLIC void mprSetExitTimeout(MprTicks timeout)
 }
 
 
-PUBLIC void mprNop(void *ptr) {}
+PUBLIC void mprNop(void *ptr) {
+}
+
 
 /*
     @copy   default

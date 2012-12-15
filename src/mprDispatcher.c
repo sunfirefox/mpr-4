@@ -162,7 +162,7 @@ static void mprDestroyDispatcher(MprDispatcher *dispatcher)
 static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 {
     MprEventService     *es;
-    MprEvent            *q, *event;
+    MprEvent            *q, *event, *next;
 
     es = dispatcher->service;
 
@@ -178,12 +178,14 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         //  MOB - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         q = dispatcher->currentQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
@@ -283,7 +285,11 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
     }
     justOne = (flags & MPR_SERVICE_ONE_THING) ? 1 : 0;
 
-    while (es->now < expires && !mprIsStoppingCore()) {
+    /*
+        Stop serviceing events when doing final shutdown of the core
+        Post-test for mprIsStopping so callers can pump remaining events once stopping has begun
+     */
+    while (es->now < expires) {
         eventCount = es->eventCount;
         if (MPR->signalService->hasSignals) {
             mprServiceSignals();
@@ -293,6 +299,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             assure(dp->magic == MPR_DISPATCHER_MAGIC);
             if (!serviceDispatcher(dp)) {
                 queueDispatcher(es->pendingQ, dp);
+                es->pendingCount++;
                 continue;
             }
             if (justOne) {
@@ -308,9 +315,6 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
                 es->willAwake = es->now + delay;
                 unlock(es);
                 if (mprIsStopping()) {
-                    if (mprServicesAreIdle()) {
-                        break;
-                    }
                     delay = 10;
                 }
                 mprWaitForIO(MPR->waitService, delay);
@@ -319,7 +323,7 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             }
         }
         es->now = mprGetTicks();
-        if (justOne) {
+        if (justOne || mprIsStopping()) {
             break;
         }
     }
@@ -388,7 +392,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
         unlock(es);
         
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         assure(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
         if (mprWaitForCond(dispatcher->cond, delay) == 0) {
@@ -564,21 +568,35 @@ static int dispatchEvents(MprDispatcher *dispatcher)
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
     es = dispatcher->service;
+    /*
+        OPT - mprGetNextEvent locks anyway, so should be able to get away without a lock here
+     */
     LOG(7, "dispatchEvents for %s", dispatcher->name);
     lock(es);
     assure(dispatcher->cond);
     assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);
+    /*
+        Events are removed from the dispatcher queue and put onto the currentQ. This is so they will be marked for GC.
+        If the callback calls mprRemoveEvent, it will not remove from the currentQ. If it was a continuous event, 
+        mprRemoveEvent will clear the continuous flag.
+
+        OPT - this could all be simpler if dispatchEvents was never called recursively. Then a currentQ would not be needed,
+        and neither would a running flag. See mprRemoveEvent().
+     */
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
         assure(event->magic == MPR_EVENT_MAGIC);
+        assure(!(event->flags & MPR_EVENT_RUNNING));
         unlock(es);
 
         LOG(7, "Call event %s", event->name);
         assure(event->proc);
+        event->flags |= MPR_EVENT_RUNNING;
         (event->proc)(event->data, event);
+        event->flags &= ~MPR_EVENT_RUNNING;
 
         lock(es);
-        if (event->continuous) {
+        if (event->flags & MPR_EVENT_CONTINUOUS) {
             /* Reschedule if continuous */
             event->timestamp = dispatcher->service->now;
             event->due = event->timestamp + (event->period ? event->period : 1);
@@ -679,9 +697,10 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     dispatcher = 0;
 
     lock(es);
-    if (pendingQ->next != pendingQ && mprAvailableWorkers()) {
-        /* No available workers to queue the dispatcher in the pending queue */
+    if (pendingQ->next != pendingQ && mprAvailableWorkers() > 0) {
         dispatcher = pendingQ->next;
+        dispatcher->service->pendingCount--;
+        assure(dispatcher->service->pendingCount >= 0);
         assure(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         queueDispatcher(es->runQ, dispatcher);
         assure(dispatcher->flags & MPR_DISPATCHER_ENABLED);

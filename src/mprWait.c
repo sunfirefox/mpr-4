@@ -181,7 +181,9 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
         dispatcher = (wp->dispatcher) ? wp->dispatcher: mprGetDispatcher();
     }
     event = wp->event = mprCreateEvent(dispatcher, "IOEvent", 0, ioEvent, wp->handlerData, MPR_EVENT_DONT_QUEUE);
+#if UNUSED
     event->fd = wp->fd;
+#endif
     event->mask = wp->presentMask;
     event->handler = wp;
     mprQueueEvent(dispatcher, event);

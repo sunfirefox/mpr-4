@@ -199,6 +199,27 @@ static void resetSocket(MprSocket *sp)
 }
 
 
+PUBLIC bool mprHasDualNetworkStack() 
+{
+    bool dual;
+
+#if defined(BIT_HAS_SINGLE_STACK) || VXWORKS
+    dual = 0;
+#elif WINDOWS
+    {
+        OSVERSIONINFO info;
+        info.dwOSVersionInfoSize = sizeof(info);
+        GetVersionEx(&info);
+        /* Vista or later */
+        dual = info.dwMajorVersion >= 6;
+    }
+#else
+    dual = 1;
+#endif
+    return dual;
+}
+
+
 /*  
     Open a server connection
  */
@@ -215,7 +236,8 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
     MprSocklen          addrlen;
-    int                 datagram, family, protocol, rc;
+    cchar               *sip;
+    int                 datagram, family, protocol, rc, only;
 
     lock(sp);
 
@@ -233,7 +255,13 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
          MPR_SOCKET_LISTENER | MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
 
     datagram = sp->flags & MPR_SOCKET_DATAGRAM;
-    if (mprGetSocketInfo(ip, port, &family, &protocol, &addr, &addrlen) < 0) {
+    /*
+        Change null IP address to be an IPv6 endpoint if the system is dual-stack. That way we can listen on 
+        both IPv4 and IPv6
+     */
+    sip = ((ip == 0 || *ip == '\0') && mprHasDualNetworkStack()) ? "::" : ip;
+
+    if (mprGetSocketInfo(sip, port, &family, &protocol, &addr, &addrlen) < 0) {
         unlock(sp);
         return MPR_ERR_CANT_FIND;
     }
@@ -250,10 +278,25 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     fcntl(sp->fd, F_SETFD, FD_CLOEXEC);
 #endif
 
-#if BIT_UNIX_LIKE
     if (!(sp->flags & MPR_SOCKET_NOREUSE)) {
         rc = 1;
+#if BIT_UNIX_LIKE
         setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR, (char*) &rc, sizeof(rc));
+#elif BIT_WIN_LIKE && defined(SO_EXCLUSIVEADDRUSE)
+        setsockopt(sp->fd, SOL_SOCKET, SO_REUSEADDR | SO_EXCLUSIVEADDRUSE, (char*) &rc, sizeof(rc));
+#endif
+    }
+    /*
+        By default, most stacks listen on both IPv6 and IPv4 if ip == 0, except windows which inverts this.
+        So we explicitly control.
+     */
+#if defined(IPV6_V6ONLY)
+    if (ip == 0 || *ip == '\0') {
+        only = 0;
+        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+    } else if (ipv6(ip)) {
+        only = 1;
+        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
     }
 #endif
     if (sp->service->prebind) {
@@ -580,7 +623,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     addrlen = sizeof(addrStorage);
 
     if (listen->flags & MPR_SOCKET_BLOCK) {
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     }
     fd = (int) accept(listen->fd, addr, &addrlen);
     if (listen->flags & MPR_SOCKET_BLOCK) {
@@ -687,7 +730,7 @@ static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
     }
 again:
     if (sp->flags & MPR_SOCKET_BLOCK) {
-        mprYield(MPR_YIELD_STICKY);
+        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     }
     if (sp->flags & MPR_SOCKET_DATAGRAM) {
         len = sizeof(server);
@@ -783,7 +826,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
         while (len > 0) {
             unlock(sp);
             if (sp->flags & MPR_SOCKET_BLOCK) {
-                mprYield(MPR_YIELD_STICKY);
+                mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
             }
             if ((sp->flags & MPR_SOCKET_BROADCAST) || (sp->flags & MPR_SOCKET_DATAGRAM)) {
                 written = sendto(sp->fd, &((char*) buf)[sofar], (int) len, MSG_NOSIGNAL, addr, addrlen);
@@ -812,7 +855,10 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
                     }
 #endif
                     unlock(sp);
-                    return sofar;
+                    if (sofar) {
+                        return sofar;
+                    }
+                    return -errCode;
                 }
                 unlock(sp);
                 return -errCode;
@@ -858,6 +904,9 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
         for (total = i = 0; i < count; ) {
             written = mprWriteSocket(sp, start, len);
             if (written < 0) {
+                if (total > 0) {
+                    break;
+                }
                 return written;
             } else if (written == 0) {
                 break;
@@ -919,7 +968,7 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
     if (file && file->fd >= 0) {
         written = bytes;
         if (sock->flags & MPR_SOCKET_BLOCK) {
-            mprYield(MPR_YIELD_STICKY);
+            mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         }
         rc = sendfile(file->fd, sock->fd, offset, &written, &def, 0);
         if (sock->flags & MPR_SOCKET_BLOCK) {
@@ -963,7 +1012,7 @@ PUBLIC MprOff mprSendFileToSocket(MprSocket *sock, MprFile *file, MprOff offset,
             while (!done && toWriteFile > 0) {
                 nbytes = (ssize) min(MAXSSIZE, toWriteFile);
                 if (sock->flags & MPR_SOCKET_BLOCK) {
-                    mprYield(MPR_YIELD_STICKY);
+                    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
                 }
 #if LINUX && !__UCLIBC__
     #if BIT_HAS_OFF64

@@ -927,7 +927,6 @@ PUBLIC char *supper(cchar *str)
 
 /*
     Expand ${token} references in a path or string.
-    Currently support DOCUMENT_ROOT, SERVER_ROOT and PRODUCT, OS and VERSION.
  */
 PUBLIC char *stemplate(cchar *str, MprHash *keys)
 {

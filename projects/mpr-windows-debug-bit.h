@@ -55,7 +55,7 @@
     #define BIT_TITLE "Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.0.1"
+    #define BIT_VERSION "4.2.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "doxygen,dsi,man,man2html,pmaker,ssl,openssl,matrixssl"
@@ -126,13 +126,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 0
+    #define BIT_MINOR_VERSION 2
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 1
+    #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400000001
+    #define BIT_VNUM 400020000
 #endif
 
 /* Packs */

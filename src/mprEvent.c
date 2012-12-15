@@ -102,7 +102,9 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     event->dispatcher = dispatcher;
     event->next = event->prev = 0;
     event->flags = flags;
+#if UNUSED
     event->continuous = (flags & MPR_EVENT_CONTINUOUS) ? 1 : 0;
+#endif
     event->magic = MPR_EVENT_MAGIC;
 }
 
@@ -165,14 +167,15 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
     if (dispatcher) {
         es = dispatcher->service;
         lock(es);
-        if (event->next) {
+        if (event->next && !(event->flags & MPR_EVENT_RUNNING)) {
             mprDequeueEvent(event);
         }
+        event->dispatcher = 0;
+        event->flags &= ~MPR_EVENT_CONTINUOUS;
         if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
                 event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
-        event->dispatcher = 0;
         unlock(es);
     }
 }
@@ -203,20 +206,29 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
 
 PUBLIC void mprStopContinuousEvent(MprEvent *event)
 {
-    event->continuous = 0;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
 }
 
 
 PUBLIC void mprRestartContinuousEvent(MprEvent *event)
 {
-    event->continuous = 1;
+    lock(event->dispatcher->service);
+    event->flags |= MPR_EVENT_CONTINUOUS;
+    unlock(event->dispatcher->service);
     mprRescheduleEvent(event, event->period);
 }
 
 
 PUBLIC void mprEnableContinuousEvent(MprEvent *event, int enable)
 {
-    event->continuous = enable;
+    lock(event->dispatcher->service);
+    event->flags &= ~MPR_EVENT_CONTINUOUS;
+    if (enable) {
+        event->flags |= MPR_EVENT_CONTINUOUS;
+    }
+    unlock(event->dispatcher->service);
 }
 
 

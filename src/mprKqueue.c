@@ -145,7 +145,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
     struct timespec ts;
     struct kevent   interest[2], events[1];
-    int             kq, interestCount, rc;
+    int             kq, interestCount, rc, result;
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -161,22 +161,22 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     ts.tv_sec = ((int) (timeout / 1000));
     ts.tv_nsec = ((int) (timeout % 1000)) * 1000 * 1000;
 
-    mask = 0;
+    result = 0;
     rc = kevent(kq, interest, interestCount, events, 1, &ts);
     close(kq);
     if (rc < 0) {
         mprLog(7, "Kevent returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
-            if (events[0].filter == EVFILT_READ) {
-                mask |= MPR_READABLE;
+            if (events[0].filter & EVFILT_READ) {
+                result |= MPR_READABLE;
             }
             if (events[0].filter == EVFILT_WRITE) {
-                mask |= MPR_WRITABLE;
+                result |= MPR_WRITABLE;
             }
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -213,7 +213,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     unlock(ws);
 
     LOG(8, "kevent sleep for %d", timeout);
-    mprYield(MPR_YIELD_STICKY);
+    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = kevent(ws->kq, ws->stableInterest, ws->stableInterestCount, ws->events, ws->eventsMax, &ts);
     mprResetYield();
     LOG(8, "kevent wakes rc %d", rc);
