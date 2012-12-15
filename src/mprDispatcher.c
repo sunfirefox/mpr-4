@@ -162,7 +162,7 @@ static void mprDestroyDispatcher(MprDispatcher *dispatcher)
 static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 {
     MprEventService     *es;
-    MprEvent            *q, *event;
+    MprEvent            *q, *event, *next;
 
     es = dispatcher->service;
 
@@ -178,12 +178,14 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         //  MOB - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         q = dispatcher->currentQ;
-        for (event = q->next; event != q; event = event->next) {
+        for (event = q->next; event != q; event = next) {
+            next = event->next;
             assure(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
