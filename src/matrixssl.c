@@ -34,14 +34,6 @@
 #include    "mpr.h"
 
 /************************************* Defines ********************************/
-
-#if UNUSED
-#define MPR_DEFAULT_SERVER_CERT_FILE    "server.crt"
-#define MPR_DEFAULT_SERVER_KEY_FILE     "server.key.pem"
-#define MPR_DEFAULT_CLIENT_CERT_FILE    "client.crt"
-#define MPR_DEFAULT_CLIENT_CERT_PATH    "certs"
-#endif
-
 /*
     Per SSL configuration structure
  */

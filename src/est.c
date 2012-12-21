@@ -28,7 +28,7 @@
 #endif
 
 /*
-    MOB - is this per route or per connection
+    Per-route SSL configuration
  */
 typedef struct EstConfig {
     rsa_context     rsa;
@@ -48,7 +48,6 @@ typedef struct EstSocket {
     ssl_session     session;
 } EstSocket;
 
-
 static MprSocketProvider *est;
 static EstConfig *defaultEstConfig;
 
@@ -64,24 +63,6 @@ static char *dhKey =
     "E8A700D60B7F1200FA8E77B0A979DABF";
 
 static char *dhg = "4";
-
-#if UNUSED
-//  MOB - bit configure somehow
-//  MOB - need API
-static int ciphers[] = {
-	SSL_EDH_RSA_AES_256_SHA,
-	SSL_EDH_RSA_CAMELLIA_256_SHA,
-	SSL_EDH_RSA_DES_168_SHA,
-	SSL_RSA_AES_256_SHA,
-	SSL_RSA_CAMELLIA_256_SHA,
-	SSL_RSA_AES_128_SHA,
-	SSL_RSA_CAMELLIA_128_SHA,
-	SSL_RSA_DES_168_SHA,
-	SSL_RSA_RC4_128_SHA,
-	SSL_RSA_RC4_128_MD5,
-	0
-};
-#endif
 
 //  MOB - push into ets
 
@@ -197,16 +178,13 @@ static void manageEstProvider(MprSocketProvider *est, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(defaultEstConfig);
         mprMark(sessions);
-    } else if (flags & MPR_MANAGE_FREE) {
     }
 }
 
 
 static void manageEstConfig(EstConfig *cfg, int flags)
 {
-    if (flags & MPR_MANAGE_MARK) {
-        ;
-    } else if (flags & MPR_MANAGE_FREE) {
+    if (flags & MPR_MANAGE_FREE) {
         rsa_free(&cfg->rsa);
         x509_free(&cfg->cert);
     }
@@ -224,6 +202,7 @@ static void manageEstConfig(EstConfig *cfg, int flags)
 static void manageEstSocket(EstSocket *esp, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(esp->cfg);
         mprMark(esp->ciphers);
         mprMark(esp->sock);
 
@@ -256,181 +235,14 @@ static int listenEst(MprSocket *sp, cchar *host, int port, int flags)
 }
 
 
-#if UNUSED
-    //  MOB - should be modifyable and be using ssl->ciphers and parse.
-/*
-    Parse an Apache style cipher suite. For example:
-    '+' to add, '-' to remove, '!' to filter always.
-
-        ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
-        AES128-SHA:AES256-SHA:RC4-SHA:DES-CBC3-SHA:RC4-MD5
-
-        SSLCipherSuite ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH
- */
-static int *createCiphers(cchar *cipherSuite)
-{
-    Ciphers     *cp;
-    char        *key, *auth, *encoding, *mac, *token, *next, *suite;
-    int         *ciphers, i, cipher, add, sub, filter, mask, value, acceptable, type;
-
-    key = auth = encoding = mac = 0;
-    cipher = 0;
-    mask = 0;
-    acceptable = 0;
-   
-    //  MOB - should this be a hash?
-
-    suite = sclone(cipherSuite);
-    while ((token = stok(suite, ":", &next)) != 0) {
-        add = sub = filter = 0;
-        type = 0;
-        if (*token == '+') {
-            add = 1;
-            token++;
-        } else if (*token == '-') {
-            sub = 1;
-            token++;
-        } else if (*token == '!') {
-            filter = 1;
-            token++;
-        }
-        //  MOB - do we need the k, a prefixes?
-
-        if (scaselessmatch(token, "kRSA")) {
-            value = KEY_RSA;
-        } else if (scaselessmatch(token, "kDHr")) {
-            value = KEY_DHr;
-        } else if (scaselessmatch(token, "kDHd")) {
-            value = KEY_DHd;
-        } else if (scaselessmatch(token, "kEDH")) {
-            value = KEY_EDH;
-        } else if (scaselessmatch(token, "kSRDP")) {
-            value = KEY_SDP;
-        } else if (scaselessmatch(token, "aNULL")) {
-            value = AUTH_NULL;
-        } else if (scaselessmatch(token, "aRSA")) {
-            value = AUTH_RSA;
-        } else if (scaselessmatch(token, "aDSS")) {
-            value = AUTH_DSS;
-        } else if (scaselessmatch(token, "aDH")) {
-            value = AUTH_DH;
-        } else if (scaselessmatch(token, "eNULL")) {
-            value = CIPHER_NULL;
-        } else if (scaselessmatch(token, "NULL")) {
-            value = CIPHER_NULL;
-        } else if (scaselessmatch(token, "AES")) {
-            value = CIPHER_AES;
-        } else if (scaselessmatch(token, "DES")) {
-            value = CIPHER_DES;
-        } else if (scaselessmatch(token, "3DES")) {
-            value = CIPHER_3DES;
-        } else if (scaselessmatch(token, "RC4")) {
-            value = CIPHER_RC4;
-        } else if (scaselessmatch(token, "RC2")) {
-            value = CIPHER_RC2;
-        } else if (scaselessmatch(token, "IDEA")) {
-            value = CIPHER_IDEA;
-        } else if (scaselessmatch(token, "MD5")) {
-            value = MAC_MD5;
-        } else if (scaselessmatch(token, "SHA1")) {
-            value = MAC_SHA1;
-        } else if (scaselessmatch(token, "SHA")) {
-            value = MAC_SHA;
-
-#if UNUSED
-        /* Aliases */
-        } else if (scaselessmatch(token, "SSLv2")) {
-        } else if (scaselessmatch(token, "SSLv3")) {
-        } else if (scaselessmatch(token, "TLSv1")) {
-        } else if (scaselessmatch(token, "EXP")) {
-        } else if (scaselessmatch(token, "EXPORT40")) {
-        } else if (scaselessmatch(token, "EXPORT56")) {
-#endif
-#if UNUSED
-        } else if (scaselessmatch(token, "LOW")) {
-            for (cp = cipherList, i = 0; cp->name; cp++) {
-                if (cp->mask & LOW) {
-                    value |= cp->mask;
-                }
-            }
-#endif
-        } else if (scaselessmatch(token, "MEDIUM")) {
-            for (cp = cipherList, i = 0; cp->mask; cp++) {
-                if (cp->mask & CMED) {
-                    value |= cp->mask;
-                }
-            }
-        } else if (scaselessmatch(token, "HIGH")) {
-            for (cp = cipherList, i = 0; cp->mask; cp++) {
-                if (cp->mask & CHIGH) {
-                    value |= cp->mask;
-                }
-            }
-        } else if (scaselessmatch(token, "RSA")) {
-            //  MOB - is this right?
-            value = KEY_RSA | AUTH_RSA;
-#if UNUSED
-        } else if (scaselessmatch(token, "DH")) {
-        } else if (scaselessmatch(token, "ADH")) {
-#endif
-        } else if (scaselessmatch(token, "EDH")) {
-            value = KEY_EDH;
-        } else if (scaselessmatch(token, "DSS")) {
-            value = AUTH_DSS;
-        } else if (scaselessmatch(token, "NULL")) {
-            value = CIPHER_NULL;
-        } else {
-            for (cp = cipherList, i = 0; cp->mask; cp++) {
-                if (scaselessmatch(cp->name, token)) {
-                    value |= cp->mask;
-                }
-            }
-        }
-        if (add) {
-            acceptable |= value;
-        } else if (sub) {
-            acceptable &= ~value;
-        } else if (filter) {
-            filter |= value;
-        }
-        suite = 0;
-    }
-    acceptable &= ~filter;
-    if (!(acceptable & KEY_MASK)) acceptable |= KEY_MASK;
-    if (!(acceptable & AUTH_MASK)) acceptable |= AUTH_MASK;
-    if (!(acceptable & CIPHER_MASK)) acceptable |= CIPHER_MASK;
-    if (!(acceptable & MAC_MASK)) acceptable |= MAC_MASK;
-
-    ciphers = mprAlloc(sizeof(cipherList) / sizeof(Ciphers) + sizeof(int));
-    for (cp = cipherList, i = 0; cp->mask; cp++) {
-        if (cp->mask & type) break;
-        if (!(cp->mask & acceptable & KEY_MASK)) continue;
-        if (!(cp->mask & acceptable & AUTH_MASK)) continue;
-        if (!(cp->mask & acceptable & CIPHER_MASK)) continue;
-        if (!(cp->mask & acceptable & MAC_MASK)) continue;
-        ciphers[i++] = cp->iana;
-        mprLog(0, "EST: Select cipher 0x%02x: %s", cp->iana, cp->name);
-    }
-    return ciphers;
-}
-#else
-    //  MOB - should be modifyable and be using ssl->ciphers and parse.
-/*
-    Parse an Apache style cipher suite. For example:
-    '+' to add, '-' to remove, '!' to filter always.
-
-        ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
-        AES128-SHA:AES256-SHA:RC4-SHA:DES-CBC3-SHA:RC4-MD5
-
-        SSLCipherSuite ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH
- */
 static int *createCiphers(cchar *cipherSuite)
 {
     Ciphers     *cp;
     char        *suite, *cipher, *next;
-    int         i, *ciphers;
+    int         nciphers, i, *ciphers;
 
-    ciphers = mprAlloc(sizeof(cipherList) / sizeof(Ciphers) + sizeof(int));
+    nciphers = sizeof(cipherList) / sizeof(Ciphers);
+    ciphers = mprAlloc((nciphers + 1) * sizeof(int));
    
     suite = sclone(cipherSuite);
     i = 0;
@@ -448,9 +260,14 @@ static int *createCiphers(cchar *cipherSuite)
         }
         suite = 0;
     }
+    if (i == 0) {
+        for (i = 0; i < nciphers; i++) {
+            ciphers[i] = ssl_default_ciphers[i];
+        }
+        ciphers[i] = 0;
+    }
     return ciphers;
 }
-#endif
 
 
 /*
@@ -474,7 +291,9 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, int server)
     sp->ssl = ssl;
 
     lock(ssl);
-    if (!ssl->pconfig) {
+    if (ssl->pconfig) {
+        esp->cfg = cfg = ssl->pconfig;
+    } else {
         /*
             One time setup for the SSL configuration for this MprSsl
          */
@@ -484,7 +303,6 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, int server)
             return MPR_ERR_MEMORY;
         }
         esp->cfg = ssl->pconfig = cfg;
-#if UNUSED || 1
         if (ssl->certFile) {
             //  MOB - openssl uses encrypted and/not 
             if (x509parse_crtfile(&cfg->cert, ssl->certFile) != 0) {
@@ -500,26 +318,6 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, int server)
                 return MPR_ERR_CANT_READ;
             }
         }
-        //MOB
-#else
-	int ret = x509parse_crt(&cfg->cert, (uchar*) test_srv_crt, (int) strlen(test_srv_crt));
-	if (ret != 0) {
-		printf(" failed\n  !  x509parse_crt returned %d\n\n", ret);
-        return MPR_ERR_CANT_READ;
-	}
-
-	ret = x509parse_crt(&cfg->cert, (uchar*) test_ca_crt, (int) strlen(test_ca_crt));
-	if (ret != 0) {
-		printf(" failed\n  !  x509parse_crt returned %d\n\n", ret);
-        return MPR_ERR_CANT_READ;
-	}
-
-	ret = x509parse_key(&cfg->rsa, (uchar*) test_srv_key, (int) strlen(test_srv_key), NULL, 0);
-	if (ret != 0) {
-		printf(" failed\n  !  x509parse_key returned %d\n\n", ret);
-        return MPR_ERR_CANT_READ;
-	}
-#endif
         cfg->dhKey = defaultEstConfig->dhKey;
         //  MOB - see openssl for client certificate config
     }
@@ -605,8 +403,6 @@ static ssize readEst(MprSocket *sp, void *buf, ssize len)
 {
     EstSocket   *esp;
     int         rc;
-
-    //  MOB - locking
 
     esp = (EstSocket*) sp->sslSocket;
     assure(esp);
@@ -822,6 +618,7 @@ static int setSession(ssl_context *ssl)
 
 static void estTrace(void *fp, int level, char *str)
 {
+    level += 3;
     if (level <= MPR->logLevel) {
         str = sclone(str);
         str[slen(str) - 1] = '\0';

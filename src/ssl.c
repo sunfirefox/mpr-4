@@ -17,12 +17,9 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
     assure(module);
 
-#if BIT_PACK_EST
-    if (mprCreateEstModule() < 0) {
-        return MPR_ERR_CANT_OPEN;
-    }
-    MPR->socketService->defaultProvider = sclone("est");
-#endif
+    /*
+        Order matters. The last enabled stack becomes the default.
+     */
 #if BIT_PACK_MATRIXSSL
     if (mprCreateMatrixSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
@@ -34,6 +31,12 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
         return MPR_ERR_CANT_OPEN;
     }
     MPR->socketService->defaultProvider = sclone("openssl");
+#endif
+#if BIT_PACK_EST
+    if (mprCreateEstModule() < 0) {
+        return MPR_ERR_CANT_OPEN;
+    }
+    MPR->socketService->defaultProvider = sclone("est");
 #endif
     return 0;
 }

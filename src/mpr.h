@@ -1278,21 +1278,6 @@ struct  MprXml;
     #define MPR_MAX_FNAME       BIT_MAX_FNAME
     #define MPR_BUFSIZE         BIT_MAX_BUFFER
 #endif
-#if UNUSED
-#define MPR_MAX_STRING          1024          /**< Maximum (stack) string size - MOB - used for what */
-#define MPR_MAX_URL             512           /**< Max URL size. Also request URL size. */
-#define MPR_DEFAULT_HASH_SIZE   23            /**< Default size of hash table */ 
-#define MPR_SMALL_ALLOC         256           /**< Default small. Used in printf. */
-#define MPR_MAX_LOG             (8 * 1024)    /**< Maximum log message size (impacts stack) */
-//  MOB - used for what
-#define MPR_MAX_BUF             4194304       /**< Max buffer size */
-#define MPR_SSL_BUFSIZE         4096          /**< SSL has 16K max*/
-#define MPR_FILES_HASH_SIZE     29            /**< Hash size for rom file system */
-#define MPR_TIME_HASH_SIZE      67            /**< Hash size for time token lookup */
-#define MPR_NEW_QUOTA           (4 * 1024)    /**< Number of new allocations before a GC is worthwhile */
-#define MPR_GC_LOW_MEM          (32 * 1024)   /**< Free memory low water mark before invoking GC */
-#define MPR_MEM_REGION_SIZE     (128 * 1024)  /**< Memory allocation chunk size */
-#endif
 
 /*
     Select wakeup port. Port can be any free port number. If this is not free, the MPR will use the next free port.
@@ -1301,16 +1286,6 @@ struct  MprXml;
     #define BIT_WAKEUP_PORT     9473
 #endif
 #define MPR_FD_MIN              32
-
-#if UNUSED
-/* 
-    Longest IPv6 is XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX (40 bytes with null) 
- */ 
-#define MPR_MAX_IP_NAME         1024
-#define MPR_MAX_IP_ADDR         1024
-#define MPR_MAX_IP_PORT         8
-#define MPR_MAX_IP_ADDR_PORT    1024
-#endif
 
 /*
     Signal sent on Unix to break out of a select call.
@@ -8063,19 +8038,6 @@ typedef struct MprSsl {
 #define MPR_PROTO_TLSV11   0x8              /**< TLS V1.1 protocol */
 #define MPR_PROTO_TLSV12   0x10             /**< TLS V1.2 protocol */
 #define MPR_PROTO_ALL      0x1F             /**< All SSL protocols */
-
-#if UNUSED
-/*
-    Default SSL configuration
-    Other cipher options
-
-        #define BIT_CIPHERS "HIGH:RC4+SHA"
-        #define BIT_CIPHERS "AES128-SHA"
- */
-#ifndef BIT_CIPHERS
-    #define BIT_CIPHERS "HIGH:MEDIUM"  /**< Default cipher suite */
-#endif
-#endif
 
 /**
     Add the ciphers to use for SSL

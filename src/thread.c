@@ -852,12 +852,6 @@ static MprWorker *createWorker(MprWorkerService *ws, ssize stackSize)
     if ((worker = mprAllocObj(MprWorker, manageWorker)) == 0) {
         return 0;
     }
-#if UNUSED
-    worker->proc = 0;
-    worker->cleanup = 0;
-    worker->data = 0;
-    worker->state = 0;
-#endif
     worker->workerService = ws;
     worker->idleCond = mprCreateCond();
 

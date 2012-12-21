@@ -102,9 +102,6 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     event->dispatcher = dispatcher;
     event->next = event->prev = 0;
     event->flags = flags;
-#if UNUSED
-    event->continuous = (flags & MPR_EVENT_CONTINUOUS) ? 1 : 0;
-#endif
     event->magic = MPR_EVENT_MAGIC;
 }
 
