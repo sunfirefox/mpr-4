@@ -8,7 +8,13 @@
 
 #include    "mpr.h"
 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_LOGLINE
+    #define BIT_MAX_LOGLINE 8192           /* Max size of a log line */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void defaultLogHandler(int flags, int level, cchar *msg);
 static void logOutput(int flags, int level, cchar *msg);
@@ -134,7 +140,7 @@ PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 PUBLIC void mprLog(int level, cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     if (level < 0 || level > mprGetLogLevel()) {
         return;
@@ -168,7 +174,7 @@ PUBLIC void mprRawLog(int level, cchar *fmt, ...)
 PUBLIC void mprError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -181,7 +187,7 @@ PUBLIC void mprError(cchar *fmt, ...)
 PUBLIC void mprWarn(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -194,7 +200,7 @@ PUBLIC void mprWarn(cchar *fmt, ...)
 PUBLIC void mprMemoryError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     if (fmt == 0) {
         logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, "Memory allocation error");
@@ -210,7 +216,7 @@ PUBLIC void mprMemoryError(cchar *fmt, ...)
 PUBLIC void mprUserError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -222,7 +228,7 @@ PUBLIC void mprUserError(cchar *fmt, ...)
 PUBLIC void mprFatalError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -238,7 +244,7 @@ PUBLIC void mprFatalError(cchar *fmt, ...)
 PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
-    char        buf[MPR_MAX_LOG];
+    char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
@@ -257,7 +263,7 @@ PUBLIC void mprStaticError(cchar *fmt, ...)
 PUBLIC void mprAssure(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
-    char    buf[MPR_MAX_LOG];
+    char    buf[BIT_MAX_LOGLINE];
 
     if (loc) {
 #if BIT_UNIX_LIKE
@@ -297,7 +303,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
 {
     MprFile     *file;
     MprPath     info;
-    char        *prefix, buf[MPR_MAX_LOG];
+    char        *prefix, buf[BIT_MAX_LOGLINE];
     int         mode;
     static int  check = 0;
 

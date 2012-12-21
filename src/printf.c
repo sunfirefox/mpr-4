@@ -153,6 +153,12 @@ typedef struct MprEjsName {
     MprEjsString    *space;
 } MprEjsName;
 
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_FMT
+    #define BIT_MAX_FMT 256           /* Initial size of a printf buffer */
+#endif
+
 /***************************** Forward Declarations ***************************/
 
 static int  getState(char c, int state);
@@ -230,7 +236,7 @@ PUBLIC ssize mprFprintf(MprFile *file, cchar *fmt, ...)
 }
 
 
-#if FUTURE
+#if KEEP
 /*
     Printf with a static buffer. Used internally only. WILL NOT MALLOC.
  */
@@ -238,12 +244,12 @@ PUBLIC int mprStaticPrintf(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
-    char            buf[MPR_MAX_STRING];
+    char            buf[BIT_MAX_BUFFER];
 
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, MPR_MAX_STRING, fmt, ap);
+    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdOutput, buf, slen(buf));
 }
@@ -256,12 +262,12 @@ PUBLIC int mprStaticPrintfError(cchar *fmt, ...)
 {
     MprFileSystem   *fs;
     va_list         ap;
-    char            buf[MPR_MAX_STRING];
+    char            buf[BIT_MAX_BUFFER];
 
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, MPR_MAX_STRING, fmt, ap);
+    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdError, buf, slen(buf));
 }
@@ -355,14 +361,13 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         if (maxsize <= 0) {
             maxsize = MAXINT;
         }
-        len = min(MPR_SMALL_ALLOC, maxsize);
-        buf = mprAlloc(len);
-        if (buf == 0) {
+        len = min(BIT_MAX_FMT, maxsize);
+        if ((buf = mprAlloc(len)) == 0) {
             return 0;
         }
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[len];
-        fmt.growBy = min(MPR_SMALL_ALLOC * 2, maxsize - len);
+        fmt.growBy = min(len * 2, maxsize - len);
     }
     fmt.maxsize = maxsize;
     fmt.start = fmt.buf;
@@ -640,6 +645,9 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
             }
         }
     }
+    /*
+        Return the buffer as the result. Prevents a double alloc.
+     */
     BPUTNULL(&fmt);
     return (char*) fmt.buf;
 }
@@ -807,7 +815,7 @@ static void outNum(Format *fmt, cchar *prefix, uint64 value)
 #if BIT_FLOAT
 static void outFloat(Format *fmt, char specChar, double value)
 {
-    char    result[MPR_MAX_STRING], *cp;
+    char    result[256], *cp;
     int     c, fill, i, len, index;
 
     result[0] = '\0';

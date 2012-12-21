@@ -13,7 +13,13 @@
 #include    "mpr.h"
 
 #if BIT_ROM 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_ROMFS
+    #define BIT_MAX_ROMFS 37           /* Size of the ROMFS hash lookup */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void manageRomFile(MprFile *file, int flags);
 static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info);
@@ -211,7 +217,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 
     rfs = (MprRomFileSystem*) MPR->fileSystem;
     rfs->romInodes = inodeList;
-    rfs->fileIndex = mprCreateHash(MPR_FILES_HASH_SIZE, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
+    rfs->fileIndex = mprCreateHash(BIT_MAX_ROMFS, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
 
     for (ri = inodeList; ri->path; ri++) {
         if (mprAddKey(rfs->fileIndex, ri->path, ri) < 0) {

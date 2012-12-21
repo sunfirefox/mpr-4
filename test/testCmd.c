@@ -56,7 +56,7 @@ static void testCreateCmd(MprTestGroup *gp)
 static void testRunCmd(MprTestGroup *gp)
 {
     TestCmd     *tc;
-    char        *result, command[MPR_MAX_PATH];
+    char        *result, command[BIT_MAX_PATH];
     int         status, exitStatus;
 
     tc = gp->data;
@@ -103,8 +103,8 @@ static void withDataCallback(MprCmd *cmd, int channel, void *data)
     
     case MPR_CMD_STDOUT:
         space = mprGetBufSpace(buf);
-        if (space < (MPR_BUFSIZE / 4)) {
-            if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
+        if (space < (BIT_MAX_BUFFER / 4)) {
+            if (mprGrowBuf(buf, BIT_MAX_BUFFER) < 0) {
                 assure(0);
                 mprCloseCmdFd(cmd, channel);
                 return;
@@ -166,7 +166,7 @@ static void testWithData(MprTestGroup *gp)
     tc->cmd = mprCreateCmd(gp->dispatcher);
     assert(tc->cmd != 0);
 
-    tc->buf = mprCreateBuf(MPR_BUFSIZE, -1);
+    tc->buf = mprCreateBuf(BIT_MAX_BUFFER, -1);
     assert(tc->buf != 0);
 
     argc = 0;
@@ -242,7 +242,7 @@ static void testWithData(MprTestGroup *gp)
 static void testExitCode(MprTestGroup *gp)
 {
     TestCmd     *tc;
-    char        *result, command[MPR_MAX_PATH];
+    char        *result, command[BIT_MAX_PATH];
     int         i, status;
 
     tc = gp->data;
@@ -269,7 +269,7 @@ static void testExitCode(MprTestGroup *gp)
 static void testNoCapture(MprTestGroup *gp)
 {
     TestCmd     *tc;
-    char        command[MPR_MAX_PATH];
+    char        command[BIT_MAX_PATH];
     int         status;
 
     tc = gp->data;
@@ -293,7 +293,7 @@ static void testMultiple(MprTestGroup *gp)
 {
     TestCmd     *tc;
     MprCmd      *cmds[CMD_COUNT];
-    char        command[MPR_MAX_PATH];
+    char        command[BIT_MAX_PATH];
     int         status, i;
 
     tc = gp->data;

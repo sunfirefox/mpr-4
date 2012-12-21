@@ -84,7 +84,7 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
         if ((file = mprOpenFile(path, O_RDONLY | O_TEXT, 0)) == 0) {
             return 0;
         }
-        if ((table = mprCreateHash(MPR_DEFAULT_HASH_SIZE, 0)) == 0) {
+        if ((table = mprCreateHash(47, 0)) == 0) {
             mprCloseFile(file);
             return 0;
         }

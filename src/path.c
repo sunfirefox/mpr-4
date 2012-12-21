@@ -158,7 +158,7 @@ PUBLIC int mprCopyPath(cchar *fromName, cchar *toName, int mode)
 {
     MprFile     *from, *to;
     ssize       count;
-    char        buf[MPR_BUFSIZE];
+    char        buf[BIT_MAX_BUFFER];
 
     if ((from = mprOpenFile(fromName, O_RDONLY | O_BINARY, 0)) == 0) {
         mprError("Cannot open %s", fromName);
@@ -236,7 +236,7 @@ PUBLIC char *mprGetAbsPath(cchar *path)
 
 #if BIT_WIN_LIKE && !WINCE
 {
-    wchar    buf[MPR_MAX_PATH];
+    wchar    buf[BIT_MAX_PATH];
     GetFullPathName(wide(path), sizeof(buf) - 1, buf, NULL);
     buf[TSZ(buf) - 1] = '\0';
     result = mprNormalizePath(multi(buf));
@@ -295,7 +295,7 @@ PUBLIC char *mprGetAppPath()
 
 #if MACOSX
 {
-    char    path[MPR_MAX_PATH], pbuf[MPR_MAX_PATH];
+    char    path[BIT_MAX_PATH], pbuf[BIT_MAX_PATH];
     uint    size;
     ssize   len;
 
@@ -313,7 +313,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif FREEBSD 
 {
-    char    pbuf[MPR_MAX_STRING];
+    char    pbuf[BIT_MAX_PATH];
     int     len;
 
     len = readlink("/proc/curproc/file", pbuf, sizeof(pbuf) - 1);
@@ -325,7 +325,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif BIT_UNIX_LIKE 
 {
-    char    pbuf[MPR_MAX_STRING], *path;
+    char    pbuf[BIT_MAX_PATH], *path;
     int     len;
 #if SOLARIS
     path = sfmt("/proc/%i/path/a.out", getpid()); 
@@ -341,7 +341,7 @@ PUBLIC char *mprGetAppPath()
 }
 #elif BIT_WIN_LIKE
 {
-    wchar    pbuf[MPR_MAX_PATH];
+    wchar    pbuf[BIT_MAX_PATH];
 
     if (GetModuleFileName(0, pbuf, sizeof(pbuf) - 1) <= 0) {
         return 0;
@@ -364,7 +364,7 @@ PUBLIC char *mprGetAppPath()
  */
 PUBLIC char *mprGetCurrentPath()
 {
-    char    dir[MPR_MAX_PATH];
+    char    dir[BIT_MAX_PATH];
 
     if (getcwd(dir, sizeof(dir)) == 0) {
         return mprGetAbsPath("/");
@@ -558,7 +558,7 @@ static MprList *getDirFiles(cchar *dir, int flags)
     MprPath         fileInfo;
     MprList         *list;
     cchar           *seps;
-    char            *path, pbuf[MPR_MAX_PATH];
+    char            *path, pbuf[BIT_MAX_PATH];
 #if WINCE
     WIN32_FIND_DATAA findData;
 #else
@@ -845,7 +845,7 @@ PUBLIC char *mprGetPortablePath(cchar *path)
 PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
 {
     MprFileSystem   *fs;
-    char            originBuf[MPR_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
+    char            originBuf[BIT_MAX_FNAME], *cp, *result, *dest, *lastcp, *origin, *op, *lastop;
     int             originSegments, i, commonSegments, sep;
 
     fs = mprLookupFileSystem(destArg);

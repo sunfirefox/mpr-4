@@ -118,7 +118,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
  */ 
 static cchar *getHive(cchar *keyPath, HKEY *hive)
 {
-    char    key[MPR_MAX_STRING], *cp;
+    char    key[BIT_MAX_PATH], *cp;
     int     len;
 
     assure(keyPath && *keyPath);
@@ -250,7 +250,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     void        *event;
     long        errorType;
     ulong       exists;
-    char        buf[MPR_MAX_STRING], logName[MPR_MAX_STRING], *lines[9], *cp, *value;
+    char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *lines[9], *cp, *value;
     int         type;
     static int  once = 0;
 

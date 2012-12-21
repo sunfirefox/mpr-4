@@ -19,7 +19,13 @@
 #define BIT_HAS_GETADDRINFO 1
 #endif
 
-/******************************* Forward Declarations *************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_IP
+    #define BIT_MAX_IP 1024
+#endif
+
+/********************************** Forwards **********************************/
 
 static void closeSocket(MprSocket *sp, bool gracefully);
 static int connectSocket(MprSocket *sp, cchar *ipAddr, int port, int initialFlags);
@@ -43,7 +49,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize);
 PUBLIC MprSocketService *mprCreateSocketService()
 {
     MprSocketService    *ss;
-    char                hostName[MPR_MAX_IP_NAME], serverName[MPR_MAX_IP_NAME], domainName[MPR_MAX_IP_NAME], *dp;
+    char                hostName[BIT_MAX_IP], serverName[BIT_MAX_IP], domainName[BIT_MAX_IP], *dp;
 
     if ((ss = mprAllocObj(MprSocketService, manageSocketService)) == 0) {
         return 0;
@@ -505,7 +511,7 @@ PUBLIC void mprDisconnectSocket(MprSocket *sp)
 
 static void disconnectSocket(MprSocket *sp)
 {
-    char    buf[MPR_BUFSIZE];
+    char    buf[BIT_MAX_BUFFER];
     int     i, fd;
 
     /*  
@@ -614,7 +620,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     MprSocket                   *nsp;
     struct sockaddr_storage     addrStorage, saddrStorage;
     struct sockaddr             *addr, *saddr;
-    char                        ip[MPR_MAX_IP_ADDR], acceptIp[MPR_MAX_IP_ADDR];
+    char                        ip[BIT_MAX_IP], acceptIp[BIT_MAX_IP];
     MprSocklen                  addrlen, saddrlen;
     int                         fd, port, acceptPort;
 
@@ -930,7 +936,7 @@ PUBLIC ssize mprWriteSocketVector(MprSocket *sp, MprIOVec *iovec, int count)
 #if !LINUX || __UCLIBC__
 static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize len)
 {
-    char    buf[MPR_BUFSIZE];
+    char    buf[BIT_MAX_BUFFER];
 
     mprSeekFile(file, SEEK_SET, (int) offset);
     len = min(len, sizeof(buf));
@@ -1576,6 +1582,7 @@ static void manageSsl(MprSsl *ssl, int flags)
         mprMark(ssl->caFile);
         mprMark(ssl->caPath);
         mprMark(ssl->ciphers);
+        mprMark(ssl->mutex);
         mprMark(ssl->pconfig);
         mprMark(ssl->provider);
         mprMark(ssl->providerName);
@@ -1608,6 +1615,7 @@ PUBLIC MprSsl *mprCreateSsl(int server)
         ssl->verifyPeer = MPR->verifySsl;
         ssl->verifyIssuer = MPR->verifySsl;
     }
+    ssl->mutex = mprCreateLock();
     return ssl;
 }
 

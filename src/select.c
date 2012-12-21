@@ -34,7 +34,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         Try to find a good port to use to break out of the select wait
      */ 
     maxTries = 100;
-    breakPort = MPR_DEFAULT_BREAK_PORT;
+    breakPort = BIT_WAKEUP_PORT;
     for (rc = retries = 0; retries < maxTries; retries++) {
         breakSock = socket(AF_INET, SOCK_DGRAM, 0);
         if (breakSock < 0) {

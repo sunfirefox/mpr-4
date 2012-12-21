@@ -5,6 +5,7 @@
 Bit.load({
     blend: [
         '${BITS}/embedthis.bit',
+        "src/deps/est/est.bit",
         'test/test.bit',
         'doc/doc.bit',
     ],
@@ -18,15 +19,16 @@ Bit.load({
         product: 'mpr',
         title: 'Multithreaded Portable Runtime',
         company: 'Embedthis',
-        version: '4.2.0',
+        version: '4.3.0',
         buildNumber: '0',
         assert: true,
         ciphers: "HIGH:MEDIUM",
         float: true,
         manager: 'manager',
-        '+optional': [ 'doxygen', 'dsi', 'ejs', 'http', 'man', 'man2html', 'md5', 'matrixssl', 'openssl', 'ssl', 'utest' ],
-        'without-all': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl', 'openssl', 'matrixssl'],
-        'without-own': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'matrixssl'],
+        sync: ['est'],
+        '+required': [], 
+        '+optional': [ 'doxygen', 'man', 'man2html', 'md5', 'openssl', 'ssl', 'utest' ],
+        'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'ssl', 'matrixssl', 'openssl'],
     },
 
     usage: {
@@ -38,13 +40,13 @@ Bit.load({
             type: 'lib',
             headers: [ 'src/*.h' ],
             sources: [ 'src/*.c' ],
-            exclude: [ /manager.c|ssl|Ssl|\/utils\// ],
+            exclude: [ /\/est|manager.c|ssl|Ssl|\/utils\// ],
         },
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'openssl', 'matrixssl' ],
-            sources: [ 'src/mprMatrixssl.c', 'src/mprOpenssl.c', 'src/MprSsl.c' ],
+            depends: [ 'libmpr', 'est', 'openssl', 'matrixssl' ],
+            sources: [ 'src/est.c', 'src/matrixssl.c', 'src/openssl.c', 'src/ssl.c' ],
         },
 
         manager: {
@@ -85,14 +87,16 @@ Bit.load({
                 install(['doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], d.join('doc/api'))
                 install('doc/man/*.1', d.join('doc/man'))
                 install('src/mpr.h', d.join('src/deps/mpr/mpr.h'))
-                install(['src/mprMem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
+                install(['src/mem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
                     cat: true,
                     filter: /^#inc.*mpr.*$/mg, 
-                    exclude: /manager|makerom|Ssl|ssl/,
+                    exclude: /manager|makerom|Ssl|ssl|\\/est/,
                     header: '#include \"mpr.h\"',
                     title: bit.settings.title + ' Library Source',
                 })
-                install(['src/mprMatrixssl.c', 'src/mprOpenSsl.c', 'src/mprSsl.c'], d.join('src/deps/mpr/mprSsl.c'), {
+                /* Must put matrix first */
+                install(['src/matrixssl.c', 'src/est.c', 'src/openssl.c', 'src/ssl.c'], 
+                    d.join('src/deps/mpr/mprSsl.c'), {
                     cat: true,
                     title: bit.settings.title + ' SSL Source',
                 })
@@ -108,6 +112,11 @@ Bit.load({
                 Path('dh.new').append(cmd.response)
             ",
         },
+    },
+
+    packs: {
+        matrixssl: {},
+        est: {},
     },
 
     scripts: {

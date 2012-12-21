@@ -8,10 +8,17 @@
 
 #include    "mpr.h"
 
-/******************************* Local Defines ********************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_GC_QUOTA
+    #define BIT_MAX_GC_QUOTA   4096            /* Number of allocations before a GC is worthwhile */
+#endif
+#ifndef BIT_MAX_REGION
+    #define BIT_MAX_REGION     (128 * 1024)    /* Memory allocation chunk size */
+#endif
 
 #if BIT_HAS_MMU 
-    #define VALLOC 1                /* Use virtual memory allocations */
+    #define VALLOC 1                            /* Use virtual memory allocations */
 #else
     #define VALLOC 0
 #endif
@@ -233,7 +240,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
      */
     mprSize = MPR_ALLOC_ALIGN(sizeof(MprMem) + sizeof(Mpr) + (MANAGER_SIZE * sizeof(void*)));
     regionSize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
-    size = max(mprSize + regionSize, MPR_MEM_REGION_SIZE);
+    size = max(mprSize + regionSize, BIT_MAX_REGION);
     if ((region = mprVirtAlloc(size, MPR_MAP_READ | MPR_MAP_WRITE)) == NULL) {
         return NULL;
     }
@@ -248,11 +255,11 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 
     heap->flags = flags | MPR_THREAD_PATTERN;
     heap->nextSeqno = 1;
-    heap->chunkSize = MPR_MEM_REGION_SIZE;
+    heap->chunkSize = BIT_MAX_REGION;
     heap->stats.maxMemory = MAXINT;
     heap->stats.redLine = MAXINT / 100 * 99;
-    heap->newQuota = MPR_NEW_QUOTA;
-    heap->earlyYieldQuota = MPR_NEW_QUOTA * 5;
+    heap->newQuota = BIT_MAX_GC_QUOTA;
+    heap->earlyYieldQuota = heap->newQuota * 5;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
     if (scmp(getenv("MPR_DISABLE_GC"), "1") == 0) {
         heap->enabled = 0;
@@ -730,7 +737,7 @@ static MprMem *freeBlock(MprMem *mp)
     /*
         Release entire regions back to the O/S. (Blocks equal to Empty regions have no prior and are last)
      */
-    if (GET_PRIOR(mp) == NULL && IS_LAST(mp) && heap->stats.bytesFree > (MPR_MEM_REGION_SIZE * 4)) {
+    if (GET_PRIOR(mp) == NULL && IS_LAST(mp) && heap->stats.bytesFree > (BIT_MAX_REGION * 4)) {
         INC(unpins);
         unlockHeap();
         region = GET_REGION(mp);
@@ -2208,10 +2215,10 @@ PUBLIC ssize mprGetMem()
 
 #if LINUX
     int fd;
-    char path[MPR_MAX_PATH];
+    char path[BIT_MAX_PATH];
     sprintf(path, "/proc/%d/status", getpid());
     if ((fd = open(path, O_RDONLY)) >= 0) {
-        char buf[MPR_BUFSIZE], *tok;
+        char buf[BIT_MAX_BUFFER], *tok;
         int nbytes = read(fd, buf, sizeof(buf) - 1);
         close(fd);
         if (nbytes > 0) {
@@ -2457,7 +2464,7 @@ PUBLIC void *mprSetManager(void *ptr, MprManager manager)
 #if BIT_MEMORY_STATS && FUTURE
 static void showMem(MprMem *mp)
 {
-    char    *gen, *mark, buf[MPR_MAX_STRING];
+    char    *gen, *mark, buf[BIT_MAX_BUFFER];
     int     g, m;
 
     g = GET_GEN(mp);

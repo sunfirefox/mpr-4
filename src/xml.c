@@ -12,7 +12,7 @@
 
 #include    "mpr.h"
 
-/****************************** Forward Declarations **************************/
+/********************************** Forwards **********************************/
 
 static MprXmlToken getXmlToken(MprXml *xp, int state);
 static int  getNextChar(MprXml *xp);
@@ -31,7 +31,7 @@ PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
 
     xp = mprAllocObj(MprXml, manageXml);
     
-    xp->inBuf = mprCreateBuf(MPR_XML_BUFSIZE, MPR_XML_BUFSIZE);
+    xp->inBuf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     xp->tokBuf = mprCreateBuf(initialSize, maxSize);
     return xp;
 }

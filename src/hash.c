@@ -15,7 +15,13 @@
 
 #include    "mpr.h"
 
-/**************************** Forward Declarations ****************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_HASH
+    #define BIT_MAX_HASH 23           /* Default initial hash size */
+#endif
+
+/********************************** Forwards **********************************/
 
 static void *dupKey(MprHash *hash, cvoid *key);
 static MprKey *lookupHash(int *index, MprKey **prevSp, MprHash *hash, cvoid *key);
@@ -24,6 +30,7 @@ static void manageHashTable(MprHash *hash, int flags);
 /*********************************** Code *************************************/
 /*
     Create a new hash hash of a given size. Caller should provide a size that is a prime number for the greatest efficiency.
+    Can use hashSize -1, 0 to get a default hash.
  */
 PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
 {
@@ -32,8 +39,8 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     if ((hash = mprAllocObj(MprHash, manageHashTable)) == 0) {
         return 0;
     }
-    if (hashSize < MPR_DEFAULT_HASH_SIZE) {
-        hashSize = MPR_DEFAULT_HASH_SIZE;
+    if (hashSize < BIT_MAX_HASH) {
+        hashSize = BIT_MAX_HASH;
     }
     if ((hash->buckets = mprAllocZeroed(sizeof(MprKey*) * hashSize)) == 0) {
         return NULL;

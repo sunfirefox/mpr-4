@@ -787,10 +787,8 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
 PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
 {
     struct tm       tm;
-    char            localFmt[MPR_MAX_STRING];
     cchar           *cp;
-    char            *dp, *endp, *sign;
-    char            buf[MPR_MAX_STRING];
+    char            localFmt[256], buf[256], *dp, *endp, *sign;
     ssize           size;
     int             value;
 

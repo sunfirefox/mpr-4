@@ -124,7 +124,7 @@ PUBLIC int mprGetFileChar(MprFile *file)
         return MPR_ERR;
     }
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, MPR_BUFSIZE);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     }
     bp = file->buf;
 
@@ -197,7 +197,7 @@ PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
         *lenp = 0;
     }
     if (maxline <= 0) {
-        maxline = MPR_BUFSIZE;
+        maxline = BIT_MAX_BUFFER;
     }
     fs = file->fileSystem;
     newline = fs->newline;
@@ -293,7 +293,7 @@ PUBLIC ssize mprPutFileString(MprFile *file, cchar *str)
         Buffer output and flush when full.
      */
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, 0);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, 0);
         if (file->buf == 0) {
             return MPR_ERR_CANT_ALLOCATE;
         }
@@ -340,7 +340,7 @@ PUBLIC int mprPeekFileChar(MprFile *file)
         return MPR_ERR;
     }
     if (file->buf == 0) {
-        file->buf = mprCreateBuf(MPR_BUFSIZE, MPR_BUFSIZE);
+        file->buf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     }
     bp = file->buf;
 
@@ -569,10 +569,10 @@ PUBLIC int mprEnableFileBuffering(MprFile *file, ssize initialSize, ssize maxSiz
         return MPR_ERR_BAD_STATE;
     }
     if (initialSize <= 0) {
-        initialSize = MPR_BUFSIZE;
+        initialSize = BIT_MAX_BUFFER;
     }
     if (maxSize <= 0) {
-        maxSize = MPR_BUFSIZE;
+        maxSize = BIT_MAX_BUFFER;
     }
     if (maxSize <= initialSize) {
         maxSize = initialSize;

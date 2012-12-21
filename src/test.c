@@ -265,7 +265,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
 static int loadTestModule(MprTestService *sp, cchar *fileName)
 {
     MprModule   *mp;
-    char        *cp, *base, entry[MPR_MAX_FNAME], path[MPR_MAX_FNAME];
+    char        *cp, *base, entry[BIT_MAX_FNAME], path[BIT_MAX_FNAME];
 
     assure(fileName && *fileName);
 
@@ -815,7 +815,7 @@ static void runTestProc(MprTestGroup *gp, MprTestCase *test)
 static char *getErrorMessage(MprTestGroup *gp)
 {
     MprTestFailure  *fp;
-    char            msg[MPR_MAX_STRING], *errorMsg;
+    char            msg[BIT_MAX_BUFFER], *errorMsg;
     int             next;
 
     next = 0;

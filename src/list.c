@@ -14,7 +14,13 @@
 
 #include    "mpr.h"
 
-/****************************** Forward Declarations **************************/
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_LIST
+    #define BIT_MAX_LIST   8
+#endif
+
+/********************************** Forwards **********************************/
 
 static int growList(MprList *lp, int incr);
 static void manageList(MprList *lp, int flags);
@@ -82,7 +88,7 @@ PUBLIC int mprSetListLimits(MprList *lp, int initialSize, int maxSize)
     ssize   size;
 
     if (initialSize <= 0) {
-        initialSize = MPR_LIST_INCR;
+        initialSize = BIT_MAX_LIST;
     }
     if (maxSize <= 0) {
         maxSize = MAXINT;
@@ -663,7 +669,7 @@ static int growList(MprList *lp, int incr)
         how much the list needs to grow.
      */
     if (incr <= 1) {
-        len = MPR_LIST_INCR + (lp->size * 2);
+        len = BIT_MAX_LIST + (lp->size * 2);
     } else {
         len = lp->size + incr;
     }

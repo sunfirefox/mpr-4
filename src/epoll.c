@@ -12,6 +12,12 @@
 #include    "mpr.h"
 
 #if MPR_EVENT_EPOLL
+/********************************** Defines ***********************************/
+
+#ifndef BIT_MAX_EPOLL
+    #define BIT_MAX_EPOLL  32
+#endif
+
 /********************************** Forwards **********************************/
 
 static int growEvents(MprWaitService *ws);
@@ -23,14 +29,14 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
-    ws->eventsMax = MPR_EPOLL_SIZE;
+    ws->eventsMax = BIT_MAX_EPOLL;
     ws->handlerMax = MPR_FD_MIN;
     ws->events = mprAllocZeroed(sizeof(struct epoll_event) * ws->eventsMax);
     ws->handlerMap = mprAllocZeroed(sizeof(MprWaitHandler*) * ws->handlerMax);
     if (ws->events == 0 || ws->handlerMap == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if ((ws->epoll = epoll_create(MPR_EPOLL_SIZE)) < 0) {
+    if ((ws->epoll = epoll_create(BIT_MAX_EPOLL)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -161,7 +167,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     memset(&ev, 0, sizeof(ev));
     memset(events, 0, sizeof(events));
     ev.data.fd = fd;
-    if ((epfd = epoll_create(MPR_EPOLL_SIZE)) < 0) {
+    if ((epfd = epoll_create(BIT_MAX_EPOLL)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }

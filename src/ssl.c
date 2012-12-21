@@ -17,6 +17,12 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
     assure(module);
 
+#if BIT_PACK_EST
+    if (mprCreateEstModule() < 0) {
+        return MPR_ERR_CANT_OPEN;
+    }
+    MPR->socketService->defaultProvider = sclone("est");
+#endif
 #if BIT_PACK_MATRIXSSL
     if (mprCreateMatrixSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
@@ -32,8 +38,6 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
     return 0;
 }
 
-#else
-PUBLIC int mprSslInit(void *unused, MprModule *module) { return -1; }
 #endif /* BLD_PACK_SSL */
 
 /*

@@ -422,7 +422,7 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
 static char *getPathLink(MprDiskFileSystem *fs, cchar *path)
 {
 #if BIT_UNIX_LIKE
-    char    pbuf[MPR_MAX_PATH];
+    char    pbuf[BIT_MAX_PATH];
     ssize   len;
 
     if ((len = readlink(path, pbuf, sizeof(pbuf) - 1)) < 0) {

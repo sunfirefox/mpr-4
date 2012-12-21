@@ -25,12 +25,12 @@ PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
     MprBuf      *bp;
     
     if (initialSize <= 0) {
-        initialSize = MPR_BUFSIZE;
+        initialSize = BIT_MAX_BUFFER;
     }
     if ((bp = mprAllocObj(MprBuf, manageBuf)) == 0) {
         return 0;
     }
-    bp->growBy = MPR_BUFSIZE;
+    bp->growBy = BIT_MAX_BUFFER;
     mprSetBufSize(bp, initialSize, maxSize);
     return bp;
 }

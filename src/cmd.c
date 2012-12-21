@@ -348,10 +348,10 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
         flags &= ~MPR_CMD_OUT;
     }
     if (flags & MPR_CMD_OUT) {
-        cmd->stdoutBuf = mprCreateBuf(MPR_BUFSIZE, -1);
+        cmd->stdoutBuf = mprCreateBuf(BIT_MAX_BUFFER, -1);
     }
     if (flags & MPR_CMD_ERR) {
-        cmd->stderrBuf = mprCreateBuf(MPR_BUFSIZE, -1);
+        cmd->stderrBuf = mprCreateBuf(BIT_MAX_BUFFER, -1);
     }
     mprSetCmdCallback(cmd, defaultCmdCallback, NULL);
     rc = mprStartCmd(cmd, argc, argv, envp, flags);
@@ -849,8 +849,8 @@ static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
         Read and aggregate the result into a single string
      */
     space = mprGetBufSpace(buf);
-    if (space < (MPR_BUFSIZE / 4)) {
-        if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
+    if (space < (BIT_MAX_BUFFER / 4)) {
+        if (mprGrowBuf(buf, BIT_MAX_BUFFER) < 0) {
             mprCloseCmdFd(cmd, channel);
             return;
         }
@@ -1385,7 +1385,7 @@ static int makeChannel(MprCmd *cmd, int index)
     file = &cmd->files[index];
     file->name = sfmt("/pipe/%s_%d_%d", BIT_PRODUCT, taskIdSelf(), tempSeed++);
 
-    if (pipeDevCreate(file->name, 5, MPR_BUFSIZE) < 0) {
+    if (pipeDevCreate(file->name, 5, BIT_MAX_BUFFER) < 0) {
         mprError("Cannot create pipes to run %s", cmd->program);
         return MPR_ERR_CANT_OPEN;
     }
