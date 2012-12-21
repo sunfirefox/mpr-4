@@ -1,5 +1,5 @@
 /**
-    mprModule.c - Dynamic module loading support.
+    module.c - Dynamic module loading support.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

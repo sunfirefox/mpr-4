@@ -1,5 +1,5 @@
 /* 
-    mprCmd.c - Run external commands
+    cmd.c - Run external commands
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

@@ -1,5 +1,5 @@
 /**
-    mprThread.c - Primitive multi-threading support for Windows
+    thread.c - Primitive multi-threading support for Windows
 
     This module provides threading, mutex and condition variable APIs.
 

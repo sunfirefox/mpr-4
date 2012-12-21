@@ -8697,25 +8697,25 @@ int rsa_pkcs1_sign(rsa_context * ctx,
 		break;
 
 	case RSA_MD2:
-		memcpy(p, ASN1_HASH_MDX, 18);
+		memcpy(p, EST_ASN1_HASH_MDX, 18);
 		memcpy(p + 18, hash, 16);
 		p[13] = 2;
 		break;
 
 	case RSA_MD4:
-		memcpy(p, ASN1_HASH_MDX, 18);
+		memcpy(p, EST_ASN1_HASH_MDX, 18);
 		memcpy(p + 18, hash, 16);
 		p[13] = 4;
 		break;
 
 	case RSA_MD5:
-		memcpy(p, ASN1_HASH_MDX, 18);
+		memcpy(p, EST_ASN1_HASH_MDX, 18);
 		memcpy(p + 18, hash, 16);
 		p[13] = 5;
 		break;
 
 	case RSA_SHA1:
-		memcpy(p, ASN1_HASH_SHA1, 15);
+		memcpy(p, EST_ASN1_HASH_SHA1, 15);
 		memcpy(p + 15, hash, 20);
 		break;
 
@@ -8779,7 +8779,7 @@ int rsa_pkcs1_verify(rsa_context * ctx,
 		c = p[13];
 		p[13] = 0;
 
-		if (memcmp(p, ASN1_HASH_MDX, 18) != 0)
+		if (memcmp(p, EST_ASN1_HASH_MDX, 18) != 0)
 			return (TROPICSSL_ERR_RSA_VERIFY_FAILED);
 
 		if ((c == 2 && hash_id == RSA_MD2) ||
@@ -8793,7 +8793,7 @@ int rsa_pkcs1_verify(rsa_context * ctx,
 	}
 
 	if (len == 35 && hash_id == RSA_SHA1) {
-		if (memcmp(p, ASN1_HASH_SHA1, 15) == 0 &&
+		if (memcmp(p, EST_ASN1_HASH_SHA1, 15) == 0 &&
 		    memcmp(p + 15, hash, 20) == 0)
 			return (0);
 		else
@@ -12297,7 +12297,7 @@ static int ssl_write_certificate_request(ssl_context * ssl)
 
 	ssl->state++;
 
-	if (ssl->authmode == SSL_VERIFY_NONE) {
+	if (ssl->authmode == SSL_VERIFY_NO_CHECK) {
 		SSL_DEBUG_MSG(2, ("<= skip write certificate request"));
 		return (0);
 	}
@@ -13928,7 +13928,7 @@ int ssl_parse_certificate(ssl_context * ssl)
 
 	SSL_DEBUG_MSG(2, ("=> parse certificate"));
 
-	if (ssl->endpoint == SSL_IS_SERVER && ssl->authmode == SSL_VERIFY_NONE) {
+	if (ssl->endpoint == SSL_IS_SERVER && ssl->authmode == SSL_VERIFY_NO_CHECK) {
 		SSL_DEBUG_MSG(2, ("<= skip parse certificate"));
 		ssl->state++;
 		return (0);
@@ -14032,7 +14032,7 @@ int ssl_parse_certificate(ssl_context * ssl)
 
 	SSL_DEBUG_CRT(3, "peer certificate", ssl->peer_cert);
 
-	if (ssl->authmode != SSL_VERIFY_NONE) {
+	if (ssl->authmode != SSL_VERIFY_NO_CHECK) {
 		if (ssl->ca_chain == NULL) {
 			SSL_DEBUG_MSG(1, ("got no CA chain"));
 			return (TROPICSSL_ERR_SSL_CA_CHAIN_REQUIRED);
@@ -15052,7 +15052,7 @@ void m_sleep(int milliseconds)
 static int asn1_get_len(unsigned char **p, unsigned char *end, int *len)
 {
 	if ((end - *p) < 1)
-		return (TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+		return (TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
 	if ((**p & 0x80) == 0)
 		*len = *(*p)++;
@@ -15060,7 +15060,7 @@ static int asn1_get_len(unsigned char **p, unsigned char *end, int *len)
 		switch (**p & 0x7F) {
 		case 1:
 			if ((end - *p) < 2)
-				return (TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+				return (TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
 			*len = (*p)[1];
 			(*p) += 2;
@@ -15068,20 +15068,20 @@ static int asn1_get_len(unsigned char **p, unsigned char *end, int *len)
 
 		case 2:
 			if ((end - *p) < 3)
-				return (TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+				return (TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
 			*len = ((*p)[1] << 8) | (*p)[2];
 			(*p) += 3;
 			break;
 
 		default:
-			return (TROPICSSL_ERR_ASN1_INVALID_LENGTH);
+			return (TROPICSSL_ERR_EST_ASN1_INVALID_LENGTH);
 			break;
 		}
 	}
 
 	if (*len > (int)(end - *p))
-		return (TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+		return (TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
 	return (0);
 }
@@ -15090,10 +15090,10 @@ static int asn1_get_tag(unsigned char **p,
 			unsigned char *end, int *len, int tag)
 {
 	if ((end - *p) < 1)
-		return (TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+		return (TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
 	if (**p != tag)
-		return (TROPICSSL_ERR_ASN1_UNEXPECTED_TAG);
+		return (TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG);
 
 	(*p)++;
 
@@ -15104,11 +15104,11 @@ static int asn1_get_bool(unsigned char **p, unsigned char *end, int *val)
 {
 	int ret, len;
 
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_BOOLEAN)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_BOOLEAN)) != 0)
 		return (ret);
 
 	if (len != 1)
-		return (TROPICSSL_ERR_ASN1_INVALID_LENGTH);
+		return (TROPICSSL_ERR_EST_ASN1_INVALID_LENGTH);
 
 	*val = (**p != 0) ? 1 : 0;
 	(*p)++;
@@ -15120,11 +15120,11 @@ static int asn1_get_int(unsigned char **p, unsigned char *end, int *val)
 {
 	int ret, len;
 
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_INTEGER)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_INTEGER)) != 0)
 		return (ret);
 
 	if (len > (int)sizeof(int) || (**p & 0x80) != 0)
-		return (TROPICSSL_ERR_ASN1_INVALID_LENGTH);
+		return (TROPICSSL_ERR_EST_ASN1_INVALID_LENGTH);
 
 	*val = 0;
 
@@ -15140,7 +15140,7 @@ static int asn1_get_mpi(unsigned char **p, unsigned char *end, mpi * X)
 {
 	int ret, len;
 
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_INTEGER)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_INTEGER)) != 0)
 		return (ret);
 
 	ret = mpi_read_binary(X, *p, len);
@@ -15158,9 +15158,9 @@ static int x509_get_version(unsigned char **p, unsigned char *end, int *ver)
 	int ret, len;
 
 	if ((ret = asn1_get_tag(p, end, &len,
-				ASN1_CONTEXT_SPECIFIC | ASN1_CONSTRUCTED | 0))
+				EST_ASN1_CONTEXT_SPECIFIC | EST_ASN1_CONSTRUCTED | 0))
 	    != 0) {
-		if (ret == TROPICSSL_ERR_ASN1_UNEXPECTED_TAG)
+		if (ret == TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG)
 			return (*ver = 0);
 
 		return (ret);
@@ -15173,7 +15173,7 @@ static int x509_get_version(unsigned char **p, unsigned char *end, int *ver)
 
 	if (*p != end)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_VERSION |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	return (0);
 }
@@ -15188,12 +15188,12 @@ static int x509_get_serial(unsigned char **p,
 
 	if ((end - *p) < 1)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_SERIAL |
-			TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+			TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
-	if (**p != (ASN1_CONTEXT_SPECIFIC | ASN1_PRIMITIVE | 2) &&
-	    **p != ASN1_INTEGER)
+	if (**p != (EST_ASN1_CONTEXT_SPECIFIC | EST_ASN1_PRIMITIVE | 2) &&
+	    **p != EST_ASN1_INTEGER)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_SERIAL |
-			TROPICSSL_ERR_ASN1_UNEXPECTED_TAG);
+			TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG);
 
 	serial->tag = *(*p)++;
 
@@ -15216,13 +15216,13 @@ static int x509_get_alg(unsigned char **p, unsigned char *end, x509_buf * alg)
 	int ret, len;
 
 	if ((ret = asn1_get_tag(p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0)
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_ALG | ret);
 
 	end = *p + len;
 	alg->tag = **p;
 
-	if ((ret = asn1_get_tag(p, end, &alg->len, ASN1_OID)) != 0)
+	if ((ret = asn1_get_tag(p, end, &alg->len, EST_ASN1_OID)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_ALG | ret);
 
 	alg->p = *p;
@@ -15234,12 +15234,12 @@ static int x509_get_alg(unsigned char **p, unsigned char *end, x509_buf * alg)
 	/*
 	 * assume the algorithm parameters must be NULL
 	 */
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_NULL)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_NULL)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_ALG | ret);
 
 	if (*p != end)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_ALG |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	return (0);
 }
@@ -15264,24 +15264,24 @@ static int x509_get_name(unsigned char **p, unsigned char *end, x509_name * cur)
 	x509_buf *val;
 
 	if ((ret = asn1_get_tag(p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SET)) != 0)
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SET)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_NAME | ret);
 
 	end2 = end;
 	end = *p + len;
 
 	if ((ret = asn1_get_tag(p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0)
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_NAME | ret);
 
 	if (*p + len != end)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_NAME |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	oid = &cur->oid;
 	oid->tag = **p;
 
-	if ((ret = asn1_get_tag(p, end, &oid->len, ASN1_OID)) != 0)
+	if ((ret = asn1_get_tag(p, end, &oid->len, EST_ASN1_OID)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_NAME | ret);
 
 	oid->p = *p;
@@ -15289,13 +15289,13 @@ static int x509_get_name(unsigned char **p, unsigned char *end, x509_name * cur)
 
 	if ((end - *p) < 1)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_NAME |
-			TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+			TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
-	if (**p != ASN1_BMP_STRING && **p != ASN1_UTF8_STRING &&
-	    **p != ASN1_T61_STRING && **p != ASN1_PRINTABLE_STRING &&
-	    **p != ASN1_IA5_STRING && **p != ASN1_UNIVERSAL_STRING)
+	if (**p != EST_ASN1_BMP_STRING && **p != EST_ASN1_UTF8_STRING &&
+	    **p != EST_ASN1_T61_STRING && **p != EST_ASN1_PRINTABLE_STRING &&
+	    **p != EST_ASN1_IA5_STRING && **p != EST_ASN1_UNIVERSAL_STRING)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_NAME |
-			TROPICSSL_ERR_ASN1_UNEXPECTED_TAG);
+			TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG);
 
 	val = &cur->val;
 	val->tag = *(*p)++;
@@ -15310,7 +15310,7 @@ static int x509_get_name(unsigned char **p, unsigned char *end, x509_name * cur)
 
 	if (*p != end)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_NAME |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	/*
 	 * recurse until end of SEQUENCE is reached
@@ -15342,7 +15342,7 @@ static int x509_get_dates(unsigned char **p,
 	char date[64];
 
 	if ((ret = asn1_get_tag(p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0)
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_DATE | ret);
 
 	end = *p + len;
@@ -15350,7 +15350,7 @@ static int x509_get_dates(unsigned char **p,
 	/*
 	 * TODO: also handle GeneralizedTime
 	 */
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_UTC_TIME)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_UTC_TIME)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_DATE | ret);
 
 	memset(date, 0, sizeof(date));
@@ -15367,7 +15367,7 @@ static int x509_get_dates(unsigned char **p,
 
 	*p += len;
 
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_UTC_TIME)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_UTC_TIME)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_DATE | ret);
 
 	memset(date, 0, sizeof(date));
@@ -15386,7 +15386,7 @@ static int x509_get_dates(unsigned char **p,
 
 	if (*p != end)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_DATE |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	return (0);
 }
@@ -15413,12 +15413,12 @@ static int x509_get_pubkey(unsigned char **p,
 	    memcmp(pk_alg_oid->p, OID_PKCS1_RSA, 9) != 0)
 		return (TROPICSSL_ERR_X509_CERT_UNKNOWN_PK_ALG);
 
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_BIT_STRING)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_BIT_STRING)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_PUBKEY | ret);
 
 	if ((end - *p) < 1)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_PUBKEY |
-			TROPICSSL_ERR_ASN1_OUT_OF_DATA);
+			TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA);
 
 	end2 = *p + len;
 
@@ -15432,12 +15432,12 @@ static int x509_get_pubkey(unsigned char **p,
 	 *      }
 	 */
 	if ((ret = asn1_get_tag(p, end2, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0)
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_PUBKEY | ret);
 
 	if (*p + len != end2)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_PUBKEY |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	if ((ret = asn1_get_mpi(p, end2, N)) != 0 ||
 	    (ret = asn1_get_mpi(p, end2, E)) != 0)
@@ -15445,7 +15445,7 @@ static int x509_get_pubkey(unsigned char **p,
 
 	if (*p != end)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_PUBKEY |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	return (0);
 }
@@ -15456,7 +15456,7 @@ static int x509_get_sig(unsigned char **p, unsigned char *end, x509_buf * sig)
 
 	sig->tag = **p;
 
-	if ((ret = asn1_get_tag(p, end, &len, ASN1_BIT_STRING)) != 0)
+	if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_BIT_STRING)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_SIGNATURE | ret);
 
 	if (--len < 1 || *(*p)++ != 0)
@@ -15484,9 +15484,9 @@ static int x509_get_uid(unsigned char **p,
 	uid->tag = **p;
 
 	if ((ret = asn1_get_tag(p, end, &uid->len,
-				ASN1_CONTEXT_SPECIFIC | ASN1_CONSTRUCTED | n))
+				EST_ASN1_CONTEXT_SPECIFIC | EST_ASN1_CONSTRUCTED | n))
 	    != 0) {
-		if (ret == TROPICSSL_ERR_ASN1_UNEXPECTED_TAG)
+		if (ret == TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG)
 			return (0);
 
 		return (ret);
@@ -15516,9 +15516,9 @@ static int x509_get_ext(unsigned char **p,
 	ext->tag = **p;
 
 	if ((ret = asn1_get_tag(p, end, &ext->len,
-				ASN1_CONTEXT_SPECIFIC | ASN1_CONSTRUCTED | 3))
+				EST_ASN1_CONTEXT_SPECIFIC | EST_ASN1_CONSTRUCTED | 3))
 	    != 0) {
-		if (ret == TROPICSSL_ERR_ASN1_UNEXPECTED_TAG)
+		if (ret == TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG)
 			return (0);
 
 		return (ret);
@@ -15536,16 +15536,16 @@ static int x509_get_ext(unsigned char **p,
 	 *              extnValue       OCTET STRING  }
 	 */
 	if ((ret = asn1_get_tag(p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0)
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS | ret);
 
 	if (end != *p + len)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	while (*p < end) {
 		if ((ret = asn1_get_tag(p, end, &len,
-					ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0)
+					EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
 			return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS |
 				ret);
 
@@ -15557,11 +15557,11 @@ static int x509_get_ext(unsigned char **p,
 		*p += 5;
 
 		if ((ret = asn1_get_bool(p, end, &is_critical)) != 0 &&
-		    (ret != TROPICSSL_ERR_ASN1_UNEXPECTED_TAG))
+		    (ret != TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG))
 			return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS |
 				ret);
 
-		if ((ret = asn1_get_tag(p, end, &len, ASN1_OCTET_STRING)) != 0)
+		if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_OCTET_STRING)) != 0)
 			return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS |
 				ret);
 
@@ -15573,7 +15573,7 @@ static int x509_get_ext(unsigned char **p,
 		end2 = *p + len;
 
 		if ((ret = asn1_get_tag(p, end2, &len,
-					ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0)
+					EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
 			return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS |
 				ret);
 
@@ -15581,7 +15581,7 @@ static int x509_get_ext(unsigned char **p,
 			continue;
 
 		if ((ret = asn1_get_bool(p, end2, &is_cacert)) != 0) {
-			if (ret == TROPICSSL_ERR_ASN1_UNEXPECTED_TAG)
+			if (ret == TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG)
 				ret = asn1_get_int(p, end2, &is_cacert);
 
 			if (ret != 0)
@@ -15602,14 +15602,14 @@ static int x509_get_ext(unsigned char **p,
 
 		if (*p != end2)
 			return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS |
-				TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+				TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 		max_pathlen++;
 	}
 
 	if (*p != end)
 		return (TROPICSSL_ERR_X509_CERT_INVALID_EXTENSIONS |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 
 	*ca_istrue = is_critical & is_cacert;
 
@@ -15709,7 +15709,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	 *              signatureValue           BIT STRING      }
 	 */
 	if ((ret = asn1_get_tag(&p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0) {
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT);
 	}
@@ -15717,7 +15717,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	if (len != (int)(end - p)) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 	}
 
 	/*
@@ -15726,7 +15726,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	crt->tbs.p = p;
 
 	if ((ret = asn1_get_tag(&p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0) {
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT | ret);
 	}
@@ -15772,7 +15772,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	crt->issuer_raw.p = p;
 
 	if ((ret = asn1_get_tag(&p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0) {
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT | ret);
 	}
@@ -15802,7 +15802,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	crt->subject_raw.p = p;
 
 	if ((ret = asn1_get_tag(&p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0) {
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT | ret);
 	}
@@ -15820,7 +15820,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	 *              subjectPublicKey         BIT STRING      }
 	 */
 	if ((ret = asn1_get_tag(&p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0) {
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT | ret);
 	}
@@ -15874,7 +15874,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	if (p != end) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 	}
 
 	end = crt->raw.p + crt->raw.len;
@@ -15901,7 +15901,7 @@ int x509parse_crt(x509_cert * chain, unsigned char *buf, int buflen)
 	if (p != end) {
 		x509_free(crt);
 		return (TROPICSSL_ERR_X509_CERT_INVALID_FORMAT |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 	}
 
 	crt->next = (x509_cert *) malloc(sizeof(x509_cert));
@@ -16144,7 +16144,7 @@ int x509parse_key(rsa_context * rsa, unsigned char *buf, int buflen,
 	 *      }
 	 */
 	if ((ret = asn1_get_tag(&p, end, &len,
-				ASN1_CONSTRUCTED | ASN1_SEQUENCE)) != 0) {
+				EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
 		if (s1 != NULL)
 			free(buf);
 
@@ -16193,7 +16193,7 @@ int x509parse_key(rsa_context * rsa, unsigned char *buf, int buflen,
 
 		rsa_free(rsa);
 		return (TROPICSSL_ERR_X509_KEY_INVALID_FORMAT |
-			TROPICSSL_ERR_ASN1_LENGTH_MISMATCH);
+			TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH);
 	}
 
 	if ((ret = rsa_check_privkey(rsa)) != 0) {

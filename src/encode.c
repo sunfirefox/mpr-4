@@ -1,5 +1,6 @@
 /*
-    mprEncode.c - URI encode and decode routines
+    encode.c - URI encode and decode routines
+
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 

@@ -1,5 +1,5 @@
 /**
-    mprBuf.c - Dynamic buffer module
+    buf.c - Dynamic buffer module
 
     This module is not thread-safe for performance. Callers must do their own locking.
 

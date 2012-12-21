@@ -1,5 +1,5 @@
 /**
-    mprEpoll.c - Wait for I/O by using epoll on unix like systems.
+    epoll.c - Wait for I/O by using epoll on unix like systems.
 
     This module augments the mprWait wait services module by providing kqueue() based waiting support.
     Also see mprAsyncSelectWait and mprSelectWait. This module is thread-safe.

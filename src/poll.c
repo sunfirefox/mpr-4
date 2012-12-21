@@ -1,5 +1,5 @@
 /**
-    mprPoll.c - Wait for I/O by using poll on unix like systems.
+    poll.c - Wait for I/O by using poll on unix like systems.
 
     This module augments the mprWait wait services module by providing poll() based waiting support.
     Also see mprAsyncSelectWait and mprSelectWait. This module is thread-safe.

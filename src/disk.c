@@ -1,5 +1,5 @@
 /**
-    mprDisk.c - File services for systems with a (disk) based file system.
+    disk.c - File services for systems with a (disk) based file system.
 
     This module is not thread safe.
 

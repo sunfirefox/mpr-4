@@ -1,5 +1,5 @@
 /**
-    mprMem.c - Memory Allocator and Garbage Collector. 
+    mem.c - Memory Allocator and Garbage Collector. 
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

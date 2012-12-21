@@ -1,5 +1,5 @@
 /*
-    mprCrypt.c - Base-64 encoding and decoding and MD5 support.
+    crypt.c - Base-64 encoding and decoding and MD5 support.
 
     Algorithms by RSA. See license at the end of the file. 
     This module is not thread safe.

@@ -1,5 +1,5 @@
 /**
-    mprSelect.c - Wait for I/O by using select.
+    select.c - Wait for I/O by using select.
 
     This module provides I/O wait management for sockets on VxWorks and systems that use select(). Windows and Unix
     uses different mechanisms. See mprAsyncSelectWait and mprPollWait. This module is thread-safe.

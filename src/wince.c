@@ -1,5 +1,5 @@
 /**
-    mprWince.c - Windows CE platform specific code.
+    wince.c - Windows CE platform specific code.
 
     Copyright (c) All Rights Reserved. See copyright notice at the bottom of the file.
  */

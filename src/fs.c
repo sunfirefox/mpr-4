@@ -1,5 +1,5 @@
 /**
-    mprFileSystem.c - File system services.
+    fs.c - File system services.
 
     This module provides a simple cross platform file system abstraction. File systems provide a file system switch and 
     underneath a file system provider that implements actual I/O.

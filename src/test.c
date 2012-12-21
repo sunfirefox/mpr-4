@@ -1,5 +1,5 @@
 /*
-    mprTest.c - Embedthis Unit Test Framework
+    test.c - Embedthis Unit Test Framework
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

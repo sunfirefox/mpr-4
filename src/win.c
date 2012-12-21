@@ -1,5 +1,5 @@
 /**
-    mprWin.c - Windows specific adaptions. Used by BIT_WIN_LIKE and CYGWIN
+    win.c - Windows specific adaptions
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

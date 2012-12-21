@@ -1166,11 +1166,11 @@ extern "C" {
  *
  * Digest ::= OCTET STRING
  */
-#define ASN1_HASH_MDX                       \
+#define EST_ASN1_HASH_MDX                       \
     "\x30\x20\x30\x0C\x06\x08\x2A\x86\x48"  \
     "\x86\xF7\x0D\x02\x00\x05\x00\x04\x10"
 
-#define ASN1_HASH_SHA1                      \
+#define EST_ASN1_HASH_SHA1                      \
     "\x30\x21\x30\x09\x06\x05\x2B\x0E\x03"  \
     "\x02\x1A\x05\x00\x04\x14"
 
@@ -1745,11 +1745,11 @@ extern "C" {
 
 #endif
 
-#define TROPICSSL_ERR_ASN1_OUT_OF_DATA                      -0x0014
-#define TROPICSSL_ERR_ASN1_UNEXPECTED_TAG                   -0x0016
-#define TROPICSSL_ERR_ASN1_INVALID_LENGTH                   -0x0018
-#define TROPICSSL_ERR_ASN1_LENGTH_MISMATCH                  -0x001A
-#define TROPICSSL_ERR_ASN1_INVALID_DATA                     -0x001C
+#define TROPICSSL_ERR_EST_ASN1_OUT_OF_DATA                      -0x0014
+#define TROPICSSL_ERR_EST_ASN1_UNEXPECTED_TAG                   -0x0016
+#define TROPICSSL_ERR_EST_ASN1_INVALID_LENGTH                   -0x0018
+#define TROPICSSL_ERR_EST_ASN1_LENGTH_MISMATCH                  -0x001A
+#define TROPICSSL_ERR_EST_ASN1_INVALID_DATA                     -0x001C
 
 #define TROPICSSL_ERR_X509_FEATURE_UNAVAILABLE              -0x0020
 #define TROPICSSL_ERR_X509_CERT_INVALID_PEM                 -0x0040
@@ -1785,24 +1785,24 @@ extern "C" {
 /*
  * DER constants
  */
-#define ASN1_BOOLEAN                 0x01
-#define ASN1_INTEGER                 0x02
-#define ASN1_BIT_STRING              0x03
-#define ASN1_OCTET_STRING            0x04
-#define ASN1_NULL                    0x05
-#define ASN1_OID                     0x06
-#define ASN1_UTF8_STRING             0x0C
-#define ASN1_SEQUENCE                0x10
-#define ASN1_SET                     0x11
-#define ASN1_PRINTABLE_STRING        0x13
-#define ASN1_T61_STRING              0x14
-#define ASN1_IA5_STRING              0x16
-#define ASN1_UTC_TIME                0x17
-#define ASN1_UNIVERSAL_STRING        0x1C
-#define ASN1_BMP_STRING              0x1E
-#define ASN1_PRIMITIVE               0x00
-#define ASN1_CONSTRUCTED             0x20
-#define ASN1_CONTEXT_SPECIFIC        0x80
+#define EST_ASN1_BOOLEAN                 0x01
+#define EST_ASN1_INTEGER                 0x02
+#define EST_ASN1_BIT_STRING              0x03
+#define EST_ASN1_OCTET_STRING            0x04
+#define EST_ASN1_NULL                    0x05
+#define EST_ASN1_OID                     0x06
+#define EST_ASN1_UTF8_STRING             0x0C
+#define EST_ASN1_SEQUENCE                0x10
+#define EST_ASN1_SET                     0x11
+#define EST_ASN1_PRINTABLE_STRING        0x13
+#define EST_ASN1_T61_STRING              0x14
+#define EST_ASN1_IA5_STRING              0x16
+#define EST_ASN1_UTC_TIME                0x17
+#define EST_ASN1_UNIVERSAL_STRING        0x1C
+#define EST_ASN1_BMP_STRING              0x1E
+#define EST_ASN1_PRIMITIVE               0x00
+#define EST_ASN1_CONSTRUCTED             0x20
+#define EST_ASN1_CONTEXT_SPECIFIC        0x80
 
 /*
  * various object identifiers
@@ -2113,7 +2113,7 @@ extern "C" {
 #define SSL_IS_SERVER                   1
 #define SSL_COMPRESS_NULL               0
 
-#define SSL_VERIFY_NONE                 0
+#define SSL_VERIFY_NO_CHECK             0
 #define SSL_VERIFY_OPTIONAL             1
 #define SSL_VERIFY_REQUIRED             2
 
@@ -2344,7 +2344,7 @@ extern "C" {
 	 * \param ssl      SSL context
 	 * \param mode     can be:
 	 *
-	 *  SSL_VERIFY_NONE:      peer certificate is not checked (default),
+	 *  SSL_VERIFY_NO_CHECK:  peer certificate is not checked (default),
 	 *                        this is insecure and SHOULD be avoided.
 	 *
 	 *  SSL_VERIFY_OPTIONAL:  peer certificate is checked, however the

@@ -1,5 +1,5 @@
 /**
-    mprSignal.c - Signal handling for Unix systems
+    signal.c - Signal handling for Unix systems
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

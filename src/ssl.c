@@ -1,5 +1,5 @@
 /**
-    mprSsl.c -- Initialization for libmprssl. Load the SSL provider.
+    ssl.c -- Initialization for libmprssl. Load the SSL provider.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

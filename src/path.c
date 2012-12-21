@@ -1,5 +1,5 @@
 /**
-    mprPath.c - Path (filename) services.
+    path.c - Path (filename) services.
 
     This modules provides cross platform path name services.
 

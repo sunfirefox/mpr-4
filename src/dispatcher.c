@@ -1,5 +1,5 @@
 /*
-    mprDispatcher.c - Event dispatch services
+    dispatcher.c - Event dispatch services
 
     This module is thread-safe.
 

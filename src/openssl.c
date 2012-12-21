@@ -1,5 +1,5 @@
 /*
-    mprOpenssl.c - Support for secure sockets via OpenSSL
+    openssl.c - Support for secure sockets via OpenSSL
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

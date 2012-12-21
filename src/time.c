@@ -1,6 +1,6 @@
 /**
-    mprTime.c - Date and Time handling
- *
+    time.c - Date and Time handling
+ 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 

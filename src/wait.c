@@ -1,5 +1,5 @@
 /*
-    mprWait.c - Wait for I/O service.
+    wait.c - Wait for I/O service.
 
     This module provides wait management for sockets and other file descriptors and allows users to create wait
     handlers which will be called when I/O events are detected. Multiple backends (one at a time) are supported.

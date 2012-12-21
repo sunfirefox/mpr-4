@@ -1,5 +1,5 @@
 /**
-    mprCond.c - Thread Conditional variables
+    cond.c - Thread Conditional variables
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

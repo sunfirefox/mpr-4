@@ -1,5 +1,5 @@
 /**
-    mprList.c - Simple list type.
+    list.c - Simple list type.
 
     The list supports two modes of operation. Compact mode where the list is compacted after removing list items, 
     and no-compact mode where removed items are zeroed. No-compact mode implies that all valid list entries must 

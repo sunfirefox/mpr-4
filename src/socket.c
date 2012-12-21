@@ -1,9 +1,7 @@
 /**
-    mprSocket.c - Convenience class for the management of sockets
+    socket.c - Convenience class for the management of sockets
 
     This module provides a higher interface to interact with the standard sockets API. It does not perform buffering.
-
-    This module is thread-safe.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -1600,8 +1598,10 @@ PUBLIC MprSsl *mprCreateSsl(int server)
     if ((ssl = mprAllocObj(MprSsl, manageSsl)) == 0) {
         return 0;
     }
+#if UNUSED
     ssl->ciphers = sclone(BIT_CIPHERS);
-    ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11;
+#endif
+    ssl->protocols = MPR_PROTO_TLSV1 | MPR_PROTO_TLSV11 | MPR_PROTO_TLSV12;
     /*
         The default for servers is not to verify client certificates.
         The default for clients is to verify unless MPR->verifySsl has been set to false
@@ -1714,6 +1714,17 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, int server)
     mprSetSocketNoDelay(sp, 1);
 #endif
     return sp->provider->upgradeSocket(sp, ssl, server);
+}
+
+
+PUBLIC void mprAddSslCiphers(MprSsl *ssl, cchar *ciphers)
+{
+    assure(ssl);
+    if (ssl->ciphers) {
+        ssl->ciphers = sjoin(ssl->ciphers, ":", ciphers, NULL);
+    } else {
+        ssl->ciphers = sclone(ciphers);
+    }
 }
 
 

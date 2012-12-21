@@ -1,5 +1,5 @@
 /*
-    mprHash.c - Fast hashing hash lookup module
+    hash.c - Fast hashing hash lookup module
 
     This hash hash uses a fast key lookup mechanism. Keys may be C strings or unicode strings. The hash value entries 
     are arbitrary pointers. The keys are hashed into a series of buckets which then have a chain of hash entries.

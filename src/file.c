@@ -1,5 +1,5 @@
 /**
-    mprFile.c - File services.
+    file.c - File services.
 
     This modules provides a simple cross platform file I/O abstraction. It uses the MprFileSystem to provide I/O services.
     This module is not thread safe.

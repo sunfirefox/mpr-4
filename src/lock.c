@@ -1,5 +1,5 @@
 /**
-    mprLock.c - Thread Locking Support
+    lock.c - Thread Locking Support
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

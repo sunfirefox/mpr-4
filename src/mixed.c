@@ -1,5 +1,5 @@
 /**
-    mprMixed.c - Mixed mode strings. Unicode results with ascii args.
+    mixed.c - Mixed mode strings. Unicode results with ascii args.
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

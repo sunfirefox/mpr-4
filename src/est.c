@@ -46,7 +46,6 @@ typedef struct EstSocket {
     havege_state    hs;
     ssl_context     ssl;
     ssl_session     session;
-    int             introduced;
 } EstSocket;
 
 
@@ -117,44 +116,34 @@ static int ciphers[] = {
 #define MAC_SHA         (0x4 << 24)
 #define MAC_MASK        (0x7 << 24)
 
-#define CMED             (0x1 << 32)
-#define CHIGH            (0x2 << 32)
+#define CMED             (INT64(0x1) << 32)
+#define CHIGH            (INT64(0x2) << 32)
 
 typedef struct Ciphers {
+    int     code;
+    char    *name;
     int     iana;
-    char    *name,
-    long    mask;
 } Ciphers;
 
-#if UNUSED
-#define SSL_RSA_RC4_128_MD5             0x4     /* TLS_RSA_WITH_RC4_128_MD5 */
-#define SSL_RSA_RC4_128_SHA             0x5     /* TLS_RSA_WITH_RC4_128_SHA */
-#define SSL_RSA_DES_168_SHA             0xA     /* TLS_RSA_WITH_3DES_EDE_CBC_SHA */
-#define SSL_EDH_RSA_DES_168_SHA         0x16    /* TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA */
-#define SSL_RSA_AES_128_SHA             0x2F    /* TLS_RSA_WITH_AES_128_CBC_SHA */
-#define SSL_RSA_AES_256_SHA             0x35    /* TLS_RSA_WITH_AES_256_CBC_SHA */
-#define SSL_EDH_RSA_AES_256_SHA         0x39    /* TLS_DHE_RSA_WITH_AES_256_CBC_SHA */
-#define SSL_RSA_CAMELLIA_128_SHA        0x41    /* TLS_RSA_WITH_CAMELLIA_128_CBC_SHA */
-#define SSL_RSA_CAMELLIA_256_SHA        0x84    /* TLS_RSA_WITH_CAMELLIA_256_CBC_SHA */
-#define SSL_EDH_RSA_CAMELLIA_256_SHA    0x88    /* TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA */
-
+#if KEEP
 Low     9, 12, 1A, 15
 MEDIUM  04 05 07 18 80 8A 96 99 9A 9B
 HIGH    0A 13 16 1B 2F 32 33 34 35 38 39 3A 3C 3D 40 41 44 45 46 67 6A 6B 6C 6D 84 87 88 89 8B 8C 8D 9C 9D 9E 9F A2 A3 A6 A7
 #endif
 
-
+/** MOB - should have a high security and a fast security list */
 static Ciphers cipherList[] = {
-{ 0x04, "TLS_RSA_WITH_RC4_128_MD5",              SSL_RSA_RC4_128_MD5,          KEY_RSA | CIPHER_AES      | MAC_MD5 | CHIGH },
-{ 0x05, "TLS_RSA_WITH_RC4_128_SHA",              SSL_RSA_RC4_128_SHA,          KEY_RSA | CIPHER_AES      | MAC_SHA | CHIGH },
-{ 0x0A, "TLS_RSA_WITH_3DES_EDE_CBC_SHA",         SSL_RSA_DES_168_SHA,          KEY_RSA | CIPHER_AES      | MAC_SHA | CHIGH },
-{ 0x16, "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA",     SSL_EDH_RSA_DES_168_SHA,      KEY_EDH | CIPHER_AES      | MAC_SHA | CHIGH },
-{ 0x2F, "TLS_RSA_WITH_AES_128_CBC_SHA",          SSL_RSA_AES_128_SHA,          KEY_RSA | CIPHER_AES      | MAC_SHA | CHIGH },
-{ 0x35, "TLS_RSA_WITH_AES_256_CBC_SHA",          SSL_RSA_AES_256_SHA,          KEY_RSA | CIPHER_AES      | MAC_SHA | CMED },
-{ 0x39, "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",      SSL_EDH_RSA_AES_256_SHA,      KEY_EDH | CIPHER_AES      | MAC_SHA | CMED },
-{ 0x41, "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA",     SSL_RSA_CAMELLIA_128_SHA,     KEY_RSA | CIPHER_CAMELLIA | MAC_SHA | CHIGH },
-{ 0x88, "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA",     SSL_EDH_RSA_CAMELLIA_256_SHA, KEY_EDH | CIPHER_CAMELLIA | MAC_SHA | MED },
-{ 0x84, "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA", SSL_RSA_CAMELLIA_256_SHA,     KEY_RSA | CIPHER_CAMELLIA | MAC_SHA | CHIGH },
+{ 0x2F, "TLS_RSA_WITH_AES_128_CBC_SHA",          SSL_RSA_AES_128_SHA            },
+{ 0x35, "TLS_RSA_WITH_AES_256_CBC_SHA",          SSL_RSA_AES_256_SHA            },
+{ 0x05, "TLS_RSA_WITH_RC4_128_SHA",              SSL_RSA_RC4_128_SHA            },      /* MED */
+{ 0x0A, "TLS_RSA_WITH_3DES_EDE_CBC_SHA",         SSL_RSA_DES_168_SHA            },
+{ 0x04, "TLS_RSA_WITH_RC4_128_MD5",              SSL_RSA_RC4_128_MD5            },      /* MED */
+{ 0x39, "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",      SSL_EDH_RSA_AES_256_SHA        },
+{ 0x16, "TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA",     SSL_EDH_RSA_DES_168_SHA        },
+
+{ 0x41, "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA",     SSL_RSA_CAMELLIA_128_SHA       },
+{ 0x88, "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA",     SSL_EDH_RSA_CAMELLIA_256_SHA   },
+{ 0x84, "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA", SSL_RSA_CAMELLIA_256_SHA       },
 { 0x00, 0, 0 },
 };
 
@@ -267,6 +256,7 @@ static int listenEst(MprSocket *sp, cchar *host, int port, int flags)
 }
 
 
+#if UNUSED
     //  MOB - should be modifyable and be using ssl->ciphers and parse.
 /*
     Parse an Apache style cipher suite. For example:
@@ -277,10 +267,10 @@ static int listenEst(MprSocket *sp, cchar *host, int port, int flags)
 
         SSLCipherSuite ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH
  */
-static int *createCiphers(cchar *cipherSpec)
+static int *createCiphers(cchar *cipherSuite)
 {
     Ciphers     *cp;
-    char        *key, *auth, *encoding, *mac, *token, *next;
+    char        *key, *auth, *encoding, *mac, *token, *next, *suite;
     int         *ciphers, i, cipher, add, sub, filter, mask, value, acceptable, type;
 
     key = auth = encoding = mac = 0;
@@ -289,7 +279,9 @@ static int *createCiphers(cchar *cipherSpec)
     acceptable = 0;
    
     //  MOB - should this be a hash?
-    while ((token = stok(sclone(cipherSpec), ":", &next)) != 0) {
+
+    suite = sclone(cipherSuite);
+    while ((token = stok(suite, ":", &next)) != 0) {
         add = sub = filter = 0;
         type = 0;
         if (*token == '+') {
@@ -354,26 +346,29 @@ static int *createCiphers(cchar *cipherSpec)
         } else if (scaselessmatch(token, "EXPORT40")) {
         } else if (scaselessmatch(token, "EXPORT56")) {
 #endif
+#if UNUSED
         } else if (scaselessmatch(token, "LOW")) {
-            for (cp = cipherList, i = 0; cp->mask; cp++) {
+            for (cp = cipherList, i = 0; cp->name; cp++) {
                 if (cp->mask & LOW) {
                     value |= cp->mask;
                 }
             }
+#endif
         } else if (scaselessmatch(token, "MEDIUM")) {
             for (cp = cipherList, i = 0; cp->mask; cp++) {
-                if (cp->mask & MEDIUM) {
+                if (cp->mask & CMED) {
                     value |= cp->mask;
                 }
             }
         } else if (scaselessmatch(token, "HIGH")) {
             for (cp = cipherList, i = 0; cp->mask; cp++) {
-                if (cp->mask & HIGH) {
+                if (cp->mask & CHIGH) {
                     value |= cp->mask;
                 }
             }
         } else if (scaselessmatch(token, "RSA")) {
-            value = CIPHER_RSA;
+            //  MOB - is this right?
+            value = KEY_RSA | AUTH_RSA;
 #if UNUSED
         } else if (scaselessmatch(token, "DH")) {
         } else if (scaselessmatch(token, "ADH")) {
@@ -398,6 +393,7 @@ static int *createCiphers(cchar *cipherSpec)
         } else if (filter) {
             filter |= value;
         }
+        suite = 0;
     }
     acceptable &= ~filter;
     if (!(acceptable & KEY_MASK)) acceptable |= KEY_MASK;
@@ -417,6 +413,44 @@ static int *createCiphers(cchar *cipherSpec)
     }
     return ciphers;
 }
+#else
+    //  MOB - should be modifyable and be using ssl->ciphers and parse.
+/*
+    Parse an Apache style cipher suite. For example:
+    '+' to add, '-' to remove, '!' to filter always.
+
+        ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
+        AES128-SHA:AES256-SHA:RC4-SHA:DES-CBC3-SHA:RC4-MD5
+
+        SSLCipherSuite ECDHE-RSA-AES128-SHA256:AES128-GCM-SHA256:RC4:HIGH:!MD5:!aNULL:!EDH
+ */
+static int *createCiphers(cchar *cipherSuite)
+{
+    Ciphers     *cp;
+    char        *suite, *cipher, *next;
+    int         i, *ciphers;
+
+    ciphers = mprAlloc(sizeof(cipherList) / sizeof(Ciphers) + sizeof(int));
+   
+    suite = sclone(cipherSuite);
+    i = 0;
+    while ((cipher = stok(suite, ":, \t", &next)) != 0) {
+        for (cp = cipherList; cp->name; cp++) {
+            if (scaselessmatch(cp->name, cipher)) {
+                break;
+            }
+        }
+        if (cp) {
+            ciphers[i++] = cp->iana;
+            mprLog(0, "EST: Select cipher 0x%02x: %s", cp->iana, cp->name);
+        } else {
+            mprError("Cannot find cipher %s", cipher);
+        }
+        suite = 0;
+    }
+    return ciphers;
+}
+#endif
 
 
 /*
@@ -498,7 +532,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, int server)
     havege_init(&esp->hs);
     ssl_init(&esp->ssl);
 	ssl_set_endpoint(&esp->ssl, server);
-	ssl_set_authmode(&esp->ssl, (ssl->verifyPeer) ? SSL_VERIFY_REQUIRED : SSL_VERIFY_NONE);
+	ssl_set_authmode(&esp->ssl, (ssl->verifyPeer) ? SSL_VERIFY_REQUIRED : SSL_VERIFY_NO_CHECK);
     ssl_set_rng(&esp->ssl, havege_rand, &esp->hs);
 	ssl_set_dbg(&esp->ssl, estTrace, NULL);
 	ssl_set_bio(&esp->ssl, net_recv, &sp->fd, net_send, &sp->fd);
@@ -620,7 +654,7 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
     int         rc;
 
     esp = (EstSocket*) sp->sslSocket;
-    if (esp->introduced == 0 || len <= 0) {
+    if (len <= 0) {
         assure(0);
         return -1;
     }
@@ -788,7 +822,11 @@ static int setSession(ssl_context *ssl)
 
 static void estTrace(void *fp, int level, char *str)
 {
-    mprLog(level, "%s", str);
+    if (level <= MPR->logLevel) {
+        str = sclone(str);
+        str[slen(str) - 1] = '\0';
+        mprLog(level, "%s", str);
+    }
 }
 
 #endif /* BIT_PACK_EST */

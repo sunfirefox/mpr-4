@@ -1,5 +1,5 @@
 /**
-    mprXml.c - A simple SAX style XML parser
+    xml.c - A simple SAX style XML parser
 
     This is a recursive descent parser for XML text files. It is a one-pass simple parser that invokes a user 
     supplied callback for key tokens in the XML file. The user supplies a read function so that XML files can 

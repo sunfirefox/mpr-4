@@ -698,6 +698,13 @@ typedef int64 MprTicks;
     #endif
 #endif
 
+#if BIT_WIN_LIKE
+    #define INT64(x)    (x##i64)
+    #define UINT64(x)   (x##Ui64)
+#else
+    #define INT64(x)    (x##LL)
+    #define UINT64(x)   (x##ULL)
+#endif
 
 #ifndef MAXINT
 #if INT_MAX
@@ -746,14 +753,6 @@ typedef int64 MprTicks;
     #define PTOI(i)     ((int) i)
     #define LTOP(i)     ((void*) ((int) i))
     #define PTOL(i)     ((int64) (int) i)
-#endif
-
-#if BIT_WIN_LIKE
-    #define INT64(x)    (x##i64)
-    #define UINT64(x)   (x##Ui64)
-#else
-    #define INT64(x)    (x##LL)
-    #define UINT64(x)   (x##ULL)
 #endif
 
 #if BIT_WIN_LIKE
@@ -8062,8 +8061,10 @@ typedef struct MprSsl {
 #define MPR_PROTO_SSLV3    0x2              /**< SSL V3 protocol */
 #define MPR_PROTO_TLSV1    0x4              /**< TLS V1 protocol */
 #define MPR_PROTO_TLSV11   0x8              /**< TLS V1.1 protocol */
-#define MPR_PROTO_ALL      0xf              /**< All SSL protocols */
+#define MPR_PROTO_TLSV12   0x10             /**< TLS V1.2 protocol */
+#define MPR_PROTO_ALL      0x1F             /**< All SSL protocols */
 
+#if UNUSED
 /*
     Default SSL configuration
     Other cipher options
@@ -8074,13 +8075,16 @@ typedef struct MprSsl {
 #ifndef BIT_CIPHERS
     #define BIT_CIPHERS "HIGH:MEDIUM"  /**< Default cipher suite */
 #endif
+#endif
 
 /**
-    Load the SSL module.
+    Add the ciphers to use for SSL
+    @param ssl SSL instance returned from #mprCreateSsl
+    @param ciphers Cipher string to add to any existing ciphers
     @ingroup MprSsl
     @stability Evolving
  */
-PUBLIC int mprLoadSsl();
+PUBLIC void mprAddSslCiphers(struct MprSsl *ssl, cchar *ciphers);
 
 /**
     Create the SSL control structure
@@ -8099,13 +8103,11 @@ PUBLIC struct MprSsl *mprCreateSsl(int server);
 PUBLIC struct MprSsl *mprCloneSsl(MprSsl *src);
 
 /**
-    Set the ciphers to use for SSL
-    @param ssl SSL instance returned from #mprCreateSsl
-    @param ciphers Cipher string
+    Load the SSL module.
     @ingroup MprSsl
     @stability Evolving
  */
-PUBLIC void mprSetSslCiphers(struct MprSsl *ssl, cchar *ciphers);
+PUBLIC int mprLoadSsl();
 
 /**
     Set the key file to use for SSL

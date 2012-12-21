@@ -1,5 +1,5 @@
 /*
-    mprMatrixssl.c -- Support for secure sockets via MatrixSSL
+    matrixssl.c -- Support for secure sockets via MatrixSSL
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

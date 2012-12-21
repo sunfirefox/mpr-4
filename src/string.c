@@ -1,5 +1,5 @@
 /**
-    mprString.c - String routines safe for embedded programming
+    string.c - String routines safe for embedded programming
 
     This module provides safe replacements for the standard string library. 
     Most routines in this file are not thread-safe. It is the callers responsibility to perform all thread synchronization.

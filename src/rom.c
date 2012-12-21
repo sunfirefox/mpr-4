@@ -1,5 +1,5 @@
 /*
-    mprRomFile.c - ROM File system
+    rom.c - ROM File system
 
     ROM support for systems without disk or flash based file systems. This module provides read-only file retrieval 
     from compiled file images. Use the mprRomComp program to compile files into C code and then link them into your 

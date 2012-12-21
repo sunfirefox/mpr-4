@@ -1,5 +1,5 @@
 /**
-    mprCache.c - In-process caching
+    cache.c - In-process caching
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

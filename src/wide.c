@@ -1,5 +1,5 @@
 /**
-    mprUnicode.c - Memory Allocator and Garbage Collector. 
+    unicode.c - Unicode support
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */

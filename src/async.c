@@ -1,5 +1,5 @@
 /**
-    mprAsync.c - Wait for I/O on Windows.
+    async.c - Wait for I/O on Windows.
 
     This module provides io management for sockets on Windows like systems. 
 

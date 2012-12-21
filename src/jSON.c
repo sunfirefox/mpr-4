@@ -1,5 +1,5 @@
 /**
-    mprJSON.c - A JSON parser and serializer. 
+    json.c - A JSON parser and serializer. 
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
