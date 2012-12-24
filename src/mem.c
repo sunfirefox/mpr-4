@@ -2133,7 +2133,7 @@ static void getSystemInfo()
             }
         }
         if (memStats.numCpu <= 0) {
-            memSstats.numCpu = 1;
+            memStats.numCpu = 1;
         }
         close(fd);
         memStats.pageSize = sysconf(_SC_PAGESIZE);

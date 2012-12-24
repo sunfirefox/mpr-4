@@ -1282,7 +1282,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
      */
     if (ip == 0 || ip[0] == '\0') {
         ip = 0;
-        hints.ai_flags |= AI_PASSIVE;           /* Bind to 0.0.0.0 and :: */
+        hints.ai_flags |= AI_PASSIVE;           /* Bind to 0.0.0.0 and :: if available */
     }
     v6 = ipv6(ip);
     hints.ai_socktype = SOCK_STREAM;
