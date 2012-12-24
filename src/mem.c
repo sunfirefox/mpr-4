@@ -2114,6 +2114,7 @@ static void getSystemInfo()
             return;
         }
         match = 1;
+        memStats.numCpu = 0;
         for (col = 0; read(fd, &c, 1) == 1; ) {
             if (c == '\n') {
                 col = 0;
@@ -2131,7 +2132,9 @@ static void getSystemInfo()
                 }
             }
         }
-        --memStats.numCpu;
+        if (memStats.numCpu <= 0) {
+            memSstats.numCpu = 1;
+        }
         close(fd);
         memStats.pageSize = sysconf(_SC_PAGESIZE);
     }

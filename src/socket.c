@@ -305,12 +305,14 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         So we explicitly control.
      */
 #if defined(IPV6_V6ONLY)
-    if (ip == 0 || *ip == '\0') {
-        only = 0;
-        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
-    } else if (ipv6(ip)) {
-        only = 1;
-        setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+    if (MPR->socketService->hasIPv6) {
+        if (ip == 0 || *ip == '\0') {
+            only = 0;
+            setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+        } else if (ipv6(ip)) {
+            only = 1;
+            setsockopt(sp->fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*) &only, sizeof(only));
+        }
     }
 #endif
     if (sp->service->prebind) {
