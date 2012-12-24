@@ -81,6 +81,10 @@ PUBLIC MprSocketService *mprCreateSocketService()
     mprSetDomainName(domainName);
     mprSetHostName(hostName);
     ss->secureSockets = mprCreateList(0, 0);
+    ss->hasIPv6 = socket(AF_INET6, SOCK_STREAM, 0) == 0;
+    if (!ss->hasIPv6) {
+        mprLog(2, "System has only IPv4 support");
+    }
     return ss;
 }
 
@@ -218,9 +222,15 @@ PUBLIC bool mprHasDualNetworkStack()
         dual = info.dwMajorVersion >= 6;
     }
 #else
-    dual = 1;
+    dual = MPR->socketService->hasIPv6;
 #endif
     return dual;
+}
+
+
+PUBLIC bool mprHasIPv6() 
+{
+    return MPR->socketService->hasIPv6;
 }
 
 

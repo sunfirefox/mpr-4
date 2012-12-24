@@ -6358,14 +6358,15 @@ typedef int (*MprSocketPrebind)(struct MprSocket *sock);
     @stability Internal
  */
 typedef struct MprSocketService {
-    int             maxAccept;                  /**< Maximum number of accepted client socket connections */
-    int             numAccept;                  /**< Count of client socket connections */
     MprSocketProvider *standardProvider;        /**< Socket provider for non-SSL connections */
     char            *defaultProvider;           /**< Default secure provider for SSL connections */
     MprHash         *providers;                 /**< Secure socket providers */         
     MprSocketPrebind prebind;                   /**< Prebind callback */
     MprList         *secureSockets;             /**< List of secured (matrixssl) sockets */
     MprMutex        *mutex;                     /**< Multithread locking */
+    int             maxAccept;                  /**< Maximum number of accepted client socket connections */
+    int             numAccept;                  /**< Count of client socket connections */
+    int             hasIPv6;                    /**< System has supoprt for IPv6 */
 } MprSocketService;
 
 
@@ -6631,7 +6632,16 @@ PUBLIC int mprGetSocketPort(MprSocket *sp);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC bool mprHasDualNetworkStack() ;
+PUBLIC bool mprHasDualNetworkStack();
+
+/**
+    Determine if the system support IPv6
+    @return True if the address system supports IPv6 networking.
+    @ingroup MprSocket
+    @stability Prototype
+    @internal
+ */
+PUBLIC bool mprHashIPv6();
 
 /**
     Determine if the IP address is an IPv6 address
