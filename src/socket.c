@@ -239,7 +239,7 @@ PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     cchar               *sip;
     int                 datagram, family, protocol, rc, only;
 
@@ -408,7 +408,7 @@ PUBLIC int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
 static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     int                 broadcast, datagram, family, protocol, rc;
 
     mprLog(6, "openClient: %s:%d, flags %x", ip, port, initialFlags);
@@ -619,7 +619,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     struct sockaddr_storage     addrStorage, saddrStorage;
     struct sockaddr             *addr, *saddr;
     char                        ip[BIT_MAX_IP], acceptIp[BIT_MAX_IP];
-    MprSocklen                  addrlen, saddrlen;
+    Socklen                     addrlen, saddrlen;
     int                         fd, port, acceptPort;
 
     ss = MPR->socketService;
@@ -719,7 +719,7 @@ PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 static ssize readSocket(MprSocket *sp, void *buf, ssize bufsize)
 {
     struct sockaddr_storage server;
-    MprSocklen              len;
+    Socklen                 len;
     ssize                   bytes;
     int                     errCode;
 
@@ -738,7 +738,7 @@ again:
     }
     if (sp->flags & MPR_SOCKET_DATAGRAM) {
         len = sizeof(server);
-        bytes = recvfrom(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL, (struct sockaddr*) &server, (MprSocklen*) &len);
+        bytes = recvfrom(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL, (struct sockaddr*) &server, (Socklen*) &len);
     } else {
         bytes = recv(sp->fd, buf, (int) bufsize, MSG_NOSIGNAL);
     }
@@ -806,7 +806,7 @@ PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 {
     struct sockaddr     *addr;
-    MprSocklen          addrlen;
+    Socklen             addrlen;
     ssize               len, written, sofar;
     int                 family, protocol, errCode;
 
@@ -1319,7 +1319,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 }
 #else
 
-PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, MprSocklen *addrlen)
+PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, struct sockaddr **addr, Socklen *addrlen)
 {
     MprSocketService    *ss;
     struct sockaddr_in  *sa;

@@ -25,7 +25,7 @@ Bit.load({
         ciphers: "HIGH:MEDIUM",
         float: true,
         manager: 'manager',
-        sync: ['est'],
+        sync: ['bitos', 'est'],
         '+required': [], 
         '+optional': [ 'doxygen', 'man', 'man2html', 'md5', 'openssl', 'ssl', 'utest' ],
         'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'ssl', 'matrixssl', 'openssl'],

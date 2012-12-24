@@ -675,7 +675,7 @@ PUBLIC int mprGetEndian()
 
     test = 1;
     probe = (char*) &test;
-    return (*probe == 1) ? MPR_LITTLE_ENDIAN : MPR_BIG_ENDIAN;
+    return (*probe == 1) ? BIT_LITTLE_ENDIAN : BIT_BIG_ENDIAN;
 }
 
 
