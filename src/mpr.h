@@ -6641,7 +6641,7 @@ PUBLIC bool mprHasDualNetworkStack();
     @stability Prototype
     @internal
  */
-PUBLIC bool mprHashIPv6();
+PUBLIC bool mprHasIPv6();
 
 /**
     Determine if the IP address is an IPv6 address
