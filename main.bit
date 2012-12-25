@@ -40,13 +40,13 @@ Bit.load({
             type: 'lib',
             headers: [ 'src/*.h' ],
             sources: [ 'src/*.c' ],
-            exclude: [ /\/est|manager.c|ssl|Ssl|\/utils\// ],
+            exclude: [ /manager.c/ ],
         },
 
         libmprssl: {
             type: 'lib',
             depends: [ 'libmpr', 'est', 'openssl', 'matrixssl' ],
-            sources: [ 'src/est.c', 'src/matrixssl.c', 'src/openssl.c', 'src/ssl.c' ],
+            sources: [ 'src/ssl/*.c' ],
         },
 
         manager: {
@@ -90,12 +90,12 @@ Bit.load({
                 install(['src/mem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
                     cat: true,
                     filter: /^#inc.*mpr.*$/mg, 
-                    exclude: /manager|makerom|Ssl|ssl|\\/est/,
+                    exclude: /manager|makerom/,
                     header: '#include \"mpr.h\"',
                     title: bit.settings.title + ' Library Source',
                 })
                 /* Must put matrix first */
-                install(['src/matrixssl.c', 'src/est.c', 'src/openssl.c', 'src/ssl.c'], 
+                install(['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/ssl.c'], 
                     d.join('src/deps/mpr/mprSsl.c'), {
                     cat: true,
                     title: bit.settings.title + ' SSL Source',
