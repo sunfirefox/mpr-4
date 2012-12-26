@@ -96,17 +96,19 @@ struct  MprXml;
         If the system supports virtual memory, then stack size should use system default. Only used pages will
         actually consume memory 
      */
-    #define MPR_DEFAULT_STACK       (0)           /**< Default thread stack size (0 means use system default) */
+    #define MPR_DEFAULT_STACK       (0)             /**< Default thread stack size (0 means use system default) */
 #else
     /* 
         No MMU, so the stack size actually consumes memory. Set this as low as possible. 
         NOTE: php and ejs use stack heavily.
      */
-    #define MPR_DEFAULT_STACK       (128 * 1024)   /**< Default thread stack size (0 means use system default) */
+    #define MPR_DEFAULT_STACK       (128 * 1024)    /**< Default thread stack size (0 means use system default) */
 #endif
 
-#if KEEP && DEPRECATED
-    #define MPR_MAX_PATH        1024          /**< Reasonable path name size */
+#if DEPRECATED || 1
+    /* Remove in 4.4
+    #define MPR_MAX_STRING      BIT_MAX_BUFFER
+    #define MPR_MAX_PATH        BIT_MAX_PATH
     #define MPR_MAX_FNAME       BIT_MAX_FNAME
     #define MPR_BUFSIZE         BIT_MAX_BUFFER
 #endif
