@@ -32,10 +32,6 @@
 #include "bit.h"
 #include "bitos.h"
 
-#ifdef __cplusplus
-}
-#endif
-
 /*********************************** Forwards *********************************/
 
 #ifdef __cplusplus
@@ -2177,7 +2173,6 @@ PUBLIC int64    wtoiradix(wchar *str, int radix, int *err);
 PUBLIC wchar    *wtok(wchar *str, wchar *delim, wchar **last);
 PUBLIC wchar    *wtrim(wchar *str, wchar *set, int where);
 PUBLIC wchar    *wupper(wchar *s);
-#endif
 
 #else
 
@@ -2249,7 +2244,7 @@ PUBLIC wchar    *mtok(wchar *str, cchar *delim, wchar **last);
 PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
 #endif
 
-#else
+#else /* BIT_CHAR_LEN <= 1 */
 
 #define mcaselesscmp(s1, s2)            scaselesscmp(s1, s2)
 #define mcmp(s1, s2)                    scmp(s1, s2)
@@ -2272,7 +2267,7 @@ PUBLIC wchar    *mtrim(wchar *str, cchar *set, int where);
 #define mtok(str, delim, last)          stok(str, delim, last)
 #define mtrim(str, set, where)          strim(str, set, where)
 
-#endif /* BIT_CHAR_LEN > 1 */
+#endif /* BIT_CHAR_LEN <= 1 */
 
 /************************************ Formatting ******************************/
 /**
