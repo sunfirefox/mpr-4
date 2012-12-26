@@ -106,7 +106,7 @@ struct  MprXml;
 #endif
 
 #if DEPRECATED || 1
-    /* Remove in 4.4
+    /* Remove in 4.4 */
     #define MPR_MAX_STRING      BIT_MAX_BUFFER
     #define MPR_MAX_PATH        BIT_MAX_PATH
     #define MPR_MAX_FNAME       BIT_MAX_FNAME
