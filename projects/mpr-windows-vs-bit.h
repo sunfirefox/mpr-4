@@ -43,7 +43,7 @@
     #define BIT_MANAGER "manager"
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "doxygen,dsi,ejs,http,man,man2html,md5,matrixssl,openssl,ssl,utest"
+    #define BIT_OPTIONAL "doxygen,man,man2html,md5,openssl,ssl,utest"
 #endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "mpr"
@@ -51,17 +51,17 @@
 #ifndef BIT_REQUIRED
     #define BIT_REQUIRED "winsdk,compiler,lib,link,dumpbin,rc"
 #endif
+#ifndef BIT_SYNC
+    #define BIT_SYNC "bitos,est"
+#endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.2.0"
+    #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,man,man2html,pmaker,ssl,openssl,matrixssl"
-#endif
-#ifndef BIT_WITHOUT_OWN
-    #define BIT_WITHOUT_OWN "doxygen,dsi,man,man2html,pmaker,matrixssl"
+    #define BIT_WITHOUT_ALL "doxygen,dsi,est,man,man2html,pmaker,ssl,matrixssl,openssl"
 #endif
 
 /* Prefixes */
@@ -126,13 +126,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 2
+    #define BIT_MINOR_VERSION 3
 #endif
 #ifndef BIT_PATCH_VERSION
     #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400020000
+    #define BIT_VNUM 400030000
 #endif
 
 /* Packs */
@@ -148,11 +148,8 @@
 #ifndef BIT_PACK_DUMPBIN
     #define BIT_PACK_DUMPBIN 0
 #endif
-#ifndef BIT_PACK_EJS
-    #define BIT_PACK_EJS 1
-#endif
-#ifndef BIT_PACK_HTTP
-    #define BIT_PACK_HTTP 1
+#ifndef BIT_PACK_EST
+    #define BIT_PACK_EST 0
 #endif
 #ifndef BIT_PACK_LIB
     #define BIT_PACK_LIB 1
@@ -189,4 +186,25 @@
 #endif
 #ifndef BIT_PACK_WINSDK
     #define BIT_PACK_WINSDK 1
+#endif
+#ifndef BIT_PACK_COMPILER_PATH
+    #define BIT_PACK_COMPILER_PATH "cl.exe"
+#endif
+#ifndef BIT_PACK_LIB_PATH
+    #define BIT_PACK_LIB_PATH "lib.exe"
+#endif
+#ifndef BIT_PACK_LINK_PATH
+    #define BIT_PACK_LINK_PATH "link.exe"
+#endif
+#ifndef BIT_PACK_MD5_PATH
+    #define BIT_PACK_MD5_PATH "/sbin/md5"
+#endif
+#ifndef BIT_PACK_RC_PATH
+    #define BIT_PACK_RC_PATH "rc.exe"
+#endif
+#ifndef BIT_PACK_UTEST_PATH
+    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
+#endif
+#ifndef BIT_PACK_WINSDK_PATH
+    #define BIT_PACK_WINSDK_PATH "$(SDK)"
 #endif

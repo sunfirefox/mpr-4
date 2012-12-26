@@ -2,7 +2,7 @@
 #   mpr-macosx-debug.mk -- Makefile to build Multithreaded Portable Runtime for macosx
 #
 
-ARCH     ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/')
+ARCH     ?= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 OS       ?= macosx
 CC       ?= /usr/bin/clang
 LD       ?= /usr/bin/ld
@@ -53,6 +53,7 @@ clean:
 	rm -rf $(CONFIG)/bin/manager
 	rm -rf $(CONFIG)/bin/makerom
 	rm -rf $(CONFIG)/bin/chargen
+	rm -rf $(CONFIG)/obj/estLib.o
 	rm -rf $(CONFIG)/obj/benchMpr.o
 	rm -rf $(CONFIG)/obj/runProgram.o
 	rm -rf $(CONFIG)/obj/testArgv.o
@@ -72,52 +73,53 @@ clean:
 	rm -rf $(CONFIG)/obj/testThread.o
 	rm -rf $(CONFIG)/obj/testTime.o
 	rm -rf $(CONFIG)/obj/testUnicode.o
+	rm -rf $(CONFIG)/obj/async.o
+	rm -rf $(CONFIG)/obj/atomic.o
+	rm -rf $(CONFIG)/obj/buf.o
+	rm -rf $(CONFIG)/obj/cache.o
+	rm -rf $(CONFIG)/obj/cmd.o
+	rm -rf $(CONFIG)/obj/cond.o
+	rm -rf $(CONFIG)/obj/crypt.o
+	rm -rf $(CONFIG)/obj/disk.o
+	rm -rf $(CONFIG)/obj/dispatcher.o
+	rm -rf $(CONFIG)/obj/encode.o
+	rm -rf $(CONFIG)/obj/epoll.o
+	rm -rf $(CONFIG)/obj/event.o
+	rm -rf $(CONFIG)/obj/file.o
+	rm -rf $(CONFIG)/obj/fs.o
+	rm -rf $(CONFIG)/obj/hash.o
+	rm -rf $(CONFIG)/obj/jSON.o
+	rm -rf $(CONFIG)/obj/kqueue.o
+	rm -rf $(CONFIG)/obj/list.o
+	rm -rf $(CONFIG)/obj/lock.o
+	rm -rf $(CONFIG)/obj/log.o
+	rm -rf $(CONFIG)/obj/mem.o
+	rm -rf $(CONFIG)/obj/mime.o
+	rm -rf $(CONFIG)/obj/mixed.o
+	rm -rf $(CONFIG)/obj/module.o
 	rm -rf $(CONFIG)/obj/mpr.o
-	rm -rf $(CONFIG)/obj/mprAsync.o
-	rm -rf $(CONFIG)/obj/mprAtomic.o
-	rm -rf $(CONFIG)/obj/mprBuf.o
-	rm -rf $(CONFIG)/obj/mprCache.o
-	rm -rf $(CONFIG)/obj/mprCmd.o
-	rm -rf $(CONFIG)/obj/mprCond.o
-	rm -rf $(CONFIG)/obj/mprCrypt.o
-	rm -rf $(CONFIG)/obj/mprDisk.o
-	rm -rf $(CONFIG)/obj/mprDispatcher.o
-	rm -rf $(CONFIG)/obj/mprEncode.o
-	rm -rf $(CONFIG)/obj/mprEpoll.o
-	rm -rf $(CONFIG)/obj/mprEvent.o
-	rm -rf $(CONFIG)/obj/mprFile.o
-	rm -rf $(CONFIG)/obj/mprFileSystem.o
-	rm -rf $(CONFIG)/obj/mprHash.o
-	rm -rf $(CONFIG)/obj/mprJSON.o
-	rm -rf $(CONFIG)/obj/mprKqueue.o
-	rm -rf $(CONFIG)/obj/mprList.o
-	rm -rf $(CONFIG)/obj/mprLock.o
-	rm -rf $(CONFIG)/obj/mprLog.o
-	rm -rf $(CONFIG)/obj/mprMem.o
-	rm -rf $(CONFIG)/obj/mprMime.o
-	rm -rf $(CONFIG)/obj/mprMixed.o
-	rm -rf $(CONFIG)/obj/mprModule.o
-	rm -rf $(CONFIG)/obj/mprPath.o
-	rm -rf $(CONFIG)/obj/mprPoll.o
-	rm -rf $(CONFIG)/obj/mprPrintf.o
-	rm -rf $(CONFIG)/obj/mprRomFile.o
-	rm -rf $(CONFIG)/obj/mprSelect.o
-	rm -rf $(CONFIG)/obj/mprSignal.o
-	rm -rf $(CONFIG)/obj/mprSocket.o
-	rm -rf $(CONFIG)/obj/mprString.o
-	rm -rf $(CONFIG)/obj/mprTest.o
-	rm -rf $(CONFIG)/obj/mprThread.o
-	rm -rf $(CONFIG)/obj/mprTime.o
-	rm -rf $(CONFIG)/obj/mprUnix.o
-	rm -rf $(CONFIG)/obj/mprVxworks.o
-	rm -rf $(CONFIG)/obj/mprWait.o
-	rm -rf $(CONFIG)/obj/mprWide.o
-	rm -rf $(CONFIG)/obj/mprWin.o
-	rm -rf $(CONFIG)/obj/mprWince.o
-	rm -rf $(CONFIG)/obj/mprXml.o
-	rm -rf $(CONFIG)/obj/mprMatrixssl.o
-	rm -rf $(CONFIG)/obj/mprOpenssl.o
-	rm -rf $(CONFIG)/obj/mprSsl.o
+	rm -rf $(CONFIG)/obj/path.o
+	rm -rf $(CONFIG)/obj/poll.o
+	rm -rf $(CONFIG)/obj/posix.o
+	rm -rf $(CONFIG)/obj/printf.o
+	rm -rf $(CONFIG)/obj/rom.o
+	rm -rf $(CONFIG)/obj/select.o
+	rm -rf $(CONFIG)/obj/signal.o
+	rm -rf $(CONFIG)/obj/socket.o
+	rm -rf $(CONFIG)/obj/string.o
+	rm -rf $(CONFIG)/obj/test.o
+	rm -rf $(CONFIG)/obj/thread.o
+	rm -rf $(CONFIG)/obj/time.o
+	rm -rf $(CONFIG)/obj/vxworks.o
+	rm -rf $(CONFIG)/obj/wait.o
+	rm -rf $(CONFIG)/obj/wide.o
+	rm -rf $(CONFIG)/obj/win.o
+	rm -rf $(CONFIG)/obj/wince.o
+	rm -rf $(CONFIG)/obj/xml.o
+	rm -rf $(CONFIG)/obj/est.o
+	rm -rf $(CONFIG)/obj/matrixssl.o
+	rm -rf $(CONFIG)/obj/openssl.o
+	rm -rf $(CONFIG)/obj/ssl.o
 	rm -rf $(CONFIG)/obj/manager.o
 	rm -rf $(CONFIG)/obj/makerom.o
 	rm -rf $(CONFIG)/obj/charGen.o
@@ -125,321 +127,328 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
-$(CONFIG)/inc/mpr.h:  \
+$(CONFIG)/inc/bitos.h:  \
         $(CONFIG)/inc/bit.h
+	rm -fr $(CONFIG)/inc/bitos.h
+	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
+
+$(CONFIG)/inc/mpr.h:  \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/bitos.h
 	rm -fr $(CONFIG)/inc/mpr.h
 	cp -r src/mpr.h $(CONFIG)/inc/mpr.h
+
+$(CONFIG)/obj/async.o: \
+        src/async.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/async.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/async.c
+
+$(CONFIG)/obj/atomic.o: \
+        src/atomic.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/atomic.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/atomic.c
+
+$(CONFIG)/obj/buf.o: \
+        src/buf.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/buf.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/buf.c
+
+$(CONFIG)/obj/cache.o: \
+        src/cache.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/cache.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cache.c
+
+$(CONFIG)/obj/cmd.o: \
+        src/cmd.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/cmd.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cmd.c
+
+$(CONFIG)/obj/cond.o: \
+        src/cond.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/cond.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cond.c
+
+$(CONFIG)/obj/crypt.o: \
+        src/crypt.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/crypt.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/crypt.c
+
+$(CONFIG)/obj/disk.o: \
+        src/disk.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/disk.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/disk.c
+
+$(CONFIG)/obj/dispatcher.o: \
+        src/dispatcher.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/dispatcher.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dispatcher.c
+
+$(CONFIG)/obj/encode.o: \
+        src/encode.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/encode.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/encode.c
+
+$(CONFIG)/obj/epoll.o: \
+        src/epoll.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/epoll.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/epoll.c
+
+$(CONFIG)/obj/event.o: \
+        src/event.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/event.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/event.c
+
+$(CONFIG)/obj/file.o: \
+        src/file.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/file.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/file.c
+
+$(CONFIG)/obj/fs.o: \
+        src/fs.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/fs.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fs.c
+
+$(CONFIG)/obj/hash.o: \
+        src/hash.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/hash.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/hash.c
+
+$(CONFIG)/obj/jSON.o: \
+        src/jSON.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/jSON.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/jSON.c
+
+$(CONFIG)/obj/kqueue.o: \
+        src/kqueue.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/kqueue.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/kqueue.c
+
+$(CONFIG)/obj/list.o: \
+        src/list.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/list.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/list.c
+
+$(CONFIG)/obj/lock.o: \
+        src/lock.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/lock.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/lock.c
+
+$(CONFIG)/obj/log.o: \
+        src/log.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/log.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
+
+$(CONFIG)/obj/mem.o: \
+        src/mem.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/mem.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mem.c
+
+$(CONFIG)/obj/mime.o: \
+        src/mime.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/mime.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mime.c
+
+$(CONFIG)/obj/mixed.o: \
+        src/mixed.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/mixed.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mixed.c
+
+$(CONFIG)/obj/module.o: \
+        src/module.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/module.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/module.c
 
 $(CONFIG)/obj/mpr.o: \
         src/mpr.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mpr.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mpr.c
+	$(CC) -c -o $(CONFIG)/obj/mpr.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mpr.c
 
-$(CONFIG)/obj/mprAsync.o: \
-        src/mprAsync.c \
+$(CONFIG)/obj/path.o: \
+        src/path.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprAsync.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprAsync.c
+	$(CC) -c -o $(CONFIG)/obj/path.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/path.c
 
-$(CONFIG)/obj/mprAtomic.o: \
-        src/mprAtomic.c \
+$(CONFIG)/obj/poll.o: \
+        src/poll.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprAtomic.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprAtomic.c
+	$(CC) -c -o $(CONFIG)/obj/poll.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/poll.c
 
-$(CONFIG)/obj/mprBuf.o: \
-        src/mprBuf.c \
+$(CONFIG)/obj/posix.o: \
+        src/posix.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprBuf.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprBuf.c
+	$(CC) -c -o $(CONFIG)/obj/posix.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/posix.c
 
-$(CONFIG)/obj/mprCache.o: \
-        src/mprCache.c \
+$(CONFIG)/obj/printf.o: \
+        src/printf.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprCache.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprCache.c
+	$(CC) -c -o $(CONFIG)/obj/printf.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/printf.c
 
-$(CONFIG)/obj/mprCmd.o: \
-        src/mprCmd.c \
+$(CONFIG)/obj/rom.o: \
+        src/rom.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprCmd.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprCmd.c
+	$(CC) -c -o $(CONFIG)/obj/rom.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/rom.c
 
-$(CONFIG)/obj/mprCond.o: \
-        src/mprCond.c \
+$(CONFIG)/obj/select.o: \
+        src/select.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprCond.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprCond.c
+	$(CC) -c -o $(CONFIG)/obj/select.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/select.c
 
-$(CONFIG)/obj/mprCrypt.o: \
-        src/mprCrypt.c \
+$(CONFIG)/obj/signal.o: \
+        src/signal.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprCrypt.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprCrypt.c
+	$(CC) -c -o $(CONFIG)/obj/signal.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/signal.c
 
-$(CONFIG)/obj/mprDisk.o: \
-        src/mprDisk.c \
+$(CONFIG)/obj/socket.o: \
+        src/socket.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprDisk.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprDisk.c
+	$(CC) -c -o $(CONFIG)/obj/socket.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/socket.c
 
-$(CONFIG)/obj/mprDispatcher.o: \
-        src/mprDispatcher.c \
+$(CONFIG)/obj/string.o: \
+        src/string.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprDispatcher.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprDispatcher.c
+	$(CC) -c -o $(CONFIG)/obj/string.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/string.c
 
-$(CONFIG)/obj/mprEncode.o: \
-        src/mprEncode.c \
+$(CONFIG)/obj/test.o: \
+        src/test.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprEncode.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprEncode.c
+	$(CC) -c -o $(CONFIG)/obj/test.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/test.c
 
-$(CONFIG)/obj/mprEpoll.o: \
-        src/mprEpoll.c \
+$(CONFIG)/obj/thread.o: \
+        src/thread.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprEpoll.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprEpoll.c
+	$(CC) -c -o $(CONFIG)/obj/thread.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/thread.c
 
-$(CONFIG)/obj/mprEvent.o: \
-        src/mprEvent.c \
+$(CONFIG)/obj/time.o: \
+        src/time.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprEvent.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprEvent.c
+	$(CC) -c -o $(CONFIG)/obj/time.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/time.c
 
-$(CONFIG)/obj/mprFile.o: \
-        src/mprFile.c \
+$(CONFIG)/obj/vxworks.o: \
+        src/vxworks.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprFile.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprFile.c
+	$(CC) -c -o $(CONFIG)/obj/vxworks.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/vxworks.c
 
-$(CONFIG)/obj/mprFileSystem.o: \
-        src/mprFileSystem.c \
+$(CONFIG)/obj/wait.o: \
+        src/wait.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprFileSystem.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprFileSystem.c
+	$(CC) -c -o $(CONFIG)/obj/wait.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wait.c
 
-$(CONFIG)/obj/mprHash.o: \
-        src/mprHash.c \
+$(CONFIG)/obj/wide.o: \
+        src/wide.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprHash.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprHash.c
+	$(CC) -c -o $(CONFIG)/obj/wide.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wide.c
 
-$(CONFIG)/obj/mprJSON.o: \
-        src/mprJSON.c \
+$(CONFIG)/obj/win.o: \
+        src/win.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprJSON.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprJSON.c
+	$(CC) -c -o $(CONFIG)/obj/win.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/win.c
 
-$(CONFIG)/obj/mprKqueue.o: \
-        src/mprKqueue.c \
+$(CONFIG)/obj/wince.o: \
+        src/wince.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprKqueue.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprKqueue.c
+	$(CC) -c -o $(CONFIG)/obj/wince.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wince.c
 
-$(CONFIG)/obj/mprList.o: \
-        src/mprList.c \
+$(CONFIG)/obj/xml.o: \
+        src/xml.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprList.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprList.c
-
-$(CONFIG)/obj/mprLock.o: \
-        src/mprLock.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprLock.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprLock.c
-
-$(CONFIG)/obj/mprLog.o: \
-        src/mprLog.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprLog.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprLog.c
-
-$(CONFIG)/obj/mprMem.o: \
-        src/mprMem.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprMem.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprMem.c
-
-$(CONFIG)/obj/mprMime.o: \
-        src/mprMime.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprMime.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprMime.c
-
-$(CONFIG)/obj/mprMixed.o: \
-        src/mprMixed.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprMixed.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprMixed.c
-
-$(CONFIG)/obj/mprModule.o: \
-        src/mprModule.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprModule.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprModule.c
-
-$(CONFIG)/obj/mprPath.o: \
-        src/mprPath.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprPath.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprPath.c
-
-$(CONFIG)/obj/mprPoll.o: \
-        src/mprPoll.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprPoll.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprPoll.c
-
-$(CONFIG)/obj/mprPrintf.o: \
-        src/mprPrintf.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprPrintf.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprPrintf.c
-
-$(CONFIG)/obj/mprRomFile.o: \
-        src/mprRomFile.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprRomFile.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprRomFile.c
-
-$(CONFIG)/obj/mprSelect.o: \
-        src/mprSelect.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprSelect.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprSelect.c
-
-$(CONFIG)/obj/mprSignal.o: \
-        src/mprSignal.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprSignal.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprSignal.c
-
-$(CONFIG)/obj/mprSocket.o: \
-        src/mprSocket.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprSocket.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprSocket.c
-
-$(CONFIG)/obj/mprString.o: \
-        src/mprString.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprString.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprString.c
-
-$(CONFIG)/obj/mprTest.o: \
-        src/mprTest.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprTest.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprTest.c
-
-$(CONFIG)/obj/mprThread.o: \
-        src/mprThread.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprThread.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprThread.c
-
-$(CONFIG)/obj/mprTime.o: \
-        src/mprTime.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprTime.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprTime.c
-
-$(CONFIG)/obj/mprUnix.o: \
-        src/mprUnix.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprUnix.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprUnix.c
-
-$(CONFIG)/obj/mprVxworks.o: \
-        src/mprVxworks.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprVxworks.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprVxworks.c
-
-$(CONFIG)/obj/mprWait.o: \
-        src/mprWait.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprWait.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprWait.c
-
-$(CONFIG)/obj/mprWide.o: \
-        src/mprWide.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprWide.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprWide.c
-
-$(CONFIG)/obj/mprWin.o: \
-        src/mprWin.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprWin.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprWin.c
-
-$(CONFIG)/obj/mprWince.o: \
-        src/mprWince.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprWince.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprWince.c
-
-$(CONFIG)/obj/mprXml.o: \
-        src/mprXml.c \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprXml.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprXml.c
+	$(CC) -c -o $(CONFIG)/obj/xml.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/xml.c
 
 $(CONFIG)/bin/libmpr.dylib:  \
+        $(CONFIG)/inc/bitos.h \
         $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/obj/async.o \
+        $(CONFIG)/obj/atomic.o \
+        $(CONFIG)/obj/buf.o \
+        $(CONFIG)/obj/cache.o \
+        $(CONFIG)/obj/cmd.o \
+        $(CONFIG)/obj/cond.o \
+        $(CONFIG)/obj/crypt.o \
+        $(CONFIG)/obj/disk.o \
+        $(CONFIG)/obj/dispatcher.o \
+        $(CONFIG)/obj/encode.o \
+        $(CONFIG)/obj/epoll.o \
+        $(CONFIG)/obj/event.o \
+        $(CONFIG)/obj/file.o \
+        $(CONFIG)/obj/fs.o \
+        $(CONFIG)/obj/hash.o \
+        $(CONFIG)/obj/jSON.o \
+        $(CONFIG)/obj/kqueue.o \
+        $(CONFIG)/obj/list.o \
+        $(CONFIG)/obj/lock.o \
+        $(CONFIG)/obj/log.o \
+        $(CONFIG)/obj/mem.o \
+        $(CONFIG)/obj/mime.o \
+        $(CONFIG)/obj/mixed.o \
+        $(CONFIG)/obj/module.o \
         $(CONFIG)/obj/mpr.o \
-        $(CONFIG)/obj/mprAsync.o \
-        $(CONFIG)/obj/mprAtomic.o \
-        $(CONFIG)/obj/mprBuf.o \
-        $(CONFIG)/obj/mprCache.o \
-        $(CONFIG)/obj/mprCmd.o \
-        $(CONFIG)/obj/mprCond.o \
-        $(CONFIG)/obj/mprCrypt.o \
-        $(CONFIG)/obj/mprDisk.o \
-        $(CONFIG)/obj/mprDispatcher.o \
-        $(CONFIG)/obj/mprEncode.o \
-        $(CONFIG)/obj/mprEpoll.o \
-        $(CONFIG)/obj/mprEvent.o \
-        $(CONFIG)/obj/mprFile.o \
-        $(CONFIG)/obj/mprFileSystem.o \
-        $(CONFIG)/obj/mprHash.o \
-        $(CONFIG)/obj/mprJSON.o \
-        $(CONFIG)/obj/mprKqueue.o \
-        $(CONFIG)/obj/mprList.o \
-        $(CONFIG)/obj/mprLock.o \
-        $(CONFIG)/obj/mprLog.o \
-        $(CONFIG)/obj/mprMem.o \
-        $(CONFIG)/obj/mprMime.o \
-        $(CONFIG)/obj/mprMixed.o \
-        $(CONFIG)/obj/mprModule.o \
-        $(CONFIG)/obj/mprPath.o \
-        $(CONFIG)/obj/mprPoll.o \
-        $(CONFIG)/obj/mprPrintf.o \
-        $(CONFIG)/obj/mprRomFile.o \
-        $(CONFIG)/obj/mprSelect.o \
-        $(CONFIG)/obj/mprSignal.o \
-        $(CONFIG)/obj/mprSocket.o \
-        $(CONFIG)/obj/mprString.o \
-        $(CONFIG)/obj/mprTest.o \
-        $(CONFIG)/obj/mprThread.o \
-        $(CONFIG)/obj/mprTime.o \
-        $(CONFIG)/obj/mprUnix.o \
-        $(CONFIG)/obj/mprVxworks.o \
-        $(CONFIG)/obj/mprWait.o \
-        $(CONFIG)/obj/mprWide.o \
-        $(CONFIG)/obj/mprWin.o \
-        $(CONFIG)/obj/mprWince.o \
-        $(CONFIG)/obj/mprXml.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.2.0 -current_version 4.2.0 -compatibility_version 4.2.0 -current_version 4.2.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/mpr.o $(CONFIG)/obj/mprAsync.o $(CONFIG)/obj/mprAtomic.o $(CONFIG)/obj/mprBuf.o $(CONFIG)/obj/mprCache.o $(CONFIG)/obj/mprCmd.o $(CONFIG)/obj/mprCond.o $(CONFIG)/obj/mprCrypt.o $(CONFIG)/obj/mprDisk.o $(CONFIG)/obj/mprDispatcher.o $(CONFIG)/obj/mprEncode.o $(CONFIG)/obj/mprEpoll.o $(CONFIG)/obj/mprEvent.o $(CONFIG)/obj/mprFile.o $(CONFIG)/obj/mprFileSystem.o $(CONFIG)/obj/mprHash.o $(CONFIG)/obj/mprJSON.o $(CONFIG)/obj/mprKqueue.o $(CONFIG)/obj/mprList.o $(CONFIG)/obj/mprLock.o $(CONFIG)/obj/mprLog.o $(CONFIG)/obj/mprMem.o $(CONFIG)/obj/mprMime.o $(CONFIG)/obj/mprMixed.o $(CONFIG)/obj/mprModule.o $(CONFIG)/obj/mprPath.o $(CONFIG)/obj/mprPoll.o $(CONFIG)/obj/mprPrintf.o $(CONFIG)/obj/mprRomFile.o $(CONFIG)/obj/mprSelect.o $(CONFIG)/obj/mprSignal.o $(CONFIG)/obj/mprSocket.o $(CONFIG)/obj/mprString.o $(CONFIG)/obj/mprTest.o $(CONFIG)/obj/mprThread.o $(CONFIG)/obj/mprTime.o $(CONFIG)/obj/mprUnix.o $(CONFIG)/obj/mprVxworks.o $(CONFIG)/obj/mprWait.o $(CONFIG)/obj/mprWide.o $(CONFIG)/obj/mprWin.o $(CONFIG)/obj/mprWince.o $(CONFIG)/obj/mprXml.o $(LIBS)
+        $(CONFIG)/obj/path.o \
+        $(CONFIG)/obj/poll.o \
+        $(CONFIG)/obj/posix.o \
+        $(CONFIG)/obj/printf.o \
+        $(CONFIG)/obj/rom.o \
+        $(CONFIG)/obj/select.o \
+        $(CONFIG)/obj/signal.o \
+        $(CONFIG)/obj/socket.o \
+        $(CONFIG)/obj/string.o \
+        $(CONFIG)/obj/test.o \
+        $(CONFIG)/obj/thread.o \
+        $(CONFIG)/obj/time.o \
+        $(CONFIG)/obj/vxworks.o \
+        $(CONFIG)/obj/wait.o \
+        $(CONFIG)/obj/wide.o \
+        $(CONFIG)/obj/win.o \
+        $(CONFIG)/obj/wince.o \
+        $(CONFIG)/obj/xml.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/jSON.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS)
 
 $(CONFIG)/obj/benchMpr.o: \
         test/benchMpr.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/benchMpr.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/benchMpr.c
+	$(CC) -c -o $(CONFIG)/obj/benchMpr.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/benchMpr.c
 
 $(CONFIG)/bin/benchMpr:  \
         $(CONFIG)/bin/libmpr.dylib \
@@ -449,138 +458,152 @@ $(CONFIG)/bin/benchMpr:  \
 $(CONFIG)/obj/runProgram.o: \
         test/runProgram.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/runProgram.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/runProgram.c
+	$(CC) -c -o $(CONFIG)/obj/runProgram.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/runProgram.c
 
 $(CONFIG)/bin/runProgram:  \
         $(CONFIG)/obj/runProgram.o
 	$(CC) -o $(CONFIG)/bin/runProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS)
 
-$(CONFIG)/obj/mprMatrixssl.o: \
-        src/mprMatrixssl.c \
+$(CONFIG)/inc/est.h:  \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprMatrixssl.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprMatrixssl.c
+        $(CONFIG)/inc/bitos.h
+	rm -fr $(CONFIG)/inc/est.h
+	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
 
-$(CONFIG)/obj/mprOpenssl.o: \
-        src/mprOpenssl.c \
+$(CONFIG)/obj/est.o: \
+        src/ssl/est.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprOpenssl.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprOpenssl.c
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/est.h
+	$(CC) -c -o $(CONFIG)/obj/est.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/est.c
 
-$(CONFIG)/obj/mprSsl.o: \
-        src/mprSsl.c \
+$(CONFIG)/obj/matrixssl.o: \
+        src/ssl/matrixssl.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mprSsl.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mprSsl.c
+	$(CC) -c -o $(CONFIG)/obj/matrixssl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/matrixssl.c
+
+$(CONFIG)/obj/openssl.o: \
+        src/ssl/openssl.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/openssl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/openssl.c
+
+$(CONFIG)/obj/ssl.o: \
+        src/ssl/ssl.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/ssl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/ssl.c
 
 $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/bin/libmpr.dylib \
-        $(CONFIG)/obj/mprMatrixssl.o \
-        $(CONFIG)/obj/mprOpenssl.o \
-        $(CONFIG)/obj/mprSsl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.2.0 -current_version 4.2.0 -compatibility_version 4.2.0 -current_version 4.2.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/mprMatrixssl.o $(CONFIG)/obj/mprOpenssl.o $(CONFIG)/obj/mprSsl.o -lmpr $(LIBS)
+        $(CONFIG)/obj/est.o \
+        $(CONFIG)/obj/matrixssl.o \
+        $(CONFIG)/obj/openssl.o \
+        $(CONFIG)/obj/ssl.o
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/testArgv.o: \
         test/testArgv.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testArgv.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testArgv.c
+	$(CC) -c -o $(CONFIG)/obj/testArgv.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testArgv.c
 
 $(CONFIG)/obj/testBuf.o: \
         test/testBuf.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testBuf.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testBuf.c
+	$(CC) -c -o $(CONFIG)/obj/testBuf.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testBuf.c
 
 $(CONFIG)/obj/testCmd.o: \
         test/testCmd.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testCmd.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCmd.c
+	$(CC) -c -o $(CONFIG)/obj/testCmd.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCmd.c
 
 $(CONFIG)/obj/testCond.o: \
         test/testCond.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testCond.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCond.c
+	$(CC) -c -o $(CONFIG)/obj/testCond.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCond.c
 
 $(CONFIG)/obj/testEvent.o: \
         test/testEvent.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testEvent.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testEvent.c
+	$(CC) -c -o $(CONFIG)/obj/testEvent.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testEvent.c
 
 $(CONFIG)/obj/testFile.o: \
         test/testFile.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testFile.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testFile.c
+	$(CC) -c -o $(CONFIG)/obj/testFile.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testFile.c
 
 $(CONFIG)/obj/testHash.o: \
         test/testHash.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testHash.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHash.c
+	$(CC) -c -o $(CONFIG)/obj/testHash.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHash.c
 
 $(CONFIG)/obj/testList.o: \
         test/testList.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testList.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testList.c
+	$(CC) -c -o $(CONFIG)/obj/testList.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testList.c
 
 $(CONFIG)/obj/testLock.o: \
         test/testLock.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testLock.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testLock.c
+	$(CC) -c -o $(CONFIG)/obj/testLock.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testLock.c
 
 $(CONFIG)/obj/testMem.o: \
         test/testMem.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testMem.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMem.c
+	$(CC) -c -o $(CONFIG)/obj/testMem.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMem.c
 
 $(CONFIG)/obj/testMpr.o: \
         test/testMpr.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testMpr.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMpr.c
+	$(CC) -c -o $(CONFIG)/obj/testMpr.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMpr.c
 
 $(CONFIG)/obj/testPath.o: \
         test/testPath.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testPath.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testPath.c
+	$(CC) -c -o $(CONFIG)/obj/testPath.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testPath.c
 
 $(CONFIG)/obj/testSocket.o: \
         test/testSocket.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testSocket.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSocket.c
+	$(CC) -c -o $(CONFIG)/obj/testSocket.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSocket.c
 
 $(CONFIG)/obj/testSprintf.o: \
         test/testSprintf.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testSprintf.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSprintf.c
+	$(CC) -c -o $(CONFIG)/obj/testSprintf.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSprintf.c
 
 $(CONFIG)/obj/testThread.o: \
         test/testThread.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testThread.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testThread.c
+	$(CC) -c -o $(CONFIG)/obj/testThread.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testThread.c
 
 $(CONFIG)/obj/testTime.o: \
         test/testTime.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testTime.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testTime.c
+	$(CC) -c -o $(CONFIG)/obj/testTime.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testTime.c
 
 $(CONFIG)/obj/testUnicode.o: \
         test/testUnicode.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testUnicode.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testUnicode.c
+	$(CC) -c -o $(CONFIG)/obj/testUnicode.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testUnicode.c
 
 $(CONFIG)/bin/testMpr:  \
         $(CONFIG)/bin/libmpr.dylib \
@@ -609,7 +632,7 @@ $(CONFIG)/obj/manager.o: \
         src/manager.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/manager.c
 
 $(CONFIG)/bin/manager:  \
         $(CONFIG)/bin/libmpr.dylib \
@@ -620,7 +643,7 @@ $(CONFIG)/obj/makerom.o: \
         src/utils/makerom.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/makerom.c
 
 $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.dylib \
@@ -631,7 +654,7 @@ $(CONFIG)/obj/charGen.o: \
         src/utils/charGen.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/charGen.o -arch x86_64 -mtune=generic $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/charGen.c
+	$(CC) -c -o $(CONFIG)/obj/charGen.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/charGen.c
 
 $(CONFIG)/bin/chargen:  \
         $(CONFIG)/bin/libmpr.dylib \
