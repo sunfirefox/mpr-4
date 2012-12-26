@@ -305,7 +305,7 @@ PUBLIC MprTime mprGetTime()
     High resolution timer
  */
 #if MPR_HIGH_RES_TIMER
-    #if (LINUX || MACOSX) && (BIT_CPU_ARCH == MPR_CPU_X86 || BIT_CPU_ARCH == MPR_CPU_X64)
+    #if (LINUX || MACOSX) && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
         uint64 mprGetHiResTime() {
             uint64  now;
             __asm__ __volatile__ ("rdtsc" : "=A" (now));
