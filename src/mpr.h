@@ -2159,6 +2159,7 @@ PUBLIC uint     whashlower(wchar *name, ssize len);
 PUBLIC wchar    *wjoin(wchar *sep, ...);
 PUBLIC wchar    *wjoinv(wchar *sep, va_list args);
 PUBLIC ssize    wlen(wchar *s);
+#endif
 
 PUBLIC wchar    *wlower(wchar *s);
 PUBLIC int      wncaselesscmp(wchar *s1, wchar *s2, ssize len);
@@ -2833,7 +2834,6 @@ PUBLIC ssize mprPutStringToWideBuf(MprBuf *buf, cchar *str);
     @stability prototype
  */
 PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
-#endif
 
 #else /* BIT_CHAR_LEN == 1 */
 
@@ -2842,6 +2842,7 @@ PUBLIC ssize mprPutFmtToWideBuf(MprBuf *buf, cchar *fmt, ...);
 #define mprPutStringToWideBuf   mprPutStringToBuf
 #define mprPutFmtToWideBuf      mprPutFmtToBuf
 #endif
+#endif /* KEEP */
 
 /*
     Macros for speed
@@ -4055,6 +4056,15 @@ typedef struct MprFileSystem {
 #endif
 } MprFileSystem;
 
+/**
+    Create and initialize the FileSystem subsystem. 
+    @description This is an internal routine called by the MPR during initialization.
+    @param path Path name to the root of the file system.
+    @return Returns a new file system object
+    @ingroup MprFileSystem
+    @stability Internal
+ */
+PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path);
 
 #if BIT_ROM
 /**
@@ -4075,23 +4085,7 @@ typedef struct MprRomFileSystem {
     MprRomInode     *romInodes;
     int             rootLen;
 } MprRomFileSystem;
-#else /* !BIT_ROM */
 
-typedef MprFileSystem MprDiskFileSystem;
-#endif
-
-/**
-    Create and initialize the FileSystem subsystem. 
-    @description This is an internal routine called by the MPR during initialization.
-    @param path Path name to the root of the file system.
-    @return Returns a new file system object
-    @ingroup MprFileSystem
-    @stability Internal
- */
-PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path);
-
-
-#if BIT_ROM
 /**
     Create and initialize the ROM FileSystem. 
     @description This is an internal routine called by the MPR during initialization.
@@ -4111,8 +4105,9 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path);
     @stability Stable
  */
 PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList);
-#else
+#else /* BIT_ROM */
 
+typedef MprFileSystem MprDiskFileSystem;
 /**
     Create and initialize the disk FileSystem. 
     @description This is an internal routine called by the MPR during initialization.
@@ -4122,7 +4117,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList);
     @stability Internal
  */
 PUBLIC MprDiskFileSystem *mprCreateDiskFileSystem(cchar *path);
-#endif
+#endif /* !BIT_ROM */
 
 /**
     Create and initialize the disk FileSystem. 
@@ -8219,15 +8214,15 @@ typedef struct Mpr {
 PUBLIC void mprNop(void *ptr);
 
 #if DOXYGEN || BIT_WIN_LIKE
-/**
-    Return the MPR control instance.
-    @description Return the MPR singleton control object. 
-    @return Returns the MPR control object.
-    @ingroup Mpr
-    @stability Stable.
- */
-PUBLIC Mpr *mprGetMpr();
-#define MPR mprGetMpr()
+    /**
+        Return the MPR control instance.
+        @description Return the MPR singleton control object. 
+        @return Returns the MPR control object.
+        @ingroup Mpr
+        @stability Stable.
+     */
+    PUBLIC Mpr *mprGetMpr();
+    #define MPR mprGetMpr()
 #else
     #define mprGetMpr() MPR
     extern Mpr *MPR;
