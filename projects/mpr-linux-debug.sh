@@ -3,18 +3,18 @@
 #
 
 ARCH="x86"
-ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/'`"
+ARCH="`uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/'`"
 OS="linux"
 PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
-CC="gcc"
+CC="/usr/bin/gcc"
 LD="/usr/bin/ld"
-CFLAGS="-Wall -fPIC -g -Wno-unused-result"
+CFLAGS="-Wall -fPIC -g -Wshorten-64-to-32"
 DFLAGS="-D_REENTRANT -DPIC -DBIT_DEBUG"
 IFLAGS="-I${CONFIG}/inc"
 LDFLAGS="-Wl,--enable-new-dtags -Wl,-rpath,\$ORIGIN/ -Wl,-rpath,\$ORIGIN/../bin -rdynamic -g"
 LIBPATHS="-L${CONFIG}/bin"
-LIBS="-lpthread -lm -lrt -ldl"
+LIBS="-lpthread -lm -ldl"
 
 [ ! -x ${CONFIG}/inc ] && mkdir -p ${CONFIG}/inc ${CONFIG}/obj ${CONFIG}/lib ${CONFIG}/bin
 
@@ -23,96 +23,99 @@ if ! diff ${CONFIG}/inc/bit.h projects/mpr-${OS}-${PROFILE}-bit.h >/dev/null ; t
 	cp projects/mpr-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi
 
+rm -rf ${CONFIG}/inc/bitos.h
+cp -r src/bitos.h ${CONFIG}/inc/bitos.h
+
 rm -rf ${CONFIG}/inc/mpr.h
 cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
+${CC} -c -o ${CONFIG}/obj/async.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/async.c
+
+${CC} -c -o ${CONFIG}/obj/atomic.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/atomic.c
+
+${CC} -c -o ${CONFIG}/obj/buf.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/buf.c
+
+${CC} -c -o ${CONFIG}/obj/cache.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/cache.c
+
+${CC} -c -o ${CONFIG}/obj/cmd.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/cmd.c
+
+${CC} -c -o ${CONFIG}/obj/cond.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/cond.c
+
+${CC} -c -o ${CONFIG}/obj/crypt.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/crypt.c
+
+${CC} -c -o ${CONFIG}/obj/disk.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/disk.c
+
+${CC} -c -o ${CONFIG}/obj/dispatcher.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/dispatcher.c
+
+${CC} -c -o ${CONFIG}/obj/encode.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/encode.c
+
+${CC} -c -o ${CONFIG}/obj/epoll.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/epoll.c
+
+${CC} -c -o ${CONFIG}/obj/event.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/event.c
+
+${CC} -c -o ${CONFIG}/obj/file.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/file.c
+
+${CC} -c -o ${CONFIG}/obj/fs.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/fs.c
+
+${CC} -c -o ${CONFIG}/obj/hash.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/hash.c
+
+${CC} -c -o ${CONFIG}/obj/jSON.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/jSON.c
+
+${CC} -c -o ${CONFIG}/obj/kqueue.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/kqueue.c
+
+${CC} -c -o ${CONFIG}/obj/list.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/list.c
+
+${CC} -c -o ${CONFIG}/obj/lock.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/lock.c
+
+${CC} -c -o ${CONFIG}/obj/log.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/log.c
+
+${CC} -c -o ${CONFIG}/obj/mem.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mem.c
+
+${CC} -c -o ${CONFIG}/obj/mime.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mime.c
+
+${CC} -c -o ${CONFIG}/obj/mixed.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mixed.c
+
+${CC} -c -o ${CONFIG}/obj/module.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/module.c
+
 ${CC} -c -o ${CONFIG}/obj/mpr.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mpr.c
 
-${CC} -c -o ${CONFIG}/obj/mprAsync.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprAsync.c
+${CC} -c -o ${CONFIG}/obj/path.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/path.c
 
-${CC} -c -o ${CONFIG}/obj/mprAtomic.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprAtomic.c
+${CC} -c -o ${CONFIG}/obj/poll.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/poll.c
 
-${CC} -c -o ${CONFIG}/obj/mprBuf.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprBuf.c
+${CC} -c -o ${CONFIG}/obj/posix.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/posix.c
 
-${CC} -c -o ${CONFIG}/obj/mprCache.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprCache.c
+${CC} -c -o ${CONFIG}/obj/printf.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/printf.c
 
-${CC} -c -o ${CONFIG}/obj/mprCmd.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprCmd.c
+${CC} -c -o ${CONFIG}/obj/rom.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/rom.c
 
-${CC} -c -o ${CONFIG}/obj/mprCond.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprCond.c
+${CC} -c -o ${CONFIG}/obj/select.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/select.c
 
-${CC} -c -o ${CONFIG}/obj/mprCrypt.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprCrypt.c
+${CC} -c -o ${CONFIG}/obj/signal.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/signal.c
 
-${CC} -c -o ${CONFIG}/obj/mprDisk.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprDisk.c
+${CC} -c -o ${CONFIG}/obj/socket.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/socket.c
 
-${CC} -c -o ${CONFIG}/obj/mprDispatcher.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprDispatcher.c
+${CC} -c -o ${CONFIG}/obj/string.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/string.c
 
-${CC} -c -o ${CONFIG}/obj/mprEncode.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprEncode.c
+${CC} -c -o ${CONFIG}/obj/test.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/test.c
 
-${CC} -c -o ${CONFIG}/obj/mprEpoll.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprEpoll.c
+${CC} -c -o ${CONFIG}/obj/thread.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/thread.c
 
-${CC} -c -o ${CONFIG}/obj/mprEvent.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprEvent.c
+${CC} -c -o ${CONFIG}/obj/time.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/time.c
 
-${CC} -c -o ${CONFIG}/obj/mprFile.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprFile.c
+${CC} -c -o ${CONFIG}/obj/vxworks.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/vxworks.c
 
-${CC} -c -o ${CONFIG}/obj/mprFileSystem.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprFileSystem.c
+${CC} -c -o ${CONFIG}/obj/wait.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/wait.c
 
-${CC} -c -o ${CONFIG}/obj/mprHash.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprHash.c
+${CC} -c -o ${CONFIG}/obj/wide.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/wide.c
 
-${CC} -c -o ${CONFIG}/obj/mprJSON.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprJSON.c
+${CC} -c -o ${CONFIG}/obj/win.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/win.c
 
-${CC} -c -o ${CONFIG}/obj/mprKqueue.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprKqueue.c
+${CC} -c -o ${CONFIG}/obj/wince.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/wince.c
 
-${CC} -c -o ${CONFIG}/obj/mprList.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprList.c
+${CC} -c -o ${CONFIG}/obj/xml.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/xml.c
 
-${CC} -c -o ${CONFIG}/obj/mprLock.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprLock.c
-
-${CC} -c -o ${CONFIG}/obj/mprLog.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprLog.c
-
-${CC} -c -o ${CONFIG}/obj/mprMem.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprMem.c
-
-${CC} -c -o ${CONFIG}/obj/mprMime.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprMime.c
-
-${CC} -c -o ${CONFIG}/obj/mprMixed.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprMixed.c
-
-${CC} -c -o ${CONFIG}/obj/mprModule.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprModule.c
-
-${CC} -c -o ${CONFIG}/obj/mprPath.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprPath.c
-
-${CC} -c -o ${CONFIG}/obj/mprPoll.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprPoll.c
-
-${CC} -c -o ${CONFIG}/obj/mprPrintf.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprPrintf.c
-
-${CC} -c -o ${CONFIG}/obj/mprRomFile.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprRomFile.c
-
-${CC} -c -o ${CONFIG}/obj/mprSelect.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprSelect.c
-
-${CC} -c -o ${CONFIG}/obj/mprSignal.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprSignal.c
-
-${CC} -c -o ${CONFIG}/obj/mprSocket.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprSocket.c
-
-${CC} -c -o ${CONFIG}/obj/mprString.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprString.c
-
-${CC} -c -o ${CONFIG}/obj/mprTest.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprTest.c
-
-${CC} -c -o ${CONFIG}/obj/mprThread.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprThread.c
-
-${CC} -c -o ${CONFIG}/obj/mprTime.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprTime.c
-
-${CC} -c -o ${CONFIG}/obj/mprUnix.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprUnix.c
-
-${CC} -c -o ${CONFIG}/obj/mprVxworks.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprVxworks.c
-
-${CC} -c -o ${CONFIG}/obj/mprWait.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprWait.c
-
-${CC} -c -o ${CONFIG}/obj/mprWide.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprWide.c
-
-${CC} -c -o ${CONFIG}/obj/mprWin.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprWin.c
-
-${CC} -c -o ${CONFIG}/obj/mprWince.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprWince.c
-
-${CC} -c -o ${CONFIG}/obj/mprXml.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprXml.c
-
-${CC} -shared -o ${CONFIG}/bin/libmpr.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mpr.o ${CONFIG}/obj/mprAsync.o ${CONFIG}/obj/mprAtomic.o ${CONFIG}/obj/mprBuf.o ${CONFIG}/obj/mprCache.o ${CONFIG}/obj/mprCmd.o ${CONFIG}/obj/mprCond.o ${CONFIG}/obj/mprCrypt.o ${CONFIG}/obj/mprDisk.o ${CONFIG}/obj/mprDispatcher.o ${CONFIG}/obj/mprEncode.o ${CONFIG}/obj/mprEpoll.o ${CONFIG}/obj/mprEvent.o ${CONFIG}/obj/mprFile.o ${CONFIG}/obj/mprFileSystem.o ${CONFIG}/obj/mprHash.o ${CONFIG}/obj/mprJSON.o ${CONFIG}/obj/mprKqueue.o ${CONFIG}/obj/mprList.o ${CONFIG}/obj/mprLock.o ${CONFIG}/obj/mprLog.o ${CONFIG}/obj/mprMem.o ${CONFIG}/obj/mprMime.o ${CONFIG}/obj/mprMixed.o ${CONFIG}/obj/mprModule.o ${CONFIG}/obj/mprPath.o ${CONFIG}/obj/mprPoll.o ${CONFIG}/obj/mprPrintf.o ${CONFIG}/obj/mprRomFile.o ${CONFIG}/obj/mprSelect.o ${CONFIG}/obj/mprSignal.o ${CONFIG}/obj/mprSocket.o ${CONFIG}/obj/mprString.o ${CONFIG}/obj/mprTest.o ${CONFIG}/obj/mprThread.o ${CONFIG}/obj/mprTime.o ${CONFIG}/obj/mprUnix.o ${CONFIG}/obj/mprVxworks.o ${CONFIG}/obj/mprWait.o ${CONFIG}/obj/mprWide.o ${CONFIG}/obj/mprWin.o ${CONFIG}/obj/mprWince.o ${CONFIG}/obj/mprXml.o ${LIBS}
+${CC} -shared -o ${CONFIG}/bin/libmpr.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/async.o ${CONFIG}/obj/atomic.o ${CONFIG}/obj/buf.o ${CONFIG}/obj/cache.o ${CONFIG}/obj/cmd.o ${CONFIG}/obj/cond.o ${CONFIG}/obj/crypt.o ${CONFIG}/obj/disk.o ${CONFIG}/obj/dispatcher.o ${CONFIG}/obj/encode.o ${CONFIG}/obj/epoll.o ${CONFIG}/obj/event.o ${CONFIG}/obj/file.o ${CONFIG}/obj/fs.o ${CONFIG}/obj/hash.o ${CONFIG}/obj/jSON.o ${CONFIG}/obj/kqueue.o ${CONFIG}/obj/list.o ${CONFIG}/obj/lock.o ${CONFIG}/obj/log.o ${CONFIG}/obj/mem.o ${CONFIG}/obj/mime.o ${CONFIG}/obj/mixed.o ${CONFIG}/obj/module.o ${CONFIG}/obj/mpr.o ${CONFIG}/obj/path.o ${CONFIG}/obj/poll.o ${CONFIG}/obj/posix.o ${CONFIG}/obj/printf.o ${CONFIG}/obj/rom.o ${CONFIG}/obj/select.o ${CONFIG}/obj/signal.o ${CONFIG}/obj/socket.o ${CONFIG}/obj/string.o ${CONFIG}/obj/test.o ${CONFIG}/obj/thread.o ${CONFIG}/obj/time.o ${CONFIG}/obj/vxworks.o ${CONFIG}/obj/wait.o ${CONFIG}/obj/wide.o ${CONFIG}/obj/win.o ${CONFIG}/obj/wince.o ${CONFIG}/obj/xml.o ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/benchMpr.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/benchMpr.c
 
@@ -122,13 +125,18 @@ ${CC} -c -o ${CONFIG}/obj/runProgram.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CO
 
 ${CC} -o ${CONFIG}/bin/runProgram ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/runProgram.o ${LIBS} ${LDFLAGS}
 
-${CC} -c -o ${CONFIG}/obj/mprMatrixssl.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprMatrixssl.c
+rm -rf ${CONFIG}/inc/est.h
+cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
-${CC} -c -o ${CONFIG}/obj/mprOpenssl.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprOpenssl.c
+${CC} -c -o ${CONFIG}/obj/est.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/est.c
 
-${CC} -c -o ${CONFIG}/obj/mprSsl.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/mprSsl.c
+${CC} -c -o ${CONFIG}/obj/matrixssl.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/matrixssl.c
 
-${CC} -shared -o ${CONFIG}/bin/libmprssl.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/mprMatrixssl.o ${CONFIG}/obj/mprOpenssl.o ${CONFIG}/obj/mprSsl.o -lmpr ${LIBS}
+${CC} -c -o ${CONFIG}/obj/openssl.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/openssl.c
+
+${CC} -c -o ${CONFIG}/obj/ssl.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/ssl.c
+
+${CC} -shared -o ${CONFIG}/bin/libmprssl.so ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/est.o ${CONFIG}/obj/matrixssl.o ${CONFIG}/obj/openssl.o ${CONFIG}/obj/ssl.o -lmpr ${LIBS}
 
 ${CC} -c -o ${CONFIG}/obj/testArgv.o -mtune=generic ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/testArgv.c
 

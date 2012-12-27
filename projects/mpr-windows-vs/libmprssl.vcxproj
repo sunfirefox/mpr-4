@@ -100,9 +100,10 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <ClCompile Include="..\..\src\mprMatrixssl.c" />
-    <ClCompile Include="..\..\src\mprOpenssl.c" />
-    <ClCompile Include="..\..\src\mprSsl.c" />
+    <ClCompile Include="..\..\src\ssl\est.c" />
+    <ClCompile Include="..\..\src\ssl\matrixssl.c" />
+    <ClCompile Include="..\..\src\ssl\openssl.c" />
+    <ClCompile Include="..\..\src\ssl\ssl.c" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
