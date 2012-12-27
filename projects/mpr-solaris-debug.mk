@@ -9,7 +9,7 @@ LD       ?= /usr/bin/ld
 PROFILE  ?= debug
 CONFIG   ?= $(OS)-$(ARCH)-$(PROFILE)
 
-CFLAGS   += -fPIC   -w
+CFLAGS   += -fPIC  -w
 DFLAGS   += -D_REENTRANT -DPIC 
 IFLAGS   += -I$(CONFIG)/inc
 LDFLAGS  += '-g'
