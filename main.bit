@@ -27,7 +27,7 @@ Bit.load({
         manager: 'manager',
         sync: ['bitos', 'est'],
         '+required': [], 
-        '+optional': [ 'doxygen', 'man', 'man2html', 'md5', 'openssl', 'ssl', 'utest' ],
+        '+optional': [ 'doxygen', 'dsi', 'man', 'man2html', 'md5', 'openssl', 'ssl', 'utest' ],
         'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'ssl', 'matrixssl', 'openssl'],
     },
 
