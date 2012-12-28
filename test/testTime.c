@@ -68,8 +68,8 @@ static void testParseTime(MprTestGroup *gp)
     assert(mprParseTime(&when, "12:00", MPR_LOCAL_TIMEZONE, NULL) == 0);
     assert(mprParseTime(&when, "12:30 pm", MPR_LOCAL_TIMEZONE, NULL) == 0);
     assert(mprParseTime(&when, "1/31/99", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "Jan 17 2012", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "March 17 2012", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    assert(mprParseTime(&when, "Jan 17 2013", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    assert(mprParseTime(&when, "March 17 2013", MPR_LOCAL_TIMEZONE, NULL) == 0);
     assert(when != 0);
 }
 
@@ -88,7 +88,7 @@ MprTestDef testTime = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
