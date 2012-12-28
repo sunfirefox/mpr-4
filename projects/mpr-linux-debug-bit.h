@@ -6,23 +6,14 @@
  */
 
 /* Settings */
-#ifndef BIT_ASSERT
-    #define BIT_ASSERT 1
-#endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
-#endif
-#ifndef BIT_CIPHERS
-    #define BIT_CIPHERS "HIGH:MEDIUM"
 #endif
 #ifndef BIT_COMPANY
     #define BIT_COMPANY "Embedthis"
 #endif
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
-#endif
-#ifndef BIT_FLOAT
-    #define BIT_FLOAT 1
 #endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 0
@@ -57,11 +48,12 @@
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
-#ifndef BIT_MANAGER
-    #define BIT_MANAGER "manager"
+/* Settings */
+#ifndef BIT_MPR_MANAGER
+    #define BIT_MPR_MANAGER "manager"
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "doxygen,man,man2html,md5,openssl,ssl,utest"
+    #define BIT_OPTIONAL "doxygen,dsi,ejs,man,man2html,md5,openssl,ssl,utest"
 #endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "mpr"
@@ -169,6 +161,9 @@
 #ifndef BIT_PACK_DSI
     #define BIT_PACK_DSI 0
 #endif
+#ifndef BIT_PACK_EJS
+    #define BIT_PACK_EJS 1
+#endif
 #ifndef BIT_PACK_EST
     #define BIT_PACK_EST 0
 #endif
@@ -204,6 +199,9 @@
 #endif
 #ifndef BIT_PACK_COMPILER_PATH
     #define BIT_PACK_COMPILER_PATH "/usr/bin/gcc"
+#endif
+#ifndef BIT_PACK_EJS_PATH
+    #define BIT_PACK_EJS_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/ejs"
 #endif
 #ifndef BIT_PACK_LIB_PATH
     #define BIT_PACK_LIB_PATH "/usr/bin/ar"
