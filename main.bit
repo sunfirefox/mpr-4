@@ -23,8 +23,8 @@ Bit.load({
         buildNumber: '0',
         sync: ['bitos', 'est'],
         '+required': [], 
-        '+optional': [ 'doxygen', 'dsi', 'ejs', 'man', 'man2html', 'md5', 'openssl', 'ssl', 'utest' ],
-        'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'ssl', 'matrixssl', 'openssl'],
+        '+optional': [ 'doxygen', 'dsi', 'ejs', 'est', 'man', 'man2html', 'md5', 'utest' ],
+        'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'matrixssl', 'openssl'],
         mpr: {
             manager: 'manager',
         },
@@ -45,7 +45,7 @@ Bit.load({
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'est', 'openssl', 'matrixssl' ],
+            depends: [ 'libmpr', 'est', 'openssl', 'matrixssl', 'mocana' ],
             sources: [ 'src/ssl/*.c' ],
         },
 
@@ -94,8 +94,8 @@ Bit.load({
                     header: '#include \"mpr.h\"',
                     title: bit.settings.title + ' Library Source',
                 })
-                /* Must put matrix first */
-                install(['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/ssl.c'], 
+                /* Must put matrix first - because they have screwed headers */
+                install(['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/mocana.c', 'src/ssl/ssl.c'], 
                     d.join('src/deps/mpr/mprSsl.c'), {
                     cat: true,
                     title: bit.settings.title + ' SSL Source',
@@ -103,49 +103,12 @@ Bit.load({
                 package(bit.dir.pkg, ['combo', 'flat'])
             ",
         },
-
-        gendh: {
-            action: "
-                let cmd = run('openssl dhparam -out dh512.pem -C -2 512', {})
-                Path('dh.new').write(cmd.response)
-                cmd = run('openssl dhparam -out dh1024.pem -C -2 1024', {})
-                Path('dh.new').append(cmd.response)
-            ",
-        },
     },
 
     packs: {
-        matrixssl: {},
         est: {},
-    },
-
-    scripts: {
-        mustRun: true,
-        onload: "
-            let settings
-            if (bit.settings.tune == 'speed') {
-                blend(bit.customSettings, {
-                    limitString: 4096,
-                    limitPath: 2048,
-                    limitUrl: 4096,
-                    limitShortPath: 1024,
-                    limitBuffer: 8192,
-                    limitLogMsg: 16384,
-                    limitRegion: 1048576,
-                })
-
-            } else {
-                /* Tune for size */
-                blend(bit.customSettings, {
-                    limitString: 1024,
-                    limitPath: 512,
-                    limitUrl: 512,
-                    limitShortPath: 256,
-                    limitBuffer: 4096,
-                    limitLogMsg: 8192,
-                    limitRegion: 131072,
-                })
-            }
-        ",
+        matrixssl: {},
+        openssl: {},
+        mocana: {},
     },
 })

@@ -53,7 +53,7 @@ typedef struct CRYPTO_dynlock_value DynLock;
 
 static void     closeOss(MprSocket *sp, bool gracefully);
 static int      configureCertificateFiles(MprSsl *ssl, SSL_CTX *ctx, char *key, char *cert);
-static OpenConfig *createOpenSslConfig(MprSsl *ssl, int server);
+static OpenConfig *createOpenSslConfig(MprSsl *ssl);
 static DH       *dhCallback(SSL *ssl, int isExport, int keyLength);
 static void     disconnectOss(MprSocket *sp);
 static ssize    flushOss(MprSocket *sp);
@@ -63,7 +63,7 @@ static void     manageOpenProvider(MprSocketProvider *provider, int flags);
 static void     manageOpenSocket(MprOpenSocket *ssp, int flags);
 static ssize    readOss(MprSocket *sp, void *buf, ssize len);
 static RSA      *rsaCallback(SSL *ssl, int isExport, int keyLength);
-static int      upgradeOss(MprSocket *sp, MprSsl *ssl, int server);
+static int      upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName);
 static int      verifyX509Certificate(int ok, X509_STORE_CTX *ctx);
 static ssize    writeOss(MprSocket *sp, cvoid *buf, ssize len);
 
@@ -210,7 +210,7 @@ static void manageOpenProvider(MprSocketProvider *provider, int flags)
     configurations for different routes. There is default SSL configuration that is used
     when a route does not define a configuration and also for clients.
  */
-static OpenConfig *createOpenSslConfig(MprSsl *ssl, int server)
+static OpenConfig *createOpenSslConfig(MprSsl *ssl)
 {
     OpenConfig      *cfg;
     SSL_CTX         *context;
@@ -270,7 +270,7 @@ static OpenConfig *createOpenSslConfig(MprSsl *ssl, int server)
             }
         }
     }
-    if (server) {
+    if (sp->flags & MPR_SOCKET_SERVER) {
         if (ssl->verifyPeer) {
             if (!ssl->caFile == 0 && !ssl->caPath) {
                 mprError("OpenSSL: Must define CA certificates if using client verification");
@@ -402,7 +402,7 @@ static int listenOss(MprSocket *sp, cchar *host, int port, int flags)
 /*
     Upgrade a standard socket to use SSL/TLS
  */
-static int upgradeOss(MprSocket *sp, MprSsl *ssl, int server)
+static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 {
     MprOpenSocket   *osp;
     OpenConfig      *cfg;
@@ -413,7 +413,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, int server)
     assure(sp);
 
     if (ssl == 0) {
-        ssl = mprCreateSsl(server);
+        ssl = mprCreateSsl(sp->flags & MPR_SOCKET_SERVER);
     }
     //  MOB - why lock here
     lock(sp);
@@ -425,7 +425,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, int server)
     sp->sslSocket = osp;
     sp->ssl = ssl;
 
-    if (!ssl->pconfig && (ssl->pconfig = createOpenSslConfig(ssl, server)) == 0) {
+    if (!ssl->pconfig && (ssl->pconfig = createOpenSslConfig(ssl)) == 0) {
         unlock(sp);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -444,7 +444,7 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, int server)
      */
     osp->bio = BIO_new_socket(sp->fd, BIO_NOCLOSE);
     SSL_set_bio(osp->handle, osp->bio, osp->bio);
-    if (server) {
+    if (sp->flags & MPR_SOCKET_SERVER) {
         SSL_set_accept_state(osp->handle);
     } else {
         /* Block while connecting */
@@ -460,6 +460,8 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, int server)
         mprSetSocketBlockingMode(sp, 0);
     }
     unlock(sp);
+
+    //  MOB - must do something with peerName
     return 0;
 }
 
@@ -646,6 +648,8 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
             sizeof(peer) - 1) < 0) {
         ok = 0;
     }
+    //  MOB - must verify peer name here
+
     if (ok && ssl->verifyDepth < depth) {
         if (error == 0) {
             error = X509_V_ERR_CERT_CHAIN_TOO_LONG;

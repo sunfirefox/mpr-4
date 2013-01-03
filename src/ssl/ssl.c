@@ -8,7 +8,7 @@
 
 #include    "mpr.h"
 
-#if BIT_PACK_SSL
+#if BIT_SSL
 /************************************ Code ************************************/
 /*
     Module initialization entry point
@@ -25,6 +25,12 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
         return MPR_ERR_CANT_OPEN;
     }
     MPR->socketService->defaultProvider = sclone("matrixssl");
+#endif
+#if BIT_PACK_MOCANA
+    if (mprCreateMocanaModule() < 0) {
+        return MPR_ERR_CANT_OPEN;
+    }
+    MPR->socketService->defaultProvider = sclone("mocana");
 #endif
 #if BIT_PACK_OPENSSL
     if (mprCreateOpenSslModule() < 0) {

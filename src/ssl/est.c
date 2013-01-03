@@ -1,5 +1,5 @@
 /*
-    mpEst.c - Embedded Secure Transport
+    est.c - Embedded Secure Transport
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
@@ -13,45 +13,33 @@
 #include    "est.h"
 
 /************************************* Defines ********************************/
-
-#ifndef BIT_SERVER_CERT_FILE
-    #define BIT_SERVER_CERT_FILE    "server.crt"
-#endif
-#ifndef BIT_SERVER_KEY_FILE
-    #define BIT_SERVER_KEY_FILE     "server.key.pem"
-#endif
-#ifndef BIT_CLIENT_CERT_FILE
-    #define BIT_CLIENT_CERT_FILE    "client.crt"
-#endif
-#ifndef BIT_CLIENT_CERT_PATH
-    #define BIT_CLIENT_CERT_PATH    "certs"
-#endif
-
 /*
     Per-route SSL configuration
  */
 typedef struct EstConfig {
-    rsa_context     rsa;
-    x509_cert       cert;
-    char            *dhKey;
+    rsa_context     rsa;                /* RSA context */
+    x509_cert       cert;               /* Certificate (own) */
+    x509_cert       cabundle;           /* Certificate bundle to veryify peery */
+    int             *ciphers;           /* Set of acceptable ciphers */
+    char            *dhKey;             /* DH keys */
 } EstConfig;
 
 /*
     Per socket state
  */
 typedef struct EstSocket {
-    MprSocket       *sock;
-    EstConfig       *cfg;
-    int             *ciphers;
-    havege_state    hs;
-    ssl_context     ssl;
-    ssl_session     session;
+    MprSocket       *sock;              /* MPR socket object */
+    EstConfig       *cfg;               /* Configuration */
+    havege_state    hs;                 /* Random HAVEGE state */
+    ssl_context     ctx;                /* SSL state */
+    ssl_session     session;            /* SSL sessions */
 } EstSocket;
 
-static MprSocketProvider *est;
-static EstConfig *defaultEstConfig;
+static MprSocketProvider *estProvider;  /* EST socket provider */
+static EstConfig *defaultEstConfig;     /* Default configuration */
 
 //  MOB - GENERATE
+//  #include "est-dh.h"
 static char *dhKey =
     "E4004C1F94182000103D883A448B3F80"
     "2CE4B44A83301270002C20D0321CFD00"
@@ -68,51 +56,11 @@ static char *dhg = "4";
 
 //MOB http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
 
-#if UNUSED
-#define KEY_RSA         (0x1)
-#define KEY_DHr         (0x2)
-#define KEY_DHd         (0x4)
-#define KEY_EDH         (0x8)
-#define KEY_SDP         (0x10)
-#define KEY_MASK        (0x1F)
-
-#define AUTH_NULL       (0x1 << 8)
-#define AUTH_RSA        (0x2 << 8)
-#define AUTH_DSS        (0x4 << 8)
-#define AUTH_DH         (0x8 << 8)
-#define AUTH_MASK       (0xF << 8)
-
-#define CIPHER_NULL     (0x1 << 16)
-#define CIPHER_eNULL    (CIPHER_NULL
-#define CIPHER_AES      (0x2 << 16)
-#define CIPHER_DES      (0x4 << 16)
-#define CIPHER_3DES     (0x8 << 16)
-#define CIPHER_RC4      (0x10 << 16)
-#define CIPHER_RC2      (0x20 << 16)
-#define CIPHER_IDEA     (0x40 << 16)
-#define CIPHER_CAMELLIA (0x80 << 16)
-#define CIPHER_MASK     (0xFF << 16)
-
-#define MAC_MD5         (0x1 << 24)
-#define MAC_SHA1        (0x2 << 24)
-#define MAC_SHA         (0x4 << 24)
-#define MAC_MASK        (0x7 << 24)
-
-#define CMED             (INT64(0x1) << 32)
-#define CHIGH            (INT64(0x2) << 32)
-#endif
-
 typedef struct Ciphers {
     int     code;
     char    *name;
     int     iana;
 } Ciphers;
-
-#if KEEP
-Low     9, 12, 1A, 15
-MEDIUM  04 05 07 18 80 8A 96 99 9A 9B
-HIGH    0A 13 16 1B 2F 32 33 34 35 38 39 3A 3C 3D 40 41 44 45 46 67 6A 6B 6C 6D 84 87 88 89 8B 8C 8D 9C 9D 9E 9F A2 A3 A6 A7
-#endif
 
 /** MOB - should have a high security and a fast security list */
 static Ciphers cipherList[] = {
@@ -138,13 +86,15 @@ static MprList *sessions;
 
 static void     closeEst(MprSocket *sp, bool gracefully);
 static void     disconnectEst(MprSocket *sp);
+static void     estTrace(void *fp, int level, char *str);
+static int      estHandshake(MprSocket *sp);
+static char     *getEstState(MprSocket *sp);
 static int      listenEst(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageEstConfig(EstConfig *cfg, int flags);
 static void     manageEstProvider(MprSocketProvider *provider, int flags);
 static void     manageEstSocket(EstSocket *ssp, int flags);
 static ssize    readEst(MprSocket *sp, void *buf, ssize len);
-static void     estTrace(void *fp, int level, char *str);
-static int      upgradeEst(MprSocket *sp, MprSsl *sslConfig, int server);
+static int      upgradeEst(MprSocket *sp, MprSsl *sslConfig, cchar *peerName);
 static ssize    writeEst(MprSocket *sp, cvoid *buf, ssize len);
 
 static int      setSession(ssl_context *ssl);
@@ -153,31 +103,32 @@ static int      getSession(ssl_context *ssl);
 /************************************* Code ***********************************/
 /*
     Create the Openssl module. This is called only once
+    MOB - should this be Create or Open
  */
 PUBLIC int mprCreateEstModule()
 {
-    if ((est = mprAllocObj(MprSocketProvider, manageEstProvider)) == NULL) {
+    if ((estProvider = mprAllocObj(MprSocketProvider, manageEstProvider)) == NULL) {
         return MPR_ERR_MEMORY;
     }
-    est->upgradeSocket = upgradeEst;
-    est->closeSocket = closeEst;
-    est->disconnectSocket = disconnectEst;
-    est->listenSocket = listenEst;
-    est->readSocket = readEst;
-    est->writeSocket = writeEst;
-    mprAddSocketProvider("est", est);
+    estProvider->upgradeSocket = upgradeEst;
+    estProvider->closeSocket = closeEst;
+    estProvider->disconnectSocket = disconnectEst;
+    estProvider->listenSocket = listenEst;
+    estProvider->readSocket = readEst;
+    estProvider->writeSocket = writeEst;
+    estProvider->socketState = getEstState;
+    mprAddSocketProvider("est", estProvider);
     sessions = mprCreateList(-1, -1);
 
     if ((defaultEstConfig = mprAllocObj(EstConfig, manageEstConfig)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    //  MOB - should generate
     defaultEstConfig->dhKey = dhKey;
     return 0;
 }
 
 
-static void manageEstProvider(MprSocketProvider *est, int flags)
+static void manageEstProvider(MprSocketProvider *provider, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         mprMark(defaultEstConfig);
@@ -188,41 +139,39 @@ static void manageEstProvider(MprSocketProvider *est, int flags)
 
 static void manageEstConfig(EstConfig *cfg, int flags)
 {
-    if (flags & MPR_MANAGE_FREE) {
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(cfg->ciphers);
+
+    } else if (flags & MPR_MANAGE_FREE) {
         rsa_free(&cfg->rsa);
         x509_free(&cfg->cert);
+        x509_free(&cfg->cabundle);
     }
 }
 
 
 /*
-    Create an SSL configuration for a route. An application can have multiple different SSL configurations for 
-    different routes. There is default SSL configuration that is used when a route does not define a configuration 
-    and also for clients.
- */
-/*
     Destructor for an EstSocket object
  */
-static void manageEstSocket(EstSocket *esp, int flags)
+static void manageEstSocket(EstSocket *est, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(esp->cfg);
-        mprMark(esp->ciphers);
-        mprMark(esp->sock);
+        mprMark(est->cfg);
+        mprMark(est->sock);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        ssl_free(&esp->ssl);
+        ssl_free(&est->ctx);
     }
 }
 
 
 static void closeEst(MprSocket *sp, bool gracefully)
 {
-    EstSocket       *esp;
+    EstSocket       *est;
 
-    esp = sp->sslSocket;
+    est = sp->sslSocket;
     if (!(sp->flags & MPR_SOCKET_EOF)) {
-        ssl_close_notify(&esp->ssl);
+        ssl_close_notify(&est->ctx);
     }
     sp->service->standardProvider->closeSocket(sp, gracefully);
 }
@@ -239,6 +188,7 @@ static int listenEst(MprSocket *sp, cchar *host, int port, int flags)
 }
 
 
+//  MOB - move to est
 static int *createCiphers(cchar *cipherSuite)
 {
     Ciphers     *cp;
@@ -260,7 +210,7 @@ static int *createCiphers(cchar *cipherSuite)
             ciphers[i++] = cp->iana;
             mprLog(0, "EST: Select cipher 0x%02x: %s", cp->iana, cp->name);
         } else {
-            mprError("Cannot find cipher %s", cipher);
+            mprLog(0, "Requested cipher %s is not supported", cipher);
         }
         suite = 0;
     }
@@ -275,156 +225,247 @@ static int *createCiphers(cchar *cipherSuite)
 
 
 /*
+    Initiate or continue SSL handshaking with the peer. This routine does not block.
+    Return -1 on errors, 0 incomplete and awaiting I/O, 1 if successful
+ */
+static int estHandshake(MprSocket *sp)
+{
+    EstSocket   *est;
+    int         rc, vrc, trusted;
+
+    est = (EstSocket*) sp->sslSocket;
+    trusted = 1;
+
+    while (est->ctx.state != SSL_HANDSHAKE_OVER && (rc = ssl_handshake(&est->ctx)) != 0) {
+        if (rc == EST_ERR_NET_TRY_AGAIN) {
+            if (!mprGetSocketBlockingMode(sp)) {
+                return 0;
+            }
+            continue;
+        }
+        break;
+    }
+    /*
+        Analyze the handshake result
+     */
+    if (rc < 0) {
+        sp->errorMsg = sfmt("Cannot handshake: error -0x%x", -rc);
+        mprLog(4, "%s", sp->errorMsg);
+        sp->flags |= MPR_SOCKET_EOF;
+        errno = EPROTO;
+        return -1;
+       
+    } else if ((vrc = ssl_get_verify_result(&est->ctx)) != 0) {
+        if (vrc & BADCERT_EXPIRED) {
+            sp->errorMsg = sfmt("Certificate expired");
+
+        } else if (vrc & BADCERT_REVOKED) {
+            sp->errorMsg = sfmt("Certificate revoked");
+
+        } else if (vrc & BADCERT_CN_MISMATCH) {
+            sp->errorMsg = sfmt("Certificate common name mismatch");
+
+        } else if (vrc & BADCERT_NOT_TRUSTED) {
+            if (est->ctx.peer_cert->next && est->ctx.peer_cert->next->version == 0) {
+                //  MOB - est should have dedicated EST error code for this.
+                sp->errorMsg = sfmt("Self-signed certificate");
+            } else {
+                sp->errorMsg = sfmt("Certificate not trusted");
+            }
+            trusted = 0;
+
+        } else {
+            if (est->ctx.client_auth && !sp->ssl->certFile) {
+                sp->errorMsg = sfmt("Server requires a client certificate");
+            } else if (rc == EST_ERR_NET_CONN_RESET) {
+                sp->errorMsg = sfmt("Peer disconnected");
+            } else {
+                sp->errorMsg = sfmt("Cannot handshake: error -0x%x", -rc);
+            }
+        }
+        mprLog(4, "%s", sp->errorMsg);
+        if (sp->ssl->verifyPeer) {
+            /* 
+               If not verifying the issuer, permit certs that are only untrusted (no other error).
+               This allows self-signed certs.
+             */
+            if (!sp->ssl->verifyIssuer && !trusted) {
+                return 1;
+            } else {
+                sp->flags |= MPR_SOCKET_EOF;
+                errno = EPROTO;
+                return -1;
+            }
+        }
+    }
+    return 1;
+}
+
+
+/*
     Upgrade a standard socket to use TLS
  */
-static int upgradeEst(MprSocket *sp, MprSsl *ssl, int server)
+static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 {
-    EstSocket   *esp;
+    EstSocket   *est;
     EstConfig   *cfg;
+    int         verifyMode;
 
     assure(sp);
 
     if (ssl == 0) {
-        ssl = mprCreateSsl(server);
+        ssl = mprCreateSsl(sp->flags & MPR_SOCKET_SERVER);
     }
-    if ((esp = (EstSocket*) mprAllocObj(EstSocket, manageEstSocket)) == 0) {
+    if ((est = (EstSocket*) mprAllocObj(EstSocket, manageEstSocket)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    esp->sock = sp;
-    sp->sslSocket = esp;
+    est->sock = sp;
+    sp->sslSocket = est;
     sp->ssl = ssl;
 
     lock(ssl);
     if (ssl->pconfig) {
-        esp->cfg = cfg = ssl->pconfig;
+        est->cfg = cfg = ssl->pconfig;
     } else {
         /*
             One time setup for the SSL configuration for this MprSsl
          */
-        //  LOCKING
         if ((cfg = mprAllocObj(EstConfig, manageEstConfig)) == 0) {
             unlock(ssl);
             return MPR_ERR_MEMORY;
         }
-        esp->cfg = ssl->pconfig = cfg;
+        est->cfg = ssl->pconfig = cfg;
         if (ssl->certFile) {
             //  MOB - openssl uses encrypted and/not 
             if (x509parse_crtfile(&cfg->cert, ssl->certFile) != 0) {
-                mprError("EST: Unable to read certificate %s", ssl->certFile); 
+                sp->errorMsg = sfmt("Unable to parse certificate %s", ssl->certFile); 
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
             }
         }
         if (ssl->keyFile) {
+            //  MOB - last arg is password
             if (x509parse_keyfile(&cfg->rsa, ssl->keyFile, 0) != 0) {
-                mprError("EST: Unable to read key file %s", ssl->keyFile); 
+                sp->errorMsg = sfmt("Unable to parse key file %s", ssl->keyFile); 
+                unlock(ssl);
+                return MPR_ERR_CANT_READ;
+            }
+        }
+        if (ssl->caFile) {
+            if (x509parse_crtfile(&cfg->cabundle, ssl->caFile) != 0) {
+                sp->errorMsg = sfmt("Unable to parse certificate bundle %s", ssl->caFile); 
                 unlock(ssl);
                 return MPR_ERR_CANT_READ;
             }
         }
         cfg->dhKey = defaultEstConfig->dhKey;
         //  MOB - see openssl for client certificate config
+        cfg->ciphers = createCiphers(ssl->ciphers);
     }
     unlock(ssl);
-
-    ssl_free(&esp->ssl);
+    ssl_free(&est->ctx);
 
     //  MOB - convert to proper entropy source API
     //  MOB - can't put this in cfg yet as it is not thread safe
-    havege_init(&esp->hs);
-    ssl_init(&esp->ssl);
-	ssl_set_endpoint(&esp->ssl, server);
-	ssl_set_authmode(&esp->ssl, (ssl->verifyPeer) ? SSL_VERIFY_REQUIRED : SSL_VERIFY_NO_CHECK);
-    ssl_set_rng(&esp->ssl, havege_rand, &esp->hs);
-	ssl_set_dbg(&esp->ssl, estTrace, NULL);
-	ssl_set_bio(&esp->ssl, net_recv, &sp->fd, net_send, &sp->fd);
+    havege_init(&est->hs);
+    ssl_init(&est->ctx);
+	ssl_set_endpoint(&est->ctx, sp->flags & MPR_SOCKET_SERVER ? SSL_IS_SERVER : SSL_IS_CLIENT);
 
-    //  MOB - better if the API took a handle (esp)
-	ssl_set_scb(&esp->ssl, getSession, setSession);
+    /* Optional means to manually verify in estHandshake */
+    if (sp->flags & MPR_SOCKET_SERVER) {
+        verifyMode = ssl->verifyPeer ? SSL_VERIFY_OPTIONAL : SSL_VERIFY_NO_CHECK;
+    } else {
+        verifyMode = SSL_VERIFY_OPTIONAL;
+    }
+    ssl_set_authmode(&est->ctx, verifyMode);
+    ssl_set_rng(&est->ctx, havege_rand, &est->hs);
+	ssl_set_dbg(&est->ctx, estTrace, NULL);
+	ssl_set_bio(&est->ctx, net_recv, &sp->fd, net_send, &sp->fd);
 
-    esp->ciphers = createCiphers(ssl->ciphers);
-    ssl_set_ciphers(&esp->ssl, esp->ciphers);
+    //  MOB - better if the API took a handle (est)
+	ssl_set_scb(&est->ctx, getSession, setSession);
+    ssl_set_ciphers(&est->ctx, cfg->ciphers);
 
-    //  MOB
-	ssl_set_session(&esp->ssl, 1, 0, &esp->session);
-	memset(&esp->session, 0, sizeof(ssl_session));
+	ssl_set_session(&est->ctx, 1, 0, &est->session);
+	memset(&est->session, 0, sizeof(ssl_session));
 
-	ssl_set_ca_chain(&esp->ssl, cfg->cert.next, NULL);
-	ssl_set_own_cert(&esp->ssl, &cfg->cert, &cfg->rsa);
-	ssl_set_dh_param(&esp->ssl, dhKey, dhg);
+	ssl_set_ca_chain(&est->ctx, &cfg->cabundle, (char*) peerName);
+	ssl_set_own_cert(&est->ctx, &cfg->cert, &cfg->rsa);
+	ssl_set_dh_param(&est->ctx, dhKey, dhg);
 
+    if (estHandshake(sp) < 0) {
+        return -1;
+    }
     return 0;
 }
 
 
 static void disconnectEst(MprSocket *sp)
 {
-    //  MOB - anything to do here?
     sp->service->standardProvider->disconnectSocket(sp);
 }
 
 
-#if TRACE
+//  MOB - move to est
 static void traceCert(MprSocket *sp)
 {
-    MprSsl      *ssl;
+    EstSocket   *est;
+    Ciphers     *cp;
+    char        cbuf[5120];
    
-    ssl = sp->ssl;
-    mprLog(4, "EST connected using cipher: \"%s\" from set %s", SSL_get_cipher(esp->handle), ssl->ciphers);
-    if (ssl->caFile) {
-        mprLog(4, "EST: Using certificates from %s", ssl->caFile);
-    } else if (ssl->caPath) {
-        mprLog(4, "EST: Using certificates from directory %s", ssl->caPath);
+    est = (EstSocket*) sp->sslSocket;
+
+    if (est->ctx.session) {
+        for (cp = cipherList; cp->name; cp++) {
+            if (cp->iana == est->ctx.session->cipher) {
+                break;
+            }
+        }
+        if (cp) {
+            mprLog(4, "EST connected using cipher: %s, %x", cp->name, est->ctx.session->cipher);
+        }
     }
-#if FUTURE
-    X509_NAME   *xSubject;
-    X509        *cert;
-    char        subject[260], issuer[260], peer[260], ebuf[BIT_MAX_BUFFER];
-    ulong       serror;
-    cert = SSL_get_peer_certificate(esp->handle);
-    if (cert == 0) {
-        mprLog(4, "EST: client supplied no certificate");
+    if (sp->ssl->caFile) {
+        mprLog(4, "Using certificates from %s", sp->ssl->caFile);
+    } else if (sp->ssl->caPath) {
+        mprLog(4, "Using certificates from directory %s", sp->ssl->caPath);
+    }
+    if (!est->ctx.peer_cert) {
+        mprLog(4, "Client supplied no certificate");
     } else {
-        xSubject = X509_get_subject_name(cert);
-        X509_NAME_oneline(xSubject, subject, sizeof(subject) -1);
-        X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) -1);
-        X509_NAME_get_text_by_NID(xSubject, NID_commonName, peer, sizeof(peer) - 1);
-        mprLog(4, "EST Subject %s", subject);
-        mprLog(4, "EST Issuer: %s", issuer);
-        mprLog(4, "EST Peer: %s", peer);
-        X509_free(cert);
+        mprLog(4, "Client certificate: %s", x509parse_cert_info("", cbuf, sizeof(cbuf), est->ctx.peer_cert));
     }
-    sp->flags |= MPR_SOCKET_TRACED;
-#endif
 }
-#endif
 
 
 /*
-    Return the number of bytes read. Return -1 on errors and EOF. Distinguish EOF via mprIsSocketEof
+    Return the number of bytes read. Return -1 on errors and EOF. Distinguish EOF via mprIsSocketEof.
+    If non-blocking, may return zero if no data or still handshaking.
  */
 static ssize readEst(MprSocket *sp, void *buf, ssize len)
 {
-    EstSocket   *esp;
+    EstSocket   *est;
     int         rc;
 
-    esp = (EstSocket*) sp->sslSocket;
-    assure(esp);
-    assure(esp->cfg);
+    est = (EstSocket*) sp->sslSocket;
+    assure(est);
+    assure(est->cfg);
 
-    while (esp->ssl.state != SSL_HANDSHAKE_OVER && (rc = ssl_handshake(&esp->ssl)) != 0) {
-        if (rc != EST_ERR_NET_TRY_AGAIN) {
-            mprLog(2, "EST: readEst: Cannot handshake: %d", rc);
-            sp->flags |= MPR_SOCKET_EOF;
-            return -1;
+    if (est->ctx.state != SSL_HANDSHAKE_OVER) {
+        if ((rc = estHandshake(sp)) <= 0) {
+            return rc;
         }
     }
+    if (!(sp->flags & MPR_SOCKET_TRACED)) {
+        traceCert(sp);
+        sp->flags |= MPR_SOCKET_TRACED;
+    }
     while (1) {
-        rc = ssl_read(&esp->ssl, buf, (int) len);
+        rc = ssl_read(&est->ctx, buf, (int) len);
         mprLog(5, "EST: ssl_read %d", rc);
         if (rc < 0) {
             if (rc == EST_ERR_NET_TRY_AGAIN)  {
-                continue;
+                break;
             } else if (rc == EST_ERR_SSL_PEER_CLOSE_NOTIFY) {
                 mprLog(5, "EST: connection was closed gracefully\n");
                 sp->flags |= MPR_SOCKET_EOF;
@@ -433,47 +474,60 @@ static ssize readEst(MprSocket *sp, void *buf, ssize len)
                 mprLog(5, "EST: connection reset");
                 sp->flags |= MPR_SOCKET_EOF;
                 return -1;
+            } else {
+                //  MOB - what about other errors?
+                mprLog(4, "EST: read error -0x%", -rc);
+                sp->flags |= MPR_SOCKET_EOF;
+                return -1;
             }
         }
         break;
     }
-    if (esp->ssl.in_left > 0) {
-        sp->flags |= MPR_SOCKET_PENDING;
-        mprRecallWaitHandlerByFd(sp->fd);
+    //  MOB - API: ssl_has_pending()
+    if (est->ctx.in_left > 0) {
+        sp->flags |= MPR_SOCKET_BUFFERED_READ;
+        if (sp->handler) {
+            mprRecallWaitHandler(sp->handler);
+        }
     }
     return rc;
 }
 
 
 /*
-    Write data. Return the number of bytes written or -1 on errors.
+    Write data. Return the number of bytes written or -1 on errors or socket closure.
+    If non-blocking, may return zero if no data or still handshaking.
  */
 static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
 {
-    EstSocket   *esp;
+    EstSocket   *est;
     ssize       totalWritten;
     int         rc;
 
-    esp = (EstSocket*) sp->sslSocket;
+    est = (EstSocket*) sp->sslSocket;
     if (len <= 0) {
         assure(0);
         return -1;
     }
+    if (est->ctx.state != SSL_HANDSHAKE_OVER) {
+        if ((rc = estHandshake(sp)) <= 0) {
+            return rc;
+        }
+    }
     totalWritten = 0;
-
     do {
-        rc = ssl_write(&esp->ssl, (uchar*) buf, (int) len);
+        rc = ssl_write(&est->ctx, (uchar*) buf, (int) len);
         mprLog(7, "EST: written %d, requested len %d", rc, len);
         if (rc <= 0) {
             if (rc == EST_ERR_NET_TRY_AGAIN) {                                                          
-                continue;
+                /* MOB - but what about buffered pending data? */
+                break;
             }
             if (rc == EST_ERR_NET_CONN_RESET) {                                                         
-                printf(" failed\n  ! peer closed the connection\n\n");                                         
                 mprLog(0, "ssl_write peer closed");
                 return -1;
-            } else if (rc != EST_ERR_NET_TRY_AGAIN) {                                                          
-                mprLog(0, "ssl_write failed rc %d", rc);
+            } else {
+                mprLog(0, "ssl_write failed rc -0x%x", -rc);
                 return -1;
             }
         } else {
@@ -483,90 +537,53 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
             mprLog(7, "EST: write: len %d, written %d, total %d", len, rc, totalWritten);
         }
     } while (len > 0);
+
+    if (est->ctx.out_left > 0) {
+        sp->flags |= MPR_SOCKET_BUFFERED_WRITE;
+        if (sp->handler) {
+            mprRecallWaitHandler(sp->handler);
+        }
+    }
     return totalWritten;
 }
 
 
-#if KEEP
-/*
-    Called to verify X509 client certificates
- */
-static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
+//  MERGE with traceCert
+static char *getEstState(MprSocket *sp)
 {
-    X509        *cert;
-    SSL         *handle;
-    EstSocket   *esp;
-    MprSsl      *ssl;
-    char        subject[260], issuer[260], peer[260];
-    int         error, depth;
-    
-    subject[0] = issuer[0] = '\0';
+    EstSocket       *est;
+    ssl_context     *ctx;
+    Ciphers         *cp;
+    MprBuf          *buf;
+    char            *own, *peer;
+    char            cbuf[5120];
 
-    handle = (SSL*) X509_STORE_CTX_get_app_data(xContext);
-    esp = (EstSocket*) SSL_get_app_data(handle);
-    ssl = esp->sock->ssl;
+    est = sp->sslSocket;
+    ctx = &est->ctx;
+    buf = mprCreateBuf(0, 0);
 
-    cert = X509_STORE_CTX_get_current_cert(xContext);
-    depth = X509_STORE_CTX_get_error_depth(xContext);
-    error = X509_STORE_CTX_get_error(xContext);
-
-    ok = 1;
-    if (X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) - 1) < 0) {
-        ok = 0;
-    }
-    if (X509_NAME_oneline(X509_get_issuer_name(xContext->current_cert), issuer, sizeof(issuer) - 1) < 0) {
-        ok = 0;
-    }
-    if (X509_NAME_get_text_by_NID(X509_get_subject_name(xContext->current_cert), NID_commonName, peer, 
-            sizeof(peer) - 1) < 0) {
-        ok = 0;
-    }
-    if (ok && ssl->verifyDepth < depth) {
-        if (error == 0) {
-            error = X509_V_ERR_CERT_CHAIN_TOO_LONG;
+    if (est->ctx.session) {
+        for (cp = cipherList; cp->name; cp++) {
+            if (cp->iana == est->ctx.session->cipher) {
+                break;
+            }
+        }
+        if (cp) {
+            mprPutFmtToBuf(buf, "CIPHER=%s, ", cp->name);
+            mprPutFmtToBuf(buf, "CIPHER_IANA=0x%x, ", est->ctx.session->cipher);
         }
     }
-    switch (error) {
-    case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
-        /* Normal self signed certificate */
-    case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
-    case X509_V_ERR_CERT_UNTRUSTED:
-    case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
-        if (ssl->verifyIssuer) {
-            /* Issuer can't be verified */
-            ok = 0;
-        }
-        break;
-
-    case X509_V_ERR_CERT_CHAIN_TOO_LONG:
-    case X509_V_ERR_CERT_HAS_EXPIRED:
-    case X509_V_ERR_CERT_NOT_YET_VALID:
-    case X509_V_ERR_CERT_REJECTED:
-    case X509_V_ERR_CERT_SIGNATURE_FAILURE:
-    case X509_V_ERR_ERROR_IN_CERT_NOT_AFTER_FIELD:
-    case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
-    case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-    case X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE:
-    case X509_V_ERR_INVALID_CA:
-    default:
-        ok = 0;
-        break;
-    }
-    if (ok) {
-        mprLog(3, "EST: Certificate verified: subject %s", subject);
-        mprLog(4, "EST: Issuer: %s", issuer);
-        mprLog(4, "EST: Peer: %s", peer);
-    } else {
-        mprLog(1, "EST: Certification failed: subject %s (more trace at level 4)", subject);
-        mprLog(4, "EST: Issuer: %s", issuer);
-        mprLog(4, "EST: Peer: %s", peer);
-        mprLog(4, "EST: Error: %d: %s", error, X509_verify_cert_error_string(error));
-    }
-    return ok;
+    own =  sp->acceptIp ? "SERVER_" : "CLIENT_";
+    peer = sp->acceptIp ? "CLIENT_" : "SERVER_";
+    x509parse_cert_info(peer, cbuf, sizeof(cbuf), ctx->peer_cert);
+    mprPutStringToBuf(buf, cbuf);
+    x509parse_cert_info(own, cbuf, sizeof(cbuf), ctx->own_cert);
+    mprPutStringToBuf(buf, cbuf);
+    return mprGetBufStart(buf);
 }
-#endif
 
 
+//  MOB - move back into EST?
 static int getSession(ssl_context *ssl)
 {
     ssl_session     *sp;
@@ -627,7 +644,7 @@ static void estTrace(void *fp, int level, char *str)
     if (level <= MPR->logLevel) {
         str = sclone(str);
         str[slen(str) - 1] = '\0';
-        mprLog(level, "%s", str);
+        mprLog(level, "EST: %s", str);
     }
 }
 

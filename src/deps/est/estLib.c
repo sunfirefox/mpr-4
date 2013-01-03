@@ -3750,12 +3750,15 @@ char xyssl_ca_crt[] =
 
 #if BIT_EST_LOGGING
 
+/*
+    MOB WARNING: snprintf does not null terminate and returns -1 on errors
+ */
 #if defined _MSC_VER && !defined  snprintf
-#define  snprintf  _snprintf
+    #define snprintf  _snprintf
 #endif
 
 #if defined _MSC_VER && !defined vsnprintf
-#define vsnprintf _vsnprintf
+    #define vsnprintf _vsnprintf
 #endif
 
 char *debug_fmt(cchar *format, ...)
@@ -3767,152 +3770,129 @@ char *debug_fmt(cchar *format, ...)
     va_start(argp, format);
     vsnprintf(str, maxlen, format, argp);
     va_end(argp);
-
     str[maxlen] = '\0';
     return str;
 }
 
-void debug_print_msg(ssl_context * ssl, int level,
-             char *file, int line, char *text)
+
+void debug_print_msg(ssl_context *ssl, int level, char *file, int line, char *text)
 {
     char str[512];
     int maxlen = sizeof(str) - 1;
 
-    if (ssl->f_dbg == NULL)
+    if (ssl->f_dbg == NULL) {
         return;
-
+    }
     snprintf(str, maxlen, "%s(%04d): %s\n", file, line, text);
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
 }
 
-void debug_print_ret(ssl_context * ssl, int level,
-             char *file, int line, char *text, int ret)
+
+void debug_print_ret(ssl_context *ssl, int level, char *file, int line, char *text, int ret)
 {
     char str[512];
     int maxlen = sizeof(str) - 1;
 
-    if (ssl->f_dbg == NULL)
+    if (ssl->f_dbg == NULL) {
         return;
-
-    snprintf(str, maxlen, "%s(%04d): %s() returned %d (0x%x)\n",
-         file, line, text, ret, ret);
-
+    }
+    snprintf(str, maxlen, "%s(%04d): %s() returned %d (0x%x)\n", file, line, text, ret, ret);
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
 }
 
-void debug_print_buf(ssl_context * ssl, int level,
-             char *file, int line, char *text,
-             uchar *buf, int len)
+
+void debug_print_buf(ssl_context *ssl, int level, char *file, int line, char *text, uchar *buf, int len)
 {
     char str[512];
     int i, maxlen = sizeof(str) - 1;
 
-    if (ssl->f_dbg == NULL || len < 0)
+    if (ssl->f_dbg == NULL || len < 0) {
         return;
-
-    snprintf(str, maxlen, "%s(%04d): dumping '%s' (%d bytes)\n",
-         file, line, text, len);
-
+    }
+    snprintf(str, maxlen, "%s(%04d): dumping '%s' (%d bytes)\n", file, line, text, len);
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
 
     for (i = 0; i < len; i++) {
-        if (i >= 4096)
+        if (i >= 4096) {
             break;
-
+        }
         if (i % 16 == 0) {
-            if (i > 0)
+            if (i > 0) {
                 ssl->f_dbg(ssl->p_dbg, level, "\n");
-
-            snprintf(str, maxlen, "%s(%04d): %04x: ", file, line,
-                 i);
-
+            }
+            snprintf(str, maxlen, "%s(%04d): %04x: ", file, line, i);
             str[maxlen] = '\0';
             ssl->f_dbg(ssl->p_dbg, level, str);
         }
-
         snprintf(str, maxlen, " %02x", (uint)buf[i]);
-
         str[maxlen] = '\0';
         ssl->f_dbg(ssl->p_dbg, level, str);
     }
-
-    if (len > 0)
+    if (len > 0) {
         ssl->f_dbg(ssl->p_dbg, level, "\n");
+    }
 }
 
-void debug_print_mpi(ssl_context * ssl, int level,
-             char *file, int line, char *text, mpi * X)
+
+void debug_print_mpi(ssl_context *ssl, int level, char *file, int line, char *text, mpi * X)
 {
     char str[512];
     int i, j, k, n, maxlen = sizeof(str) - 1;
 
-    if (ssl->f_dbg == NULL || X == NULL)
+    if (ssl->f_dbg == NULL || X == NULL) {
         return;
-
-    for (n = X->n - 1; n >= 0; n--)
-        if (X->p[n] != 0)
+    }
+    for (n = X->n - 1; n >= 0; n--) {
+        if (X->p[n] != 0) {
             break;
-
-    snprintf(str, maxlen, "%s(%04d): value of '%s' (%u bits) is:\n", file, line, text, 
-            (int) ((n + 1) * sizeof(t_int)) << 3);
+        }
+    }
+    snprintf(str, maxlen, "%s(%04d): value of '%s' (%u bits) is:\n", file, line, text, (int) ((n + 1) * sizeof(t_int)) << 3);
 
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
 
     for (i = n, j = 0; i >= 0; i--, j++) {
         if (j % (16 / sizeof(t_int)) == 0) {
-            if (j > 0)
+            if (j > 0) {
                 ssl->f_dbg(ssl->p_dbg, level, "\n");
-
+            }
             snprintf(str, maxlen, "%s(%04d): ", file, line);
-
             str[maxlen] = '\0';
             ssl->f_dbg(ssl->p_dbg, level, str);
         }
-
         for (k = sizeof(t_int) - 1; k >= 0; k--) {
-            snprintf(str, maxlen, " %02x", (uint)
-                 (X->p[i] >> (k << 3)) & 0xFF);
-
+            snprintf(str, maxlen, " %02x", (uint) (X->p[i] >> (k << 3)) & 0xFF);
             str[maxlen] = '\0';
             ssl->f_dbg(ssl->p_dbg, level, str);
         }
     }
-
     ssl->f_dbg(ssl->p_dbg, level, "\n");
 }
 
-void debug_print_crt(ssl_context * ssl, int level,
-             char *file, int line, char *text, x509_cert * crt)
+
+void debug_print_crt(ssl_context *ssl, int level, char *file, int line, char *text, x509_cert * crt)
 {
-    char str[512], prefix[64], *p;
+    char cbuf[5120], str[512], prefix[64], *p;
     int i = 0, maxlen = sizeof(prefix) - 1;
 
-    if (ssl->f_dbg == NULL || crt == NULL)
+    if (ssl->f_dbg == NULL || crt == NULL) {
         return;
-
+    }
     snprintf(prefix, maxlen, "%s(%04d): ", file, line);
     prefix[maxlen] = '\0';
     maxlen = sizeof(str) - 1;
 
     while (crt != NULL && crt->next != NULL) {
-        p = x509parse_cert_info(prefix, crt);
-
-        snprintf(str, maxlen, "%s(%04d): %s #%d:\n%s",
-             file, line, text, ++i, p);
-
+        p = x509parse_cert_info("", cbuf, sizeof(cbuf), crt);
+        snprintf(str, maxlen, "%s(%04d): %s #%d:\n%s", file, line, text, ++i, p);
         str[maxlen] = '\0';
         ssl->f_dbg(ssl->p_dbg, level, str);
-
-        debug_print_mpi(ssl, level, file, line,
-                "crt->rsa.N", &crt->rsa.N);
-
-        debug_print_mpi(ssl, level, file, line,
-                "crt->rsa.E", &crt->rsa.E);
-
+        debug_print_mpi(ssl, level, file, line, "crt->rsa.N", &crt->rsa.N);
+        debug_print_mpi(ssl, level, file, line, "crt->rsa.E", &crt->rsa.E);
         crt = crt->next;
     }
 }
@@ -12155,20 +12135,17 @@ static int x509_get_name(uchar **p, uchar *end, x509_name * cur)
     x509_buf *oid;
     x509_buf *val;
 
-    if ((ret = asn1_get_tag(p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SET)) != 0)
+    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SET)) != 0)
         return (EST_ERR_X509_CERT_INVALID_NAME | ret);
 
     end2 = end;
     end = *p + len;
 
-    if ((ret = asn1_get_tag(p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
+    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
         return (EST_ERR_X509_CERT_INVALID_NAME | ret);
 
     if (*p + len != end)
-        return (EST_ERR_X509_CERT_INVALID_NAME |
-            EST_ERR_ASN1_LENGTH_MISMATCH);
+        return (EST_ERR_X509_CERT_INVALID_NAME | EST_ERR_ASN1_LENGTH_MISMATCH);
 
     oid = &cur->oid;
     oid->tag = **p;
@@ -12180,14 +12157,12 @@ static int x509_get_name(uchar **p, uchar *end, x509_name * cur)
     *p += oid->len;
 
     if ((end - *p) < 1)
-        return (EST_ERR_X509_CERT_INVALID_NAME |
-            EST_ERR_ASN1_OUT_OF_DATA);
+        return (EST_ERR_X509_CERT_INVALID_NAME | EST_ERR_ASN1_OUT_OF_DATA);
 
     if (**p != EST_ASN1_BMP_STRING && **p != EST_ASN1_UTF8_STRING &&
         **p != EST_ASN1_T61_STRING && **p != EST_ASN1_PRINTABLE_STRING &&
         **p != EST_ASN1_IA5_STRING && **p != EST_ASN1_UNIVERSAL_STRING)
-        return (EST_ERR_X509_CERT_INVALID_NAME |
-            EST_ERR_ASN1_UNEXPECTED_TAG);
+        return (EST_ERR_X509_CERT_INVALID_NAME | EST_ERR_ASN1_UNEXPECTED_TAG);
 
     val = &cur->val;
     val->tag = *(*p)++;
@@ -12201,8 +12176,7 @@ static int x509_get_name(uchar **p, uchar *end, x509_name * cur)
     cur->next = NULL;
 
     if (*p != end)
-        return (EST_ERR_X509_CERT_INVALID_NAME |
-            EST_ERR_ASN1_LENGTH_MISMATCH);
+        return (EST_ERR_X509_CERT_INVALID_NAME | EST_ERR_ASN1_LENGTH_MISMATCH);
 
     /*
      * recurse until end of SEQUENCE is reached
@@ -12233,8 +12207,7 @@ static int x509_get_dates(uchar **p,
     int ret, len;
     char date[64];
 
-    if ((ret = asn1_get_tag(p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
+    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
         return (EST_ERR_X509_CERT_INVALID_DATE | ret);
 
     end = *p + len;
@@ -12263,12 +12236,9 @@ static int x509_get_dates(uchar **p,
         return (EST_ERR_X509_CERT_INVALID_DATE | ret);
 
     memset(date, 0, sizeof(date));
-    memcpy(date, *p, (len < (int)sizeof(date) - 1) ?
-           len : (int)sizeof(date) - 1);
+    memcpy(date, *p, (len < (int)sizeof(date) - 1) ?  len : (int)sizeof(date) - 1);
 
-    if (sscanf(date, "%2d%2d%2d%2d%2d%2d",
-           &to->year, &to->mon, &to->day,
-           &to->hour, &to->min, &to->sec) < 5)
+    if (sscanf(date, "%2d%2d%2d%2d%2d%2d", &to->year, &to->mon, &to->day, &to->hour, &to->min, &to->sec) < 5)
         return (EST_ERR_X509_CERT_INVALID_DATE);
 
     to->year += 100 * (to->year < 90);
@@ -12277,8 +12247,7 @@ static int x509_get_dates(uchar **p,
     *p += len;
 
     if (*p != end)
-        return (EST_ERR_X509_CERT_INVALID_DATE |
-            EST_ERR_ASN1_LENGTH_MISMATCH);
+        return (EST_ERR_X509_CERT_INVALID_DATE | EST_ERR_ASN1_LENGTH_MISMATCH);
 
     return (0);
 }
@@ -12514,24 +12483,23 @@ static int x509_get_ext(uchar **p,
 int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
 {
     int ret, len;
-    uchar *s1, *s2;
+    uchar *s1, *s2, *oldbuf;
     uchar *p, *end;
     x509_cert *crt;
 
     crt = chain;
 
-    while (crt->version != 0)
+    while (crt->version != 0) {
         crt = crt->next;
+    }
 
     /*
      * check if the certificate is encoded in base64
      */
-    s1 = (uchar *)strstr((char *)buf,
-                     "-----BEGIN CERTIFICATE-----");
+    s1 = (uchar *)strstr((char *)buf, "-----BEGIN CERTIFICATE-----");
 
     if (s1 != NULL) {
-        s2 = (uchar *)strstr((char *)buf,
-                         "-----END CERTIFICATE-----");
+        s2 = (uchar *)strstr((char *)buf, "-----END CERTIFICATE-----");
 
         if (s2 == NULL || s2 <= s1)
             return (EST_ERR_X509_CERT_INVALID_PEM);
@@ -12574,6 +12542,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
             return (EST_ERR_X509_CERT_INVALID_PEM);
         }
 
+        oldbuf = buf;
         buflen -= s2 - buf;
         buf = s2;
     } else {
@@ -12587,6 +12556,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
 
         memcpy(p, buf, buflen);
 
+        oldbuf = buf;
         buflen = 0;
     }
 
@@ -12600,16 +12570,14 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
      *              signatureAlgorithm       AlgorithmIdentifier,
      *              signatureValue           BIT STRING      }
      */
-    if ((ret = asn1_get_tag(&p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
+    if ((ret = asn1_get_tag(&p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
         x509_free(crt);
         return (EST_ERR_X509_CERT_INVALID_FORMAT);
     }
 
     if (len != (int)(end - p)) {
         x509_free(crt);
-        return (EST_ERR_X509_CERT_INVALID_FORMAT |
-            EST_ERR_ASN1_LENGTH_MISMATCH);
+        return (EST_ERR_X509_CERT_INVALID_FORMAT | EST_ERR_ASN1_LENGTH_MISMATCH);
     }
 
     /*
@@ -12617,8 +12585,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
      */
     crt->tbs.p = p;
 
-    if ((ret = asn1_get_tag(&p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
+    if ((ret = asn1_get_tag(&p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
         x509_free(crt);
         return (EST_ERR_X509_CERT_INVALID_FORMAT | ret);
     }
@@ -12647,14 +12614,25 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
         return (EST_ERR_X509_CERT_UNKNOWN_VERSION);
     }
 
-    if (crt->sig_oid1.len != 9 ||
-        memcmp(crt->sig_oid1.p, OID_PKCS1, 8) != 0) {
+    if (crt->sig_oid1.len != 9 || memcmp(crt->sig_oid1.p, OID_PKCS1, 8) != 0) {
         x509_free(crt);
+#if UNUSED && MOB
+if (buflen > 0) {
+    //MOB temp just to skip certs
+    goto error;
+}
+#endif
         return (EST_ERR_X509_CERT_UNKNOWN_SIG_ALG);
     }
 
     if (crt->sig_oid1.p[8] < 2 || crt->sig_oid1.p[8] > 5) {
         x509_free(crt);
+#if UNUSED && MOB
+if (buflen > 0) {
+    //MOB temp just to skip certs
+    goto error;
+}
+#endif
         return (EST_ERR_X509_CERT_UNKNOWN_SIG_ALG);
     }
 
@@ -12663,8 +12641,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
      */
     crt->issuer_raw.p = p;
 
-    if ((ret = asn1_get_tag(&p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
+    if ((ret = asn1_get_tag(&p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
         x509_free(crt);
         return (EST_ERR_X509_CERT_INVALID_FORMAT | ret);
     }
@@ -12682,9 +12659,14 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
      *              notAfter           Time }
      *
      */
-    if ((ret = x509_get_dates(&p, end, &crt->valid_from,
-                  &crt->valid_to)) != 0) {
+    if ((ret = x509_get_dates(&p, end, &crt->valid_from, &crt->valid_to)) != 0) {
         x509_free(crt);
+#if UNUSED && MOB
+if (buflen > 0) {
+    //MOB temp just to skip certs
+    goto error;
+}
+#endif
         return (ret);
     }
 
@@ -12693,8 +12675,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
      */
     crt->subject_raw.p = p;
 
-    if ((ret = asn1_get_tag(&p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
+    if ((ret = asn1_get_tag(&p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
         x509_free(crt);
         return (EST_ERR_X509_CERT_INVALID_FORMAT | ret);
     }
@@ -12711,14 +12692,12 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
      *              algorithm                        AlgorithmIdentifier,
      *              subjectPublicKey         BIT STRING      }
      */
-    if ((ret = asn1_get_tag(&p, end, &len,
-                EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
+    if ((ret = asn1_get_tag(&p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
         x509_free(crt);
         return (EST_ERR_X509_CERT_INVALID_FORMAT | ret);
     }
 
-    if ((ret = x509_get_pubkey(&p, p + len, &crt->pk_oid,
-                   &crt->rsa.N, &crt->rsa.E)) != 0) {
+    if ((ret = x509_get_pubkey(&p, p + len, &crt->pk_oid, &crt->rsa.N, &crt->rsa.E)) != 0) {
         x509_free(crt);
         return (ret);
     }
@@ -12755,8 +12734,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
     }
 
     if (crt->version == 3) {
-        ret = x509_get_ext(&p, end, &crt->v3_ext,
-                   &crt->ca_istrue, &crt->max_pathlen);
+        ret = x509_get_ext(&p, end, &crt->v3_ext, &crt->ca_istrue, &crt->max_pathlen);
         if (ret != 0) {
             x509_free(crt);
             return (ret);
@@ -12765,8 +12743,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
 
     if (p != end) {
         x509_free(crt);
-        return (EST_ERR_X509_CERT_INVALID_FORMAT |
-            EST_ERR_ASN1_LENGTH_MISMATCH);
+        return (EST_ERR_X509_CERT_INVALID_FORMAT | EST_ERR_ASN1_LENGTH_MISMATCH);
     }
 
     end = crt->raw.p + crt->raw.len;
@@ -12792,8 +12769,7 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
 
     if (p != end) {
         x509_free(crt);
-        return (EST_ERR_X509_CERT_INVALID_FORMAT |
-            EST_ERR_ASN1_LENGTH_MISMATCH);
+        return (EST_ERR_X509_CERT_INVALID_FORMAT | EST_ERR_ASN1_LENGTH_MISMATCH);
     }
 
     crt->next = (x509_cert *) malloc(sizeof(x509_cert));
@@ -12806,11 +12782,31 @@ int x509parse_crt(x509_cert * chain, uchar *buf, int buflen)
     crt = crt->next;
     memset(crt, 0, sizeof(x509_cert));
 
-    if (buflen > 0)
-        return (x509parse_crt(crt, buf, buflen));
-
+//MOB
+more:
+    if (buflen > 0) {
+        int rc = x509parse_crt(crt, buf, buflen);
+        //  MOB - return true
+        return 0;
+    }
     return (0);
+
+#if UNUSED && MOB
+    //  MOB
+error:
+    {
+        char msg[80], *cp;
+        strncpy(msg, (char*) &oldbuf[1], sizeof(msg) - 1);
+        if ((cp = strchr(msg, '\n')) != 0) {
+            *cp = '\0';
+        }
+        printf("FAILED to parse %s\n", msg);
+        memset(crt, 0, sizeof(x509_cert));
+        goto more;
+    }
+#endif
 }
+
 
 /*
  * Load one or more certificates and add them to the chained list
@@ -12837,7 +12833,6 @@ int x509parse_crtfile(x509_cert * chain, char *path)
         free(buf);
         return (1);
     }
-
     buf[n] = '\0';
 
     ret = x509parse_crt(chain, buf, (int)n);
@@ -12919,20 +12914,17 @@ static void x509_des3_decrypt(uchar des3_iv[8],
 /*
  * Parse a private RSA key
  */
-int x509parse_key(rsa_context * rsa, uchar *buf, int buflen,
-          uchar *pwd, int pwdlen)
+int x509parse_key(rsa_context * rsa, uchar *buf, int buflen, uchar *pwd, int pwdlen)
 {
     int ret, len, enc;
     uchar *s1, *s2;
     uchar *p, *end;
     uchar des3_iv[8];
 
-    s1 = (uchar *)strstr((char *)buf,
-                     "-----BEGIN RSA PRIVATE KEY-----");
+    s1 = (uchar *)strstr((char *)buf, "-----BEGIN RSA PRIVATE KEY-----");
 
     if (s1 != NULL) {
-        s2 = (uchar *)strstr((char *)buf,
-                         "-----END RSA PRIVATE KEY-----");
+        s2 = (uchar *)strstr((char *)buf, "-----END RSA PRIVATE KEY-----");
 
         if (s2 == NULL || s2 <= s1)
             return (EST_ERR_X509_KEY_INVALID_PEM);
@@ -13133,8 +13125,7 @@ int x509parse_keyfile(rsa_context * rsa, char *path, char *pwd)
     if (pwd == NULL)
         ret = x509parse_key(rsa, buf, (int)n, NULL, 0);
     else
-        ret = x509parse_key(rsa, buf, (int)n,
-                    (uchar *)pwd, strlen(pwd));
+        ret = x509parse_key(rsa, buf, (int)n, (uchar *)pwd, strlen(pwd));
 
     memset(buf, 0, n + 1);
     free(buf);
@@ -13148,25 +13139,25 @@ int x509parse_keyfile(rsa_context * rsa, char *path, char *pwd)
 #endif
 
 /*
- * Store the name in printable form into buf; no more
- * than (end - buf) characters will be written
+    Store the name in printable form into buf; no more than (end - buf) characters will be written
  */
-int x509parse_dn_gets(char *buf, char *end, x509_name * dn)
+int x509parse_dn_gets(char *prefix, char *buf, int bufsize, x509_name * dn)
 {
-    int i;
-    uchar c;
-    x509_name *name;
-    char s[128], *p;
+    x509_name   *name;
+    char        *end, s[128], *p;
+    int         i;
+    uchar       c;
 
     memset(s, 0, sizeof(s));
 
     name = dn;
     p = buf;
+    end = &buf[bufsize - 1];
 
     while (name != NULL) {
-        if (name != dn)
+        if (name != dn) {
             p += snprintf(p, end - p, ", ");
-
+        }
         if (memcmp(name->oid.p, OID_X520, 2) == 0) {
             switch (name->oid.p[2]) {
             case X520_COMMON_NAME:
@@ -13194,28 +13185,26 @@ int x509parse_dn_gets(char *buf, char *end, x509_name * dn)
                 break;
 
             default:
-                p += snprintf(p, end - p, "0x%02X=",
-                          name->oid.p[2]);
+                p += snprintf(p, end - p, "0x%02X=", name->oid.p[2]);
                 break;
             }
         } else if (memcmp(name->oid.p, OID_PKCS9, 8) == 0) {
             switch (name->oid.p[8]) {
             case PKCS9_EMAIL:
-                p += snprintf(p, end - p, "emailAddress=");
+                p += snprintf(p, end - p, "EMAIL=");
                 break;
 
             default:
-                p += snprintf(p, end - p, "0x%02X=",
-                          name->oid.p[8]);
+                p += snprintf(p, end - p, "0x%02X=", name->oid.p[8]);
                 break;
             }
         } else
             p += snprintf(p, end - p, "\?\?=");
 
         for (i = 0; i < name->val.len; i++) {
-            if (i >= (int)sizeof(s) - 1)
+            if (i >= (int)sizeof(s) - 1) {
                 break;
-
+            }
             c = name->val.p[i];
             if (c < 32 || c == 127 || (c > 128 && c < 160))
                 s[i] = '?';
@@ -13226,80 +13215,62 @@ int x509parse_dn_gets(char *buf, char *end, x509_name * dn)
         p += snprintf(p, end - p, "%s", s);
         name = name->next;
     }
-
     return (p - buf);
 }
 
+
 /*
- * Return an informational string about the
- * certificate, or NULL if memory allocation failed
+    Return an informational string about the certificate, or NULL if memory allocation failed
  */
-char *x509parse_cert_info(char *prefix, x509_cert * crt)
+char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
 {
-    int i, n;
-    char *p, *end;
-    static char buf[512];
+    char    *end, *p, *cipher;
+    int     i, n;
+
+//MOB - check all uses of snprintf. BUG. returns number of characters that would be printed if it fits.
 
     p = buf;
-    end = buf + sizeof(buf) - 1;
-
-    p += snprintf(p, end - p, "%scert. version : %d\n",
-              prefix, crt->version);
-    p += snprintf(p, end - p, "%sserial number : ", prefix);
-
-    n = (crt->serial.len <= 32)
-        ? crt->serial.len : 32;
-
+    end = &buf[bufsize - 1];
+    p += snprintf(p, end - p, "%s_VERSION=%d,%s_SERIAL=", prefix, crt->version, prefix);
+    n = (crt->serial.len <= 32) ? crt->serial.len : 32;
     for (i = 0; i < n; i++)
-        p += snprintf(p, end - p, "%02X%s",
-                  crt->serial.p[i], (i < n - 1) ? ":" : "");
+        p += snprintf(p, end - p, "%02X%s", crt->serial.p[i], (i < n - 1) ? ":" : "");
 
-    p += snprintf(p, end - p, "\n%sissuer   name  : ", prefix);
-    p += x509parse_dn_gets(p, end, &crt->issuer);
+    p += x509parse_dn_gets("%s_ISSUER", p, end - p, &crt->issuer);
+    p += x509parse_dn_gets("%s_SUBJECT", p, end - p, &crt->subject);
 
-    p += snprintf(p, end - p, "\n%ssubject name  : ", prefix);
-    p += x509parse_dn_gets(p, end, &crt->subject);
+    p += snprintf(p, end - p, "%s_START=%04d-%02d-%02d %02d:%02d:%02d", prefix, crt->valid_from.year, crt->valid_from.mon,
+        crt->valid_from.day, crt->valid_from.hour, crt->valid_from.min, crt->valid_from.sec);
 
-    p += snprintf(p, end - p, "\n%sissued   on    : "
-              "%04d-%02d-%02d %02d:%02d:%02d", prefix,
-              crt->valid_from.year, crt->valid_from.mon,
-              crt->valid_from.day, crt->valid_from.hour,
-              crt->valid_from.min, crt->valid_from.sec);
-
-    p += snprintf(p, end - p, "\n%sexpires on     : "
-              "%04d-%02d-%02d %02d:%02d:%02d", prefix,
-              crt->valid_to.year, crt->valid_to.mon,
-              crt->valid_to.day, crt->valid_to.hour,
-              crt->valid_to.min, crt->valid_to.sec);
-
-    p += snprintf(p, end - p, "\n%ssigned using  : RSA+", prefix);
+    p += snprintf(p, end - p, "%s_END=%04d-%02d-%02d %02d:%02d:%02d", prefix, crt->valid_to.year, crt->valid_to.mon, 
+        crt->valid_to.day, crt->valid_to.hour, crt->valid_to.min, crt->valid_to.sec);
 
     switch (crt->sig_oid1.p[8]) {
     case RSA_MD2:
-        p += snprintf(p, end - p, "MD2");
+        cipher = "RSA_MD2";
         break;
     case RSA_MD4:
-        p += snprintf(p, end - p, "MD4");
+        cipher = "RSA_MD4";
         break;
     case RSA_MD5:
-        p += snprintf(p, end - p, "MD5");
+        cipher = "RSA_MD5";
         break;
     case RSA_SHA1:
-        p += snprintf(p, end - p, "SHA1");
+        cipher = "RSA_SHA1";
         break;
     default:
-        p += snprintf(p, end - p, "???");
+        cipher = "RSA";
         break;
     }
-
-    p += snprintf(p, end - p, "\n%sRSA key size  : %d bits\n", prefix,
-              crt->rsa.N.n * (int)sizeof(ulong) * 8);
-
-    return (buf);
+    //  MOB - This is the cipher encrypting the cert. Not the real cipher
+    p += snprintf(p, end - p, "%s_CIPHER=RSA+%s", prefix, cipher);
+    p += snprintf(p, end - p, "%s_KEYSIZE=%d", prefix, crt->rsa.N.n * (int)sizeof(ulong) * 8);
+    return buf;
 }
 
+
 /*
- * Return 0 if the certificate is still valid, or BADCERT_EXPIRED
+    Return 0 if the certificate is still valid, or BADCERT_EXPIRED
  */
 int x509parse_expired(x509_cert * crt)
 {
@@ -13312,13 +13283,10 @@ int x509parse_expired(x509_cert * crt)
     if (lt->tm_year > crt->valid_to.year - 1900)
         return (BADCERT_EXPIRED);
 
-    if (lt->tm_year == crt->valid_to.year - 1900 &&
-        lt->tm_mon > crt->valid_to.mon - 1)
+    if (lt->tm_year == crt->valid_to.year - 1900 && lt->tm_mon > crt->valid_to.mon - 1)
         return (BADCERT_EXPIRED);
 
-    if (lt->tm_year == crt->valid_to.year - 1900 &&
-        lt->tm_mon == crt->valid_to.mon - 1 &&
-        lt->tm_mday > crt->valid_to.day)
+    if (lt->tm_year == crt->valid_to.year - 1900 && lt->tm_mon == crt->valid_to.mon - 1 && lt->tm_mday > crt->valid_to.day)
         return (BADCERT_EXPIRED);
 
     return (0);
@@ -13350,10 +13318,9 @@ static void x509_hash(uchar *in, int len, int alg, uchar *out)
 }
 
 /*
- * Verify the certificate validity
+    Verify the certificate validity
  */
-int x509parse_verify(x509_cert * crt,
-             x509_cert * trust_ca, char *cn, int *flags)
+int x509parse_verify(x509_cert *crt, x509_cert *trust_ca, char *cn, int *flags)
 {
     int cn_len;
     int hash_id;
@@ -13367,92 +13334,71 @@ int x509parse_verify(x509_cert * crt,
     if (cn != NULL) {
         name = &crt->subject;
         cn_len = strlen(cn);
-
         while (name != NULL) {
-            if (memcmp(name->oid.p, OID_CN, 3) == 0 &&
-                memcmp(name->val.p, cn, cn_len) == 0 &&
-                name->val.len == cn_len)
+            if (memcmp(name->oid.p, OID_CN, 3) == 0 && memcmp(name->val.p, cn, cn_len) == 0 && name->val.len == cn_len)
                 break;
-
             name = name->next;
         }
-
         if (name == NULL)
             *flags |= BADCERT_CN_MISMATCH;
     }
-
     *flags |= BADCERT_NOT_TRUSTED;
 
     /*
-     * Iterate upwards in the given cert chain,
-     * ignoring any upper cert with CA != TRUE.
+        Iterate upwards in the given cert chain, ignoring any upper cert with CA != TRUE.
      */
     cur = crt->next;
-
     pathlen = 1;
 
     while (cur->version != 0) {
-        if (cur->ca_istrue == 0 ||
-            crt->issuer_raw.len != cur->subject_raw.len ||
-            memcmp(crt->issuer_raw.p, cur->subject_raw.p,
-               crt->issuer_raw.len) != 0) {
+        if (cur->ca_istrue == 0 || crt->issuer_raw.len != cur->subject_raw.len ||
+            memcmp(crt->issuer_raw.p, cur->subject_raw.p, crt->issuer_raw.len) != 0) {
             cur = cur->next;
             continue;
         }
-
         hash_id = crt->sig_oid1.p[8];
-
         x509_hash(crt->tbs.p, crt->tbs.len, hash_id, hash);
-
-        if (rsa_pkcs1_verify(&cur->rsa, RSA_PUBLIC, hash_id,
-                     0, hash, crt->sig.p) != 0)
+        if (rsa_pkcs1_verify(&cur->rsa, RSA_PUBLIC, hash_id, 0, hash, crt->sig.p) != 0) {
             return (EST_ERR_X509_CERT_VERIFY_FAILED);
-
+        }
         pathlen++;
-
         crt = cur;
         cur = crt->next;
     }
 
     /*
-     * Atempt to validate topmost cert with our CA chain.
+        Atempt to validate topmost cert with our CA chain.
      */
     while (trust_ca->version != 0) {
         if (crt->issuer_raw.len != trust_ca->subject_raw.len ||
-            memcmp(crt->issuer_raw.p, trust_ca->subject_raw.p,
-               crt->issuer_raw.len) != 0) {
+                memcmp(crt->issuer_raw.p, trust_ca->subject_raw.p, crt->issuer_raw.len) != 0) {
             trust_ca = trust_ca->next;
             continue;
         }
-
-        if (trust_ca->max_pathlen > 0 &&
-            trust_ca->max_pathlen < pathlen)
+        if (trust_ca->max_pathlen > 0 && trust_ca->max_pathlen < pathlen) {
             break;
-
+        }
         hash_id = crt->sig_oid1.p[8];
-
         x509_hash(crt->tbs.p, crt->tbs.len, hash_id, hash);
 
-        if (rsa_pkcs1_verify(&trust_ca->rsa, RSA_PUBLIC, hash_id,
-                     0, hash, crt->sig.p) == 0) {
+        if (rsa_pkcs1_verify(&trust_ca->rsa, RSA_PUBLIC, hash_id, 0, hash, crt->sig.p) == 0) {
             /*
-             * cert. is signed by a trusted CA
+                cert. is signed by a trusted CA
              */
             *flags &= ~BADCERT_NOT_TRUSTED;
             break;
         }
-
         trust_ca = trust_ca->next;
     }
-
-    if (*flags != 0)
+    if (*flags != 0) {
         return (EST_ERR_X509_CERT_VERIFY_FAILED);
-
+    }
     return (0);
 }
 
+
 /*
- * Unallocate all certificate data
+    Unallocate all certificate data
  */
 void x509_free(x509_cert * crt)
 {
@@ -13474,7 +13420,6 @@ void x509_free(x509_cert * crt)
             memset(name_prv, 0, sizeof(x509_name));
             free(name_prv);
         }
-
         name_cur = cert_cur->subject.next;
         while (name_cur != NULL) {
             name_prv = name_cur;
@@ -13482,12 +13427,10 @@ void x509_free(x509_cert * crt)
             memset(name_prv, 0, sizeof(x509_name));
             free(name_prv);
         }
-
         if (cert_cur->raw.p != NULL) {
             memset(cert_cur->raw.p, 0, cert_cur->raw.len);
             free(cert_cur->raw.p);
         }
-
         cert_cur = cert_cur->next;
     } while (cert_cur != NULL);
 

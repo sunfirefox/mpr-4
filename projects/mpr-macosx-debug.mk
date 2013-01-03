@@ -119,6 +119,7 @@ clean:
 	rm -rf $(CONFIG)/obj/xml.o
 	rm -rf $(CONFIG)/obj/est.o
 	rm -rf $(CONFIG)/obj/matrixssl.o
+	rm -rf $(CONFIG)/obj/mocana.o
 	rm -rf $(CONFIG)/obj/openssl.o
 	rm -rf $(CONFIG)/obj/ssl.o
 	rm -rf $(CONFIG)/obj/manager.o
@@ -484,6 +485,12 @@ $(CONFIG)/obj/matrixssl.o: \
         $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/matrixssl.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/matrixssl.c
 
+$(CONFIG)/obj/mocana.o: \
+        src/ssl/mocana.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/mocana.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/mocana.c
+
 $(CONFIG)/obj/openssl.o: \
         src/ssl/openssl.c \
         $(CONFIG)/inc/bit.h \
@@ -500,9 +507,10 @@ $(CONFIG)/bin/libmprssl.dylib:  \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/obj/est.o \
         $(CONFIG)/obj/matrixssl.o \
+        $(CONFIG)/obj/mocana.o \
         $(CONFIG)/obj/openssl.o \
         $(CONFIG)/obj/ssl.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o -lmpr $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch x86_64 $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/mocana.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/testArgv.o: \
         test/testArgv.c \

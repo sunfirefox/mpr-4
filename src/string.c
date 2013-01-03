@@ -829,19 +829,21 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
     char    *start, *end;
     ssize   i;
 
-    assure(last);
     assure(delim);
-
-    start = str ? str : *last;
+    start = (str || *last == 0) ? str : *last;
 
     if (start == 0) {
-        *last = 0;
+        if (last) {
+            *last = 0;
+        }
         return 0;
     }
     i = strspn(start, delim);
     start += i;
     if (*start == '\0') {
-        *last = 0;
+        if (last) {
+            *last = 0;
+        }
         return 0;
     }
     end = strpbrk(start, delim);
@@ -850,7 +852,9 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
         i = strspn(end, delim);
         end += i;
     }
-    *last = end;
+    if (last) {
+        *last = end;
+    }
     return start;
 }
 

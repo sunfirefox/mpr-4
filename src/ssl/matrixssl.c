@@ -114,7 +114,7 @@ static uchar CAcertSrvBuf[] = {
 /***************************** Forward Declarations ***************************/
 
 static void     closeMss(MprSocket *sp, bool gracefully);
-static MatrixConfig *createMatrixConfig(MprSsl *ssl, int server);
+static MatrixConfig *createMatrixConfig(MprSsl *ssl);
 static void     disconnectMss(MprSocket *sp);
 static int      doHandshake(MprSocket *sp, short cipherSuite);
 static ssize    flushMss(MprSocket *sp);
@@ -124,7 +124,7 @@ static void     manageMatrixSocket(MatrixSocket *msp, int flags);
 static void     manageMatrixConfig(MatrixConfig *cfg, int flags);
 static ssize    processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, int *readMore);
 static ssize    readMss(MprSocket *sp, void *buf, ssize len);
-static int      upgradeMss(MprSocket *sp, MprSsl *ssl, int server);
+static int      upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName);
 static int      verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert);
 static ssize    writeMss(MprSocket *sp, cvoid *buf, ssize len);
 
@@ -158,7 +158,7 @@ PUBLIC int mprCreateMatrixSslModule()
     configurations for different routes. There is default SSL configuration that is used
     when a route does not define a configuration and also for clients.
  */
-static MatrixConfig *createMatrixConfig(MprSsl *ssl, int server)
+static MatrixConfig *createMatrixConfig(MprSsl *ssl)
 {
     MatrixConfig    *cfg;
     char            *password;
@@ -257,7 +257,7 @@ static int listenMss(MprSocket *sp, cchar *host, int port, int flags)
 }
 
 
-static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
+static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 {
     MprSocketService    *ss;
     MatrixSocket        *msp;
@@ -279,7 +279,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
 
     mprAddItem(ss->secureSockets, sp);
 
-    if (!ssl->pconfig && (ssl->pconfig = createMatrixConfig(ssl, server)) == 0) {
+    if (!ssl->pconfig && (ssl->pconfig = createMatrixConfig(ssl)) == 0) {
         unlock(sp);
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -289,7 +289,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
         Associate a new ssl session with this socket. The session represents the state of the ssl protocol 
         over this socket. Session caching is handled automatically by this api.
      */
-    if (server) {
+    if (sp->flags & MPR_SOCKET_SERVER) {
         if (matrixSslNewServerSession(&msp->handle, cfg->keys, NULL) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CREATE;
@@ -300,12 +300,12 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, int server)
             unlock(sp);
             return MPR_ERR_CANT_INITIALIZE;
         }
-        /* This means negotiate ciphers with the server */
         cipherSuite = 0;
         if (matrixSslNewClientSession(&msp->handle, cfg->keys, NULL, cipherSuite, verifyCert, NULL, NULL) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }
+        //  MOB - need to verify peerName
         if (doHandshake(sp, 0) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;

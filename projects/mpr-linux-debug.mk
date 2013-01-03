@@ -119,6 +119,7 @@ clean:
 	rm -rf $(CONFIG)/obj/xml.o
 	rm -rf $(CONFIG)/obj/est.o
 	rm -rf $(CONFIG)/obj/matrixssl.o
+	rm -rf $(CONFIG)/obj/mocana.o
 	rm -rf $(CONFIG)/obj/openssl.o
 	rm -rf $(CONFIG)/obj/ssl.o
 	rm -rf $(CONFIG)/obj/manager.o
@@ -484,6 +485,12 @@ $(CONFIG)/obj/matrixssl.o: \
         $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/matrixssl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/matrixssl.c
 
+$(CONFIG)/obj/mocana.o: \
+        src/ssl/mocana.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/mocana.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/mocana.c
+
 $(CONFIG)/obj/openssl.o: \
         src/ssl/openssl.c \
         $(CONFIG)/inc/bit.h \
@@ -500,9 +507,10 @@ $(CONFIG)/bin/libmprssl.so:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/est.o \
         $(CONFIG)/obj/matrixssl.o \
+        $(CONFIG)/obj/mocana.o \
         $(CONFIG)/obj/openssl.o \
         $(CONFIG)/obj/ssl.o
-	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o -lmpr $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/mocana.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/testArgv.o: \
         test/testArgv.c \

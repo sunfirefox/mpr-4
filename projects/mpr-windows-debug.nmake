@@ -119,6 +119,7 @@ clean:
 	-if exist $(CONFIG)\obj\xml.obj del /Q $(CONFIG)\obj\xml.obj
 	-if exist $(CONFIG)\obj\est.obj del /Q $(CONFIG)\obj\est.obj
 	-if exist $(CONFIG)\obj\matrixssl.obj del /Q $(CONFIG)\obj\matrixssl.obj
+	-if exist $(CONFIG)\obj\mocana.obj del /Q $(CONFIG)\obj\mocana.obj
 	-if exist $(CONFIG)\obj\openssl.obj del /Q $(CONFIG)\obj\openssl.obj
 	-if exist $(CONFIG)\obj\ssl.obj del /Q $(CONFIG)\obj\ssl.obj
 	-if exist $(CONFIG)\obj\manager.obj del /Q $(CONFIG)\obj\manager.obj
@@ -481,6 +482,12 @@ $(CONFIG)\obj\matrixssl.obj: \
         $(CONFIG)\inc\mpr.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\matrixssl.c
 
+$(CONFIG)\obj\mocana.obj: \
+        src\ssl\mocana.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\mpr.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\mocana.obj -Fd$(CONFIG)\obj\mocana.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\mocana.c
+
 $(CONFIG)\obj\openssl.obj: \
         src\ssl\openssl.c \
         $(CONFIG)\inc\bit.h \
@@ -497,9 +504,10 @@ $(CONFIG)\bin\libmprssl.dll:  \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\obj\est.obj \
         $(CONFIG)\obj\matrixssl.obj \
+        $(CONFIG)\obj\mocana.obj \
         $(CONFIG)\obj\openssl.obj \
         $(CONFIG)\obj\ssl.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj libmpr.lib $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\mocana.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\testArgv.obj: \
         test\testArgv.c \

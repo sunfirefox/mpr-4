@@ -236,12 +236,14 @@ PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService  *ws;
 
-    ws = MPR->waitService;
-    lock(ws);
-    wp->flags |= MPR_WAIT_RECALL_HANDLER;
-    ws->needRecall = 1;
-    mprWakeNotifier();
-    unlock(ws);
+    if (wp) {
+        ws = MPR->waitService;
+        lock(ws);
+        wp->flags |= MPR_WAIT_RECALL_HANDLER;
+        ws->needRecall = 1;
+        mprWakeNotifier();
+        unlock(ws);
+    }
 }
 
 

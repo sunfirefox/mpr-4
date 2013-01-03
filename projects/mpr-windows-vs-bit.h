@@ -5,6 +5,7 @@
     configure or define variables in your Makefile to override these default values.
  */
 
+
 /* Settings */
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
@@ -30,12 +31,11 @@
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
-/* Settings */
 #ifndef BIT_MPR_MANAGER
     #define BIT_MPR_MANAGER "manager"
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "doxygen,dsi,ejs,man,man2html,md5,openssl,ssl,utest"
+    #define BIT_OPTIONAL "doxygen,dsi,ejs,est,man,man2html,md5,utest"
 #endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "mpr"
@@ -53,7 +53,7 @@
     #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,est,man,man2html,pmaker,ssl,matrixssl,openssl"
+    #define BIT_WITHOUT_ALL "doxygen,dsi,est,man,man2html,pmaker,matrixssl,openssl"
 #endif
 
 /* Prefixes */
@@ -164,6 +164,9 @@
 #ifndef BIT_PACK_MD5
     #define BIT_PACK_MD5 1
 #endif
+#ifndef BIT_PACK_MOCANA
+    #define BIT_PACK_MOCANA 0
+#endif
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 0
 #endif
@@ -172,9 +175,6 @@
 #endif
 #ifndef BIT_PACK_RC
     #define BIT_PACK_RC 1
-#endif
-#ifndef BIT_PACK_SSL
-    #define BIT_PACK_SSL 0
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
