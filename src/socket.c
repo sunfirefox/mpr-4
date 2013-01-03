@@ -255,7 +255,6 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     int                 datagram, family, protocol, rc, only;
 
     lock(sp);
-
     if (ip == 0 || *ip == '\0') {
         mprLog(6, "listenSocket: %d, flags %x", port, initialFlags);
     } else {
@@ -1112,6 +1111,12 @@ PUBLIC bool mprSocketHasBufferedRead(MprSocket *sp)
 PUBLIC bool mprSocketHasBufferedWrite(MprSocket *sp)
 {
     return (sp->flags & MPR_SOCKET_BUFFERED_WRITE) ? 1 : 0;
+}
+
+
+PUBLIC bool mprSocketHandshaking(MprSocket *sp)
+{
+    return (sp->flags & MPR_SOCKET_HANDSHAKING) ? 1 : 0;
 }
 
 

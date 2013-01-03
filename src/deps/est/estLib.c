@@ -3761,6 +3761,35 @@ char xyssl_ca_crt[] =
     #define vsnprintf _vsnprintf
 #endif
 
+/*
+    Safely format into a buffer. This works around inconsistencies in snprintf which is dangerous.
+ */
+int snfmt(char *buf, ssize bufsize, cchar *fmt, ...)
+{
+    va_list     ap;
+    char        *result;
+    int         n;
+
+    if (bufsize <= 0) {
+        return 0;
+    }
+    va_start(ap, fmt);
+#if _WIN32
+    /* Windows does not guarantee a null will be appended */
+    if ((n = snprintf(buf, bufsize - 1, fmt, ap)) < 0) {
+        n = 0;
+    }
+    buf[n] = '\0';
+#else
+    /* Posix will return the number of characters that would fix in an unlimited buffer -- Ugh, dangerous! */
+    n = vsnprintf(buf, bufsize, fmt, ap);
+    n = min(n, bufsize);
+#endif
+    va_end(ap);
+    return n;
+}
+
+
 char *debug_fmt(cchar *format, ...)
 {
     va_list argp;
@@ -3775,7 +3804,7 @@ char *debug_fmt(cchar *format, ...)
 }
 
 
-void debug_print_msg(ssl_context *ssl, int level, char *file, int line, char *text)
+void debug_print_msg(ssl_context *ssl, int level, char *text)
 {
     char str[512];
     int maxlen = sizeof(str) - 1;
@@ -3783,13 +3812,13 @@ void debug_print_msg(ssl_context *ssl, int level, char *file, int line, char *te
     if (ssl->f_dbg == NULL) {
         return;
     }
-    snprintf(str, maxlen, "%s(%04d): %s\n", file, line, text);
+    snprintf(str, maxlen, "%s\n", text);
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
 }
 
 
-void debug_print_ret(ssl_context *ssl, int level, char *file, int line, char *text, int ret)
+void debug_print_ret(ssl_context *ssl, int level, char *text, int ret)
 {
     char str[512];
     int maxlen = sizeof(str) - 1;
@@ -3797,13 +3826,13 @@ void debug_print_ret(ssl_context *ssl, int level, char *file, int line, char *te
     if (ssl->f_dbg == NULL) {
         return;
     }
-    snprintf(str, maxlen, "%s(%04d): %s() returned %d (0x%x)\n", file, line, text, ret, ret);
+    snprintf(str, maxlen, "%s() returned %d (0x%x)\n", text, ret, ret);
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
 }
 
 
-void debug_print_buf(ssl_context *ssl, int level, char *file, int line, char *text, uchar *buf, int len)
+void debug_print_buf(ssl_context *ssl, int level, char *text, uchar *buf, int len)
 {
     char str[512];
     int i, maxlen = sizeof(str) - 1;
@@ -3811,7 +3840,7 @@ void debug_print_buf(ssl_context *ssl, int level, char *file, int line, char *te
     if (ssl->f_dbg == NULL || len < 0) {
         return;
     }
-    snprintf(str, maxlen, "%s(%04d): dumping '%s' (%d bytes)\n", file, line, text, len);
+    snfmt(str, maxlen, "dumping '%s' (%d bytes)\n", text, len);
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
 
@@ -3823,11 +3852,11 @@ void debug_print_buf(ssl_context *ssl, int level, char *file, int line, char *te
             if (i > 0) {
                 ssl->f_dbg(ssl->p_dbg, level, "\n");
             }
-            snprintf(str, maxlen, "%s(%04d): %04x: ", file, line, i);
+            snfmt(str, maxlen, "%04x: ", i);
             str[maxlen] = '\0';
             ssl->f_dbg(ssl->p_dbg, level, str);
         }
-        snprintf(str, maxlen, " %02x", (uint)buf[i]);
+        snfmt(str, maxlen, " %02x", (uint)buf[i]);
         str[maxlen] = '\0';
         ssl->f_dbg(ssl->p_dbg, level, str);
     }
@@ -3837,7 +3866,7 @@ void debug_print_buf(ssl_context *ssl, int level, char *file, int line, char *te
 }
 
 
-void debug_print_mpi(ssl_context *ssl, int level, char *file, int line, char *text, mpi * X)
+void debug_print_mpi(ssl_context *ssl, int level, char *text, mpi * X)
 {
     char str[512];
     int i, j, k, n, maxlen = sizeof(str) - 1;
@@ -3850,7 +3879,7 @@ void debug_print_mpi(ssl_context *ssl, int level, char *file, int line, char *te
             break;
         }
     }
-    snprintf(str, maxlen, "%s(%04d): value of '%s' (%u bits) is:\n", file, line, text, (int) ((n + 1) * sizeof(t_int)) << 3);
+    snfmt(str, maxlen, "value of '%s' (%u bits) is:\n", text, (int) ((n + 1) * sizeof(t_int)) << 3);
 
     str[maxlen] = '\0';
     ssl->f_dbg(ssl->p_dbg, level, str);
@@ -3860,12 +3889,12 @@ void debug_print_mpi(ssl_context *ssl, int level, char *file, int line, char *te
             if (j > 0) {
                 ssl->f_dbg(ssl->p_dbg, level, "\n");
             }
-            snprintf(str, maxlen, "%s(%04d): ", file, line);
+            snfmt(str, maxlen, " ");
             str[maxlen] = '\0';
             ssl->f_dbg(ssl->p_dbg, level, str);
         }
         for (k = sizeof(t_int) - 1; k >= 0; k--) {
-            snprintf(str, maxlen, " %02x", (uint) (X->p[i] >> (k << 3)) & 0xFF);
+            snfmt(str, maxlen, " %02x", (uint) (X->p[i] >> (k << 3)) & 0xFF);
             str[maxlen] = '\0';
             ssl->f_dbg(ssl->p_dbg, level, str);
         }
@@ -3874,25 +3903,24 @@ void debug_print_mpi(ssl_context *ssl, int level, char *file, int line, char *te
 }
 
 
-void debug_print_crt(ssl_context *ssl, int level, char *file, int line, char *text, x509_cert * crt)
+void debug_print_crt(ssl_context *ssl, int level, char *text, x509_cert * crt)
 {
-    char cbuf[5120], str[512], prefix[64], *p;
-    int i = 0, maxlen = sizeof(prefix) - 1;
+    char cbuf[5120], str[512], *p;
+    int i, maxlen;
 
     if (ssl->f_dbg == NULL || crt == NULL) {
         return;
     }
-    snprintf(prefix, maxlen, "%s(%04d): ", file, line);
-    prefix[maxlen] = '\0';
     maxlen = sizeof(str) - 1;
 
+    i = 0;
     while (crt != NULL && crt->next != NULL) {
         p = x509parse_cert_info("", cbuf, sizeof(cbuf), crt);
-        snprintf(str, maxlen, "%s(%04d): %s #%d:\n%s", file, line, text, ++i, p);
+        snfmt(str, maxlen, "%s #%d:\n%s", text, ++i, p);
         str[maxlen] = '\0';
         ssl->f_dbg(ssl->p_dbg, level, str);
-        debug_print_mpi(ssl, level, file, line, "crt->rsa.N", &crt->rsa.N);
-        debug_print_mpi(ssl, level, file, line, "crt->rsa.E", &crt->rsa.E);
+        debug_print_mpi(ssl, level, "crt->rsa.N", &crt->rsa.N);
+        debug_print_mpi(ssl, level, "crt->rsa.E", &crt->rsa.E);
         crt = crt->next;
     }
 }
@@ -8395,7 +8423,7 @@ static int ssl_parse_server_hello(ssl_context * ssl)
     buf = ssl->in_msg;
 
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return ret;
     }
     if (ssl->in_msgtype != SSL_MSG_HANDSHAKE) {
@@ -8503,7 +8531,7 @@ static int ssl_parse_server_key_exchange(ssl_context * ssl)
     return EST_ERR_SSL_FEATURE_UNAVAILABLE;
 #else
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return ret;
     }
     if (ssl->in_msgtype != SSL_MSG_HANDSHAKE) {
@@ -8594,7 +8622,7 @@ static int ssl_parse_certificate_request(ssl_context * ssl)
           ... .. ...  length of DN 2, etc.
      */
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return ret;
     }
     if (ssl->in_msgtype != SSL_MSG_HANDSHAKE) {
@@ -8621,7 +8649,7 @@ static int ssl_parse_server_hello_done(ssl_context * ssl)
 
     if (ssl->client_auth != 0) {
         if ((ret = ssl_read_record(ssl)) != 0) {
-            SSL_DEBUG_RET(1, "ssl_read_record", ret);
+            SSL_DEBUG_RET(3, "ssl_read_record", ret);
             return ret;
         }
         if (ssl->in_msgtype != SSL_MSG_HANDSHAKE) {
@@ -8915,7 +8943,7 @@ static int ssl_parse_client_hello(ssl_context * ssl)
     SSL_DEBUG_MSG(2, ("=> parse client hello"));
 
     if ((ret = ssl_fetch_input(ssl, 5)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_fetch_input", ret);
+        SSL_DEBUG_RET(3, "ssl_fetch_input", ret);
         return (ret);
     }
 
@@ -8961,7 +8989,7 @@ static int ssl_parse_client_hello(ssl_context * ssl)
             ? buf[4] : SSL_MINOR_VERSION_1;
 
         if ((ret = ssl_fetch_input(ssl, 2 + n)) != 0) {
-            SSL_DEBUG_RET(1, "ssl_fetch_input", ret);
+            SSL_DEBUG_RET(3, "ssl_fetch_input", ret);
             return (ret);
         }
 
@@ -9064,7 +9092,8 @@ static int ssl_parse_client_hello(ssl_context * ssl)
         }
 
         if ((ret = ssl_fetch_input(ssl, 5 + n)) != 0) {
-            SSL_DEBUG_RET(1, "ssl_fetch_input", ret);
+            //  MOB - move all this trace into fetch_input
+            SSL_DEBUG_RET(3, "ssl_fetch_input", ret);
             return (ret);
         }
 
@@ -9474,7 +9503,8 @@ static int ssl_parse_client_key_exchange(ssl_context * ssl)
     SSL_DEBUG_MSG(2, ("=> parse client key exchange"));
 
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        //  MOB - move all this trace into ssl_read_record
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return (ret);
     }
 
@@ -9601,7 +9631,7 @@ static int ssl_parse_certificate_verify(ssl_context * ssl)
     ssl_calc_verify(ssl, hash);
 
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return (ret);
     }
 
@@ -10457,7 +10487,7 @@ static int ssl_decrypt_buf(ssl_context * ssl)
 }
 
 /*
- * Fill the input message buffer
+    Fill the input message buffer
  */
 int ssl_fetch_input(ssl_context * ssl, int nb_want)
 {
@@ -10469,17 +10499,15 @@ int ssl_fetch_input(ssl_context * ssl, int nb_want)
         len = nb_want - ssl->in_left;
         ret = ssl->f_recv(ssl->p_recv, ssl->in_hdr + ssl->in_left, len);
 
-        SSL_DEBUG_MSG(2, ("in_left: %d, nb_want: %d", ssl->in_left, nb_want));
-        SSL_DEBUG_RET(2, "ssl->f_recv", ret);
+        SSL_DEBUG_MSG(4, ("in_left: %d, nb_want: %d", ssl->in_left, nb_want));
+        SSL_DEBUG_RET(4, "ssl->f_recv", ret);
 
-        if (ret < 0)
-            return (ret);
-
+        if (ret < 0) {
+            return ret;
+        }
         ssl->in_left += ret;
     }
-
-    SSL_DEBUG_MSG(2, ("<= fetch input"));
-
+    SSL_DEBUG_MSG(4, ("<= fetch input"));
     return (0);
 }
 
@@ -10571,12 +10599,11 @@ int ssl_read_record(ssl_context * ssl)
 
     if (ssl->in_hslen != 0 && ssl->in_hslen < ssl->in_msglen) {
         /*
-         * Get next Handshake message in the current record
+            Get next Handshake message in the current record
          */
         ssl->in_msglen -= ssl->in_hslen;
 
-        memcpy(ssl->in_msg, ssl->in_msg + ssl->in_hslen,
-               ssl->in_msglen);
+        memcpy(ssl->in_msg, ssl->in_msg + ssl->in_hslen, ssl->in_msglen);
 
         ssl->in_hslen = 4;
         ssl->in_hslen += (ssl->in_msg[2] << 8) | ssl->in_msg[3];
@@ -10588,7 +10615,6 @@ int ssl_read_record(ssl_context * ssl)
             SSL_DEBUG_MSG(1, ("bad handshake length"));
             return (EST_ERR_SSL_INVALID_RECORD);
         }
-
         if (ssl->in_msglen < ssl->in_hslen) {
             SSL_DEBUG_MSG(1, ("bad handshake length"));
             return (EST_ERR_SSL_INVALID_RECORD);
@@ -10601,10 +10627,10 @@ int ssl_read_record(ssl_context * ssl)
     ssl->in_hslen = 0;
 
     /*
-     * Read the record header and validate it
+        Read the record header and validate it
      */
     if ((ret = ssl_fetch_input(ssl, 5)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_fetch_input", ret);
+        SSL_DEBUG_RET(3, "ssl_fetch_input", ret);
         return (ret);
     }
 
@@ -10659,7 +10685,7 @@ int ssl_read_record(ssl_context * ssl)
      * Read and optionally decrypt the message contents
      */
     if ((ret = ssl_fetch_input(ssl, 5 + ssl->in_msglen)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_fetch_input", ret);
+        SSL_DEBUG_RET(3, "ssl_fetch_input", ret);
         return (ret);
     }
 
@@ -10822,7 +10848,7 @@ int ssl_parse_certificate(ssl_context * ssl)
         return (0);
     }
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return (ret);
     }
     ssl->state++;
@@ -10955,7 +10981,7 @@ int ssl_parse_change_cipher_spec(ssl_context * ssl)
     ssl->do_crypt = 0;
 
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return (ret);
     }
     if (ssl->in_msgtype != SSL_MSG_CHANGE_CIPHER_SPEC) {
@@ -11104,7 +11130,7 @@ int ssl_parse_finished(ssl_context * ssl)
     ssl->do_crypt = 1;
 
     if ((ret = ssl_read_record(ssl)) != 0) {
-        SSL_DEBUG_RET(1, "ssl_read_record", ret);
+        SSL_DEBUG_RET(3, "ssl_read_record", ret);
         return (ret);
     }
     if (ssl->in_msgtype != SSL_MSG_HANDSHAKE) {
@@ -11416,7 +11442,7 @@ int ssl_read(ssl_context * ssl, uchar *buf, int len)
     }
     if (ssl->in_offt == NULL) {
         if ((ret = ssl_read_record(ssl)) != 0) {
-            SSL_DEBUG_RET(1, "ssl_read_record", ret);
+            SSL_DEBUG_RET(3, "ssl_read_record", ret);
             return (ret);
         }
         if (ssl->in_msglen == 0 &&
@@ -11426,7 +11452,7 @@ int ssl_read(ssl_context * ssl, uchar *buf, int len)
                MOB - why does this matter?
              */
             if ((ret = ssl_read_record(ssl)) != 0) {
-                SSL_DEBUG_RET(1, "ssl_read_record", ret);
+                SSL_DEBUG_RET(3, "ssl_read_record", ret);
                 return (ret);
             }
         }
@@ -11955,7 +11981,7 @@ static int asn1_get_len(uchar **p, uchar *end, int *len)
     if (*len > (int)(end - *p))
         return (EST_ERR_ASN1_OUT_OF_DATA);
 
-    return (0);
+    return 0;
 }
 
 static int asn1_get_tag(uchar **p,
@@ -11985,7 +12011,7 @@ static int asn1_get_bool(uchar **p, uchar *end, int *val)
     *val = (**p != 0) ? 1 : 0;
     (*p)++;
 
-    return (0);
+    return 0;
 }
 
 static int asn1_get_int(uchar **p, uchar *end, int *val)
@@ -12005,7 +12031,7 @@ static int asn1_get_int(uchar **p, uchar *end, int *val)
         (*p)++;
     }
 
-    return (0);
+    return 0;
 }
 
 static int asn1_get_mpi(uchar **p, uchar *end, mpi * X)
@@ -12047,7 +12073,7 @@ static int x509_get_version(uchar **p, uchar *end, int *ver)
         return (EST_ERR_X509_CERT_INVALID_VERSION |
             EST_ERR_ASN1_LENGTH_MISMATCH);
 
-    return (0);
+    return 0;
 }
 
 /*
@@ -12075,7 +12101,7 @@ static int x509_get_serial(uchar **p,
     serial->p = *p;
     *p += serial->len;
 
-    return (0);
+    return 0;
 }
 
 /*
@@ -12101,7 +12127,7 @@ static int x509_get_alg(uchar **p, uchar *end, x509_buf * alg)
     *p += alg->len;
 
     if (*p == end)
-        return (0);
+        return 0;
 
     /*
      * assume the algorithm parameters must be NULL
@@ -12113,7 +12139,7 @@ static int x509_get_alg(uchar **p, uchar *end, x509_buf * alg)
         return (EST_ERR_X509_CERT_INVALID_ALG |
             EST_ERR_ASN1_LENGTH_MISMATCH);
 
-    return (0);
+    return 0;
 }
 
 /*
@@ -12182,7 +12208,7 @@ static int x509_get_name(uchar **p, uchar *end, x509_name * cur)
      * recurse until end of SEQUENCE is reached
      */
     if (*p == end2)
-        return (0);
+        return 0;
 
     cur->next = (x509_name *) malloc(sizeof(x509_name));
 
@@ -12192,65 +12218,61 @@ static int x509_get_name(uchar **p, uchar *end, x509_name * cur)
     return (x509_get_name(p, end2, cur->next));
 }
 
+
 /*
- *  Validity ::= SEQUENCE {
- *       notBefore      Time,
- *       notAfter       Time }
- *
- *  Time ::= CHOICE {
- *       utcTime        UTCTime,
- *       generalTime    GeneralizedTime }
+    Validity ::= SEQUENCE {
+         notBefore      Time,
+         notAfter       Time }
+  
+    Time ::= CHOICE {
+         utcTime        UTCTime,
+         generalTime    GeneralizedTime }
  */
-static int x509_get_dates(uchar **p,
-              uchar *end, x509_time * from, x509_time * to)
+static int x509_get_dates(uchar **p, uchar *end, x509_time *from, x509_time *to)
 {
     int ret, len;
     char date[64];
 
-    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0)
+    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_CONSTRUCTED | EST_ASN1_SEQUENCE)) != 0) {
         return (EST_ERR_X509_CERT_INVALID_DATE | ret);
-
+    }
     end = *p + len;
 
     /*
-     * TODO: also handle GeneralizedTime
+        TODO: also handle GeneralizedTime
      */
-    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_UTC_TIME)) != 0)
+    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_UTC_TIME)) != 0) {
         return (EST_ERR_X509_CERT_INVALID_DATE | ret);
-
-    memset(date, 0, sizeof(date));
-    memcpy(date, *p, (len < (int)sizeof(date) - 1) ?
-           len : (int)sizeof(date) - 1);
-
-    if (sscanf(date, "%2d%2d%2d%2d%2d%2d",
-           &from->year, &from->mon, &from->day,
-           &from->hour, &from->min, &from->sec) < 5)
-        return (EST_ERR_X509_CERT_INVALID_DATE);
-
-    from->year += 100 * (from->year < 90);
-    from->year += 1900;
-
-    *p += len;
-
-    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_UTC_TIME)) != 0)
-        return (EST_ERR_X509_CERT_INVALID_DATE | ret);
-
+    }
     memset(date, 0, sizeof(date));
     memcpy(date, *p, (len < (int)sizeof(date) - 1) ?  len : (int)sizeof(date) - 1);
 
-    if (sscanf(date, "%2d%2d%2d%2d%2d%2d", &to->year, &to->mon, &to->day, &to->hour, &to->min, &to->sec) < 5)
+    if (sscanf(date, "%2d%2d%2d%2d%2d%2d", &from->year, &from->mon, &from->day, &from->hour, &from->min, &from->sec) < 5) {
         return (EST_ERR_X509_CERT_INVALID_DATE);
-
-    to->year += 100 * (to->year < 90);
-    to->year += 1900;
-
+    }
+    from->year += 100 * (from->year < 90);
+    from->year += 1900;
     *p += len;
 
-    if (*p != end)
-        return (EST_ERR_X509_CERT_INVALID_DATE | EST_ERR_ASN1_LENGTH_MISMATCH);
+    if ((ret = asn1_get_tag(p, end, &len, EST_ASN1_UTC_TIME)) != 0) {
+        return (EST_ERR_X509_CERT_INVALID_DATE | ret);
+    }
+    memset(date, 0, sizeof(date));
+    memcpy(date, *p, (len < (int)sizeof(date) - 1) ?  len : (int)sizeof(date) - 1);
 
-    return (0);
+    if (sscanf(date, "%2d%2d%2d%2d%2d%2d", &to->year, &to->mon, &to->day, &to->hour, &to->min, &to->sec) < 5) {
+        return (EST_ERR_X509_CERT_INVALID_DATE);
+    }
+    to->year += 100 * (to->year < 90);
+    to->year += 1900;
+    *p += len;
+
+    if (*p != end) {
+        return (EST_ERR_X509_CERT_INVALID_DATE | EST_ERR_ASN1_LENGTH_MISMATCH);
+    }
+    return 0;
 }
+
 
 /*
  *  SubjectPublicKeyInfo  ::=  SEQUENCE  {
@@ -12308,7 +12330,7 @@ static int x509_get_pubkey(uchar **p,
         return (EST_ERR_X509_CERT_INVALID_PUBKEY |
             EST_ERR_ASN1_LENGTH_MISMATCH);
 
-    return (0);
+    return 0;
 }
 
 static int x509_get_sig(uchar **p, uchar *end, x509_buf * sig)
@@ -12328,19 +12350,18 @@ static int x509_get_sig(uchar **p, uchar *end, x509_buf * sig)
 
     *p += len;
 
-    return (0);
+    return 0;
 }
 
 /*
- * X.509 v2/v3 unique identifier (not parsed)
+    X.509 v2/v3 unique identifier (not parsed)
  */
-static int x509_get_uid(uchar **p,
-            uchar *end, x509_buf * uid, int n)
+static int x509_get_uid(uchar **p, uchar *end, x509_buf * uid, int n)
 {
     int ret;
 
     if (*p == end)
-        return (0);
+        return 0;
 
     uid->tag = **p;
 
@@ -12348,7 +12369,7 @@ static int x509_get_uid(uchar **p,
                 EST_ASN1_CONTEXT_SPECIFIC | EST_ASN1_CONSTRUCTED | n))
         != 0) {
         if (ret == EST_ERR_ASN1_UNEXPECTED_TAG)
-            return (0);
+            return 0;
 
         return (ret);
     }
@@ -12356,15 +12377,13 @@ static int x509_get_uid(uchar **p,
     uid->p = *p;
     *p += uid->len;
 
-    return (0);
+    return 0;
 }
 
 /*
  * X.509 v3 extensions (only BasicConstraints are parsed)
  */
-static int x509_get_ext(uchar **p,
-            uchar *end,
-            x509_buf * ext, int *ca_istrue, int *max_pathlen)
+static int x509_get_ext(uchar **p, uchar *end, x509_buf * ext, int *ca_istrue, int *max_pathlen)
 {
     int ret, len;
     int is_critical = 1;
@@ -12637,7 +12656,7 @@ if (buflen > 0) {
     }
 
     /*
-     * issuer                               Name
+        issuer Name
      */
     crt->issuer_raw.p = p;
 
@@ -13134,9 +13153,6 @@ int x509parse_keyfile(rsa_context * rsa, char *path, char *pwd)
     return (ret);
 }
 
-#if defined _MSC_VER && !defined snprintf
-#define snprintf _snprintf
-#endif
 
 /*
     Store the name in printable form into buf; no more than (end - buf) characters will be written
@@ -13152,55 +13168,53 @@ int x509parse_dn_gets(char *prefix, char *buf, int bufsize, x509_name * dn)
 
     name = dn;
     p = buf;
-    end = &buf[bufsize - 1];
+    end = &buf[bufsize];
 
     while (name != NULL) {
-        if (name != dn) {
-            p += snprintf(p, end - p, ", ");
-        }
+        p += snfmt(p, end - p, "%s", prefix);
         if (memcmp(name->oid.p, OID_X520, 2) == 0) {
             switch (name->oid.p[2]) {
             case X520_COMMON_NAME:
-                p += snprintf(p, end - p, "CN=");
+                p += snfmt(p, end - p, "CN=");
                 break;
 
             case X520_COUNTRY:
-                p += snprintf(p, end - p, "C=");
+                p += snfmt(p, end - p, "C=");
                 break;
 
             case X520_LOCALITY:
-                p += snprintf(p, end - p, "L=");
+                p += snfmt(p, end - p, "L=");
                 break;
 
             case X520_STATE:
-                p += snprintf(p, end - p, "ST=");
+                p += snfmt(p, end - p, "ST=");
                 break;
 
             case X520_ORGANIZATION:
-                p += snprintf(p, end - p, "O=");
+                p += snfmt(p, end - p, "O=");
                 break;
 
             case X520_ORG_UNIT:
-                p += snprintf(p, end - p, "OU=");
+                p += snfmt(p, end - p, "OU=");
                 break;
 
             default:
-                p += snprintf(p, end - p, "0x%02X=", name->oid.p[2]);
+                p += snfmt(p, end - p, "0x%02X=", name->oid.p[2]);
                 break;
             }
         } else if (memcmp(name->oid.p, OID_PKCS9, 8) == 0) {
             switch (name->oid.p[8]) {
             case PKCS9_EMAIL:
-                p += snprintf(p, end - p, "EMAIL=");
+                p += snfmt(p, end - p, "EMAIL=");
                 break;
 
             default:
-                p += snprintf(p, end - p, "0x%02X=", name->oid.p[8]);
+                p += snfmt(p, end - p, "0x%02X=", name->oid.p[8]);
                 break;
             }
-        } else
-            p += snprintf(p, end - p, "\?\?=");
-
+        } else {
+            p += snfmt(p, end - p, "\?\?=");
+        }
         for (i = 0; i < name->val.len; i++) {
             if (i >= (int)sizeof(s) - 1) {
                 break;
@@ -13212,8 +13226,9 @@ int x509parse_dn_gets(char *prefix, char *buf, int bufsize, x509_name * dn)
                 s[i] = c;
         }
         s[i] = '\0';
-        p += snprintf(p, end - p, "%s", s);
+        p += snfmt(p, end - p, "%s", s);
         name = name->next;
+        p += snfmt(p, end - p, ", ");
     }
     return (p - buf);
 }
@@ -13224,25 +13239,27 @@ int x509parse_dn_gets(char *prefix, char *buf, int bufsize, x509_name * dn)
  */
 char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
 {
-    char    *end, *p, *cipher;
+    char    *end, *p, *cipher, pbuf[5120];
     int     i, n;
 
-//MOB - check all uses of snprintf. BUG. returns number of characters that would be printed if it fits.
-
     p = buf;
-    end = &buf[bufsize - 1];
-    p += snprintf(p, end - p, "%s_VERSION=%d,%s_SERIAL=", prefix, crt->version, prefix);
+    end = &buf[bufsize];
+    p += snfmt(p, end - p, "%sVERSION=%d, %sSERIAL=", prefix, crt->version, prefix);
     n = (crt->serial.len <= 32) ? crt->serial.len : 32;
-    for (i = 0; i < n; i++)
-        p += snprintf(p, end - p, "%02X%s", crt->serial.p[i], (i < n - 1) ? ":" : "");
+    for (i = 0; i < n; i++) {
+        p += snfmt(p, end - p, "%02X%s", crt->serial.p[i], (i < n - 1) ? ":" : "");
+    }
+    p += snfmt(p, end - p, ", ");
 
-    p += x509parse_dn_gets("%s_ISSUER", p, end - p, &crt->issuer);
-    p += x509parse_dn_gets("%s_SUBJECT", p, end - p, &crt->subject);
+    snfmt(pbuf, sizeof(pbuf), "%sS_", prefix);
+    p += x509parse_dn_gets(pbuf, p, end - p, &crt->subject);
+    snfmt(pbuf, sizeof(pbuf), "%sI_", prefix);
+    p += x509parse_dn_gets(pbuf, p, end - p, &crt->issuer);
 
-    p += snprintf(p, end - p, "%s_START=%04d-%02d-%02d %02d:%02d:%02d", prefix, crt->valid_from.year, crt->valid_from.mon,
+    p += snfmt(p, end - p, "%sSTART=%04d-%02d-%02d %02d:%02d:%02d, ", prefix, crt->valid_from.year, crt->valid_from.mon,
         crt->valid_from.day, crt->valid_from.hour, crt->valid_from.min, crt->valid_from.sec);
 
-    p += snprintf(p, end - p, "%s_END=%04d-%02d-%02d %02d:%02d:%02d", prefix, crt->valid_to.year, crt->valid_to.mon, 
+    p += snfmt(p, end - p, "%sEND=%04d-%02d-%02d %02d:%02d:%02d, ", prefix, crt->valid_to.year, crt->valid_to.mon, 
         crt->valid_to.day, crt->valid_to.hour, crt->valid_to.min, crt->valid_to.sec);
 
     switch (crt->sig_oid1.p[8]) {
@@ -13263,8 +13280,8 @@ char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
         break;
     }
     //  MOB - This is the cipher encrypting the cert. Not the real cipher
-    p += snprintf(p, end - p, "%s_CIPHER=RSA+%s", prefix, cipher);
-    p += snprintf(p, end - p, "%s_KEYSIZE=%d", prefix, crt->rsa.N.n * (int)sizeof(ulong) * 8);
+    p += snfmt(p, end - p, "%sCIPHER=%s, ", prefix, cipher);
+    p += snfmt(p, end - p, "%sKEYSIZE=%d, ", prefix, crt->rsa.N.n * (int)sizeof(ulong) * 8);
     return buf;
 }
 
@@ -13280,16 +13297,16 @@ int x509parse_expired(x509_cert * crt)
     tt = time(NULL);
     lt = localtime(&tt);
 
-    if (lt->tm_year > crt->valid_to.year - 1900)
+    if (lt->tm_year > crt->valid_to.year - 1900) {
         return (BADCERT_EXPIRED);
-
-    if (lt->tm_year == crt->valid_to.year - 1900 && lt->tm_mon > crt->valid_to.mon - 1)
+    }
+    if (lt->tm_year == crt->valid_to.year - 1900 && lt->tm_mon > crt->valid_to.mon - 1) {
         return (BADCERT_EXPIRED);
-
-    if (lt->tm_year == crt->valid_to.year - 1900 && lt->tm_mon == crt->valid_to.mon - 1 && lt->tm_mday > crt->valid_to.day)
+    }
+    if (lt->tm_year == crt->valid_to.year - 1900 && lt->tm_mon == crt->valid_to.mon - 1 && lt->tm_mday > crt->valid_to.day) {
         return (BADCERT_EXPIRED);
-
-    return (0);
+    }
+    return 0;
 }
 
 static void x509_hash(uchar *in, int len, int alg, uchar *out)
@@ -13335,12 +13352,14 @@ int x509parse_verify(x509_cert *crt, x509_cert *trust_ca, char *cn, int *flags)
         name = &crt->subject;
         cn_len = strlen(cn);
         while (name != NULL) {
-            if (memcmp(name->oid.p, OID_CN, 3) == 0 && memcmp(name->val.p, cn, cn_len) == 0 && name->val.len == cn_len)
+            if (memcmp(name->oid.p, OID_CN, 3) == 0 && memcmp(name->val.p, cn, cn_len) == 0 && name->val.len == cn_len) {
                 break;
+            }
             name = name->next;
         }
-        if (name == NULL)
+        if (name == NULL) {
             *flags |= BADCERT_CN_MISMATCH;
+        }
     }
     *flags |= BADCERT_NOT_TRUSTED;
 
@@ -13393,7 +13412,7 @@ int x509parse_verify(x509_cert *crt, x509_cert *trust_ca, char *cn, int *flags)
     if (*flags != 0) {
         return (EST_ERR_X509_CERT_VERIFY_FAILED);
     }
-    return (0);
+    return 0;
 }
 
 
