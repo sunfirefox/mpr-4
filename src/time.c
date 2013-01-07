@@ -1213,7 +1213,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
             break;
 
         case 's':                                       /* seconds since epoch */
-            mprPutFmtToBuf(buf, "%d", mprMakeTime(tp) / MS_PER_SEC);
+            mprPutToBuf(buf, "%d", mprMakeTime(tp) / MS_PER_SEC);
             break;
 
         case 'T':

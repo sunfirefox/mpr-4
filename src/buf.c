@@ -396,7 +396,7 @@ PUBLIC ssize mprPutPadToBuf(MprBuf *bp, int c, ssize count)
 }
 
 
-PUBLIC ssize mprPutFmtToBuf(MprBuf *bp, cchar *fmt, ...)
+PUBLIC ssize mprPutToBuf(MprBuf *bp, cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;

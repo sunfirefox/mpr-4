@@ -2721,7 +2721,12 @@ PUBLIC int mprPutCharToBuf(MprBuf *buf, int c);
     @ingroup MprBuf
     @stability Evolving.
  */
-PUBLIC ssize mprPutFmtToBuf(MprBuf *buf, cchar *fmt, ...);
+PUBLIC ssize mprPutToBuf(MprBuf *buf, cchar *fmt, ...);
+
+//  Renamed in 4.3
+#if DEPRECATED
+    #define mprPutFmtToBuf mprPutToBuf
+#endif
 
 /**
     Put an integer to the buffer.

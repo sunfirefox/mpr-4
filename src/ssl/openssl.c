@@ -30,6 +30,7 @@ typedef struct OpenConfig {
 
 typedef struct OpenSocket {
     MprSocket       *sock;
+    OpenConfig      *cfg;
     char            *peerName;
     SSL             *handle;
     BIO             *bio;
@@ -54,10 +55,11 @@ typedef struct CRYPTO_dynlock_value DynLock;
 
 static void     closeOss(MprSocket *sp, bool gracefully);
 static int      configureCertificateFiles(MprSsl *ssl, SSL_CTX *ctx, char *key, char *cert);
-static OpenConfig *createOpenSslConfig(MprSsl *ssl);
+static OpenConfig *createOpenSslConfig(MprSocket *sp);
 static DH       *dhCallback(SSL *ssl, int isExport, int keyLength);
 static void     disconnectOss(MprSocket *sp);
 static ssize    flushOss(MprSocket *sp);
+static char     *getOssState(MprSocket *sp);
 static int      listenOss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageOpenConfig(OpenConfig *cfg, int flags);
 static void     manageOpenProvider(MprSocketProvider *provider, int flags);
@@ -103,6 +105,7 @@ PUBLIC int mprCreateOpenSslModule()
     openProvider->disconnectSocket = disconnectOss;
     openProvider->flushSocket = flushOss;
     openProvider->listenSocket = listenOss;
+    openProvider->socketState = getOssState;
     openProvider->readSocket = readOss;
     openProvider->writeSocket = writeOss;
     mprAddSocketProvider("openssl", openProvider);
@@ -206,12 +209,14 @@ static void manageOpenProvider(MprSocketProvider *provider, int flags)
     configurations for different routes. There is default SSL configuration that is used
     when a route does not define a configuration and also for clients.
  */
-static OpenConfig *createOpenSslConfig(MprSsl *ssl)
+static OpenConfig *createOpenSslConfig(MprSocket *sp)
 {
+    MprSsl          *ssl;
     OpenConfig      *cfg;
     SSL_CTX         *context;
     uchar           resume[16];
 
+    ssl = sp->ssl;
     assert(ssl);
 
     if ((ssl->config = mprAllocObj(OpenConfig, manageOpenConfig)) == 0) {
@@ -279,9 +284,8 @@ static OpenConfig *createOpenSslConfig(MprSsl *ssl)
             SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
         }
     } else {
-//  MOB -- enable verify peer
         if (ssl->verifyPeer) {
-            SSL_CTX_set_verify(context, SSL_VERIFY_PEER, verifyX509Certificate);
+            SSL_CTX_set_verify(context, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, verifyX509Certificate);
         } else {
             SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
         }
@@ -413,13 +417,13 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     sp->sslSocket = osp;
     sp->ssl = ssl;
 
-    if (!ssl->config && (ssl->config = createOpenSslConfig(ssl)) == 0) {
+    if (!ssl->config && (ssl->config = createOpenSslConfig(sp)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     /*
         Create and configure the SSL struct
      */
-    cfg = sp->ssl->config;
+    cfg = osp->cfg = sp->ssl->config;
     if ((osp->handle = (SSL*) SSL_new(cfg->context)) == 0) {
         return MPR_ERR_BAD_STATE;
     }
@@ -444,8 +448,62 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         mprSetSocketBlockingMode(sp, 0);
     }
-    osp->peerName = sclone(peerName);
+    if (peerName) {
+        osp->peerName = sclone(peerName);
+    }
     return 0;
+}
+
+
+static void parseCertFields(MprBuf *buf, char *prefix, char *prefix2, char *info)
+{
+    char    *cp, *term;
+
+    for (term = cp = info; *cp; cp++) {
+        if (*cp == '/') {
+            *cp = '\0';
+            mprPutToBuf(buf, "%s%s%s, ", prefix, prefix2, term);
+            *cp = '/';
+            term = &cp[1];
+        }
+    }
+    mprPutToBuf(buf, "%s%s%s, ", prefix, prefix2, term);
+}
+
+
+static char *getOssState(MprSocket *sp)
+{
+    OpenSocket      *osp;
+    MprBuf          *buf;
+    X509            *cert;
+    char            *prefix;
+    char            subject[512], issuer[512];
+
+    osp = sp->sslSocket;
+    buf = mprCreateBuf(0, 0);
+    mprPutToBuf(buf, "CIPHER=%s, ", SSL_get_cipher(osp->handle));
+
+    if ((cert = SSL_get_peer_certificate(osp->handle)) != 0) {
+        prefix = sp->acceptIp ? "CLIENT_" : "SERVER_";
+
+        X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) -1);
+        parseCertFields(buf, prefix, "S_", &subject[1]);
+
+        X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) -1);
+        parseCertFields(buf, prefix, "I_", &subject[1]);
+        X509_free(cert);
+    }
+    if ((cert = SSL_get_certificate(osp->handle)) != 0) {
+        prefix =  sp->acceptIp ? "SERVER_" : "CLIENT_";
+        X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) -1);
+        parseCertFields(buf, prefix, "S_", &subject[1]);
+
+        X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) -1);
+        parseCertFields(buf, prefix, "I_", &subject[1]);
+        X509_free(cert);
+    }
+    mprTrace(4, "OpenSSL state: %s", mprGetBufStart(buf));
+    return mprGetBufStart(buf);
 }
 
 
@@ -458,10 +516,14 @@ static void disconnectOss(MprSocket *sp)
 static void traceCert(MprSocket *sp)
 {
     MprSsl      *ssl;
+    OpenSocket  *osp;
     X509        *cert;
-    char        subject[260], issuer[260], peer[260];
+    X509_NAME   *xSubject;
+    char        subject[512], issuer[512], peer[512];
 
     ssl = sp->ssl;
+    osp = (OpenSocket*) sp->sslSocket;
+
     mprLog(4, "OpenSSL connected using cipher: \"%s\" from set %s", SSL_get_cipher(osp->handle), ssl->ciphers);
     if (ssl->caFile) {
         mprLog(4, "OpenSSL: Using certificates from %s", ssl->caFile);
@@ -490,9 +552,6 @@ static void traceCert(MprSocket *sp)
 static ssize readOss(MprSocket *sp, void *buf, ssize len)
 {
     OpenSocket      *osp;
-    MprSsl          *ssl;
-    X509_NAME       *xSubject;
-    X509            *cert;
     char            ebuf[BIT_MAX_BUFFER];
     ulong           serror;
     int             rc, error, retries, i;
@@ -551,7 +610,7 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
             sp->flags |= MPR_SOCKET_EOF;
         }
     } else if (SSL_pending(osp->handle) > 0) {
-        sp->flags |= MPR_SOCKET_PENDING;
+        sp->flags |= MPR_SOCKET_BUFFERED_READ;
         mprRecallWaitHandlerByFd(sp->fd);
     }
     unlock(sp);
@@ -642,7 +701,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
             sizeof(peer) - 1) < 0) {
         ok = 0;
     }
-    if (ok && ssl->verifyPeer && smatch(peer, osp->peerName)) {
+    if (ok && ssl->verifyPeer && osp->peerName && smatch(peer, osp->peerName)) {
         ok = 0;
     }
     if (ok && ssl->verifyDepth < depth) {

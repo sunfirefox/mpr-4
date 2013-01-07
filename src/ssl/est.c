@@ -455,6 +455,7 @@ static char *getEstState(MprSocket *sp)
     est = sp->sslSocket;
     ctx = &est->ctx;
     buf = mprCreateBuf(0, 0);
+    mprPutToBuf(buf, "CIPHER=%s, ", ssl_get_cipher(ctx));
 
     own =  sp->acceptIp ? "SERVER_" : "CLIENT_";
     peer = sp->acceptIp ? "CLIENT_" : "SERVER_";
@@ -462,6 +463,7 @@ static char *getEstState(MprSocket *sp)
     mprPutStringToBuf(buf, cbuf);
     x509parse_cert_info(own, cbuf, sizeof(cbuf), ctx->own_cert);
     mprPutStringToBuf(buf, cbuf);
+    mprTrace(4, "EST state: %s", mprGetBufStart(buf));
     return mprGetBufStart(buf);
 }
 
