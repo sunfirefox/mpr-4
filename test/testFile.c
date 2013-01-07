@@ -74,57 +74,57 @@ static void testBasicIO(MprTestGroup *gp)
     ts = (TestFile*) gp->data;
     
     rc = mprDeletePath(ts->name);
-    assert(!mprPathExists(ts->name, R_OK));
+    tassert(!mprPathExists(ts->name, R_OK));
     
     file = mprOpenFile(ts->name, O_CREAT | O_TRUNC | O_RDWR, FILEMODE);
-    assert(file != 0);
-    assert(mprPathExists(ts->name, R_OK));
+    tassert(file != 0);
+    tassert(mprPathExists(ts->name, R_OK));
 
     len = mprWriteFile(file, "abcdef", 6);
-    assert(len == 6);
+    tassert(len == 6);
     mprCloseFile(file);
 
-    assert(mprPathExists(ts->name, R_OK));
+    tassert(mprPathExists(ts->name, R_OK));
     rc = mprGetPathInfo(ts->name, &info);
-    assert(rc == 0);
+    tassert(rc == 0);
 
 #if BIT_WIN_LIKE
     /*
         On windows, the size reflects the size on disk and is not updated until actually save to disk.
      */
 #else
-    assert(info.size == 6);
-    assert(!info.isDir);
-    assert(info.isReg);
+    tassert(info.size == 6);
+    tassert(!info.isDir);
+    tassert(info.isReg);
 #endif
     
     file = mprOpenFile(ts->name, O_RDWR, FILEMODE);
-    assert(file != 0);
+    tassert(file != 0);
 
     pos = mprSeekFile(file, SEEK_SET, 1);
     len = mprReadFile(file, buf, sizeof(buf));
-    assert(len == 5);
+    tassert(len == 5);
     buf[len] = '\0';
     
-    assert(strcmp(buf, "bcdef") == 0);
+    tassert(strcmp(buf, "bcdef") == 0);
 
     pos = mprSeekFile(file, SEEK_SET, 0);
-    assert(pos == 0);
-    assert(mprGetFilePosition(file) == 0);
+    tassert(pos == 0);
+    tassert(mprGetFilePosition(file) == 0);
 
     len = mprWriteFileString(file, "Hello\nWorld\n");
-    assert(len == 12);
+    tassert(len == 12);
     mprSeekFile(file, SEEK_SET, 0);
 
     rc = mprReadFile(file, buf, sizeof(buf));
-    assert(rc == 12);
-    assert(mprGetFilePosition(file) == 12);
+    tassert(rc == 12);
+    tassert(mprGetFilePosition(file) == 12);
     buf[12] = '\0';
-    assert(strcmp(buf, "Hello\nWorld\n") == 0);
+    tassert(strcmp(buf, "Hello\nWorld\n") == 0);
     mprCloseFile(file);
 
     rc = mprDeletePath(ts->name);
-    assert(!mprPathExists(ts->name, R_OK));
+    tassert(!mprPathExists(ts->name, R_OK));
 }
     
 
@@ -140,44 +140,44 @@ static void testBufferedIO(MprTestGroup *gp)
     ts = (TestFile*) gp->data;
     
     rc = mprDeletePath(ts->name);
-    assert(!mprPathExists(ts->name, R_OK));
+    tassert(!mprPathExists(ts->name, R_OK));
     
     file = mprOpenFile(ts->name, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, FILEMODE);
     if (file == 0) {
-        assert(file != 0);
+        tassert(file != 0);
         return;
     }
-    assert(mprPathExists(ts->name, R_OK));
+    tassert(mprPathExists(ts->name, R_OK));
     
     mprEnableFileBuffering(file, 0, 512);
     
     len = mprWriteFile(file, "abc", 3);
-    assert(len == 3);
+    tassert(len == 3);
     
     len = mprPutFileChar(file, 'd');
-    assert(len == 1);
+    tassert(len == 1);
     
     len = mprPutFileString(file, "ef\n");
-    assert(len == 3);
+    tassert(len == 3);
     
-    assert(mprPathExists(ts->name, R_OK));
+    tassert(mprPathExists(ts->name, R_OK));
     
     /*
         No data flushed yet so the length should be zero
      */
     rc = mprGetPathInfo(ts->name, &info);
-    assert(rc == 0);
-    assert(info.size == 0);
+    tassert(rc == 0);
+    tassert(info.size == 0);
     
     rc = mprFlushFile(file);
-    assert(rc == 0);
+    tassert(rc == 0);
     mprCloseFile(file);
     
     /*
         Now the length should be set
      */
     rc = mprGetPathInfo(ts->name, &info);
-    assert(rc == 0);
+    tassert(rc == 0);
 
     /*
         TODO windows seems to delay setting this
@@ -186,24 +186,24 @@ static void testBufferedIO(MprTestGroup *gp)
         mprSleep(2000);
         rc = mprGetPathInfo(ts->name, &info);
     }
-    assert(info.size == 7);
+    tassert(info.size == 7);
 
     file = mprOpenFile(ts->name, O_RDONLY | O_BINARY, FILEMODE);
-    assert(file != 0);
+    tassert(file != 0);
     
     mprSeekFile(file, SEEK_SET, 0);
-    assert(mprPeekFileChar(file) == 'a');
+    tassert(mprPeekFileChar(file) == 'a');
     c = mprGetFileChar(file);
-    assert(c == 'a');
+    tassert(c == 'a');
     str = mprReadLine(file, 0, NULL);
-    assert(str != 0);
+    tassert(str != 0);
     len = strlen(str);
-    assert(len == 5);   
-    assert(strcmp(str, "bcdef") == 0);
+    tassert(len == 5);   
+    tassert(strcmp(str, "bcdef") == 0);
     mprCloseFile(file);
 
     mprDeletePath(ts->name);
-    assert(!mprPathExists(ts->name, R_OK));
+    tassert(!mprPathExists(ts->name, R_OK));
 }
     
 

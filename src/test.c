@@ -210,7 +210,7 @@ PUBLIC int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestP
         }
     }
     if (err) {
-        mprPrintfError("usage: %s [options] [filter paths]\n"
+        mprEprintf("usage: %s [options] [filter paths]\n"
         "    --continue            # Continue on errors\n"
         "    --depth number        # Zero == basic, 1 == throrough, 2 extensive\n"
         "    --debug               # Run in debug mode\n"
@@ -227,7 +227,7 @@ PUBLIC int mprParseTestArgs(MprTestService *sp, int argc, char *argv[], MprTestP
         return MPR_ERR_BAD_ARGS;
     }
     if (outputVersion) {
-        mprPrintfError("%s: Version: %s\n", BIT_TITLE, BIT_VERSION);
+        mprEprintf("%s: Version: %s\n", BIT_TITLE, BIT_VERSION);
         return MPR_ERR_BAD_ARGS;
     }
     sp->argc = argc;
@@ -243,7 +243,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
 {
     char    *str, *word, *tok;
 
-    assure(filter);
+    assert(filter);
     if (filter == 0 || *filter == '\0') {
         return 0;
     }
@@ -253,7 +253,7 @@ static int parseFilter(MprTestService *sp, cchar *filter)
     word = stok(str, " \t\r\n", &tok);
     while (word) {
         if (mprAddItem(sp->testFilter, sclone(word)) < 0) {
-            assure(!MPR_ERR_MEMORY);
+            assert(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         word = stok(0, " \t\r\n", &tok);
@@ -267,10 +267,10 @@ static int loadTestModule(MprTestService *sp, cchar *fileName)
     MprModule   *mp;
     char        *cp, *base, entry[BIT_MAX_FNAME], path[BIT_MAX_FNAME];
 
-    assure(fileName && *fileName);
+    assert(fileName && *fileName);
 
     base = mprGetPathBase(fileName);
-    assure(base);
+    assert(base);
     if ((cp = strrchr(base, '.')) != 0) {
         *cp = '\0';
     }
@@ -326,11 +326,11 @@ PUBLIC int mprRunTests(MprTestService *sp)
     for (i = 0; i < sp->numThreads; i++) {
         fmt(tName, sizeof(tName), "test.%d", i);
         if ((lp = copyGroups(sp, sp->groups)) == 0) {
-            assure(!MPR_ERR_MEMORY);
+            assert(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprAddItem(sp->threadData, lp) < 0) {
-            assure(!MPR_ERR_MEMORY);
+            assert(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         /*
@@ -341,7 +341,7 @@ PUBLIC int mprRunTests(MprTestService *sp)
             buildFullNames(gp, gp->name);
         }
         if ((tp = mprCreateThread(tName, relayEvent, lp, 0)) == 0) {
-            assure(!MPR_ERR_MEMORY);
+            assert(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
         if (mprStartThread(tp) < 0) {
@@ -385,7 +385,7 @@ static void relayEvent(MprList *groups, MprThread *tp)
     MprTestGroup    *gp;
 
     gp = mprGetFirstItem(groups);
-    assure(gp);
+    assert(gp);
 
     mprRelayEvent(gp->dispatcher, runTestThread, groups, NULL);
     if (tp) {
@@ -404,7 +404,7 @@ static void runTestThread(MprList *groups, MprThread *tp)
     int             next, i, count;
 
     sp = MPR->testService;
-    assure(sp);
+    assert(sp);
 
     for (next = 0; (gp = mprGetNextItem(groups, &next)) != 0; ) {
         runInit(gp);
@@ -464,7 +464,7 @@ static void buildFullNames(MprTestGroup *gp, cchar *name)
     while (--tos >= 0) {
         nameBuf = sjoin(nameBuf, ".", nameStack[tos], NULL);
     }
-    assure(gp->fullName == 0);
+    assert(gp->fullName == 0);
     gp->fullName = sclone(nameBuf);
 
     /*
@@ -526,8 +526,8 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
     char            name[80];
     static int      counter = 0;
 
-    assure(sp);
-    assure(def);
+    assert(sp);
+    assert(def);
 
     gp = mprAllocObj(MprTestGroup, manageTestGroup);
     if (gp == 0) {
@@ -805,7 +805,7 @@ static void runTestProc(MprTestGroup *gp, MprTestCase *test)
                 mprPrintf("PASSED\n");
             }
         } else {
-            mprPrintfError("FAILED test \"%s.%s\"\nDetails: %s\n", gp->fullName, test->name, getErrorMessage(gp));
+            mprEprintf("FAILED test \"%s.%s\"\nDetails: %s\n", gp->fullName, test->name, getErrorMessage(gp));
         }
     }
     mprUnlock(sp->mutex);
@@ -838,8 +838,8 @@ static int addFailure(MprTestGroup *gp, cchar *loc, cchar *message)
 
     fp = createFailure(gp, loc, message);
     if (fp == 0) {
-        assure(fp);
-        assure(!MPR_ERR_MEMORY);
+        assert(fp);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     mprAddItem(gp->failures, fp);
@@ -891,8 +891,8 @@ PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
     MprTicks    expires, remaining;
     int         rc;
     
-    assure(gp->dispatcher);
-    assure(timeout >= 0);
+    assert(gp->dispatcher);
+    assert(timeout >= 0);
 
     if (mprGetDebugMode()) {
         timeout *= 100;
@@ -953,16 +953,16 @@ static void logHandler(int flags, int level, cchar *msg)
         mprFprintf(file, "\n");
         msg++;
     }
-    if (flags & MPR_LOG_SRC) {
+    if (flags & MPR_LOG_MSG) {
         mprFprintf(file, "%s: %d: %s\n", prefix, level, msg);
-    } else if (flags & MPR_ERROR_SRC) {
+    } else if (flags & MPR_ERROR_MSG) {
         mprFprintf(file, "%s: Error: %s\n", prefix, msg);
-    } else if (flags & MPR_FATAL_SRC) {
+    } else if (flags & MPR_FATAL_MSG) {
         mprFprintf(file, "%s: Fatal: %s\n", prefix, msg);
-    } else if (flags & MPR_RAW) {
+    } else if (flags & MPR_RAW_MSG) {
         mprFprintf(file, "%s", msg);
     }
-    if (flags & (MPR_ERROR_SRC | MPR_FATAL_SRC)) {
+    if (flags & (MPR_ERROR_MSG | MPR_FATAL_MSG)) {
         mprBreakpoint();
     }
 }
@@ -989,7 +989,7 @@ static int setLogging(char *logSpec)
 
     } else {
         if ((file = mprOpenFile(logSpec, O_CREAT | O_WRONLY | O_TRUNC | O_TEXT, 0664)) == 0) {
-            mprPrintfError("Cannot open log file %s\n", logSpec);
+            mprEprintf("Cannot open log file %s\n", logSpec);
             return MPR_ERR_CANT_OPEN;
         }
     }

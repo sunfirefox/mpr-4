@@ -59,7 +59,7 @@ static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
 {
     MprFile     *file;
     
-    assure(path);
+    assert(path);
 
     if ((file = mprAllocObj(MprFile, manageDiskFile)) == 0) {
         return NULL;
@@ -114,7 +114,7 @@ static int closeFile(MprFile *file)
 {
     MprBuf  *bp;
 
-    assure(file);
+    assert(file);
 
     if (file == 0) {
         return 0;
@@ -133,8 +133,8 @@ static int closeFile(MprFile *file)
 
 static ssize readFile(MprFile *file, void *buf, ssize size)
 {
-    assure(file);
-    assure(buf);
+    assert(file);
+    assert(buf);
 
     return read(file->fd, buf, (uint) size);
 }
@@ -142,8 +142,8 @@ static ssize readFile(MprFile *file, void *buf, ssize size)
 
 static ssize writeFile(MprFile *file, cvoid *buf, ssize count)
 {
-    assure(file);
-    assure(buf);
+    assert(file);
+    assert(buf);
 
 #if VXWORKS
     return write(file->fd, (void*) buf, count);
@@ -155,7 +155,7 @@ static ssize writeFile(MprFile *file, cvoid *buf, ssize count)
 
 static MprOff seekFile(MprFile *file, int seekType, MprOff distance)
 {
-    assure(file);
+    assert(file);
 
     if (file == 0) {
         return MPR_ERR_BAD_HANDLE;
@@ -256,8 +256,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     struct stat s;
     cchar       *ext;
 
-    assure(path);
-    assure(info);
+    assert(path);
+    assert(info);
 
     info->checked = 1;
     info->valid = 0;
@@ -288,8 +288,8 @@ static int getPathInfo(MprDiskFileSystem *fs, cchar *path, MprPath *info)
     struct __stat64     s;
     cchar               *ext;
 
-    assure(path);
-    assure(info);
+    assert(path);
+    assert(info);
     info->checked = 1;
     info->valid = 0;
     info->isReg = 0;

@@ -83,7 +83,7 @@ static int growEvents(MprWaitService *ws)
 {
     ws->eventsMax *= 2;
     if ((ws->events = mprRealloc(ws->events, sizeof(struct epoll_event) * ws->eventsMax)) == 0) {
-        assure(!MPR_ERR_MEMORY);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -95,7 +95,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     struct epoll_event  ev;
     int                 fd, rc;
 
-    assure(wp);
+    assert(wp);
     fd = wp->fd;
 
     lock(ws);
@@ -135,11 +135,11 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (mask && fd >= ws->handlerMax) {
             ws->handlerMax = fd + 32;
             if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                assure(!MPR_ERR_MEMORY);
+                assert(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
         if (wp->event) {
             mprRemoveEvent(wp->event);
@@ -185,7 +185,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     rc = epoll_wait(epfd, events, sizeof(events) / sizeof(struct epoll_event), timeout);
     close(epfd);
     if (rc < 0) {
-        mprLog(2, "Epoll returned %d, errno %d", rc, errno);
+        mprTrace(2, "Epoll returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
             if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
@@ -225,7 +225,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 
     if (rc < 0) {
         if (errno != EINTR) {
-            mprLog(7, "epoll returned %d, errno %d", mprGetOsError());
+            mprTrace(7, "epoll returned %d, errno %d", mprGetOsError());
         }
     } else if (rc > 0) {
         serviceIO(ws, rc);
@@ -247,7 +247,7 @@ static void serviceIO(MprWaitService *ws, int count)
     for (i = 0; i < count; i++) {
         ev = &ws->events[i];
         fd = ev->data.fd;
-        assure(fd < ws->handlerMax);
+        assert(fd < ws->handlerMax);
         if ((wp = ws->handlerMap[fd]) == 0) {
             char    buf[128];
             if ((ev->events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (fd == ws->breakPipe[MPR_READ_PIPE])) {
@@ -263,7 +263,7 @@ static void serviceIO(MprWaitService *ws, int count)
             mask |= MPR_WRITABLE;
         }
         if (mask == 0) {
-            assure(mask);
+            assert(mask);
             continue;
         }
         wp->presentMask = mask & wp->desiredMask;

@@ -17,25 +17,25 @@ static void testBasicAlloc(MprTestGroup *gp)
 
     size = 16;
     cp = mprAlloc(size);
-    assert(cp != 0);
+    tassert(cp != 0);
     memset(cp, 0x77, size);
 
     cp = mprAlloc(size);
-    assert(cp != 0);
+    tassert(cp != 0);
     memset(cp, 0x77, size);
     cp = mprRealloc(cp, size * 2);
-    assert(cp != 0);
+    tassert(cp != 0);
 
     cp = sclone("Hello World");
-    assert(cp != 0);
-    assert(strcmp(cp, "Hello World") == 0);
+    tassert(cp != 0);
+    tassert(strcmp(cp, "Hello World") == 0);
 
     /*
         Test special MPR allowances
      */
     cp = sclone(NULL);
-    assert(cp != 0);
-    assert(cp[0] == '\0');
+    tassert(cp != 0);
+    tassert(cp[0] == '\0');
 }
 
 static int when = 0;
@@ -50,7 +50,7 @@ if (when) {
 }
     len = 8 * 1024 * 1024;
     mp = mprAlloc(len);
-    assert(mp != 0);
+    tassert(mp != 0);
     memset(mp, 0, len);    
 }
 
@@ -63,12 +63,12 @@ static void testLotsOfAlloc(MprTestGroup *gp)
     count = (gp->service->testDepth * 10 * 1024) + 1024;
     for (i = 0; i < count; i++) {
         mp = mprAlloc(64);
-        assert(mp != 0);
+        tassert(mp != 0);
     }
     maxblock = (gp->service->testDepth * 1024 * 1024) + 1024;
     for (i = 2; i < maxblock; i *= 2) {
         mp = mprAlloc(i);
-        assert(mp != 0);
+        tassert(mp != 0);
         mprRequestGC(0);
     }
 }
@@ -87,7 +87,7 @@ static void testAllocIntegrityChecks(MprTestGroup *gp)
     count = sizeof(blocks) / sizeof(void*);
     for (i = 0; i < count; i++) {
         blocks[i] = mprAlloc(size);
-        assert(blocks[i] != 0);
+        tassert(blocks[i] != 0);
         memset(blocks[i], i % 0xff, size);
     }
     /*
@@ -97,7 +97,7 @@ static void testAllocIntegrityChecks(MprTestGroup *gp)
     for (i = 0; i < count; i++) {
         cp = (uchar*) blocks[i];
         for (j = 0; j < size; j++) {
-            assert(cp[j] == (i % 0xff));
+            tassert(cp[j] == (i % 0xff));
         }
     }
 
@@ -108,7 +108,7 @@ static void testAllocIntegrityChecks(MprTestGroup *gp)
     for (i = 1; i < count; i++) {
         size = 1 << ((i + 6) / 100);
         blocks[i] = mprAlloc(size);
-        assert(blocks[i] != 0);
+        tassert(blocks[i] != 0);
         memset(blocks[i], i % 0xff, size);
     }
     for (i = 1; i < count; i += 3) {
@@ -121,7 +121,7 @@ static void testAllocIntegrityChecks(MprTestGroup *gp)
         cp = (uchar*) blocks[i];
         size = 1 << ((i + 6) / 100);
         for (j = 0; j < size; j++) {
-            assert(cp[j] == (i % 0xff));
+            tassert(cp[j] == (i % 0xff));
         }
     }
 }
@@ -161,7 +161,7 @@ static void testAllocLongevity(MprTestGroup *gp)
     iterations = (depth * depth * 512) + 64;
     blockSize = 1024;
     cache = mprAllocObj(Cache, cacheManager);
-    assert(cache != 0);
+    tassert(cache != 0);
     mprAddRoot(cache);
 
     for (i = 0; i < iterations; i++) {
@@ -169,13 +169,13 @@ static void testAllocLongevity(MprTestGroup *gp)
         if ((cp = cache->blocks[index]) != NULL) {
             len = mprGetBlockSize(cp);
             for (j = 0; j < len; j++) {
-                assert(cp[j] == index);
+                tassert(cp[j] == index);
             }
         }
         len = mprRandom() % blockSize;
         cp = cache->blocks[index] = mprAlloc(len);
         actual = mprGetBlockSize(cp);
-        assert(actual >= len);        
+        tassert(actual >= len);        
         memset(cp, index, actual);
     }
     mprRemoveRoot(cache);

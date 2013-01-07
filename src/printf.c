@@ -163,7 +163,7 @@ typedef struct MprEjsName {
 
 static int  getState(char c, int state);
 static int  growBuf(Format *fmt);
-static char *sprintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
+PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *fmt, va_list arg);
 static void outNum(Format *fmt, cchar *prefix, uint64 val);
 static void outString(Format *fmt, cchar *str, ssize len);
 #if BIT_CHAR_LEN > 1 && KEEP
@@ -184,7 +184,7 @@ PUBLIC ssize mprPrintf(cchar *fmt, ...)
     /* No asserts here as this is used as part of assert reporting */
 
     va_start(ap, fmt);
-    buf = mprAsprintfv(fmt, ap);
+    buf = sfmtv(fmt, ap);
     va_end(ap);
     if (buf != 0 && MPR->stdOutput) {
         len = mprWriteFileString(MPR->stdOutput, buf);
@@ -195,7 +195,7 @@ PUBLIC ssize mprPrintf(cchar *fmt, ...)
 }
 
 
-PUBLIC ssize mprPrintfError(cchar *fmt, ...)
+PUBLIC ssize mprEprintf(cchar *fmt, ...)
 {
     va_list     ap;
     ssize       len;
@@ -204,7 +204,7 @@ PUBLIC ssize mprPrintfError(cchar *fmt, ...)
     /* No asserts here as this is used as part of assert reporting */
 
     va_start(ap, fmt);
-    buf = mprAsprintfv(fmt, ap);
+    buf = sfmtv(fmt, ap);
     va_end(ap);
     if (buf && MPR->stdError) {
         len = mprWriteFileString(MPR->stdError, buf);
@@ -225,7 +225,7 @@ PUBLIC ssize mprFprintf(MprFile *file, cchar *fmt, ...)
         return MPR_ERR_BAD_HANDLE;
     }
     va_start(ap, fmt);
-    buf = mprAsprintfv(fmt, ap);
+    buf = sfmtv(fmt, ap);
     va_end(ap);
     if (buf) {
         len = mprWriteFileString(file, buf);
@@ -249,7 +249,7 @@ PUBLIC int mprStaticPrintf(cchar *fmt, ...)
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
+    mprPrintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdOutput, buf, slen(buf));
 }
@@ -267,7 +267,7 @@ PUBLIC int mprStaticPrintfError(cchar *fmt, ...)
     fs = mprLookupFileSystem(NULL, "/");
 
     va_start(ap, fmt);
-    sprintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
+    mprPrintfCore(buf, BIT_MAX_BUFFER, fmt, ap);
     va_end(ap);
     return mprWriteFile(fs->stdError, buf, slen(buf));
 }
@@ -279,12 +279,12 @@ PUBLIC char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
     va_list     ap;
     char        *result;
 
-    assure(buf);
-    assure(fmt);
-    assure(bufsize > 0);
+    assert(buf);
+    assert(fmt);
+    assert(bufsize > 0);
 
     va_start(ap, fmt);
-    result = sprintfCore(buf, bufsize, fmt, ap);
+    result = mprPrintfCore(buf, bufsize, fmt, ap);
     va_end(ap);
     return result;
 }
@@ -292,24 +292,24 @@ PUBLIC char *fmt(char *buf, ssize bufsize, cchar *fmt, ...)
 
 PUBLIC char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 {
-    assure(buf);
-    assure(fmt);
-    assure(bufsize > 0);
+    assert(buf);
+    assert(fmt);
+    assert(bufsize > 0);
 
-    return sprintfCore(buf, bufsize, fmt, arg);
+    return mprPrintfCore(buf, bufsize, fmt, arg);
 }
 
 
-//  MOB - DEPRECATE
+#if UNUSED
 PUBLIC char *mprAsprintf(cchar *fmt, ...)
 {
     va_list     ap;
     char        *buf;
 
-    assure(fmt);
+    assert(fmt);
 
     va_start(ap, fmt);
-    buf = sprintfCore(NULL, -1, fmt, ap);
+    buf = mprPrintfCore(NULL, -1, fmt, ap);
     va_end(ap);
     return buf;
 }
@@ -317,9 +317,10 @@ PUBLIC char *mprAsprintf(cchar *fmt, ...)
 
 PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg)
 {
-    assure(fmt);
-    return sprintfCore(NULL, -1, fmt, arg);
+    assert(fmt);
+    return mprPrintfCore(NULL, -1, fmt, arg);
 }
+#endif
 
 
 static int getState(char c, int state)
@@ -329,16 +330,16 @@ static int getState(char c, int state)
     if (c < ' ' || c > 'z') {
         chrClass = CLASS_NORMAL;
     } else {
-        assure((c - ' ') < (int) sizeof(classMap));
+        assert((c - ' ') < (int) sizeof(classMap));
         chrClass = classMap[(c - ' ')];
     }
-    assure((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
+    assert((chrClass * STATE_COUNT + state) < (int) sizeof(stateMap));
     state = stateMap[chrClass * STATE_COUNT + state];
     return state;
 }
 
 
-static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
+PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 {
     Format        fmt;
     MprEjsString  *es;
@@ -353,7 +354,7 @@ static char *sprintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
         spec = "";
     }
     if (buf != 0) {
-        assure(maxsize > 0);
+        assert(maxsize > 0);
         fmt.buf = (uchar*) buf;
         fmt.endbuf = &fmt.buf[maxsize];
         fmt.growBy = -1;
@@ -916,7 +917,7 @@ static int growBuf(Format *fmt)
     }
     newbuf = mprAlloc(buflen + fmt->growBy);
     if (newbuf == 0) {
-        assure(!MPR_ERR_MEMORY);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     if (fmt->buf) {
@@ -938,6 +939,7 @@ static int growBuf(Format *fmt)
 }
 
 
+#if UNUSED
 /*
     For easy debug trace
  */
@@ -951,6 +953,7 @@ PUBLIC int print(cchar *fmt, ...)
     va_end(ap);
     return len;
 }
+#endif
 
 /*
     @copy   default

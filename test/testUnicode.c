@@ -17,17 +17,17 @@ static void testBasicUnicode(MprTestGroup *gp)
     int     count;
 
     fmt(buf, sizeof(buf), "%d", 12345678);
-    assert(strlen(buf) == 8);
-    assert(strcmp(buf, "12345678") == 0);
+    tassert(strlen(buf) == 8);
+    tassert(strcmp(buf, "12345678") == 0);
 
     fmt(buf, sizeof(buf), "%d", -12345678);
-    assert(strlen(buf) == 9);
-    assert(strcmp(buf, "-12345678") == 0);
+    tassert(strlen(buf) == 9);
+    tassert(strcmp(buf, "-12345678") == 0);
 
     str = sfmt("%d", 12345678);
     count = (int) strlen(str);
-    assert(count == 8);
-    assert(strcmp(str, "12345678") == 0);
+    tassert(count == 8);
+    tassert(strcmp(str, "12345678") == 0);
 }
 
 

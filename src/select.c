@@ -38,7 +38,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     for (rc = retries = 0; retries < maxTries; retries++) {
         breakSock = socket(AF_INET, SOCK_DGRAM, 0);
         if (breakSock < 0) {
-            mprLog(MPR_WARN, "Cannot open port %d to use for select. Retrying.\n");
+            mprWarn("Cannot open port %d to use for select. Retrying.\n");
         }
 #if BIT_UNIX_LIKE
         fcntl(breakSock, F_SETFD, FD_CLOEXEC);
@@ -68,7 +68,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     }
 
     if (breakSock < 0 || rc < 0) {
-        mprLog(MPR_WARN, "Cannot bind any port to use for select. Tried %d-%d\n", breakPort, breakPort - maxTries);
+        mprWarn("Cannot bind any port to use for select. Tried %d-%d\n", breakPort, breakPort - maxTries);
         return MPR_ERR_CANT_OPEN;
     }
     ws->breakSock = breakSock;
@@ -92,7 +92,7 @@ static int growFds(MprWaitService *ws, int fd)
 {
     ws->handlerMax = max(ws->handlerMax * 2, fd);
     if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-        assure(!MPR_ERR_MEMORY);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -125,11 +125,11 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (mask) {
             if (fd >= ws->handlerMax && growFds(ws, fd) < 0) {
                 unlock(ws);
-                assure(!MPR_ERR_MEMORY);
+                assert(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         ws->handlerMap[fd] = (mask) ? wp : 0;
         wp->desiredMask = mask;
         ws->highestFd = max(fd, ws->highestFd);
@@ -180,7 +180,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     mask = 0;
     rc = select(fd + 1, &readMask, &writeMask, NULL, &tval);
     if (rc < 0) {
-        mprLog(2, "Select returned %d, errno %d", rc, mprGetOsError());
+        mprTrace(2, "Select returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
         if (FD_ISSET(fd, &readMask)) {
             mask |= MPR_READABLE;

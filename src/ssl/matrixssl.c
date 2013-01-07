@@ -163,12 +163,12 @@ static MatrixConfig *createMatrixConfig(MprSsl *ssl)
     MatrixConfig    *cfg;
     char            *password;
 
-    assure(ssl);
+    assert(ssl);
 
-    if ((ssl->pconfig = mprAllocObj(MatrixConfig, manageMatrixConfig)) == 0) {
+    if ((ssl->config = mprAllocObj(MatrixConfig, manageMatrixConfig)) == 0) {
         return 0;
     }
-    cfg = ssl->pconfig;
+    cfg = ssl->config;
 
     //  OPT - does this need to be done for each MprSsl or just once?
     if (matrixSslNewKeys(&cfg->keys) < 0) {
@@ -229,11 +229,11 @@ static void closeMss(MprSocket *sp, bool gracefully)
     uchar           *obuf;
     int             nbytes;
 
-    assure(sp);
+    assert(sp);
 
     lock(sp);
     msp = sp->sslSocket;
-    assure(msp);
+    assert(msp);
 
     if (!(sp->flags & MPR_SOCKET_EOF) && msp->handle) {
         /*
@@ -265,8 +265,8 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     uint32              cipherSuite;
 
     ss = sp->service;
-    assure(ss);
-    assure(sp);
+    assert(ss);
+    assert(sp);
 
     if ((msp = (MatrixSocket*) mprAllocObj(MatrixSocket, manageMatrixSocket)) == 0) {
         return MPR_ERR_MEMORY;
@@ -279,11 +279,11 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 
     mprAddItem(ss->secureSockets, sp);
 
-    if (!ssl->pconfig && (ssl->pconfig = createMatrixConfig(ssl)) == 0) {
+    if (!ssl->config && (ssl->config = createMatrixConfig(ssl)) == 0) {
         unlock(sp);
         return MPR_ERR_CANT_INITIALIZE;
     }
-    cfg = ssl->pconfig;
+    cfg = ssl->config;
 
     /* 
         Associate a new ssl session with this socket. The session represents the state of the ssl protocol 
@@ -339,7 +339,7 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     unlock(ss);
     if (!sp) {
         /* Should not get here */
-        assure(sp);
+        assert(sp);
         return SSL_ALLOW_ANON_CONNECTION;
     }
     if (alert > 0) {
@@ -533,7 +533,7 @@ static ssize processMssData(MprSocket *sp, char *buf, ssize size, ssize nbytes, 
             return 0;
 
         case MATRIXSSL_RECEIVED_ALERT:
-            assure(dlen == 2);
+            assert(dlen == 2);
             if (data[0] == SSL_ALERT_LEVEL_FATAL) {
                 return MPR_ERR;
             } else if (data[1] == SSL_ALERT_CLOSE_NOTIFY) {

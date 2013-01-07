@@ -28,7 +28,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
 {
     int     winMask;
 
-    assure(ws->hwnd);
+    assert(ws->hwnd);
 
     lock(ws);
     winMask = 0;
@@ -89,7 +89,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     MSG     msg;
 
-    assure(ws->hwnd);
+    assert(ws->hwnd);
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;

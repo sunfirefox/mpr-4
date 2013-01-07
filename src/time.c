@@ -306,24 +306,24 @@ PUBLIC MprTime mprGetTime()
  */
 #if MPR_HIGH_RES_TIMER
     #if (LINUX || MACOSX) && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
-        uint64 mprGetHiResTime() {
+        uint64 mprGetHiResTicks() {
             uint64  now;
             __asm__ __volatile__ ("rdtsc" : "=A" (now));
             return now;
         }
     #elif WINDOWS
-        uint64 mprGetHiResTime() {
+        uint64 mprGetHiResTicks() {
             LARGE_INTEGER  now;
             QueryPerformanceCounter(&now);
             return (((uint64) now.HighPart) << 32) + now.LowPart;
         }
     #else
-        uint64 mprGetHiResTime() {
+        uint64 mprGetHiResTicks() {
             return (uint64) mprGetTicks();
         }
     #endif
 #else 
-    uint64 mprGetHiResTime() {
+    uint64 mprGetHiResTicks() {
         return (uint64) mprGetTicks();
     }
 #endif
@@ -385,7 +385,7 @@ PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
         /*
             Detect time going backwards. Should never happen now.
          */
-        assure(diff >= 0);
+        assert(diff >= 0);
         diff = 0;
     }
     return (timeout - diff);
@@ -704,15 +704,15 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     } else {
         tp->tm_mday = tp->tm_yday - normalMonthStart[tp->tm_mon] + 1;
     }
-    assure(tp->tm_hour >= 0);
-    assure(tp->tm_min >= 0);
-    assure(tp->tm_sec >= 0);
-    assure(tp->tm_wday >= 0);
-    assure(tp->tm_mon >= 0);
+    assert(tp->tm_hour >= 0);
+    assert(tp->tm_min >= 0);
+    assert(tp->tm_sec >= 0);
+    assert(tp->tm_wday >= 0);
+    assert(tp->tm_mon >= 0);
     /* This asserts with some calculating some intermediate dates <= year 100 */
-    assure(tp->tm_yday >= 0);
-    assure(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
-    assure(tp->tm_mday >= 1);
+    assert(tp->tm_yday >= 0);
+    assert(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
+    assert(tp->tm_mday >= 1);
 }
 
 
@@ -1355,7 +1355,7 @@ static int getNumOrSym(char **token, int sep, int kind, int *isAlpah)
     char    *cp;
     int     num;
 
-    assure(token && *token);
+    assert(token && *token);
 
     if (*token == 0) {
         return 0;

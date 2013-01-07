@@ -55,7 +55,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     void            *handle;
     int             fd;
 
-    assure(mp);
+    assert(mp);
     fn = 0;
     handle = 0;
 
@@ -115,7 +115,7 @@ PUBLIC void mprNap(MprTicks milliseconds)
     struct timespec timeout;
     int             rc;
 
-    assure(milliseconds >= 0);
+    assert(milliseconds >= 0);
     timeout.tv_sec = milliseconds / 1000;
     timeout.tv_nsec = (milliseconds % 1000) * 1000000;
     do {

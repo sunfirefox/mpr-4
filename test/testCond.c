@@ -48,17 +48,17 @@ static void testCriticalSection(MprTestGroup *gp)
 
     tc = gp->data;
     tc->cond = mprCreateCond(gp);
-    assert(tc->cond != 0);
-    assure(tc->cond->triggered == 0);
+    tassert(tc->cond != 0);
+    tassert(tc->cond->triggered == 0);
 
     tc->event = mprCreateEvent(NULL, "testCriticalSection", 0, callback, tc->cond, MPR_EVENT_QUICK);
-    assert(tc->event != 0);
+    tassert(tc->event != 0);
 
     delay = MPR_TEST_TIMEOUT + (mprGetDebugMode() * 1200 * 1000);
     mprYield(MPR_YIELD_STICKY);
 
     rc = mprWaitForCond(tc->cond, delay);
-    assert(rc == 0);
+    tassert(rc == 0);
     mprResetYield();
 
     tc->cond = 0;

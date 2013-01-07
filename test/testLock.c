@@ -53,16 +53,16 @@ static void testCriticalSection(MprTestGroup *gp)
     int     i, size;
 
     mprLock(mutex);
-    assert(mutex != 0);
+    tassert(mutex != 0);
     size = sizeof(critical) / sizeof(MprOsThread);
     for (i = 0; i < size; i++) {
         critical[i] = mprGetCurrentOsThread();
     }
     for (i = 0; i < size; i++) {
-        assert(critical[i] == mprGetCurrentOsThread());
+        tassert(critical[i] == mprGetCurrentOsThread());
     }
     mprUnlock(mutex);
-    assert(mutex != 0);
+    tassert(mutex != 0);
 }
 
 

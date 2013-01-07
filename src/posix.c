@@ -55,7 +55,7 @@ PUBLIC int mprGetRandomBytes(char *buf, ssize length, bool block)
     do {
         rc = read(fd, &buf[sofar], length);
         if (rc < 0) {
-            assure(0);
+            assert(0);
             return MPR_ERR_CANT_READ;
         }
         length -= rc;
@@ -74,7 +74,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     char            *at;
     void            *handle;
 
-    assure(mp);
+    assert(mp);
 
     /*
         Search the image incase the module has been statically linked
@@ -140,7 +140,7 @@ PUBLIC void mprNap(MprTicks timeout)
     struct timespec t;
     int             rc;
 
-    assure(timeout >= 0);
+    assert(timeout >= 0);
     
     mark = mprGetTicks();
     remaining = timeout;
@@ -169,11 +169,14 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
     int     sflag;
 
-    if (flags & MPR_FATAL_SRC) {
+    if (flags & MPR_FATAL_MSG) {
         sflag = LOG_ERR;
-    } else if (flags & MPR_ASSURE_SRC) {
+    } else if (flags & MPR_INFO_MSG) {
+        //  MOB - check value
         sflag = LOG_WARNING;
-    } else if (flags & MPR_ERROR_SRC) {
+    } else if (flags & MPR_ASSERT_MSG) {
+        sflag = LOG_WARNING;
+    } else if (flags & MPR_ERROR_MSG) {
         sflag = LOG_ERR;
     } else {
         sflag = LOG_WARNING;
@@ -218,7 +221,7 @@ PUBLIC void mprSetFilesLimit(int limit)
         }
     }
     getrlimit(RLIMIT_NOFILE, &r);
-    mprLog(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
+    mprTrace(6, "Set files limit to soft %d, max %d", r.rlim_cur, r.rlim_max);
 }
 
 #endif /* BIT_UNIX_LIKE */

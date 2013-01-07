@@ -24,9 +24,11 @@ Bit.load({
         sync: ['bitos', 'est'],
         '+required': [], 
         '+optional': [ 'doxygen', 'dsi', 'ejs', 'est', 'man', 'man2html', 'md5', 'utest' ],
-        'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker', 'matrixssl', 'openssl'],
+        'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker'],
         mpr: {
-            manager: 'manager',
+            logging: true,          /* Enable logging of mprLog calls */
+            manager: 'manager',     /* Enable watch-dog manager */
+            tracing: true,          /* Enable logging of mprTrace and assert() */
         },
     },
 

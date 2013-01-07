@@ -137,37 +137,38 @@ PUBLIC void mprSetLogBackup(ssize size, int backup, int flags)
 }
 
 
-PUBLIC void mprLog(int level, cchar *fmt, ...)
+PUBLIC void mprTraceProc(int level, cchar *fmt, ...)
 {
     va_list     args;
     char        buf[BIT_MAX_LOGLINE];
 
-    if (level < 0 || level > mprGetLogLevel()) {
-        return;
-    }
     va_start(args, fmt);
-    fmtv(buf, sizeof(buf), fmt, args);
+    logOutput(MPR_LOG_MSG, level, fmtv(buf, sizeof(buf), fmt, args));
     va_end(args);
-    logOutput(MPR_LOG_SRC, level, buf);
+}
+
+
+PUBLIC void mprLogProc(int level, cchar *fmt, ...)
+{
+    va_list     args;
+    char        buf[BIT_MAX_LOGLINE];
+
+    va_start(args, fmt);
+    logOutput(MPR_LOG_MSG, level, fmtv(buf, sizeof(buf), fmt, args));
+    va_end(args);
 }
 
 
 /*
-    RawLog will call alloc. 
+    Warning: this will allocate
  */
 PUBLIC void mprRawLog(int level, cchar *fmt, ...)
 {
     va_list     args;
-    char        *buf;
 
-    if (level > mprGetLogLevel()) {
-        return;
-    }
     va_start(args, fmt);
-    buf = sfmtv(fmt, args);
+    logOutput(MPR_RAW_MSG, 0, sfmtv(fmt, args));
     va_end(args);
-
-    logOutput(MPR_RAW, 0, buf);
 }
 
 
@@ -177,9 +178,20 @@ PUBLIC void mprError(cchar *fmt, ...)
     char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
-    fmtv(buf, sizeof(buf), fmt, args);
+    logOutput(MPR_ERROR_MSG, 0, fmtv(buf, sizeof(buf), fmt, args));
     va_end(args);
-    logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
+    mprBreakpoint();
+}
+
+
+PUBLIC void mprInfo(cchar *fmt, ...)
+{
+    va_list     args;
+    char        buf[BIT_MAX_LOGLINE];
+
+    va_start(args, fmt);
+    logOutput(MPR_INFO_MSG, 0, fmtv(buf, sizeof(buf), fmt, args));
+    va_end(args);
     mprBreakpoint();
 }
 
@@ -190,25 +202,25 @@ PUBLIC void mprWarn(cchar *fmt, ...)
     char        buf[BIT_MAX_LOGLINE];
 
     va_start(args, fmt);
-    fmtv(buf, sizeof(buf), fmt, args);
+    logOutput(MPR_WARN_MSG, 0, fmtv(buf, sizeof(buf), fmt, args));
     va_end(args);
-    logOutput(MPR_ERROR_MSG | MPR_WARN_SRC, 0, buf);
     mprBreakpoint();
 }
 
 
+#if DEPRECATED
 PUBLIC void mprMemoryError(cchar *fmt, ...)
 {
     va_list     args;
     char        buf[BIT_MAX_LOGLINE];
 
     if (fmt == 0) {
-        logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, "Memory allocation error");
+        logOutput(MPR_ERROR_MSG, 0, "Memory allocation error");
     } else {
         va_start(args, fmt);
         fmtv(buf, sizeof(buf), fmt, args);
         va_end(args);
-        logOutput(MPR_ERROR_MSG | MPR_ERROR_SRC, 0, buf);
+        logOutput(MPR_ERROR_MSG, 0, buf);
     }
 }
 
@@ -221,7 +233,7 @@ PUBLIC void mprUserError(cchar *fmt, ...)
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    logOutput(MPR_USER_MSG | MPR_ERROR_SRC, 0, buf);
+    logOutput(MPR_USER_MSG | MPR_ERROR_MSG, 0, buf);
 }
 
 
@@ -233,14 +245,11 @@ PUBLIC void mprFatalError(cchar *fmt, ...)
     va_start(args, fmt);
     fmtv(buf, sizeof(buf), fmt, args);
     va_end(args);
-    logOutput(MPR_USER_MSG | MPR_FATAL_SRC, 0, buf);
+    logOutput(MPR_USER_MSG | MPR_FATAL_MSG, 0, buf);
     exit(2);
 }
 
 
-/*
-    Handle an error without allocating memory. Bypasses the logging mechanism.
- */
 PUBLIC void mprStaticError(cchar *fmt, ...)
 {
     va_list     args;
@@ -258,9 +267,10 @@ PUBLIC void mprStaticError(cchar *fmt, ...)
 #endif
     mprBreakpoint();
 }
+#endif /* DEPRECATED */
 
 
-PUBLIC void mprAssure(cchar *loc, cchar *msg)
+PUBLIC void mprAssert(cchar *loc, cchar *msg)
 {
 #if BIT_ASSERT
     char    buf[BIT_MAX_LOGLINE];
@@ -273,7 +283,7 @@ PUBLIC void mprAssure(cchar *loc, cchar *msg)
 #endif
         msg = buf;
     }
-    mprLog(0, "%s", buf);
+    mprTrace(0, "%s", buf);
     mprBreakpoint();
 #if WATSON_PAUSE
     printf("Stop for WATSON\n");
@@ -290,6 +300,9 @@ static void logOutput(int flags, int level, cchar *msg)
 {
     MprLogHandler   handler;
 
+    if (level < 0 || level > mprGetLogLevel()) {
+        return;
+    }
     handler = MPR->logHandler;
     if (handler != 0) {
         (handler)(flags, level, msg);
@@ -303,7 +316,7 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
 {
     MprFile     *file;
     MprPath     info;
-    char        *prefix, buf[BIT_MAX_LOGLINE];
+    char        *prefix, buf[BIT_MAX_LOGLINE], *tag;
     int         mode;
     static int  check = 0;
 
@@ -332,29 +345,25 @@ static void defaultLogHandler(int flags, int level, cchar *msg)
         mprWriteFile(file, "\n", 1);
         msg++;
     }
-    if (flags & MPR_LOG_SRC) {
+    if (flags & MPR_LOG_MSG) {
         fmt(buf, sizeof(buf), "%s: %d: %s\n", prefix, level, msg);
         mprWriteFileString(file, buf);
 
-    } else if (flags & (MPR_WARN_SRC | MPR_ERROR_SRC)) {
-        if (flags & MPR_WARN_SRC) {
-            fmt(buf, sizeof(buf), "%s: Warning: %s\n", prefix, msg);
+    } else if (flags & MPR_RAW_MSG) {
+        mprWriteFileString(file, msg);
+
+    } else {
+        if (flags & MPR_FATAL_MSG) {
+            tag = "Fatal";
+        } else if (flags & MPR_WARN_MSG) {
+           tag = "Warning";
         } else {
-            fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
+           tag = "Error";
         }
-#if BIT_WIN_LIKE || BIT_UNIX_LIKE
+        fmt(buf, sizeof(buf), "%s: %s: %s\n", prefix, tag, msg);
         mprWriteToOsLog(buf, flags, level);
-#endif
         fmt(buf, sizeof(buf), "%s: Error: %s\n", prefix, msg);
         mprWriteFileString(file, buf);
-
-    } else if (flags & MPR_FATAL_SRC) {
-        fmt(buf, sizeof(buf), "%s: Fatal: %s\n", prefix, msg);
-        mprWriteToOsLog(buf, flags, level);
-        mprWriteFileString(file, buf);
-        
-    } else if (flags & MPR_RAW) {
-        mprWriteFileString(file, msg);
     }
 }
 

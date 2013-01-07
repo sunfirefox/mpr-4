@@ -15,7 +15,7 @@
  */
 PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
-    assure(module);
+    assert(module);
 
     /*
         Order matters. The last enabled stack becomes the default.

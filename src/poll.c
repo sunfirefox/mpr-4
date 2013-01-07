@@ -72,7 +72,7 @@ static int growFds(MprWaitService *ws)
 {
     ws->fdMax *= 2;
     if ((ws->fds = mprRealloc(ws->fds, sizeof(struct pollfd) * ws->fdMax)) == 0) {
-        assure(!MPR_ERR_MEMORY);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -83,7 +83,7 @@ static int growHandlers(MprWaitService *ws, int fd)
 {
     ws->handlerMax = fd + 1;
     if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-        assure(!MPR_ERR_MEMORY);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -105,15 +105,15 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             if (index < 0) {
                 if (ws->fdsCount >= ws->fdMax && growFds(ws) < 0) {
                     unlock(ws);
-                    assure(!MPR_ERR_MEMORY);
+                    assert(!MPR_ERR_MEMORY);
                     return MPR_ERR_MEMORY;
                 }
                 if (fd >= ws->handlerMax && growHandlers(ws, fd) < 0) {
                     unlock(ws);
                     return MPR_ERR_MEMORY;
                 }
-                assure(fd < ws->handlerMax);
-                assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+                assert(fd < ws->handlerMax);
+                assert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
                 ws->handlerMap[fd] = wp;
                 index = wp->notifierIndex = ws->fdsCount++;
                 pollfd = &ws->fds[index];
@@ -186,7 +186,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     result = 0;
     rc = poll(fds, 1, (int) timeout);
     if (rc < 0) {
-        mprLog(8, "Poll returned %d, errno %d", rc, mprGetOsError());
+        mprTrace(8, "Poll returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
         if ((fds[0].revents & (POLLIN | POLLHUP)) && (mask & MPR_READABLE)) {
             result |= MPR_READABLE;
@@ -231,7 +231,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     mprResetYield();
 
     if (rc < 0) {
-        mprLog(2, "Poll returned %d, errno %d", rc, mprGetOsError());
+        mprTrace(2, "Poll returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
         serviceIO(ws, ws->pollFds, count);
     }
@@ -260,8 +260,8 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
         if (fp->revents & (POLLOUT | POLLHUP)) {
             mask |= MPR_WRITABLE;
         }
-        assure(mask);
-        assure(fp->fd >= 0);
+        assert(mask);
+        assert(fp->fd >= 0);
         if ((wp = ws->handlerMap[fp->fd]) == 0) {
             char    buf[128];
             if (fp->fd == ws->breakPipe[MPR_READ_PIPE]) {

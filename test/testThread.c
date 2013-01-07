@@ -25,8 +25,8 @@ static void testStartWorker(MprTestGroup *gp)
      */
     if (mprGetMaxWorkers(gp) > gp->service->numThreads) {
         rc = mprStartWorker(workerProc, (void*) gp);
-        assert(rc == 0);
-        assert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
+        tassert(rc == 0);
+        tassert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
     }
 }
 

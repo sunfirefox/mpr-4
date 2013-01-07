@@ -40,7 +40,7 @@ static void testCreateBuf(MprTestGroup *gp)
     MprBuf  *bp;
 
     bp = mprCreateBuf(512, 512);
-    assert(bp != 0);
+    tassert(bp != 0);
 }
 
 
@@ -52,12 +52,12 @@ static void testIsBufEmpty(MprTestGroup *gp)
     size = 512;
     bp = mprCreateBuf(size, -1);
 
-    assert(bp != 0);
-    assert(mprGetBufLength(bp) == 0);
-    assert(mprGetBufSize(bp) >= size);
-    assert(mprGetBufSpace(bp) >= (size - 1));
-    assert(mprGetBufLength(bp) == 0);
-    assert(mprGetBufStart(bp) == mprGetBufEnd(bp));
+    tassert(bp != 0);
+    tassert(mprGetBufLength(bp) == 0);
+    tassert(mprGetBufSize(bp) >= size);
+    tassert(mprGetBufSpace(bp) >= (size - 1));
+    tassert(mprGetBufLength(bp) == 0);
+    tassert(mprGetBufStart(bp) == mprGetBufEnd(bp));
 }
 
 
@@ -72,16 +72,16 @@ static void testPutAndGetToBuf(MprTestGroup *gp)
     bytes = size / 2;
     for (i = 0; i < bytes; i++) {
         rc = mprPutCharToBuf(bp, 'c');
-        assert(rc == 1);
+        tassert(rc == 1);
     }
-    assert(mprGetBufLength(bp) == bytes);
+    tassert(mprGetBufLength(bp) == bytes);
 
     for (i = 0; i < bytes; i++) {
         c = mprGetCharFromBuf(bp);
-        assert(c == 'c');
+        tassert(c == 'c');
     }
     c = mprGetCharFromBuf(bp);
-    assert(c == -1);
+    tassert(c == -1);
 }
 
 
@@ -94,20 +94,20 @@ static void testFlushBuf(MprTestGroup *gp)
 
     size = 512;
     bp = mprCreateBuf(size, size);
-    assert(bp != 0);
+    tassert(bp != 0);
 
     /*
         Do multiple times to test that flush resets the buffer pointers correctly
      */
     for (i = 0; i < 100; i++) {
         rc = mprPutStringToBuf(bp, "Hello World");
-        assert(rc == 11);
-        assert(mprGetBufLength(bp) == 11);
+        tassert(rc == 11);
+        tassert(mprGetBufLength(bp) == 11);
 
         mprFlushBuf(bp);
-        assert(mprGetBufLength(bp) == 0);
-        assert(mprGetCharFromBuf(bp) == -1);
-        assert(mprGetBlockFromBuf(bp, buf, sizeof(buf)) == 0);
+        tassert(mprGetBufLength(bp) == 0);
+        tassert(mprGetCharFromBuf(bp) == -1);
+        tassert(mprGetBlockFromBuf(bp, buf, sizeof(buf)) == 0);
     }
 }
 
@@ -126,36 +126,36 @@ static void testGrowBuf(MprTestGroup *gp)
     bytes = size * 10;
     for (i = 0; i < bytes; i++) {
         rc = mprPutCharToBuf(bp, 'c');
-        assert(rc == 1);
+        tassert(rc == 1);
     }
     rc = mprGetBufSize(bp);
     rc = mprGetBufLength(bp);
-    assert(mprGetBufSize(bp) > size);
-    assert(mprGetBufSize(bp) >= (ssize) bytes);
-    assert(mprGetBufLength(bp) == bytes);
+    tassert(mprGetBufSize(bp) > size);
+    tassert(mprGetBufSize(bp) >= (ssize) bytes);
+    tassert(mprGetBufLength(bp) == bytes);
 
     for (i = 0; i < bytes; i++) {
         c = mprGetCharFromBuf(bp);
-        assert(c == 'c');
+        tassert(c == 'c');
     }
     c = mprGetCharFromBuf(bp);
-    assert(c == -1);
+    tassert(c == -1);
 
     /*
         Test a fixed buffer (should not grow) 
      */
     size = 2;                       /* Can only ever fit in 1 byte */
     bp = mprCreateBuf(size, size);
-    assert(bp != 0);
+    tassert(bp != 0);
 
     rc = mprPutCharToBuf(bp, 'c');
-    assert(rc == 1);
+    tassert(rc == 1);
 
     rc = mprPutCharToBuf(bp, 'c');
-    assert(rc == 1);
+    tassert(rc == 1);
     
     rc = mprPutCharToBuf(bp, 'c');
-    assert(rc == -1);
+    tassert(rc == -1);
 }
 
 
@@ -167,34 +167,34 @@ static void testMiscBuf(MprTestGroup *gp)
 
     size = 512;
     bp = mprCreateBuf(size, 0);
-    assert(bp != 0);
+    tassert(bp != 0);
 
     /*
         Test insert char
      */
     rc = mprPutStringToBuf(bp, " big dog");
-    assert(rc == 8);
-    assert(mprGetBufLength(bp) == 8);
+    tassert(rc == 8);
+    tassert(mprGetBufLength(bp) == 8);
 
     /*
         Test add null
      */
     mprFlushBuf(bp);
-    assert(mprGetBufLength(bp) == 0);
+    tassert(mprGetBufLength(bp) == 0);
 
     rc = mprPutCharToBuf(bp, 'A');
-    assert(rc == 1);
+    tassert(rc == 1);
     
     rc = mprPutCharToBuf(bp, 'B');
-    assert(rc == 1);
-    assert(mprGetBufLength(bp) == 2);
+    tassert(rc == 1);
+    tassert(mprGetBufLength(bp) == 2);
 
     mprAddNullToBuf(bp);
-    assert(mprGetBufLength(bp) == 2);
-    assert(strcmp(mprGetBufStart(bp), "AB") == 0);
+    tassert(mprGetBufLength(bp) == 2);
+    tassert(strcmp(mprGetBufStart(bp), "AB") == 0);
 
     c = mprLookAtNextCharInBuf(bp);
-    assert(c == 'A');
+    tassert(c == 'A');
 }
 
 
@@ -213,7 +213,7 @@ static void testBufLoad(MprTestGroup *gp)
      */
     len = 981;
     tb->buf = bp = mprCreateBuf(len, 0);
-    assert(bp != 0);
+    tassert(bp != 0);
     mprYield(MPR_YIELD_STICKY);
 
     for (i = 0; i < (int) sizeof(ibuf); i++) {
@@ -221,7 +221,7 @@ static void testBufLoad(MprTestGroup *gp)
     }
     for (j = 0; j < 1000; j++) {
         rc = mprPutBlockToBuf(bp, (char*) ibuf, sizeof(ibuf));
-        assert(rc == sizeof(ibuf));
+        tassert(rc == sizeof(ibuf));
 
         count = 0;
         while (mprGetBufLength(bp) > 0) {
@@ -229,12 +229,12 @@ static void testBufLoad(MprTestGroup *gp)
             bytes = (int) ((size % sizeof(obuf)) / 9) + 1;
             bytes = min(bytes, ((int) sizeof(obuf) - count));
             rc = mprGetBlockFromBuf(bp, &obuf[count], bytes);
-            assert(rc > 0);
+            tassert(rc > 0);
             count += rc;
         }
-        assert(count == sizeof(ibuf));
+        tassert(count == sizeof(ibuf));
         for (i = 0; i < (int) sizeof(ibuf); i++) {
-            assert(obuf[i] == ('A' + (i % 26)));
+            tassert(obuf[i] == ('A' + (i % 26)));
         }
         mprFlushBuf(bp);
     }
@@ -253,7 +253,7 @@ static void testBufLoad(MprTestGroup *gp)
             bytes -= len;
             mprAdjustBufEnd(bp, len);
         } while (bytes > 0);
-        assert(sofar == sizeof(ibuf));
+        tassert(sofar == sizeof(ibuf));
 
         sofar = 0;
         while (mprGetBufLength(bp) > 0) {
@@ -262,9 +262,9 @@ static void testBufLoad(MprTestGroup *gp)
             sofar += len;
             mprAdjustBufStart(bp, len);
         }
-        assert(sofar == sizeof(ibuf));
+        tassert(sofar == sizeof(ibuf));
         for (i = 0; i < (int) sizeof(obuf); i++) {
-            assert(obuf[i] == ('A' + (i % 26)));
+            tassert(obuf[i] == ('A' + (i % 26)));
         }
         mprFlushBuf(bp);
     }

@@ -215,8 +215,8 @@ static void closeMoc(MprSocket *sp, bool gracefully)
  */
 static int listenMoc(MprSocket *sp, cchar *host, int port, int flags)
 {
-    assure(sp);
-    assure(port);
+    assert(sp);
+    assert(port);
     return sp->service->standardProvider->listenSocket(sp, host, port, flags);
 }
 
@@ -230,7 +230,7 @@ static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     MocConfig   *cfg;
     int         rc, handle;
 
-    assure(sp);
+    assert(sp);
 
     if (ssl == 0) {
         ssl = mprCreateSsl(sp->flags & MPR_SOCKET_SERVER);
@@ -243,8 +243,8 @@ static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     sp->ssl = ssl;
 
     lock(ssl);
-    if (ssl->pconfig) {
-        mp->cfg = cfg = ssl->pconfig;
+    if (ssl->config) {
+        mp->cfg = cfg = ssl->config;
     } else {
         /*
             One time setup for the SSL configuration for this MprSsl
@@ -254,7 +254,7 @@ static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             unlock(ssl);
             return MPR_ERR_MEMORY;
         }
-        mp->cfg = ssl->pconfig = cfg;
+        mp->cfg = ssl->config = cfg;
         if (ssl->certFile) {
             if ((rc = MOCANA_readFile((sbyte*) ssl->certFile, &cfg->cert.pCertificate, &cfg->cert.certLength))) {
                 mprError("MOCANA: Unable to read certificate %s", ssl->certFile); 
@@ -339,8 +339,8 @@ static ssize readMoc(MprSocket *sp, void *buf, ssize len)
     int         rc, nbytes;
 
     mp = (MocSocket*) sp->sslSocket;
-    assure(mp);
-    assure(mp->cfg);
+    assert(mp);
+    assert(mp->cfg);
 
     if ((rc = SSL_negotiateConnection(mp->handle)) < 0) {
         mprLog(4, "MOCANA: readMoc: Cannot handshake: error %d", rc);
@@ -377,7 +377,7 @@ static ssize writeMoc(MprSocket *sp, cvoid *buf, ssize len)
 
     mp = (MocSocket*) sp->sslSocket;
     if (len <= 0) {
-        assure(0);
+        assert(0);
         return -1;
     }
     totalWritten = 0;

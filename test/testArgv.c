@@ -17,54 +17,54 @@ static void testMakeArgv(MprTestGroup *gp)
 
     //  Simple arg parsing
     argc = mprMakeArgv("app a b", &argv, 0);
-    assert(argc == 3);
-    assert(strcmp(argv[0], "app") == 0);
-    assert(strcmp(argv[1], "a") == 0);
-    assert(strcmp(argv[2], "b") == 0);
+    tassert(argc == 3);
+    tassert(strcmp(argv[0], "app") == 0);
+    tassert(strcmp(argv[1], "a") == 0);
+    tassert(strcmp(argv[2], "b") == 0);
 
     //  Quoted arg parsing
     argc = mprMakeArgv("app \"a\" b", &argv, 0);
-    assert(argc == 3);
-    assert(strcmp(argv[0], "app") == 0);
-    assert(strcmp(argv[1], "a") == 0);
-    assert(strcmp(argv[2], "b") == 0);
+    tassert(argc == 3);
+    tassert(strcmp(argv[0], "app") == 0);
+    tassert(strcmp(argv[1], "a") == 0);
+    tassert(strcmp(argv[2], "b") == 0);
 
     //  Embedded spaces in quoted args
     argc = mprMakeArgv("app \"a b\"", &argv, 0);
-    assert(argc == 2);
-    assert(strcmp(argv[0], "app") == 0);
-    assert(strcmp(argv[1], "a b") == 0);
+    tassert(argc == 2);
+    tassert(strcmp(argv[0], "app") == 0);
+    tassert(strcmp(argv[1], "a b") == 0);
 
     //  Single quotes
     argc = mprMakeArgv("app 'a b'", &argv, 0);
-    assert(argc == 2);
-    assert(strcmp(argv[0], "app") == 0);
-    assert(strcmp(argv[1], "a b") == 0);
+    tassert(argc == 2);
+    tassert(strcmp(argv[0], "app") == 0);
+    tassert(strcmp(argv[1], "a b") == 0);
 
     //  Backquoting a double quote (need double to get past cc compiler): \"a
     argc = mprMakeArgv("\\\"a", &argv, 0);
-    assert(argc == 1);
-    assert(strcmp(argv[0], "\"a") == 0);
+    tassert(argc == 1);
+    tassert(strcmp(argv[0], "\"a") == 0);
 
     //  Backquoting a single quote (need double to get past cc compiler): \'a
     argc = mprMakeArgv("\\'a", &argv, 0);
-    assert(argc == 1);
-    assert(strcmp(argv[0], "'a") == 0);
+    tassert(argc == 1);
+    tassert(strcmp(argv[0], "'a") == 0);
 
     //  Backquoting normal chars preserves the backquote \a
     argc = mprMakeArgv("\\a", &argv, 0);
-    assert(argc == 1);
-    assert(strcmp(argv[0], "\\a") == 0);
+    tassert(argc == 1);
+    tassert(strcmp(argv[0], "\\a") == 0);
 
     //  Backquoted path
     argc = mprMakeArgv("\\a\\b\\c", &argv, 0);
-    assert(argc == 1);
-    assert(strcmp(argv[0], "\\a\\b\\c") == 0);
+    tassert(argc == 1);
+    tassert(strcmp(argv[0], "\\a\\b\\c") == 0);
 
     //  Backquote at the end (preserved)
     argc = mprMakeArgv("a\\", &argv, 0);
-    assert(argc == 1);
-    assert(strcmp(argv[0], "a\\") == 0);
+    tassert(argc == 1);
+    tassert(strcmp(argv[0], "a\\") == 0);
 
 }
 
@@ -76,17 +76,17 @@ static void testArgvRegressions(MprTestGroup *gp)
 
     //  "\bin\sh" "-c" "c:/home/mob/ejs/out/bin/ejs.exe ./args \"a b\" c"
     argc = mprMakeArgv("\"\\bin\\sh\" \"-c\" \"c:/home/mob/ejs/out/bin/ejs.exe ./args \\\"a b\\\" c\"", &argv, 0);
-    assert(argc == 3);
-    assert(strcmp(argv[0], "\\bin\\sh") == 0);
-    assert(strcmp(argv[1], "-c") == 0);
-    assert(strcmp(argv[2], "c:/home/mob/ejs/out/bin/ejs.exe ./args \"a b\" c") == 0);
+    tassert(argc == 3);
+    tassert(strcmp(argv[0], "\\bin\\sh") == 0);
+    tassert(strcmp(argv[1], "-c") == 0);
+    tassert(strcmp(argv[2], "c:/home/mob/ejs/out/bin/ejs.exe ./args \"a b\" c") == 0);
 
     //  "\bin\sh" "-c" "/bin/ejs ./args \"a b\" c"
     argc = mprMakeArgv("\"\\bin\\sh\" \"-c\" \"/bin/ejs ./args \\\"a b\\\" c\"", &argv, 0);
-    assert(argc == 3);
-    assert(strcmp(argv[0], "\\bin\\sh") == 0);
-    assert(strcmp(argv[1], "-c") == 0);
-    assert(strcmp(argv[2], "/bin/ejs ./args \"a b\" c") == 0);
+    tassert(argc == 3);
+    tassert(strcmp(argv[0], "\\bin\\sh") == 0);
+    tassert(strcmp(argv[1], "-c") == 0);
+    tassert(strcmp(argv[2], "/bin/ejs ./args \"a b\" c") == 0);
 }
 
 
