@@ -89,7 +89,7 @@ clean:
 	-if exist $(CONFIG)\obj\file.obj del /Q $(CONFIG)\obj\file.obj
 	-if exist $(CONFIG)\obj\fs.obj del /Q $(CONFIG)\obj\fs.obj
 	-if exist $(CONFIG)\obj\hash.obj del /Q $(CONFIG)\obj\hash.obj
-	-if exist $(CONFIG)\obj\jSON.obj del /Q $(CONFIG)\obj\jSON.obj
+	-if exist $(CONFIG)\obj\json.obj del /Q $(CONFIG)\obj\json.obj
 	-if exist $(CONFIG)\obj\kqueue.obj del /Q $(CONFIG)\obj\kqueue.obj
 	-if exist $(CONFIG)\obj\list.obj del /Q $(CONFIG)\obj\list.obj
 	-if exist $(CONFIG)\obj\lock.obj del /Q $(CONFIG)\obj\lock.obj
@@ -227,11 +227,11 @@ $(CONFIG)\obj\hash.obj: \
         $(CONFIG)\inc\mpr.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\hash.obj -Fd$(CONFIG)\obj\hash.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\hash.c
 
-$(CONFIG)\obj\jSON.obj: \
-        src\jSON.c \
+$(CONFIG)\obj\json.obj: \
+        src\json.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\jSON.obj -Fd$(CONFIG)\obj\jSON.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\jSON.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\json.obj -Fd$(CONFIG)\obj\json.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\json.c
 
 $(CONFIG)\obj\kqueue.obj: \
         src\kqueue.c \
@@ -413,7 +413,7 @@ $(CONFIG)\bin\libmpr.dll:  \
         $(CONFIG)\obj\file.obj \
         $(CONFIG)\obj\fs.obj \
         $(CONFIG)\obj\hash.obj \
-        $(CONFIG)\obj\jSON.obj \
+        $(CONFIG)\obj\json.obj \
         $(CONFIG)\obj\kqueue.obj \
         $(CONFIG)\obj\list.obj \
         $(CONFIG)\obj\lock.obj \
@@ -441,7 +441,7 @@ $(CONFIG)\bin\libmpr.dll:  \
         $(CONFIG)\obj\win.obj \
         $(CONFIG)\obj\wince.obj \
         $(CONFIG)\obj\xml.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\jSON.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS)
 
 $(CONFIG)\obj\benchMpr.obj: \
         test\benchMpr.c \
