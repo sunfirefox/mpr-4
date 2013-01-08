@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: xp-32
+    Prepared by: magnetar.local
  */
 
 #include "est.h"
@@ -9820,6 +9820,38 @@ int ssl_handshake_server(ssl_context * ssl)
 
 #if BIT_EST_SSL
 
+//  MOB - Merge these two
+int ssl_default_ciphers[] = {
+#if BIT_EST_DHM
+#if BIT_EST_AES
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
+#endif
+#if BIT_EST_CAMELLIA
+    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,
+#endif
+#if BIT_EST_DES
+    TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA,
+#endif
+#endif
+#if BIT_EST_AES
+    TLS_RSA_WITH_AES_128_CBC_SHA,
+    TLS_RSA_WITH_AES_256_CBC_SHA,
+#endif
+#if BIT_EST_CAMELLIA
+    TLS_RSA_WITH_CAMELLIA_128_CBC_SHA,
+    TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,
+#endif
+#if BIT_EST_DES
+    TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+#endif
+#if BIT_EST_RC4
+    TLS_RSA_WITH_RC4_128_SHA,
+    TLS_RSA_WITH_RC4_128_MD5,
+#endif
+    0
+};
+
+
 /* 
     Supported ciphers. Ordered in preference order
     See: http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
@@ -11566,38 +11598,6 @@ char *ssl_get_cipher(ssl_context * ssl)
     return ("unknown");
 }
 #endif
-
-
-//  MOB - move to top
-int ssl_default_ciphers[] = {
-#if BIT_EST_DHM
-#if BIT_EST_AES
-    TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
-#endif
-#if BIT_EST_CAMELLIA
-    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,
-#endif
-#if BIT_EST_DES
-    TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA,
-#endif
-#endif
-#if BIT_EST_AES
-    TLS_RSA_WITH_AES_128_CBC_SHA,
-    TLS_RSA_WITH_AES_256_CBC_SHA,
-#endif
-#if BIT_EST_CAMELLIA
-    TLS_RSA_WITH_CAMELLIA_128_CBC_SHA,
-    TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,
-#endif
-#if BIT_EST_DES
-    TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-#endif
-#if BIT_EST_RC4
-    TLS_RSA_WITH_RC4_128_SHA,
-    TLS_RSA_WITH_RC4_128_MD5,
-#endif
-    0
-};
 
 
 /*
@@ -13465,6 +13465,7 @@ char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
 
     snfmt(pbuf, sizeof(pbuf), "%sS_", prefix);
     p += x509parse_dn_gets(pbuf, p, end - p, &crt->subject);
+
     snfmt(pbuf, sizeof(pbuf), "%sI_", prefix);
     p += x509parse_dn_gets(pbuf, p, end - p, &crt->issuer);
 
@@ -13491,7 +13492,7 @@ char *x509parse_cert_info(char *prefix, char *buf, int bufsize, x509_cert *crt)
         cipher = "RSA";
         break;
     }
-    //  MOB - This is the cipher encrypting the cert. Not the real cipher
+    //  MOB - This is the cipher encrypting the cert
     p += snfmt(p, end - p, "%sCIPHER=%s, ", prefix, cipher);
     p += snfmt(p, end - p, "%sKEYSIZE=%d, ", prefix, crt->rsa.N.n * (int)sizeof(ulong) * 8);
     return buf;
