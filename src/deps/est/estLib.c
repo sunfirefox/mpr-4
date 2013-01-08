@@ -4,7 +4,7 @@
     This file is a catenation of all the source code. Amalgamating into a
     single file makes embedding simpler and the resulting application faster.
 
-    Prepared by: magnetar.local
+    Prepared by: voyager.local
  */
 
 #include "est.h"
@@ -9821,38 +9821,6 @@ int ssl_handshake_server(ssl_context * ssl)
 
 #if BIT_EST_SSL
 
-//  MOB - Merge these two
-int ssl_default_ciphers[] = {
-#if BIT_EST_DHM
-#if BIT_EST_AES
-    TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
-#endif
-#if BIT_EST_CAMELLIA
-    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,
-#endif
-#if BIT_EST_DES
-    TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA,
-#endif
-#endif
-#if BIT_EST_AES
-    TLS_RSA_WITH_AES_128_CBC_SHA,
-    TLS_RSA_WITH_AES_256_CBC_SHA,
-#endif
-#if BIT_EST_CAMELLIA
-    TLS_RSA_WITH_CAMELLIA_128_CBC_SHA,
-    TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,
-#endif
-#if BIT_EST_DES
-    TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-#endif
-#if BIT_EST_RC4
-    TLS_RSA_WITH_RC4_128_SHA,
-    TLS_RSA_WITH_RC4_128_MD5,
-#endif
-    0
-};
-
-
 /* 
     Supported ciphers. Ordered in preference order
     See: http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
@@ -9941,8 +9909,8 @@ int *ssl_create_ciphers(cchar *cipherSuite)
     char        *suite, *cipher, *next;
     int         nciphers, i, *ciphers;
 
-    if (!cipherSuite) {
-        return ssl_default_ciphers;
+    if (!ciphers) {
+        return 0;
     }
     nciphers = sizeof(cipherList) / sizeof(EstCipher);
     ciphers = malloc((nciphers + 1) * sizeof(int));
@@ -11599,6 +11567,38 @@ char *ssl_get_cipher(ssl_context * ssl)
     return ("unknown");
 }
 #endif
+
+
+//  MOB - move to top
+int ssl_default_ciphers[] = {
+#if BIT_EST_DHM
+#if BIT_EST_AES
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
+#endif
+#if BIT_EST_CAMELLIA
+    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,
+#endif
+#if BIT_EST_DES
+    TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA,
+#endif
+#endif
+#if BIT_EST_AES
+    TLS_RSA_WITH_AES_128_CBC_SHA,
+    TLS_RSA_WITH_AES_256_CBC_SHA,
+#endif
+#if BIT_EST_CAMELLIA
+    TLS_RSA_WITH_CAMELLIA_128_CBC_SHA,
+    TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,
+#endif
+#if BIT_EST_DES
+    TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+#endif
+#if BIT_EST_RC4
+    TLS_RSA_WITH_RC4_128_SHA,
+    TLS_RSA_WITH_RC4_128_MD5,
+#endif
+    0
+};
 
 
 /*

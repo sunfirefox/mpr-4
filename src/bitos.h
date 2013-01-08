@@ -687,7 +687,7 @@ typedef int64 Ticks;
     #define PUBLIC      __declspec(dllexport)
     #define PRIVATE     static
 #else
-    #define PUBLIC
+    #define PUBLIC      extern
     #define PRIVATE     static
 #endif
 
