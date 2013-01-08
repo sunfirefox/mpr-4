@@ -89,7 +89,7 @@ clean:
 	rm -rf $(CONFIG)/obj/file.o
 	rm -rf $(CONFIG)/obj/fs.o
 	rm -rf $(CONFIG)/obj/hash.o
-	rm -rf $(CONFIG)/obj/jSON.o
+	rm -rf $(CONFIG)/obj/json.o
 	rm -rf $(CONFIG)/obj/kqueue.o
 	rm -rf $(CONFIG)/obj/list.o
 	rm -rf $(CONFIG)/obj/lock.o
@@ -230,11 +230,11 @@ $(CONFIG)/obj/hash.o: \
         $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/hash.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/hash.c
 
-$(CONFIG)/obj/jSON.o: \
-        src/jSON.c \
+$(CONFIG)/obj/json.o: \
+        src/json.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/jSON.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/jSON.c
+	$(CC) -c -o $(CONFIG)/obj/json.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/json.c
 
 $(CONFIG)/obj/kqueue.o: \
         src/kqueue.c \
@@ -416,7 +416,7 @@ $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/obj/file.o \
         $(CONFIG)/obj/fs.o \
         $(CONFIG)/obj/hash.o \
-        $(CONFIG)/obj/jSON.o \
+        $(CONFIG)/obj/json.o \
         $(CONFIG)/obj/kqueue.o \
         $(CONFIG)/obj/list.o \
         $(CONFIG)/obj/lock.o \
@@ -444,7 +444,7 @@ $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/obj/win.o \
         $(CONFIG)/obj/wince.o \
         $(CONFIG)/obj/xml.o
-	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/jSON.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/json.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS)
 
 $(CONFIG)/obj/benchMpr.o: \
         test/benchMpr.c \

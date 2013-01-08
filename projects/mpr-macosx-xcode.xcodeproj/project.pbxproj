@@ -74,7 +74,7 @@
 		6AF8000F6AF8367800000050 /* file.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF8367800000051 /* file.c */; };
 		6AF8000F6AF8367800000052 /* fs.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF8367800000053 /* fs.c */; };
 		6AF8000F6AF8367800000054 /* hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF8367800000055 /* hash.c */; };
-		6AF8000F6AF8367800000056 /* jSON.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF8367800000057 /* jSON.c */; };
+		6AF8000F6AF8367800000056 /* json.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF8367800000057 /* json.c */; };
 		6AF8000F6AF8367800000058 /* kqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF8367800000059 /* kqueue.c */; };
 		6AF8000F6AF836780000005A /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF836780000005B /* list.c */; };
 		6AF8000F6AF836780000005C /* lock.c in Sources */ = {isa = PBXBuildFile; fileRef = 6AF8000F6AF836780000005D /* lock.c */; };
@@ -330,7 +330,7 @@
 		6AF8000F6AF8367800000051 /* file.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = file.c; path = src/file.c; sourceTree = "<group>"; };
 		6AF8000F6AF8367800000053 /* fs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = fs.c; path = src/fs.c; sourceTree = "<group>"; };
 		6AF8000F6AF8367800000055 /* hash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hash.c; path = src/hash.c; sourceTree = "<group>"; };
-		6AF8000F6AF8367800000057 /* jSON.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = jSON.c; path = src/jSON.c; sourceTree = "<group>"; };
+		6AF8000F6AF8367800000057 /* json.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = json.c; path = src/json.c; sourceTree = "<group>"; };
 		6AF8000F6AF8367800000059 /* kqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = kqueue.c; path = src/kqueue.c; sourceTree = "<group>"; };
 		6AF8000F6AF836780000005B /* list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = list.c; path = src/list.c; sourceTree = "<group>"; };
 		6AF8000F6AF836780000005D /* lock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lock.c; path = src/lock.c; sourceTree = "<group>"; };
@@ -526,7 +526,7 @@
 				6AF8000F6AF8367800000051 /* file.c */,
 				6AF8000F6AF8367800000053 /* fs.c */,
 				6AF8000F6AF8367800000055 /* hash.c */,
-				6AF8000F6AF8367800000057 /* jSON.c */,
+				6AF8000F6AF8367800000057 /* json.c */,
 				6AF8000F6AF8367800000059 /* kqueue.c */,
 				6AF8000F6AF836780000005B /* list.c */,
 				6AF8000F6AF836780000005D /* lock.c */,
@@ -790,7 +790,7 @@
 			shellScript = "PATH=$PATH:/usr/local/bin
 [ ! -x ${INC_DIR} ] && mkdir -p ${INC_DIR} ${OBJ_DIR} ${LIB_DIR} ${BIN_DIR}
 [ ! -f ${INC_DIR}/bit.h ] && cp mpr-macosx-xcode-bit.h ${INC_DIR}/bit.h
-[ ! -f ${INC_DIR}/bitos.h ] && cp ${SRC_DIR}/src/bitos.h ${INC_DIR}/bitos.h
+[ ! -f ${INC_DIR}/bitos.h ] && cp src/bitos.h ${INC_DIR}/bitos.h
 if ! diff ${INC_DIR}/bit.h mpr-macosx-xcode-bit.h >/dev/null ; then
 cp mpr-macosx-xcode-bit.h ${INC_DIR}/bit.h
 fi
@@ -899,7 +899,7 @@ fi";
 				6AF8000F6AF8367800000050 /* file.c in Sources */,
 				6AF8000F6AF8367800000052 /* fs.c in Sources */,
 				6AF8000F6AF8367800000054 /* hash.c in Sources */,
-				6AF8000F6AF8367800000056 /* jSON.c in Sources */,
+				6AF8000F6AF8367800000056 /* json.c in Sources */,
 				6AF8000F6AF8367800000058 /* kqueue.c in Sources */,
 				6AF8000F6AF836780000005A /* list.c in Sources */,
 				6AF8000F6AF836780000005C /* lock.c in Sources */,

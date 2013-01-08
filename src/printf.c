@@ -35,7 +35,7 @@
 #define STATE_TYPE      7               /* Data type */
 #define STATE_COUNT     8
 
-PUBLIC char stateMap[] = {
+static char stateMap[] = {
     /*     STATES:  Normal Percent Modifier Width  Dot  Prec Bits Type */
     /* CLASS           0      1       2       3     4     5    6    7  */
     /* Normal   0 */   0,     0,      0,      0,    0,    0,   0,   0,
@@ -54,7 +54,7 @@ PUBLIC char stateMap[] = {
   
     The Class map will map from a specifier letter to a state.
  */
-PUBLIC char classMap[] = {
+static char classMap[] = {
     /*   0  ' '    !     "     #     $     %     &     ' */
              2,    0,    0,    2,    0,    1,    0,    0,
     /*  07   (     )     *     +     ,     -     .     / */

@@ -8381,7 +8381,7 @@ PUBLIC void mprNop(void *ptr);
     #define MPR mprGetMpr()
 #else
     #define mprGetMpr() MPR
-    extern Mpr *MPR;
+    PUBLIC Mpr *MPR;
 #endif
 
 #define MPR_DISABLE_GC          0x1         /**< Disable GC */
