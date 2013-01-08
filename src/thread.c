@@ -612,8 +612,9 @@ PUBLIC void mprSetMinWorkers(int n)
     ws = MPR->workerService;
     lock(ws);
     ws->minThreads = n; 
-    mprTrace(4, "Pre-start %d workers", ws->minThreads);
-    
+    if (n > 0) {
+        mprTrace(4, "Pre-start %d workers", ws->minThreads);
+    }
     while (ws->numThreads < ws->minThreads) {
         worker = createWorker(ws, ws->stackSize);
         ws->numThreads++;

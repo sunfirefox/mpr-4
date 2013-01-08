@@ -200,7 +200,9 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         est->cfg = ssl->config = cfg;
         if (ssl->certFile) {
-            //  MOB - openssl uses encrypted and/not 
+            //  MOB - encrypted and/not?
+            //  MOB PEM/DER?
+            //  MOB catenated with key file?
             if (x509parse_crtfile(&cfg->cert, ssl->certFile) != 0) {
                 sp->errorMsg = sfmt("Unable to parse certificate %s", ssl->certFile); 
                 unlock(ssl);
@@ -252,7 +254,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 	ssl_set_session(&est->ctx, 1, 0, &est->session);
 	memset(&est->session, 0, sizeof(ssl_session));
 
-	ssl_set_ca_chain(&est->ctx, &cfg->cabundle, (char*) peerName);
+    ssl_set_ca_chain(&est->ctx, &cfg->cabundle, (char*) peerName);
 	ssl_set_own_cert(&est->ctx, &cfg->cert, &cfg->rsa);
 	ssl_set_dh_param(&est->ctx, dhKey, dhG);
 
@@ -305,28 +307,28 @@ static int estHandshake(MprSocket *sp)
        
     } else if ((vrc = ssl_get_verify_result(&est->ctx)) != 0) {
         if (vrc & BADCERT_EXPIRED) {
-            sp->errorMsg = sfmt("Certificate expired");
+            sp->errorMsg = sclone("Certificate expired");
 
         } else if (vrc & BADCERT_REVOKED) {
-            sp->errorMsg = sfmt("Certificate revoked");
+            sp->errorMsg = sclone("Certificate revoked");
 
         } else if (vrc & BADCERT_CN_MISMATCH) {
-            sp->errorMsg = sfmt("Certificate common name mismatch");
+            sp->errorMsg = sclone("Certificate common name mismatch");
 
         } else if (vrc & BADCERT_NOT_TRUSTED) {
             if (est->ctx.peer_cert->next && est->ctx.peer_cert->next->version == 0) {
                 //  MOB - est should have dedicated EST error code for this.
-                sp->errorMsg = sfmt("Self-signed certificate");
+                sp->errorMsg = sclone("Self-signed certificate");
             } else {
-                sp->errorMsg = sfmt("Certificate not trusted");
+                sp->errorMsg = sclone("Certificate not trusted");
             }
             trusted = 0;
 
         } else {
             if (est->ctx.client_auth && !sp->ssl->certFile) {
-                sp->errorMsg = sfmt("Server requires a client certificate");
+                sp->errorMsg = sclone("Server requires a client certificate");
             } else if (rc == EST_ERR_NET_CONN_RESET) {
-                sp->errorMsg = sfmt("Peer disconnected");
+                sp->errorMsg = sclone("Peer disconnected");
             } else {
                 sp->errorMsg = sfmt("Cannot handshake: error -0x%x", -rc);
             }
@@ -530,7 +532,7 @@ static void estTrace(void *fp, int level, char *str)
 {
     level += 3;
     if (level <= MPR->logLevel) {
-        mprLog(level, "EST: %s", str);
+        mprLog(level | MPR_RAW_MSG, "EST: %s", str);
     }
 }
 

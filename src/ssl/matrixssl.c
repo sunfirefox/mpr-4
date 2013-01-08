@@ -292,6 +292,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             return MPR_ERR_CANT_CREATE;
         }
     } else {
+        msp->peerName = sclone(peerName);
         if (matrixSslLoadRsaKeys(cfg->keys, NULL, NULL, password, ssl->caFile) < 0) {
             mprError("MatrixSSL: Could not read or decode certificate or key file."); 
             unlock(sp);
@@ -302,7 +303,6 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }
-        msp->peerName = sclone(peerName);
         if (mssHandshake(sp, 0) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
@@ -457,7 +457,7 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     }
 #if FUTURE
     msp = sp->sslSocket;
-    if (!smatch(msp->peerName, cert->subject.commonName)) {
+    if (msp->peerName && !smatch(msp->peerName, cert->subject.commonName)) {
         mprError("SSL certificate Common name mismatch");
         return PS_FAILURE;
     }
@@ -802,6 +802,14 @@ static ssize flushMss(MprSocket *sp)
 {
     return blockingWrite(sp, 0, 0);
 }
+
+
+/*
+    Cleanup for all-in-one distributions
+ */
+#undef SSL_RSA_WITH_3DES_EDE_CBC_SHA
+#undef TLS_RSA_WITH_AES_128_CBC_SHA
+#undef TLS_RSA_WITH_AES_256_CBC_SHA
 
 #endif /* BIT_PACK_MATRIXSSL */
 

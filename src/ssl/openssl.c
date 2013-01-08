@@ -437,19 +437,24 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     if (sp->flags & MPR_SOCKET_SERVER) {
         SSL_set_accept_state(osp->handle);
     } else {
+        if (peerName) {
+            osp->peerName = sclone(peerName);
+        }
         /* Block while connecting */
         mprSetSocketBlockingMode(sp, 1);
+        sp->errorMsg = 0;
         if ((rc = SSL_connect(osp->handle)) < 1) {
-            error = ERR_get_error();
-            ERR_error_string_n(error, ebuf, sizeof(ebuf) - 1);
-            sp->errorMsg = sclone(ebuf);
-            mprLog(4, "SSL_read error %s", ebuf);
+            if (sp->errorMsg) {
+                mprLog(4, "%s", sp->errorMsg);
+            } else {
+                error = ERR_get_error();
+                ERR_error_string_n(error, ebuf, sizeof(ebuf) - 1);
+                sp->errorMsg = sclone(ebuf);
+                mprLog(4, "SSL_read error %s", ebuf);
+            }
             return MPR_ERR_CANT_CONNECT;
         }
         mprSetSocketBlockingMode(sp, 0);
-    }
-    if (peerName) {
-        osp->peerName = sclone(peerName);
     }
     return 0;
 }
@@ -676,6 +681,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     X509            *cert;
     SSL             *handle;
     OpenSocket      *osp;
+    MprSocket       *sp;
     MprSsl          *ssl;
     char            subject[260], issuer[260], peer[260];
     int             error, depth;
@@ -684,7 +690,8 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
 
     handle = (SSL*) X509_STORE_CTX_get_app_data(xContext);
     osp = (OpenSocket*) SSL_get_app_data(handle);
-    ssl = osp->sock->ssl;
+    sp = osp->sock;
+    ssl = sp->ssl;
 
     cert = X509_STORE_CTX_get_current_cert(xContext);
     depth = X509_STORE_CTX_get_error_depth(xContext);
@@ -692,16 +699,20 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
 
     ok = 1;
     if (X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) - 1) < 0) {
+        sp->errorMsg = sclone("Cannot get subject name");
         ok = 0;
     }
     if (X509_NAME_oneline(X509_get_issuer_name(xContext->current_cert), issuer, sizeof(issuer) - 1) < 0) {
+        sp->errorMsg = sclone("Cannot get issuer name");
         ok = 0;
     }
     if (X509_NAME_get_text_by_NID(X509_get_subject_name(xContext->current_cert), NID_commonName, peer, 
             sizeof(peer) - 1) < 0) {
+        sp->errorMsg = sclone("Cannot get peer name");
         ok = 0;
     }
-    if (ok && ssl->verifyPeer && osp->peerName && smatch(peer, osp->peerName)) {
+    if (ok && ssl->verifyPeer && osp->peerName && !smatch(peer, osp->peerName)) {
+        sp->errorMsg = sclone("Certificate common name mismatch");
         ok = 0;
     }
     if (ok && ssl->verifyDepth < depth) {
@@ -711,12 +722,19 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     }
     switch (error) {
     case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
-        /* Normal self signed certificate */
     case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
+        /* Normal self signed certificate */
+        if (ssl->verifyIssuer) {
+            sp->errorMsg = sclone("Self-signed certificate");
+            ok = 0;
+        }
+        break;
+
     case X509_V_ERR_CERT_UNTRUSTED:
     case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY:
         if (ssl->verifyIssuer) {
             /* Issuer can't be verified */
+            sp->errorMsg = sclone("Certificate not trusted");
             ok = 0;
         }
         break;
@@ -732,6 +750,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
     case X509_V_ERR_UNABLE_TO_VERIFY_LEAF_SIGNATURE:
     case X509_V_ERR_INVALID_CA:
     default:
+        sp->errorMsg = sfmt("Certificate verification error %d", error);
         ok = 0;
         break;
     }
@@ -740,7 +759,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
         mprLog(4, "OpenSSL: Issuer: %s", issuer);
         mprLog(4, "OpenSSL: Peer: %s", peer);
     } else {
-        mprLog(1, "OpenSSL: Certification failed: subject %s (more trace at level 4)", subject);
+        mprLog(3, "OpenSSL: Certificate cannot be verified: subject %s (more trace at level 4)", subject);
         mprLog(4, "OpenSSL: Issuer: %s", issuer);
         mprLog(4, "OpenSSL: Peer: %s", peer);
         mprLog(4, "OpenSSL: Error: %d: %s", error, X509_verify_cert_error_string(error));
