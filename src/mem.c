@@ -23,12 +23,14 @@
     #define VALLOC 0
 #endif
 
+#if BIT_MEMORY_DEBUG
 /*
     Set this address to break when this address is allocated or freed
     Only used for debug, but defined regardless so we can have constant exports.
  */
-PUBLIC MprMem *stopAlloc = 0;
-PUBLIC int stopSeqno = -1;
+static MprMem *stopAlloc = 0;
+static int stopSeqno = -1;
+#endif
 
 #define GET_MEM(ptr)                ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
 #define GET_PTR(mp)                 ((char*) (((char*) mp) + sizeof(MprMem)))
