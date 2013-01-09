@@ -5,6 +5,7 @@
     configure or define variables in your Makefile to override these default values.
  */
 
+
 /* Settings */
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
@@ -30,7 +31,6 @@
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
-/* Settings */
 #ifndef BIT_MPR_LOGGING
     #define BIT_MPR_LOGGING 1
 #endif
@@ -192,7 +192,7 @@
     #define BIT_PACK_COMPILER_PATH "cl.exe"
 #endif
 #ifndef BIT_PACK_EJS_PATH
-    #define BIT_PACK_EJS_PATH "/Users/mob/git/appweb/macosx-x64-release/bin/ejs"
+    #define BIT_PACK_EJS_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/ejs"
 #endif
 #ifndef BIT_PACK_LIB_PATH
     #define BIT_PACK_LIB_PATH "lib.exe"
@@ -207,7 +207,7 @@
     #define BIT_PACK_RC_PATH "rc.exe"
 #endif
 #ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-release/bin/utest"
+    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
 #endif
 #ifndef BIT_PACK_WINSDK_PATH
     #define BIT_PACK_WINSDK_PATH "$(SDK)"
