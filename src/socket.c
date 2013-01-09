@@ -102,13 +102,22 @@ static void manageSocketService(MprSocketService *ss, int flags)
 }
 
 
+static void manageSocketProvider(MprSocketProvider *provider, int flags)
+{
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(provider->name);
+    }
+}
+
+
 static MprSocketProvider *createStandardProvider(MprSocketService *ss)
 {
     MprSocketProvider   *provider;
 
-    if ((provider = mprAllocObj(MprSocketProvider, 0)) == 0) {
+    if ((provider = mprAllocObj(MprSocketProvider, manageSocketProvider)) == 0) {
         return 0;
     }
+    provider->name = sclone("standard");;
     provider->closeSocket = closeSocket;
     provider->disconnectSocket = disconnectSocket;
     provider->flushSocket = flushSocket;
@@ -129,6 +138,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider)
     if (ss->providers == 0 && (ss->providers = mprCreateHash(0, 0)) == 0) {
         return;
     }
+    provider->name = sclone(name);
     mprAddKey(ss->providers, name, provider);
 }
 
@@ -1785,6 +1795,7 @@ PUBLIC void mprAddSslCiphers(MprSsl *ssl, cchar *ciphers)
     } else {
         ssl->ciphers = sclone(ciphers);
     }
+    ssl->changed = 1;
 }
 
 
@@ -1792,43 +1803,49 @@ PUBLIC void mprSetSslCiphers(MprSsl *ssl, cchar *ciphers)
 {
     assert(ssl);
     ssl->ciphers = sclone(ciphers);
+    ssl->changed = 1;
 }
 
 
 PUBLIC void mprSetSslKeyFile(MprSsl *ssl, cchar *keyFile)
 {
     assert(ssl);
-    ssl->keyFile = sclone(keyFile);
+    ssl->keyFile = (keyFile && *keyFile) ? sclone(keyFile) : 0;
+    ssl->changed = 1;
 }
 
 
 PUBLIC void mprSetSslCertFile(MprSsl *ssl, cchar *certFile)
 {
     assert(ssl);
-    ssl->certFile = sclone(certFile);
+    ssl->certFile = (certFile && *certFile) ? sclone(certFile) : 0;
+    ssl->changed = 1;
 }
 
 
 PUBLIC void mprSetSslCaFile(MprSsl *ssl, cchar *caFile)
 {
     assert(ssl);
-    ssl->caFile = sclone(caFile);
+    ssl->caFile = (caFile && *caFile) ? sclone(caFile) : 0;
+    ssl->changed = 1;
 }
 
 
-//  MOB - is this supported in Est?
+/* Only supported in OpenSSL */
 PUBLIC void mprSetSslCaPath(MprSsl *ssl, cchar *caPath)
 {
     assert(ssl);
-    ssl->caPath = sclone(caPath);
+    ssl->caPath = (caPath && *caPath) ? sclone(caPath) : 0;
+    ssl->changed = 1;
 }
 
 
-//  MOB - is this supported in Est?
+/* Only supported in OpenSSL */
 PUBLIC void mprSetSslProtocols(MprSsl *ssl, int protocols)
 {
     assert(ssl);
     ssl->protocols = protocols;
+    ssl->changed = 1;
 }
 
 
@@ -1836,6 +1853,7 @@ PUBLIC void mprSetSslProvider(MprSsl *ssl, cchar *provider)
 {
     assert(ssl);
     ssl->providerName = (provider && *provider) ? sclone(provider) : 0;
+    ssl->changed = 1;
 }
 
 
@@ -1844,6 +1862,7 @@ PUBLIC void mprVerifySslPeer(MprSsl *ssl, bool on)
     if (ssl) {
         ssl->verifyPeer = on;
         ssl->verifyIssuer = on;
+        ssl->changed = 1;
     } else {
         MPR->verifySsl = on;
     }
@@ -1854,6 +1873,7 @@ PUBLIC void mprVerifySslIssuer(MprSsl *ssl, bool on)
 {
     assert(ssl);
     ssl->verifyIssuer = on;
+    ssl->changed = 1;
 }
 
 
@@ -1861,6 +1881,7 @@ PUBLIC void mprVerifySslDepth(MprSsl *ssl, int depth)
 {
     assert(ssl);
     ssl->verifyDepth = depth;
+    ssl->changed = 1;
 }
 
 

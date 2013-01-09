@@ -336,7 +336,7 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     } else if (sp->signo == SIGPIPE || sp->signo == SIGXFSZ) {
         /* Ignore */
 
-#if MACOSX && BIT_DEBUG
+#if EMBEDTHIS
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
         printf("PAUSED for watson to debug\n");
         sleep(120);

@@ -417,9 +417,13 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     sp->sslSocket = osp;
     sp->ssl = ssl;
 
-    if (!ssl->config && (ssl->config = createOpenSslConfig(sp)) == 0) {
-        return MPR_ERR_CANT_INITIALIZE;
+    if (!ssl->config || ssl->changed) {
+        if ((ssl->config = createOpenSslConfig(sp)) == 0) {
+            return MPR_ERR_CANT_INITIALIZE;
+        }
+        ssl->changed = 0;
     }
+
     /*
         Create and configure the SSL struct
      */
@@ -460,19 +464,28 @@ static int upgradeOss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 }
 
 
+/*
+    Parse the cert info and write properties to the buffer
+    Modifies the info argument
+ */
 static void parseCertFields(MprBuf *buf, char *prefix, char *prefix2, char *info)
 {
-    char    *cp, *term;
+    char    c, *cp, *term, *key, *value;
 
-    for (term = cp = info; *cp; cp++) {
-        if (*cp == '/') {
+    term = cp = info;
+    do {
+        c = *cp;
+        if (c == '/' || c == '\0') {
             *cp = '\0';
-            mprPutToBuf(buf, "%s%s%s, ", prefix, prefix2, term);
-            *cp = '/';
+            key = stok(term, "=", &value);
+            if (smatch(key, "emailAddress")) {
+                key = "EMAIL";
+            }
+            mprPutToBuf(buf, "%s%s%s=%s,", prefix, prefix2, key, value);
             term = &cp[1];
+            *cp = c;
         }
-    }
-    mprPutToBuf(buf, "%s%s%s, ", prefix, prefix2, term);
+    } while (*cp++ != '\0');
 }
 
 
@@ -486,7 +499,7 @@ static char *getOssState(MprSocket *sp)
 
     osp = sp->sslSocket;
     buf = mprCreateBuf(0, 0);
-    mprPutToBuf(buf, "CIPHER=%s, ", SSL_get_cipher(osp->handle));
+    mprPutToBuf(buf, "PROVIDER=openssl,CIPHER=%s,", SSL_get_cipher(osp->handle));
 
     if ((cert = SSL_get_peer_certificate(osp->handle)) != 0) {
         prefix = sp->acceptIp ? "CLIENT_" : "SERVER_";
@@ -495,7 +508,7 @@ static char *getOssState(MprSocket *sp)
         parseCertFields(buf, prefix, "S_", &subject[1]);
 
         X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) -1);
-        parseCertFields(buf, prefix, "I_", &subject[1]);
+        parseCertFields(buf, prefix, "I_", &issuer[1]);
         X509_free(cert);
     }
     if ((cert = SSL_get_certificate(osp->handle)) != 0) {
@@ -504,10 +517,10 @@ static char *getOssState(MprSocket *sp)
         parseCertFields(buf, prefix, "S_", &subject[1]);
 
         X509_NAME_oneline(X509_get_issuer_name(cert), issuer, sizeof(issuer) -1);
-        parseCertFields(buf, prefix, "I_", &subject[1]);
-        X509_free(cert);
+        parseCertFields(buf, prefix, "I_", &issuer[1]);
+        /* Don't call X509_free on own cert */
     }
-    mprTrace(4, "OpenSSL state: %s", mprGetBufStart(buf));
+    mprTrace(5, "OpenSSL state: %s", mprGetBufStart(buf));
     return mprGetBufStart(buf);
 }
 
@@ -721,6 +734,8 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
         }
     }
     switch (error) {
+    case X509_V_OK:
+        break;
     case X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT:
     case X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN:
         /* Normal self signed certificate */
