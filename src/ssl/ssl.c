@@ -8,13 +8,13 @@
 
 #include    "mpr.h"
 
-#if BIT_SSL
 /************************************ Code ************************************/
 /*
     Module initialization entry point
  */
 PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
+#if BIT_SSL
     assert(module);
 
     /*
@@ -45,9 +45,11 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
     MPR->socketService->defaultProvider = sclone("est");
 #endif
     return 0;
+#else
+    return MPR_ERR_BAD_STATE;
+#endif /* BLD_PACK_SSL */
 }
 
-#endif /* BLD_PACK_SSL */
 
 /*
     @copy   default
