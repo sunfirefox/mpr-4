@@ -215,6 +215,7 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     OpenConfig      *cfg;
     SSL_CTX         *context;
     uchar           resume[16];
+    int             verifyMode;
 
     ssl = sp->ssl;
     assert(ssl);
@@ -240,6 +241,9 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     RAND_bytes(resume, sizeof(resume));
     SSL_CTX_set_session_id_context(context, resume, sizeof(resume));
 
+    verifyMode = (sp->flags & MPR_SOCKET_SERVER && !ssl->verifyPeer) ? SSL_VERIFY_NONE : 
+        SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+
     /*
         Configure the certificates
      */
@@ -251,10 +255,15 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     }
     SSL_CTX_set_cipher_list(context, ssl->ciphers);
 
-    if (ssl->caFile || ssl->caPath) {
+    if (verifyMode != SSL_VERIFY_NONE) {
+        if (!(ssl->caFile || ssl->caPath)) {
+            sp->errorMsg = sclone("No defined certificate authority file");
+            SSL_CTX_free(context);
+            return MPR_ERR_CANT_READ;
+        }
         if ((!SSL_CTX_load_verify_locations(context, ssl->caFile, ssl->caPath)) ||
                 (!SSL_CTX_set_default_verify_paths(context))) {
-            mprError("OpenSSL: Unable to set certificate locations"); 
+            sp->errorMsg = sclone("OpenSSL: Unable to set certificate locations"); 
             SSL_CTX_free(context);
             return 0;
         }
@@ -269,27 +278,12 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
                 SSL_CTX_set_client_CA_list(context, certNames);
             }
         }
-    }
-    if (sp->flags & MPR_SOCKET_SERVER) {
-        if (ssl->verifyPeer) {
-            if (!ssl->caFile && !ssl->caPath) {
-                mprError("OpenSSL: Must define CA certificates if using client verification");
-                SSL_CTX_free(context);
-                return 0;
-            }
-            SSL_CTX_set_verify(context, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, verifyX509Certificate);
+        if (sp->flags & MPR_SOCKET_SERVER) {
             SSL_CTX_set_verify_depth(context, ssl->verifyDepth);
-        } else {
-            /* With this, the server will not request a client certificate */
-            SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
-        }
-    } else {
-        if (ssl->verifyPeer) {
-            SSL_CTX_set_verify(context, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, verifyX509Certificate);
-        } else {
-            SSL_CTX_set_verify(context, SSL_VERIFY_NONE, verifyX509Certificate);
         }
     }
+    SSL_CTX_set_verify(context, verifyMode, verifyX509Certificate);
+
     /*
         Define callbacks
      */

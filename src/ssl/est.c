@@ -207,10 +207,9 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         }
         est->cfg = ssl->config = cfg;
         if (ssl->certFile) {
-            //  MOB - encrypted and/not?
-            //  MOB PEM/DER?
-            //  MOB catenated with key file?
-            //  MOB - must check that a keyFile is provided
+            /*
+                Load a PEM format certificate file
+             */
             if (x509parse_crtfile(&cfg->cert, ssl->certFile) != 0) {
                 sp->errorMsg = sfmt("Unable to parse certificate %s", ssl->certFile); 
                 unlock(ssl);
@@ -218,8 +217,10 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             }
         }
         if (ssl->keyFile) {
-            //  MOB - last arg is password
-            //  MOB - must check that a certFile is provided
+            /*
+                Load a decrypted PEM format private key
+                Last arg is password if you need to use an encrypted private key
+             */
             if (x509parse_keyfile(&cfg->rsa, ssl->keyFile, 0) != 0) {
                 sp->errorMsg = sfmt("Unable to parse key file %s", ssl->keyFile); 
                 unlock(ssl);

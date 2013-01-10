@@ -433,11 +433,6 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     }
     unlock(ss);
 
-    /*
-        MOB - cases:
-            - Not trused by CA
-            - Self-signed
-     */
     if (!sp) {
         /* Should not get here */
         assert(sp);
