@@ -147,259 +147,259 @@ $(CONFIG)\obj\async.obj: \
         src\async.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\async.obj -Fd$(CONFIG)\obj\async.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\async.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\async.obj -Fd$(CONFIG)\obj\async.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\async.c
 
 $(CONFIG)\obj\atomic.obj: \
         src\atomic.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\atomic.obj -Fd$(CONFIG)\obj\atomic.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\atomic.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\atomic.obj -Fd$(CONFIG)\obj\atomic.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\atomic.c
 
 $(CONFIG)\obj\buf.obj: \
         src\buf.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\buf.obj -Fd$(CONFIG)\obj\buf.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\buf.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\buf.obj -Fd$(CONFIG)\obj\buf.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\buf.c
 
 $(CONFIG)\obj\cache.obj: \
         src\cache.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\cache.obj -Fd$(CONFIG)\obj\cache.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\cache.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cache.obj -Fd$(CONFIG)\obj\cache.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\cache.c
 
 $(CONFIG)\obj\cmd.obj: \
         src\cmd.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\cmd.obj -Fd$(CONFIG)\obj\cmd.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\cmd.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cmd.obj -Fd$(CONFIG)\obj\cmd.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\cmd.c
 
 $(CONFIG)\obj\cond.obj: \
         src\cond.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\cond.obj -Fd$(CONFIG)\obj\cond.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\cond.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\cond.obj -Fd$(CONFIG)\obj\cond.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\cond.c
 
 $(CONFIG)\obj\crypt.obj: \
         src\crypt.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\crypt.obj -Fd$(CONFIG)\obj\crypt.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\crypt.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\crypt.obj -Fd$(CONFIG)\obj\crypt.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\crypt.c
 
 $(CONFIG)\obj\disk.obj: \
         src\disk.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\disk.obj -Fd$(CONFIG)\obj\disk.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\disk.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\disk.obj -Fd$(CONFIG)\obj\disk.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\disk.c
 
 $(CONFIG)\obj\dispatcher.obj: \
         src\dispatcher.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\dispatcher.obj -Fd$(CONFIG)\obj\dispatcher.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\dispatcher.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\dispatcher.obj -Fd$(CONFIG)\obj\dispatcher.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\dispatcher.c
 
 $(CONFIG)\obj\encode.obj: \
         src\encode.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\encode.obj -Fd$(CONFIG)\obj\encode.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\encode.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\encode.obj -Fd$(CONFIG)\obj\encode.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\encode.c
 
 $(CONFIG)\obj\epoll.obj: \
         src\epoll.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\epoll.obj -Fd$(CONFIG)\obj\epoll.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\epoll.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\epoll.obj -Fd$(CONFIG)\obj\epoll.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\epoll.c
 
 $(CONFIG)\obj\event.obj: \
         src\event.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\event.obj -Fd$(CONFIG)\obj\event.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\event.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\event.obj -Fd$(CONFIG)\obj\event.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\event.c
 
 $(CONFIG)\obj\file.obj: \
         src\file.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\file.obj -Fd$(CONFIG)\obj\file.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\file.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\file.obj -Fd$(CONFIG)\obj\file.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\file.c
 
 $(CONFIG)\obj\fs.obj: \
         src\fs.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\fs.obj -Fd$(CONFIG)\obj\fs.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\fs.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\fs.obj -Fd$(CONFIG)\obj\fs.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\fs.c
 
 $(CONFIG)\obj\hash.obj: \
         src\hash.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\hash.obj -Fd$(CONFIG)\obj\hash.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\hash.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\hash.obj -Fd$(CONFIG)\obj\hash.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\hash.c
 
 $(CONFIG)\obj\json.obj: \
         src\json.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\json.obj -Fd$(CONFIG)\obj\json.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\json.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\json.obj -Fd$(CONFIG)\obj\json.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\json.c
 
 $(CONFIG)\obj\kqueue.obj: \
         src\kqueue.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\kqueue.obj -Fd$(CONFIG)\obj\kqueue.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\kqueue.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\kqueue.obj -Fd$(CONFIG)\obj\kqueue.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\kqueue.c
 
 $(CONFIG)\obj\list.obj: \
         src\list.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\list.obj -Fd$(CONFIG)\obj\list.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\list.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\list.obj -Fd$(CONFIG)\obj\list.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\list.c
 
 $(CONFIG)\obj\lock.obj: \
         src\lock.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\lock.obj -Fd$(CONFIG)\obj\lock.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\lock.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\lock.obj -Fd$(CONFIG)\obj\lock.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\lock.c
 
 $(CONFIG)\obj\log.obj: \
         src\log.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\log.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\log.c
 
 $(CONFIG)\obj\mem.obj: \
         src\mem.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mem.obj -Fd$(CONFIG)\obj\mem.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\mem.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mem.obj -Fd$(CONFIG)\obj\mem.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\mem.c
 
 $(CONFIG)\obj\mime.obj: \
         src\mime.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mime.obj -Fd$(CONFIG)\obj\mime.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\mime.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mime.obj -Fd$(CONFIG)\obj\mime.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\mime.c
 
 $(CONFIG)\obj\mixed.obj: \
         src\mixed.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mixed.obj -Fd$(CONFIG)\obj\mixed.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\mixed.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mixed.obj -Fd$(CONFIG)\obj\mixed.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\mixed.c
 
 $(CONFIG)\obj\module.obj: \
         src\module.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\module.obj -Fd$(CONFIG)\obj\module.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\module.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\module.obj -Fd$(CONFIG)\obj\module.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\module.c
 
 $(CONFIG)\obj\mpr.obj: \
         src\mpr.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mpr.obj -Fd$(CONFIG)\obj\mpr.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\mpr.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mpr.obj -Fd$(CONFIG)\obj\mpr.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\mpr.c
 
 $(CONFIG)\obj\path.obj: \
         src\path.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\path.obj -Fd$(CONFIG)\obj\path.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\path.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\path.obj -Fd$(CONFIG)\obj\path.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\path.c
 
 $(CONFIG)\obj\poll.obj: \
         src\poll.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\poll.obj -Fd$(CONFIG)\obj\poll.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\poll.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\poll.obj -Fd$(CONFIG)\obj\poll.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\poll.c
 
 $(CONFIG)\obj\posix.obj: \
         src\posix.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\posix.obj -Fd$(CONFIG)\obj\posix.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\posix.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\posix.obj -Fd$(CONFIG)\obj\posix.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\posix.c
 
 $(CONFIG)\obj\printf.obj: \
         src\printf.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\printf.obj -Fd$(CONFIG)\obj\printf.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\printf.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\printf.obj -Fd$(CONFIG)\obj\printf.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\printf.c
 
 $(CONFIG)\obj\rom.obj: \
         src\rom.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\rom.obj -Fd$(CONFIG)\obj\rom.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\rom.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\rom.obj -Fd$(CONFIG)\obj\rom.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\rom.c
 
 $(CONFIG)\obj\select.obj: \
         src\select.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\select.obj -Fd$(CONFIG)\obj\select.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\select.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\select.obj -Fd$(CONFIG)\obj\select.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\select.c
 
 $(CONFIG)\obj\signal.obj: \
         src\signal.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\signal.obj -Fd$(CONFIG)\obj\signal.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\signal.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\signal.obj -Fd$(CONFIG)\obj\signal.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\signal.c
 
 $(CONFIG)\obj\socket.obj: \
         src\socket.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\socket.obj -Fd$(CONFIG)\obj\socket.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\socket.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\socket.obj -Fd$(CONFIG)\obj\socket.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\socket.c
 
 $(CONFIG)\obj\string.obj: \
         src\string.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\string.obj -Fd$(CONFIG)\obj\string.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\string.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\string.obj -Fd$(CONFIG)\obj\string.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\string.c
 
 $(CONFIG)\obj\test.obj: \
         src\test.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\test.obj -Fd$(CONFIG)\obj\test.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\test.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\test.obj -Fd$(CONFIG)\obj\test.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\test.c
 
 $(CONFIG)\obj\thread.obj: \
         src\thread.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\thread.obj -Fd$(CONFIG)\obj\thread.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\thread.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\thread.obj -Fd$(CONFIG)\obj\thread.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\thread.c
 
 $(CONFIG)\obj\time.obj: \
         src\time.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\time.obj -Fd$(CONFIG)\obj\time.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\time.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\time.obj -Fd$(CONFIG)\obj\time.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\time.c
 
 $(CONFIG)\obj\vxworks.obj: \
         src\vxworks.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\vxworks.obj -Fd$(CONFIG)\obj\vxworks.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\vxworks.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\vxworks.obj -Fd$(CONFIG)\obj\vxworks.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\vxworks.c
 
 $(CONFIG)\obj\wait.obj: \
         src\wait.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\wait.obj -Fd$(CONFIG)\obj\wait.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\wait.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\wait.obj -Fd$(CONFIG)\obj\wait.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\wait.c
 
 $(CONFIG)\obj\wide.obj: \
         src\wide.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\wide.obj -Fd$(CONFIG)\obj\wide.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\wide.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\wide.obj -Fd$(CONFIG)\obj\wide.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\wide.c
 
 $(CONFIG)\obj\win.obj: \
         src\win.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\win.obj -Fd$(CONFIG)\obj\win.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\win.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\win.obj -Fd$(CONFIG)\obj\win.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\win.c
 
 $(CONFIG)\obj\wince.obj: \
         src\wince.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\wince.obj -Fd$(CONFIG)\obj\wince.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\wince.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\wince.obj -Fd$(CONFIG)\obj\wince.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\wince.c
 
 $(CONFIG)\obj\xml.obj: \
         src\xml.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\xml.obj -Fd$(CONFIG)\obj\xml.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\xml.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\xml.obj -Fd$(CONFIG)\obj\xml.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\xml.c
 
 $(CONFIG)\bin\libmpr.dll:  \
         $(CONFIG)\inc\bitos.h \
@@ -453,7 +453,7 @@ $(CONFIG)\obj\benchMpr.obj: \
         test\benchMpr.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\benchMpr.obj -Fd$(CONFIG)\obj\benchMpr.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\benchMpr.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\benchMpr.obj -Fd$(CONFIG)\obj\benchMpr.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\benchMpr.c
 
 $(CONFIG)\bin\benchMpr.exe:  \
         $(CONFIG)\bin\libmpr.dll \
@@ -463,7 +463,7 @@ $(CONFIG)\bin\benchMpr.exe:  \
 $(CONFIG)\obj\runProgram.obj: \
         test\runProgram.c \
         $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\runProgram.obj -Fd$(CONFIG)\obj\runProgram.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\runProgram.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\runProgram.obj -Fd$(CONFIG)\obj\runProgram.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\runProgram.c
 
 $(CONFIG)\bin\runProgram.exe:  \
         $(CONFIG)\obj\runProgram.obj
@@ -480,31 +480,31 @@ $(CONFIG)\obj\est.obj: \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h \
         $(CONFIG)\inc\est.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\est.obj -Fd$(CONFIG)\obj\est.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\ssl\est.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\est.obj -Fd$(CONFIG)\obj\est.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\est.c
 
 $(CONFIG)\obj\matrixssl.obj: \
         src\ssl\matrixssl.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\ssl\matrixssl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\matrixssl.c
 
 $(CONFIG)\obj\mocana.obj: \
         src\ssl\mocana.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\mocana.obj -Fd$(CONFIG)\obj\mocana.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\ssl\mocana.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\mocana.obj -Fd$(CONFIG)\obj\mocana.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\mocana.c
 
 $(CONFIG)\obj\openssl.obj: \
         src\ssl\openssl.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\openssl.obj -Fd$(CONFIG)\obj\openssl.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\ssl\openssl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\openssl.obj -Fd$(CONFIG)\obj\openssl.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\openssl.c
 
 $(CONFIG)\obj\ssl.obj: \
         src\ssl\ssl.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\ssl.obj -Fd$(CONFIG)\obj\ssl.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\ssl\ssl.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\ssl.obj -Fd$(CONFIG)\obj\ssl.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\ssl.c
 
 $(CONFIG)\bin\libmprssl.dll:  \
         $(CONFIG)\bin\libmpr.dll \
@@ -519,103 +519,103 @@ $(CONFIG)\obj\testArgv.obj: \
         test\testArgv.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testArgv.obj -Fd$(CONFIG)\obj\testArgv.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testArgv.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testArgv.obj -Fd$(CONFIG)\obj\testArgv.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testArgv.c
 
 $(CONFIG)\obj\testBuf.obj: \
         test\testBuf.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testBuf.obj -Fd$(CONFIG)\obj\testBuf.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testBuf.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testBuf.obj -Fd$(CONFIG)\obj\testBuf.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testBuf.c
 
 $(CONFIG)\obj\testCmd.obj: \
         test\testCmd.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testCmd.obj -Fd$(CONFIG)\obj\testCmd.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testCmd.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testCmd.obj -Fd$(CONFIG)\obj\testCmd.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testCmd.c
 
 $(CONFIG)\obj\testCond.obj: \
         test\testCond.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testCond.obj -Fd$(CONFIG)\obj\testCond.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testCond.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testCond.obj -Fd$(CONFIG)\obj\testCond.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testCond.c
 
 $(CONFIG)\obj\testEvent.obj: \
         test\testEvent.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testEvent.obj -Fd$(CONFIG)\obj\testEvent.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testEvent.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testEvent.obj -Fd$(CONFIG)\obj\testEvent.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testEvent.c
 
 $(CONFIG)\obj\testFile.obj: \
         test\testFile.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testFile.obj -Fd$(CONFIG)\obj\testFile.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testFile.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testFile.obj -Fd$(CONFIG)\obj\testFile.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testFile.c
 
 $(CONFIG)\obj\testHash.obj: \
         test\testHash.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testHash.obj -Fd$(CONFIG)\obj\testHash.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testHash.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testHash.obj -Fd$(CONFIG)\obj\testHash.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testHash.c
 
 $(CONFIG)\obj\testList.obj: \
         test\testList.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testList.obj -Fd$(CONFIG)\obj\testList.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testList.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testList.obj -Fd$(CONFIG)\obj\testList.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testList.c
 
 $(CONFIG)\obj\testLock.obj: \
         test\testLock.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testLock.obj -Fd$(CONFIG)\obj\testLock.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testLock.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testLock.obj -Fd$(CONFIG)\obj\testLock.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testLock.c
 
 $(CONFIG)\obj\testMem.obj: \
         test\testMem.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testMem.obj -Fd$(CONFIG)\obj\testMem.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testMem.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testMem.obj -Fd$(CONFIG)\obj\testMem.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testMem.c
 
 $(CONFIG)\obj\testMpr.obj: \
         test\testMpr.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testMpr.obj -Fd$(CONFIG)\obj\testMpr.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testMpr.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testMpr.obj -Fd$(CONFIG)\obj\testMpr.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testMpr.c
 
 $(CONFIG)\obj\testPath.obj: \
         test\testPath.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testPath.obj -Fd$(CONFIG)\obj\testPath.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testPath.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testPath.obj -Fd$(CONFIG)\obj\testPath.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testPath.c
 
 $(CONFIG)\obj\testSocket.obj: \
         test\testSocket.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testSocket.obj -Fd$(CONFIG)\obj\testSocket.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testSocket.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testSocket.obj -Fd$(CONFIG)\obj\testSocket.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testSocket.c
 
 $(CONFIG)\obj\testSprintf.obj: \
         test\testSprintf.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testSprintf.obj -Fd$(CONFIG)\obj\testSprintf.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testSprintf.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testSprintf.obj -Fd$(CONFIG)\obj\testSprintf.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testSprintf.c
 
 $(CONFIG)\obj\testThread.obj: \
         test\testThread.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testThread.obj -Fd$(CONFIG)\obj\testThread.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testThread.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testThread.obj -Fd$(CONFIG)\obj\testThread.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testThread.c
 
 $(CONFIG)\obj\testTime.obj: \
         test\testTime.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testTime.obj -Fd$(CONFIG)\obj\testTime.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testTime.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testTime.obj -Fd$(CONFIG)\obj\testTime.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testTime.c
 
 $(CONFIG)\obj\testUnicode.obj: \
         test\testUnicode.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\testUnicode.obj -Fd$(CONFIG)\obj\testUnicode.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc test\testUnicode.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\testUnicode.obj -Fd$(CONFIG)\obj\testUnicode.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc test\testUnicode.c
 
 $(CONFIG)\bin\testMpr.exe:  \
         $(CONFIG)\bin\libmpr.dll \
@@ -644,7 +644,7 @@ $(CONFIG)\obj\manager.obj: \
         src\manager.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\manager.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\manager.c
 
 $(CONFIG)\bin\manager.exe:  \
         $(CONFIG)\bin\libmpr.dll \
@@ -655,7 +655,7 @@ $(CONFIG)\obj\makerom.obj: \
         src\utils\makerom.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\utils\makerom.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\utils\makerom.c
 
 $(CONFIG)\bin\makerom.exe:  \
         $(CONFIG)\bin\libmpr.dll \
@@ -666,7 +666,7 @@ $(CONFIG)\obj\charGen.obj: \
         src\utils\charGen.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\charGen.obj -Fd$(CONFIG)\obj\charGen.pdb $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)\inc src\utils\charGen.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\charGen.obj -Fd$(CONFIG)\obj\charGen.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\utils\charGen.c
 
 $(CONFIG)\bin\chargen.exe:  \
         $(CONFIG)\bin\libmpr.dll \

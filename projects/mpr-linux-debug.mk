@@ -150,259 +150,259 @@ $(CONFIG)/obj/async.o: \
         src/async.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/async.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/async.c
+	$(CC) -c -o $(CONFIG)/obj/async.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/async.c
 
 $(CONFIG)/obj/atomic.o: \
         src/atomic.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/atomic.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/atomic.c
+	$(CC) -c -o $(CONFIG)/obj/atomic.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/atomic.c
 
 $(CONFIG)/obj/buf.o: \
         src/buf.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/buf.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/buf.c
+	$(CC) -c -o $(CONFIG)/obj/buf.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/buf.c
 
 $(CONFIG)/obj/cache.o: \
         src/cache.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/cache.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/cache.c
+	$(CC) -c -o $(CONFIG)/obj/cache.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cache.c
 
 $(CONFIG)/obj/cmd.o: \
         src/cmd.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/cmd.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/cmd.c
+	$(CC) -c -o $(CONFIG)/obj/cmd.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cmd.c
 
 $(CONFIG)/obj/cond.o: \
         src/cond.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/cond.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/cond.c
+	$(CC) -c -o $(CONFIG)/obj/cond.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cond.c
 
 $(CONFIG)/obj/crypt.o: \
         src/crypt.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/crypt.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/crypt.c
+	$(CC) -c -o $(CONFIG)/obj/crypt.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/crypt.c
 
 $(CONFIG)/obj/disk.o: \
         src/disk.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/disk.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/disk.c
+	$(CC) -c -o $(CONFIG)/obj/disk.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/disk.c
 
 $(CONFIG)/obj/dispatcher.o: \
         src/dispatcher.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/dispatcher.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/dispatcher.c
+	$(CC) -c -o $(CONFIG)/obj/dispatcher.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dispatcher.c
 
 $(CONFIG)/obj/encode.o: \
         src/encode.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/encode.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/encode.c
+	$(CC) -c -o $(CONFIG)/obj/encode.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/encode.c
 
 $(CONFIG)/obj/epoll.o: \
         src/epoll.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/epoll.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/epoll.c
+	$(CC) -c -o $(CONFIG)/obj/epoll.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/epoll.c
 
 $(CONFIG)/obj/event.o: \
         src/event.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/event.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/event.c
+	$(CC) -c -o $(CONFIG)/obj/event.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/event.c
 
 $(CONFIG)/obj/file.o: \
         src/file.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/file.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/file.c
+	$(CC) -c -o $(CONFIG)/obj/file.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/file.c
 
 $(CONFIG)/obj/fs.o: \
         src/fs.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/fs.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/fs.c
+	$(CC) -c -o $(CONFIG)/obj/fs.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fs.c
 
 $(CONFIG)/obj/hash.o: \
         src/hash.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/hash.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/hash.c
+	$(CC) -c -o $(CONFIG)/obj/hash.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/hash.c
 
 $(CONFIG)/obj/json.o: \
         src/json.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/json.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/json.c
+	$(CC) -c -o $(CONFIG)/obj/json.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/json.c
 
 $(CONFIG)/obj/kqueue.o: \
         src/kqueue.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/kqueue.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/kqueue.c
+	$(CC) -c -o $(CONFIG)/obj/kqueue.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/kqueue.c
 
 $(CONFIG)/obj/list.o: \
         src/list.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/list.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/list.c
+	$(CC) -c -o $(CONFIG)/obj/list.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/list.c
 
 $(CONFIG)/obj/lock.o: \
         src/lock.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/lock.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/lock.c
+	$(CC) -c -o $(CONFIG)/obj/lock.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/lock.c
 
 $(CONFIG)/obj/log.o: \
         src/log.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
 
 $(CONFIG)/obj/mem.o: \
         src/mem.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mem.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/mem.c
+	$(CC) -c -o $(CONFIG)/obj/mem.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mem.c
 
 $(CONFIG)/obj/mime.o: \
         src/mime.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mime.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/mime.c
+	$(CC) -c -o $(CONFIG)/obj/mime.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mime.c
 
 $(CONFIG)/obj/mixed.o: \
         src/mixed.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mixed.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/mixed.c
+	$(CC) -c -o $(CONFIG)/obj/mixed.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mixed.c
 
 $(CONFIG)/obj/module.o: \
         src/module.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/module.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/module.c
+	$(CC) -c -o $(CONFIG)/obj/module.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/module.c
 
 $(CONFIG)/obj/mpr.o: \
         src/mpr.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mpr.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/mpr.c
+	$(CC) -c -o $(CONFIG)/obj/mpr.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mpr.c
 
 $(CONFIG)/obj/path.o: \
         src/path.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/path.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/path.c
+	$(CC) -c -o $(CONFIG)/obj/path.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/path.c
 
 $(CONFIG)/obj/poll.o: \
         src/poll.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/poll.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/poll.c
+	$(CC) -c -o $(CONFIG)/obj/poll.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/poll.c
 
 $(CONFIG)/obj/posix.o: \
         src/posix.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/posix.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/posix.c
+	$(CC) -c -o $(CONFIG)/obj/posix.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/posix.c
 
 $(CONFIG)/obj/printf.o: \
         src/printf.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/printf.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/printf.c
+	$(CC) -c -o $(CONFIG)/obj/printf.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/printf.c
 
 $(CONFIG)/obj/rom.o: \
         src/rom.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/rom.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/rom.c
+	$(CC) -c -o $(CONFIG)/obj/rom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/rom.c
 
 $(CONFIG)/obj/select.o: \
         src/select.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/select.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/select.c
+	$(CC) -c -o $(CONFIG)/obj/select.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/select.c
 
 $(CONFIG)/obj/signal.o: \
         src/signal.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/signal.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/signal.c
+	$(CC) -c -o $(CONFIG)/obj/signal.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/signal.c
 
 $(CONFIG)/obj/socket.o: \
         src/socket.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/socket.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/socket.c
+	$(CC) -c -o $(CONFIG)/obj/socket.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/socket.c
 
 $(CONFIG)/obj/string.o: \
         src/string.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/string.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/string.c
+	$(CC) -c -o $(CONFIG)/obj/string.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/string.c
 
 $(CONFIG)/obj/test.o: \
         src/test.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/test.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/test.c
+	$(CC) -c -o $(CONFIG)/obj/test.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/test.c
 
 $(CONFIG)/obj/thread.o: \
         src/thread.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/thread.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/thread.c
+	$(CC) -c -o $(CONFIG)/obj/thread.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/thread.c
 
 $(CONFIG)/obj/time.o: \
         src/time.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/time.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/time.c
+	$(CC) -c -o $(CONFIG)/obj/time.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/time.c
 
 $(CONFIG)/obj/vxworks.o: \
         src/vxworks.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/vxworks.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/vxworks.c
+	$(CC) -c -o $(CONFIG)/obj/vxworks.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/vxworks.c
 
 $(CONFIG)/obj/wait.o: \
         src/wait.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/wait.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/wait.c
+	$(CC) -c -o $(CONFIG)/obj/wait.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wait.c
 
 $(CONFIG)/obj/wide.o: \
         src/wide.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/wide.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/wide.c
+	$(CC) -c -o $(CONFIG)/obj/wide.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wide.c
 
 $(CONFIG)/obj/win.o: \
         src/win.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/win.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/win.c
+	$(CC) -c -o $(CONFIG)/obj/win.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/win.c
 
 $(CONFIG)/obj/wince.o: \
         src/wince.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/wince.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/wince.c
+	$(CC) -c -o $(CONFIG)/obj/wince.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wince.c
 
 $(CONFIG)/obj/xml.o: \
         src/xml.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/xml.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/xml.c
+	$(CC) -c -o $(CONFIG)/obj/xml.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/xml.c
 
 $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/inc/bitos.h \
@@ -456,7 +456,7 @@ $(CONFIG)/obj/benchMpr.o: \
         test/benchMpr.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/benchMpr.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/benchMpr.c
+	$(CC) -c -o $(CONFIG)/obj/benchMpr.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/benchMpr.c
 
 $(CONFIG)/bin/benchMpr:  \
         $(CONFIG)/bin/libmpr.so \
@@ -466,7 +466,7 @@ $(CONFIG)/bin/benchMpr:  \
 $(CONFIG)/obj/runProgram.o: \
         test/runProgram.c \
         $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/runProgram.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/runProgram.c
+	$(CC) -c -o $(CONFIG)/obj/runProgram.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/runProgram.c
 
 $(CONFIG)/bin/runProgram:  \
         $(CONFIG)/obj/runProgram.o
@@ -483,31 +483,31 @@ $(CONFIG)/obj/est.o: \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h \
         $(CONFIG)/inc/est.h
-	$(CC) -c -o $(CONFIG)/obj/est.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/ssl/est.c
+	$(CC) -c -o $(CONFIG)/obj/est.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/est.c
 
 $(CONFIG)/obj/matrixssl.o: \
         src/ssl/matrixssl.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/matrixssl.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/ssl/matrixssl.c
+	$(CC) -c -o $(CONFIG)/obj/matrixssl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/matrixssl.c
 
 $(CONFIG)/obj/mocana.o: \
         src/ssl/mocana.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mocana.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/ssl/mocana.c
+	$(CC) -c -o $(CONFIG)/obj/mocana.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/mocana.c
 
 $(CONFIG)/obj/openssl.o: \
         src/ssl/openssl.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/openssl.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/ssl/openssl.c
+	$(CC) -c -o $(CONFIG)/obj/openssl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/openssl.c
 
 $(CONFIG)/obj/ssl.o: \
         src/ssl/ssl.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/ssl.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/ssl/ssl.c
+	$(CC) -c -o $(CONFIG)/obj/ssl.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/ssl.c
 
 $(CONFIG)/bin/libmprssl.so:  \
         $(CONFIG)/bin/libmpr.so \
@@ -522,103 +522,103 @@ $(CONFIG)/obj/testArgv.o: \
         test/testArgv.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testArgv.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testArgv.c
+	$(CC) -c -o $(CONFIG)/obj/testArgv.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testArgv.c
 
 $(CONFIG)/obj/testBuf.o: \
         test/testBuf.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testBuf.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testBuf.c
+	$(CC) -c -o $(CONFIG)/obj/testBuf.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testBuf.c
 
 $(CONFIG)/obj/testCmd.o: \
         test/testCmd.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testCmd.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testCmd.c
+	$(CC) -c -o $(CONFIG)/obj/testCmd.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCmd.c
 
 $(CONFIG)/obj/testCond.o: \
         test/testCond.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testCond.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testCond.c
+	$(CC) -c -o $(CONFIG)/obj/testCond.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCond.c
 
 $(CONFIG)/obj/testEvent.o: \
         test/testEvent.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testEvent.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testEvent.c
+	$(CC) -c -o $(CONFIG)/obj/testEvent.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testEvent.c
 
 $(CONFIG)/obj/testFile.o: \
         test/testFile.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testFile.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testFile.c
+	$(CC) -c -o $(CONFIG)/obj/testFile.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testFile.c
 
 $(CONFIG)/obj/testHash.o: \
         test/testHash.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testHash.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testHash.c
+	$(CC) -c -o $(CONFIG)/obj/testHash.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHash.c
 
 $(CONFIG)/obj/testList.o: \
         test/testList.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testList.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testList.c
+	$(CC) -c -o $(CONFIG)/obj/testList.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testList.c
 
 $(CONFIG)/obj/testLock.o: \
         test/testLock.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testLock.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testLock.c
+	$(CC) -c -o $(CONFIG)/obj/testLock.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testLock.c
 
 $(CONFIG)/obj/testMem.o: \
         test/testMem.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testMem.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testMem.c
+	$(CC) -c -o $(CONFIG)/obj/testMem.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMem.c
 
 $(CONFIG)/obj/testMpr.o: \
         test/testMpr.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testMpr.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testMpr.c
+	$(CC) -c -o $(CONFIG)/obj/testMpr.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMpr.c
 
 $(CONFIG)/obj/testPath.o: \
         test/testPath.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testPath.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testPath.c
+	$(CC) -c -o $(CONFIG)/obj/testPath.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testPath.c
 
 $(CONFIG)/obj/testSocket.o: \
         test/testSocket.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testSocket.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testSocket.c
+	$(CC) -c -o $(CONFIG)/obj/testSocket.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSocket.c
 
 $(CONFIG)/obj/testSprintf.o: \
         test/testSprintf.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testSprintf.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testSprintf.c
+	$(CC) -c -o $(CONFIG)/obj/testSprintf.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSprintf.c
 
 $(CONFIG)/obj/testThread.o: \
         test/testThread.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testThread.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testThread.c
+	$(CC) -c -o $(CONFIG)/obj/testThread.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testThread.c
 
 $(CONFIG)/obj/testTime.o: \
         test/testTime.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testTime.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testTime.c
+	$(CC) -c -o $(CONFIG)/obj/testTime.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testTime.c
 
 $(CONFIG)/obj/testUnicode.o: \
         test/testUnicode.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testUnicode.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc test/testUnicode.c
+	$(CC) -c -o $(CONFIG)/obj/testUnicode.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testUnicode.c
 
 $(CONFIG)/bin/testMpr:  \
         $(CONFIG)/bin/libmpr.so \
@@ -647,7 +647,7 @@ $(CONFIG)/obj/manager.o: \
         src/manager.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/manager.c
 
 $(CONFIG)/bin/manager:  \
         $(CONFIG)/bin/libmpr.so \
@@ -658,7 +658,7 @@ $(CONFIG)/obj/makerom.o: \
         src/utils/makerom.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/utils/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/makerom.c
 
 $(CONFIG)/bin/makerom:  \
         $(CONFIG)/bin/libmpr.so \
@@ -669,7 +669,7 @@ $(CONFIG)/obj/charGen.o: \
         src/utils/charGen.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/charGen.o $(CFLAGS) -DEMBEDTHIS=1 $(DFLAGS) -I$(CONFIG)/inc src/utils/charGen.c
+	$(CC) -c -o $(CONFIG)/obj/charGen.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/charGen.c
 
 $(CONFIG)/bin/chargen:  \
         $(CONFIG)/bin/libmpr.so \
