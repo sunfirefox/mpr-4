@@ -24,6 +24,7 @@ CFLAGS          += $(CFLAGS-$(PROFILE))
 LDFLAGS         += $(LDFLAGS-$(PROFILE))
 
 all: prep \
+        $(CONFIG)/bin/ca.crt \
         $(CONFIG)/bin/benchMpr \
         $(CONFIG)/bin/runProgram \
         $(CONFIG)/bin/testMpr \
@@ -46,6 +47,7 @@ prep:
 	fi; true
 
 clean:
+	rm -rf $(CONFIG)/bin/ca.crt
 	rm -rf $(CONFIG)/bin/benchMpr
 	rm -rf $(CONFIG)/bin/runProgram
 	rm -rf $(CONFIG)/bin/testMpr
@@ -128,6 +130,10 @@ clean:
 
 clobber: clean
 	rm -fr ./$(CONFIG)
+
+$(CONFIG)/bin/ca.crt: 
+	rm -fr $(CONFIG)/bin/ca.crt
+	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
 
 $(CONFIG)/inc/bitos.h:  \
         $(CONFIG)/inc/bit.h

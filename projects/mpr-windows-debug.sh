@@ -28,6 +28,9 @@ if ! diff ${CONFIG}/inc/bit.h projects/mpr-${OS}-${PROFILE}-bit.h >/dev/null ; t
 	cp projects/mpr-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi
 
+rm -rf ${CONFIG}/bin/ca.crt
+cp -r src/deps/est/ca.crt ${CONFIG}/bin/ca.crt
+
 rm -rf ${CONFIG}/inc/bitos.h
 cp -r src/bitos.h ${CONFIG}/inc/bitos.h
 
