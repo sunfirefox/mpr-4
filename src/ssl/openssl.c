@@ -272,7 +272,7 @@ static OpenConfig *createOpenSslConfig(MprSocket *sp)
     }
     if (sp->flags & MPR_SOCKET_SERVER) {
         if (ssl->verifyPeer) {
-            if (!ssl->caFile == 0 && !ssl->caPath) {
+            if (!ssl->caFile && !ssl->caPath) {
                 mprError("OpenSSL: Must define CA certificates if using client verification");
                 SSL_CTX_free(context);
                 return 0;
