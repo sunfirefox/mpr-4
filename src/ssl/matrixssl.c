@@ -119,9 +119,9 @@ static uchar CAcertSrvBuf[] = {
 
 static void     closeMss(MprSocket *sp, bool gracefully);
 static void     disconnectMss(MprSocket *sp);
-static int      mssHandshake(MprSocket *sp, short cipherSuite);
 static ssize    flushMss(MprSocket *sp);
 static char     *getMssState(MprSocket *sp);
+static int      handshakeMss(MprSocket *sp, short cipherSuite);
 static ssize    innerRead(MprSocket *sp, char *userBuf, ssize len);
 static int      listenMss(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMatrixSocket(MatrixSocket *msp, int flags);
@@ -303,7 +303,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }
-        if (mssHandshake(sp, 0) < 0) {
+        if (handshakeMss(sp, 0) < 0) {
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }
@@ -557,7 +557,7 @@ static ssize blockingWrite(MprSocket *sp, cvoid *buf, ssize len)
     the SSL handshake. Can be used in the re-handshake scenario as well.
     This is a blocking routine.
  */
-static int mssHandshake(MprSocket *sp, short cipherSuite)
+static int handshakeMss(MprSocket *sp, short cipherSuite)
 {
     MatrixSocket    *msp;
     ssize           rc, written, toWrite;

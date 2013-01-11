@@ -65,7 +65,7 @@ static MprList *sessions;
 static void     closeEst(MprSocket *sp, bool gracefully);
 static void     disconnectEst(MprSocket *sp);
 static void     estTrace(void *fp, int level, char *str);
-static int      estHandshake(MprSocket *sp);
+static int      handshakeEst(MprSocket *sp);
 static char     *getEstState(MprSocket *sp);
 static int      listenEst(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageEstConfig(EstConfig *cfg, int flags);
@@ -80,7 +80,7 @@ static int      getSession(ssl_context *ssl);
 
 /************************************* Code ***********************************/
 /*
-    Create the Openssl module. This is called only once
+    Create the EST module. This is called only once
     MOB - should this be Create or Open
  */
 PUBLIC int mprCreateEstModule()
@@ -268,7 +268,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     }
 	ssl_set_dh_param(&est->ctx, dhKey, dhG);
 
-    if (estHandshake(sp) < 0) {
+    if (handshakeEst(sp) < 0) {
         return -1;
     }
     return 0;
@@ -285,23 +285,28 @@ static void disconnectEst(MprSocket *sp)
     Initiate or continue SSL handshaking with the peer. This routine does not block.
     Return -1 on errors, 0 incomplete and awaiting I/O, 1 if successful
  */
-static int estHandshake(MprSocket *sp)
+static int handshakeEst(MprSocket *sp)
 {
     EstSocket   *est;
     int         rc, vrc, trusted;
 
     est = (EstSocket*) sp->sslSocket;
+    assert(!(est->ctx.state == SSL_HANDSHAKE_OVER));
+
     trusted = 1;
     sp->flags |= MPR_SOCKET_HANDSHAKING;
+    rc = 0;
 
-    while (est->ctx.state != SSL_HANDSHAKE_OVER && (rc = ssl_handshake(&est->ctx)) != 0) {
-        if (rc == EST_ERR_NET_TRY_AGAIN) {
-            if (!mprGetSocketBlockingMode(sp)) {
-                return 0;
+    while (est->ctx.state != SSL_HANDSHAKE_OVER) {
+        if ((rc = ssl_handshake(&est->ctx)) != 0) {
+            if (rc == EST_ERR_NET_TRY_AGAIN) {
+                if (!mprGetSocketBlockingMode(sp)) {
+                    return 0;
+                }
+                continue;
             }
-            continue;
+            break;
         }
-        break;
     }
     sp->flags &= ~MPR_SOCKET_HANDSHAKING;
 
@@ -382,7 +387,7 @@ static ssize readEst(MprSocket *sp, void *buf, ssize len)
     assert(est->cfg);
 
     if (est->ctx.state != SSL_HANDSHAKE_OVER) {
-        if ((rc = estHandshake(sp)) <= 0) {
+        if ((rc = handshakeEst(sp)) <= 0) {
             return rc;
         }
     }
@@ -429,7 +434,7 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
         return -1;
     }
     if (est->ctx.state != SSL_HANDSHAKE_OVER) {
-        if ((rc = estHandshake(sp)) <= 0) {
+        if ((rc = handshakeEst(sp)) <= 0) {
             return rc;
         }
     }
