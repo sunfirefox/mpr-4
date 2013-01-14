@@ -177,7 +177,7 @@ static char *findNewline(cchar *str, cchar *newline, ssize len, ssize *nlen)
 
 
 /*
-    Get a string from the file. This will put the file into buffered mode.
+    Read a line from the file. This will put the file into buffered mode.
     Return NULL on eof.
  */
 PUBLIC char *mprReadLine(MprFile *file, ssize maxline, ssize *lenp)
