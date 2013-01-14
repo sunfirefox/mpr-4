@@ -38,13 +38,13 @@ PUBLIC MprCond *mprCreateCond()
 
 static void manageCond(MprCond *cp, int flags)
 {
-    assure(cp);
+    assert(cp);
     
     if (flags & MPR_MANAGE_MARK) {
         mprMark(cp->mutex);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        assure(cp->mutex);
+        assert(cp->mutex);
 #if BIT_WIN_LIKE
         CloseHandle(cp->cv);
 #elif VXWORKS
@@ -147,7 +147,7 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
             } else if (rc == EAGAIN) {
                 rc = 0;
             } else if (rc != 0) {
-                assure(rc == 0);
+                assert(rc == 0);
                 mprError("pthread_cond_timedwait error rc %d", rc);
                 rc = MPR_ERR;
             }
@@ -261,7 +261,7 @@ PUBLIC int mprWaitForMultiCond(MprCond *cp, MprTicks timeout)
     if (rc == ETIMEDOUT) {
         rc = MPR_ERR_TIMEOUT;
     } else if (rc != 0) {
-        assure(rc == 0);
+        assert(rc == 0);
         rc = MPR_ERR;
     }
     mprUnlock(cp->mutex);
@@ -295,7 +295,7 @@ PUBLIC void mprSignalMultiCond(MprCond *cp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

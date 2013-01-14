@@ -301,7 +301,7 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
             itosbuf(numbuf, sizeof(numbuf), i, 10);
             if (pretty) mprPutStringToBuf(buf, "    ");
             if ((kp = mprLookupKeyEntry(obj, numbuf)) == 0) {
-                assure(kp);
+                assert(kp);
                 continue;
             }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
@@ -370,7 +370,7 @@ static cchar *findQuote(cchar *tok, int quote)
 {
     cchar   *cp;
 
-    assure(tok);
+    assert(tok);
     for (cp = tok; *cp; cp++) {
         if (*cp == quote && (cp == tok || *cp != '\\')) {
             return cp;
@@ -384,7 +384,7 @@ static cchar *findEndKeyword(MprJson *jp, cchar *str)
 {
     cchar   *cp, *etok;
 
-    assure(str);
+    assert(str);
     for (cp = jp->tok; *cp; cp++) {
         if ((etok = strpbrk(cp, " \t\n\r:,}]")) != 0) {
             if (etok == jp->tok || *etok != '\\') {
@@ -399,9 +399,9 @@ static cchar *findEndKeyword(MprJson *jp, cchar *str)
 static void jsonParseError(MprJson *jp, cchar *msg)
 {
     if (jp->path) {
-        mprLog(4, "%s\nIn file '%s' at line %d", msg, jp->path, jp->lineNumber);
+        mprTrace(4, "%s\nIn file '%s' at line %d", msg, jp->path, jp->lineNumber);
     } else {
-        mprLog(4, "%s\nAt line %d", msg, jp->lineNumber);
+        mprTrace(4, "%s\nAt line %d", msg, jp->lineNumber);
     }
 }
 
@@ -421,7 +421,7 @@ PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

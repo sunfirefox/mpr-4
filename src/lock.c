@@ -36,7 +36,7 @@ PUBLIC MprMutex *mprCreateLock()
     /* Removed SEM_INVERSION_SAFE */
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
     if (lock->cs == 0) {
-        assure(0);
+        assert(0);
         return 0;
     }
 #endif
@@ -47,7 +47,7 @@ PUBLIC MprMutex *mprCreateLock()
 static void manageLock(MprMutex *lock, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
-        assure(lock);
+        assert(lock);
 #if BIT_UNIX_LIKE
         pthread_mutex_destroy(&lock->cs);
 #elif BIT_WIN_LIKE
@@ -79,7 +79,7 @@ PUBLIC MprMutex *mprInitLock(MprMutex *lock)
     /* Removed SEM_INVERSION_SAFE */
     lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
     if (lock->cs == 0) {
-        assure(0);
+        assert(0);
         return 0;
     }
 #endif
@@ -129,7 +129,7 @@ PUBLIC MprSpin *mprCreateSpinLock()
 PUBLIC void mprManageSpinLock(MprSpin *lock, int flags)
 {
     if (flags & MPR_MANAGE_FREE) {
-        assure(lock);
+        assert(lock);
 #if USE_MPR_LOCK || MACOSX
         ;
 #elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
@@ -177,7 +177,7 @@ PUBLIC MprSpin *mprInitSpinLock(MprSpin *lock)
         /* Removed SEM_INVERSION_SAFE */
         lock->cs = semMCreate(SEM_Q_PRIORITY | SEM_DELETE_SAFE);
         if (lock->cs == 0) {
-            assure(0);
+            assert(0);
             return 0;
         }
     #endif
@@ -218,7 +218,7 @@ PUBLIC bool mprTrySpinLock(MprSpin *lock)
 #endif
 #if BIT_DEBUG
     if (rc == 0) {
-        assure(lock->owner != mprGetCurrentOsThread());
+        assert(lock->owner != mprGetCurrentOsThread());
         lock->owner = mprGetCurrentOsThread();
     }
 #endif
@@ -305,7 +305,7 @@ PUBLIC void mprSpinLock(MprSpin *lock)
     /*
         Spin locks don't support recursive locking on all operating systems.
      */
-    assure(lock->owner != mprGetCurrentOsThread());
+    assert(lock->owner != mprGetCurrentOsThread());
 #endif
 
 #if USE_MPR_LOCK
@@ -324,7 +324,7 @@ PUBLIC void mprSpinLock(MprSpin *lock)
     semTake(lock->cs, WAIT_FOREVER);
 #endif
 #if BIT_DEBUG
-    assure(lock->owner != mprGetCurrentOsThread());
+    assert(lock->owner != mprGetCurrentOsThread());
     lock->owner = mprGetCurrentOsThread();
 #endif
 }
@@ -357,7 +357,7 @@ PUBLIC void mprSpinUnlock(MprSpin *lock)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

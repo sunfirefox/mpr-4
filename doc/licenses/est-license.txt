@@ -1,4 +1,4 @@
-Embedthis Multithreaded Portable Runtime (MPR) License
+Embedthis ESSL License
 
 This software is distributed under commercial and open source licenses. You may use the GPLv2 License below License or
 you may acquire a commercial license from Embedthis Software. You agree to be fully bound by the terms of either
@@ -95,4 +95,4 @@ NO WARRANTY
 
 Embedthis Trademarks and Copyrights
 Copyright (c) 2003-2013 Embedthis Software, LLC. All Rights Reserved.
-Embedthis and MPR are trademarks of Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.
+Embedthis and ESSL are trademarks of Embedthis Software, LLC. Other brands and their products are trademarks of their respective holders.

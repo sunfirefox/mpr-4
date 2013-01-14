@@ -32,7 +32,7 @@ static MprFile *openFile(MprFileSystem *fileSystem, cchar *path, int flags, int 
     MprRomFileSystem    *rfs;
     MprFile             *file;
     
-    assure(path && *path);
+    assert(path && *path);
 
     rfs = (MprRomFileSystem*) fileSystem;
     file = mprAllocObj(MprFile, manageRomFile);
@@ -69,14 +69,14 @@ static ssize readFile(MprFile *file, void *buf, ssize size)
     MprRomInode     *inode;
     ssize           len;
 
-    assure(buf);
+    assert(buf);
 
     if (file->fd == 0) {
         return read(file->fd, buf, size);
     }
     inode = file->inode;
     len = min(inode->size - file->iopos, size);
-    assure(len >= 0);
+    assert(len >= 0);
     memcpy(buf, &inode->data[file->iopos], len);
     file->iopos += len;
     return len;
@@ -96,7 +96,7 @@ static long seekFile(MprFile *file, int seekType, long distance)
 {
     MprRomInode     *inode;
 
-    assure(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
+    assert(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
 
     inode = file->inode;
 
@@ -151,7 +151,7 @@ static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info)
 {
     MprRomInode *ri;
 
-    assure(path && *path);
+    assert(path && *path);
 
     info->checked = 1;
 
@@ -221,7 +221,7 @@ PUBLIC int mprSetRomFileSystem(MprRomInode *inodeList)
 
     for (ri = inodeList; ri->path; ri++) {
         if (mprAddKey(rfs->fileIndex, ri->path, ri) < 0) {
-            assure(!MPR_ERR_MEMORY);
+            assert(!MPR_ERR_MEMORY);
             return MPR_ERR_MEMORY;
         }
     }
@@ -301,7 +301,7 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

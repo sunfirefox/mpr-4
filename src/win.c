@@ -77,7 +77,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     char            *at, *baseName;
     void            *handle;
 
-    assure(mp);
+    assert(mp);
 
     if ((handle = (HANDLE) MPR->appInstance) == 0) {
         handle = GetModuleHandle(NULL);
@@ -120,7 +120,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
 
 PUBLIC int mprUnloadNativeModule(MprModule *mp)
 {
-    assure(mp->handle);
+    assert(mp->handle);
 
     if (FreeLibrary((HINSTANCE) mp->handle) == 0) {
         return MPR_ERR_ABORTED;
@@ -232,7 +232,7 @@ static cchar *getHive(cchar *keyPath, HKEY *hive)
     char    key[BIT_MAX_PATH], *cp;
     ssize   len;
 
-    assure(keyPath && *keyPath);
+    assert(keyPath && *keyPath);
 
     *hive = 0;
 
@@ -270,7 +270,7 @@ PUBLIC char *mprReadRegistry(cchar *key, cchar *name)
     char        *value;
     ulong       type, size;
 
-    assure(key && *key);
+    assert(key && *key);
 
     /*
         Get the registry hive
@@ -310,8 +310,8 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
     HKEY    top, h, subHandle;
     ulong   disposition;
 
-    assure(key && *key);
-    assure(value && *value);
+    assert(key && *key);
+    assert(value && *value);
 
     /*
         Get the registry hive
@@ -354,7 +354,7 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

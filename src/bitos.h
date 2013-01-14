@@ -12,20 +12,20 @@
 /******************************* Default Features *****************************/
 
 #ifndef BIT_DEBUG
-    #define BIT_DEBUG 0                 /**< Enable a debug build */
-#endif
-#ifndef BIT_ASSERT
-    #if BIT_DEBUG
-        #define BIT_ASSERT 1            /**< Turn debug assure assertions on */
-    #else
-        #define BIT_ASSERT 0
-    #endif
+    #define BIT_DEBUG 0                 /**< Default to a debug build */
 #endif
 #ifndef BIT_FLOAT
     #define BIT_FLOAT 1                 /**< Build with floating point support */
 #endif
 #ifndef BIT_ROM
     #define BIT_ROM 0                   /**< Build for execute from ROM */
+#endif
+#ifndef BIT_SSL
+    #if BIT_PACK_EST || BIT_PACK_OPENSSL || BIT_PACK_MATRIXSSL || BIT_PACK_MOCANA
+        #define BIT_SSL 1               /**< Build with SSL support */
+    #else
+        #define BIT_SSL 0               /**< Build without SSL support */
+    #endif
 #endif
 
 /********************************* CPU Families *******************************/
@@ -207,6 +207,7 @@
     #define BIT_64 1
     #define BIT_WORDSIZE 64
 #else
+    #define BIT_64 0
     #define BIT_WORDSIZE 32
 #endif
 
@@ -580,6 +581,7 @@
 typedef int64 Offset;
 
 #if DOXYGEN
+    /** Size to hold the length of a socket address */
     typedef int Socklen;
 #elif VXWORKS
     typedef int Socklen;
@@ -686,13 +688,14 @@ typedef int64 Ticks;
 
 #if BIT_WIN_LIKE
     /*
-        This is the same for static and shared builds so *.exe on windows will have export symbols and
-        GetProcAddress can locate for dynmaic resolution of modules
+        Use PUBLIC on function declarations and definitions (*.c and *.h). 
      */
-    #define PUBLIC      __declspec(dllexport)
+    #define PUBLIC       __declspec(dllexport)
+    #define PUBLIC_DATA __declspec(dllexport)
     #define PRIVATE     static
 #else
     #define PUBLIC
+    #define PUBLIC_DATA extern
     #define PRIVATE     static
 #endif
 
@@ -1155,7 +1158,7 @@ extern "C" {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

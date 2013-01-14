@@ -8,14 +8,14 @@
 
 #include    "mpr.h"
 
-#if BIT_PACK_SSL
 /************************************ Code ************************************/
 /*
     Module initialization entry point
  */
 PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
-    assure(module);
+#if BIT_SSL
+    assert(module);
 
     /*
         Order matters. The last enabled stack becomes the default.
@@ -25,6 +25,12 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
         return MPR_ERR_CANT_OPEN;
     }
     MPR->socketService->defaultProvider = sclone("matrixssl");
+#endif
+#if BIT_PACK_MOCANA
+    if (mprCreateMocanaModule() < 0) {
+        return MPR_ERR_CANT_OPEN;
+    }
+    MPR->socketService->defaultProvider = sclone("mocana");
 #endif
 #if BIT_PACK_OPENSSL
     if (mprCreateOpenSslModule() < 0) {
@@ -39,14 +45,16 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
     MPR->socketService->defaultProvider = sclone("est");
 #endif
     return 0;
+#else
+    return MPR_ERR_BAD_STATE;
+#endif /* BLD_PACK_SSL */
 }
 
-#endif /* BLD_PACK_SSL */
 
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

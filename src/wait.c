@@ -73,7 +73,7 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
 {
     MprWaitService  *ws;
 
-    assure(fd >= 0);
+    assert(fd >= 0);
 
     ws = MPR->waitService;
     wp->fd              = fd;
@@ -112,7 +112,7 @@ PUBLIC MprWaitHandler *mprCreateWaitHandler(int fd, int mask, MprDispatcher *dis
 {
     MprWaitHandler  *wp;
 
-    assure(fd >= 0);
+    assert(fd >= 0);
 
     if ((wp = mprAllocObj(MprWaitHandler, manageWaitHandler)) == 0) {
         return 0;
@@ -236,12 +236,14 @@ PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp)
 {
     MprWaitService  *ws;
 
-    ws = MPR->waitService;
-    lock(ws);
-    wp->flags |= MPR_WAIT_RECALL_HANDLER;
-    ws->needRecall = 1;
-    mprWakeNotifier();
-    unlock(ws);
+    if (wp) {
+        ws = MPR->waitService;
+        lock(ws);
+        wp->flags |= MPR_WAIT_RECALL_HANDLER;
+        ws->needRecall = 1;
+        mprWakeNotifier();
+        unlock(ws);
+    }
 }
 
 
@@ -270,7 +272,7 @@ PUBLIC void mprDoWaitRecall(MprWaitService *ws)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

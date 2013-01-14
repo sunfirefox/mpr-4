@@ -183,14 +183,14 @@ PUBLIC ssize scopy(char *dest, ssize destMax, cchar *src)
 {
     ssize      len;
 
-    assure(src);
-    assure(dest);
-    assure(0 < dest && destMax < MAXINT);
+    assert(src);
+    assert(dest);
+    assert(0 < dest && destMax < MAXINT);
 
     len = slen(src);
     /* Must ensure room for null */
     if (destMax <= len) {
-        assure(!MPR_ERR_WONT_FIT);
+        assert(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     strcpy(dest, src);
@@ -250,7 +250,7 @@ PUBLIC char *sfmt(cchar *format, ...)
         format = "%s";
     }
     va_start(ap, format);
-    buf = mprAsprintfv(format, ap);
+    buf = mprPrintfCore(NULL, -1, format, ap);
     va_end(ap);
     return buf;
 }
@@ -258,8 +258,8 @@ PUBLIC char *sfmt(cchar *format, ...)
 
 PUBLIC char *sfmtv(cchar *format, va_list arg)
 {
-    assure(format);
-    return mprAsprintfv(format, arg);
+    assert(format);
+    return mprPrintfCore(NULL, -1, format, arg);
 }
 
 
@@ -272,8 +272,8 @@ PUBLIC uint shash(cchar *cname, ssize len)
     uchar   *name;
     uint    hash, rem, tmp;
 
-    assure(cname);
-    assure(0 <= len && len < MAXINT);
+    assert(cname);
+    assert(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -322,8 +322,8 @@ PUBLIC uint shashlower(cchar *cname, ssize len)
     uchar   *name;
     uint    hash, rem, tmp;
 
-    assure(cname);
-    assure(0 <= len && len < MAXINT);
+    assert(cname);
+    assert(0 <= len && len < MAXINT);
 
     if (cname == 0) {
         return 0;
@@ -426,7 +426,7 @@ PUBLIC char *slower(cchar *str)
 {
     char    *cp, *s;
 
-    assure(str);
+    assert(str);
 
     if (str) {
         s = sclone(str);
@@ -451,7 +451,7 @@ PUBLIC int sncaselesscmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    assure(0 <= n && n < MAXINT);
+    assert(0 <= n && n < MAXINT);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -508,7 +508,7 @@ PUBLIC int sncmp(cchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    assure(0 <= n && n < MAXINT);
+    assert(0 <= n && n < MAXINT);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -543,17 +543,17 @@ PUBLIC ssize sncopy(char *dest, ssize destMax, cchar *src, ssize count)
 {
     ssize      len;
 
-    assure(dest);
-    assure(src);
-    assure(src != dest);
-    assure(0 <= count && count < MAXINT);
-    assure(0 < destMax && destMax < MAXINT);
+    assert(dest);
+    assert(src);
+    assert(src != dest);
+    assert(0 <= count && count < MAXINT);
+    assert(0 < destMax && destMax < MAXINT);
 
     //  OPT use strnlen(src, count);
     len = slen(src);
     len = min(len, count);
     if (destMax <= len) {
-        assure(!MPR_ERR_WONT_FIT);
+        assert(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     if (len > 0) {
@@ -829,19 +829,21 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
     char    *start, *end;
     ssize   i;
 
-    assure(last);
-    assure(delim);
-
-    start = str ? str : *last;
+    assert(delim);
+    start = (str || *last == 0) ? str : *last;
 
     if (start == 0) {
-        *last = 0;
+        if (last) {
+            *last = 0;
+        }
         return 0;
     }
     i = strspn(start, delim);
     start += i;
     if (*start == '\0') {
-        *last = 0;
+        if (last) {
+            *last = 0;
+        }
         return 0;
     }
     end = strpbrk(start, delim);
@@ -850,7 +852,9 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
         i = strspn(end, delim);
         end += i;
     }
-    *last = end;
+    if (last) {
+        *last = end;
+    }
     return start;
 }
 
@@ -860,9 +864,9 @@ PUBLIC char *ssub(cchar *str, ssize offset, ssize len)
     char    *result;
     ssize   size;
 
-    assure(str);
-    assure(offset >= 0);
-    assure(0 <= len && len < MAXINT);
+    assert(str);
+    assert(offset >= 0);
+    assert(0 <= len && len < MAXINT);
 
     if (str == 0) {
         return 0;
@@ -911,7 +915,7 @@ PUBLIC char *supper(cchar *str)
 {
     char    *cp, *s;
 
-    assure(str);
+    assert(str);
     if (str) {
         s = sclone(str);
         for (cp = s; *cp; cp++) {
@@ -977,7 +981,7 @@ PUBLIC char *stemplate(cchar *str, MprHash *keys)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

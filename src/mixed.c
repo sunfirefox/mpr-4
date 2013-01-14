@@ -29,7 +29,7 @@ PUBLIC wchar *mncontains(wchar *str, cchar *pattern, ssize limit)
     cchar   *s2;
     ssize   lim;
 
-    assure(0 <= limit && limit < MAXSSIZE);
+    assert(0 <= limit && limit < MAXSSIZE);
 
     if (limit < 0) {
         limit = MAXINT;
@@ -68,13 +68,13 @@ PUBLIC ssize mcopy(wchar *dest, ssize destMax, cchar *src)
 {
     ssize       len;
 
-    assure(src);
-    assure(dest);
-    assure(0 < destMax && destMax < MAXINT);
+    assert(src);
+    assert(dest);
+    assert(0 < destMax && destMax < MAXINT);
 
     len = slen(src);
     if (destMax <= len) {
-        assure(!MPR_ERR_WONT_FIT);
+        assert(!MPR_ERR_WONT_FIT);
         return MPR_ERR_WONT_FIT;
     }
     return mtow(dest, len + 1, src, len);
@@ -108,7 +108,7 @@ PUBLIC wchar *mfmt(cchar *fmt, ...)
     va_list     ap;
     char        *mresult;
 
-    assure(fmt);
+    assert(fmt);
 
     va_start(ap, fmt);
     mresult = sfmtv(fmt, ap);
@@ -121,7 +121,7 @@ PUBLIC wchar *mfmtv(cchar *fmt, va_list arg)
 {
     char    *mresult;
 
-    assure(fmt);
+    assert(fmt);
     mresult = sfmtv(fmt, arg);
     return amtow(mresult, NULL);
 }
@@ -135,7 +135,7 @@ PUBLIC wchar *mjoin(wchar *str, ...)
     wchar       *result;
     va_list     ap;
 
-    assure(str);
+    assert(str);
 
     va_start(ap, str);
     result = mjoinv(str, ap);
@@ -153,7 +153,7 @@ PUBLIC wchar *mjoinv(wchar *buf, va_list args)
     wchar       *dest, *str, *dp;
     int         required, len;
 
-    assure(buf);
+    assert(buf);
 
     va_copy(ap, args);
     required = 1;
@@ -194,7 +194,7 @@ PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 {
     int     rc;
 
-    assure(0 <= n && n < MAXSSIZE);
+    assert(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 || s2 == 0) {
         return -1;
@@ -224,7 +224,7 @@ PUBLIC int mncaselesscmp(wchar *s1, cchar *s2, ssize n)
 
 PUBLIC int mncmp(wchar *s1, cchar *s2, ssize n)
 {
-    assure(0 <= n && n < MAXSSIZE);
+    assert(0 <= n && n < MAXSSIZE);
 
     if (s1 == 0 && s2 == 0) {
         return 0;
@@ -253,8 +253,8 @@ PUBLIC int mncmp(wchar *s1, cchar *s2, ssize n)
 
 PUBLIC ssize mncopy(wchar *dest, ssize destMax, cchar *src, ssize len)
 {
-    assure(0 <= len && len < MAXSSIZE);
-    assure(0 < destMax && destMax < MAXSSIZE);
+    assert(0 <= len && len < MAXSSIZE);
+    assert(0 < destMax && destMax < MAXSSIZE);
 
     return mtow(dest, destMax, src, len);
 }
@@ -422,7 +422,7 @@ PUBLIC void dummyWide() {}
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -64,7 +64,7 @@ static void hookSignal(int signo, MprSignal *sp)
     struct sigaction    act, old;
     int                 rc;
 
-    assure(0 < signo && signo < MPR_MAX_SIGNALS);
+    assert(0 < signo && signo < MPR_MAX_SIGNALS);
     ssp = MPR->signalService;
     lock(ssp);
     rc = sigaction(signo, 0, &old);
@@ -172,10 +172,10 @@ static void signalEvent(MprSignal *sp, MprEvent *event)
 {
     MprSignal   *np;
     
-    assure(sp);
-    assure(event);
+    assert(sp);
+    assert(event);
 
-    mprLog(7, "signalEvent signo %d, flags %x", sp->signo, sp->flags);
+    mprTrace(7, "signalEvent signo %d, flags %x", sp->signo, sp->flags);
     np = sp->next;
 
     if (sp->flags & MPR_SIGNAL_BEFORE) {
@@ -231,7 +231,7 @@ static void unlinkSignalHandler(MprSignal *sp)
         }
         prev = np;
     }
-    assure(np);
+    assert(np);
     sp->next = 0;
     unlock(ssp);
 }
@@ -317,7 +317,7 @@ PUBLIC void mprAddStandardSignals()
 
 static void standardSignalHandler(void *ignored, MprSignal *sp)
 {
-    mprLog(6, "standardSignalHandler signo %d, flags %x", sp->signo, sp->flags);
+    mprTrace(6, "standardSignalHandler signo %d, flags %x", sp->signo, sp->flags);
     if (sp->signo == SIGTERM) {
         mprTerminate(MPR_EXIT_GRACEFUL, -1);
 
@@ -336,7 +336,7 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
     } else if (sp->signo == SIGPIPE || sp->signo == SIGXFSZ) {
         /* Ignore */
 
-#if MACOSX && BIT_DEBUG
+#if EMBEDTHIS
     } else if (sp->signo == SIGSEGV || sp->signo == SIGBUS) {
         printf("PAUSED for watson to debug\n");
         sleep(120);
@@ -359,7 +359,7 @@ static void standardSignalHandler(void *ignored, MprSignal *sp)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

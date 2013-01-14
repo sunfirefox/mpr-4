@@ -25,6 +25,7 @@ LIBPATHS = -libpath:$(CONFIG)\bin
 LIBS     = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
 all: prep \
+        $(CONFIG)\bin\ca.crt \
         $(CONFIG)\bin\benchMpr.exe \
         $(CONFIG)\bin\runProgram.exe \
         $(CONFIG)\bin\testMpr.exe \
@@ -46,6 +47,7 @@ prep:
 	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc\bit.h copy projects\mpr-$(OS)-$(PROFILE)-bit.h $(CONFIG)\inc\bit.h
 clean:
+	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
 	-if exist $(CONFIG)\bin\benchMpr.exe del /Q $(CONFIG)\bin\benchMpr.exe
 	-if exist $(CONFIG)\bin\runProgram.exe del /Q $(CONFIG)\bin\runProgram.exe
 	-if exist $(CONFIG)\bin\testMpr.exe del /Q $(CONFIG)\bin\testMpr.exe
@@ -89,7 +91,7 @@ clean:
 	-if exist $(CONFIG)\obj\file.obj del /Q $(CONFIG)\obj\file.obj
 	-if exist $(CONFIG)\obj\fs.obj del /Q $(CONFIG)\obj\fs.obj
 	-if exist $(CONFIG)\obj\hash.obj del /Q $(CONFIG)\obj\hash.obj
-	-if exist $(CONFIG)\obj\jSON.obj del /Q $(CONFIG)\obj\jSON.obj
+	-if exist $(CONFIG)\obj\json.obj del /Q $(CONFIG)\obj\json.obj
 	-if exist $(CONFIG)\obj\kqueue.obj del /Q $(CONFIG)\obj\kqueue.obj
 	-if exist $(CONFIG)\obj\list.obj del /Q $(CONFIG)\obj\list.obj
 	-if exist $(CONFIG)\obj\lock.obj del /Q $(CONFIG)\obj\lock.obj
@@ -119,11 +121,16 @@ clean:
 	-if exist $(CONFIG)\obj\xml.obj del /Q $(CONFIG)\obj\xml.obj
 	-if exist $(CONFIG)\obj\est.obj del /Q $(CONFIG)\obj\est.obj
 	-if exist $(CONFIG)\obj\matrixssl.obj del /Q $(CONFIG)\obj\matrixssl.obj
+	-if exist $(CONFIG)\obj\mocana.obj del /Q $(CONFIG)\obj\mocana.obj
 	-if exist $(CONFIG)\obj\openssl.obj del /Q $(CONFIG)\obj\openssl.obj
 	-if exist $(CONFIG)\obj\ssl.obj del /Q $(CONFIG)\obj\ssl.obj
 	-if exist $(CONFIG)\obj\manager.obj del /Q $(CONFIG)\obj\manager.obj
 	-if exist $(CONFIG)\obj\makerom.obj del /Q $(CONFIG)\obj\makerom.obj
 	-if exist $(CONFIG)\obj\charGen.obj del /Q $(CONFIG)\obj\charGen.obj
+
+$(CONFIG)\bin\ca.crt: 
+	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
+	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
 
 $(CONFIG)\inc\bitos.h:  \
         $(CONFIG)\inc\bit.h
@@ -226,11 +233,11 @@ $(CONFIG)\obj\hash.obj: \
         $(CONFIG)\inc\mpr.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\hash.obj -Fd$(CONFIG)\obj\hash.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\hash.c
 
-$(CONFIG)\obj\jSON.obj: \
-        src\jSON.c \
+$(CONFIG)\obj\json.obj: \
+        src\json.c \
         $(CONFIG)\inc\bit.h \
         $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\jSON.obj -Fd$(CONFIG)\obj\jSON.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\jSON.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\json.obj -Fd$(CONFIG)\obj\json.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\json.c
 
 $(CONFIG)\obj\kqueue.obj: \
         src\kqueue.c \
@@ -412,7 +419,7 @@ $(CONFIG)\bin\libmpr.dll:  \
         $(CONFIG)\obj\file.obj \
         $(CONFIG)\obj\fs.obj \
         $(CONFIG)\obj\hash.obj \
-        $(CONFIG)\obj\jSON.obj \
+        $(CONFIG)\obj\json.obj \
         $(CONFIG)\obj\kqueue.obj \
         $(CONFIG)\obj\list.obj \
         $(CONFIG)\obj\lock.obj \
@@ -440,7 +447,7 @@ $(CONFIG)\bin\libmpr.dll:  \
         $(CONFIG)\obj\win.obj \
         $(CONFIG)\obj\wince.obj \
         $(CONFIG)\obj\xml.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\jSON.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS)
 
 $(CONFIG)\obj\benchMpr.obj: \
         test\benchMpr.c \
@@ -481,6 +488,12 @@ $(CONFIG)\obj\matrixssl.obj: \
         $(CONFIG)\inc\mpr.h
 	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\matrixssl.c
 
+$(CONFIG)\obj\mocana.obj: \
+        src\ssl\mocana.c \
+        $(CONFIG)\inc\bit.h \
+        $(CONFIG)\inc\mpr.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\mocana.obj -Fd$(CONFIG)\obj\mocana.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\ssl\mocana.c
+
 $(CONFIG)\obj\openssl.obj: \
         src\ssl\openssl.c \
         $(CONFIG)\inc\bit.h \
@@ -497,9 +510,10 @@ $(CONFIG)\bin\libmprssl.dll:  \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\obj\est.obj \
         $(CONFIG)\obj\matrixssl.obj \
+        $(CONFIG)\obj\mocana.obj \
         $(CONFIG)\obj\openssl.obj \
         $(CONFIG)\obj\ssl.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj libmpr.lib $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\mocana.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\testArgv.obj: \
         test\testArgv.c \

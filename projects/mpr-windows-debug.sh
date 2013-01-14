@@ -13,7 +13,7 @@ PROFILE="debug"
 CONFIG="${OS}-${ARCH}-${PROFILE}"
 CC="cl.exe"
 LD="link.exe"
-CFLAGS="-nologo -GR- -W3 -Zi -Od -MDd"
+CFLAGS="-nologo -GR- -W3 -Zi -Od -MDd -w"
 DFLAGS="-D_REENTRANT -D_MT -DBIT_DEBUG"
 IFLAGS="-I${CONFIG}/inc"
 LDFLAGS="-nologo -nodefaultlib -incremental:no -debug -machine:x86"
@@ -23,9 +23,13 @@ LIBS="ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib sh
 [ ! -x ${CONFIG}/inc ] && mkdir -p ${CONFIG}/inc ${CONFIG}/obj ${CONFIG}/lib ${CONFIG}/bin
 
 [ ! -f ${CONFIG}/inc/bit.h ] && cp projects/mpr-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
+[ ! -f ${CONFIG}/inc/bitos.h ] && cp ${SRC}/src/bitos.h ${CONFIG}/inc/bitos.h
 if ! diff ${CONFIG}/inc/bit.h projects/mpr-${OS}-${PROFILE}-bit.h >/dev/null ; then
 	cp projects/mpr-${OS}-${PROFILE}-bit.h ${CONFIG}/inc/bit.h
 fi
+
+rm -rf ${CONFIG}/bin/ca.crt
+cp -r src/deps/est/ca.crt ${CONFIG}/bin/ca.crt
 
 rm -rf ${CONFIG}/inc/bitos.h
 cp -r src/bitos.h ${CONFIG}/inc/bitos.h
@@ -63,7 +67,7 @@ cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
 "${CC}" -c -Fo${CONFIG}/obj/hash.obj -Fd${CONFIG}/obj/hash.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/hash.c
 
-"${CC}" -c -Fo${CONFIG}/obj/jSON.obj -Fd${CONFIG}/obj/jSON.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/jSON.c
+"${CC}" -c -Fo${CONFIG}/obj/json.obj -Fd${CONFIG}/obj/json.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/json.c
 
 "${CC}" -c -Fo${CONFIG}/obj/kqueue.obj -Fd${CONFIG}/obj/kqueue.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/kqueue.c
 
@@ -119,7 +123,7 @@ cp -r src/mpr.h ${CONFIG}/inc/mpr.h
 
 "${CC}" -c -Fo${CONFIG}/obj/xml.obj -Fd${CONFIG}/obj/xml.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/xml.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libmpr.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/async.obj ${CONFIG}/obj/atomic.obj ${CONFIG}/obj/buf.obj ${CONFIG}/obj/cache.obj ${CONFIG}/obj/cmd.obj ${CONFIG}/obj/cond.obj ${CONFIG}/obj/crypt.obj ${CONFIG}/obj/disk.obj ${CONFIG}/obj/dispatcher.obj ${CONFIG}/obj/encode.obj ${CONFIG}/obj/epoll.obj ${CONFIG}/obj/event.obj ${CONFIG}/obj/file.obj ${CONFIG}/obj/fs.obj ${CONFIG}/obj/hash.obj ${CONFIG}/obj/jSON.obj ${CONFIG}/obj/kqueue.obj ${CONFIG}/obj/list.obj ${CONFIG}/obj/lock.obj ${CONFIG}/obj/log.obj ${CONFIG}/obj/mem.obj ${CONFIG}/obj/mime.obj ${CONFIG}/obj/mixed.obj ${CONFIG}/obj/module.obj ${CONFIG}/obj/mpr.obj ${CONFIG}/obj/path.obj ${CONFIG}/obj/poll.obj ${CONFIG}/obj/posix.obj ${CONFIG}/obj/printf.obj ${CONFIG}/obj/rom.obj ${CONFIG}/obj/select.obj ${CONFIG}/obj/signal.obj ${CONFIG}/obj/socket.obj ${CONFIG}/obj/string.obj ${CONFIG}/obj/test.obj ${CONFIG}/obj/thread.obj ${CONFIG}/obj/time.obj ${CONFIG}/obj/vxworks.obj ${CONFIG}/obj/wait.obj ${CONFIG}/obj/wide.obj ${CONFIG}/obj/win.obj ${CONFIG}/obj/wince.obj ${CONFIG}/obj/xml.obj ${LIBS}
+"${LD}" -dll -out:${CONFIG}/bin/libmpr.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/async.obj ${CONFIG}/obj/atomic.obj ${CONFIG}/obj/buf.obj ${CONFIG}/obj/cache.obj ${CONFIG}/obj/cmd.obj ${CONFIG}/obj/cond.obj ${CONFIG}/obj/crypt.obj ${CONFIG}/obj/disk.obj ${CONFIG}/obj/dispatcher.obj ${CONFIG}/obj/encode.obj ${CONFIG}/obj/epoll.obj ${CONFIG}/obj/event.obj ${CONFIG}/obj/file.obj ${CONFIG}/obj/fs.obj ${CONFIG}/obj/hash.obj ${CONFIG}/obj/json.obj ${CONFIG}/obj/kqueue.obj ${CONFIG}/obj/list.obj ${CONFIG}/obj/lock.obj ${CONFIG}/obj/log.obj ${CONFIG}/obj/mem.obj ${CONFIG}/obj/mime.obj ${CONFIG}/obj/mixed.obj ${CONFIG}/obj/module.obj ${CONFIG}/obj/mpr.obj ${CONFIG}/obj/path.obj ${CONFIG}/obj/poll.obj ${CONFIG}/obj/posix.obj ${CONFIG}/obj/printf.obj ${CONFIG}/obj/rom.obj ${CONFIG}/obj/select.obj ${CONFIG}/obj/signal.obj ${CONFIG}/obj/socket.obj ${CONFIG}/obj/string.obj ${CONFIG}/obj/test.obj ${CONFIG}/obj/thread.obj ${CONFIG}/obj/time.obj ${CONFIG}/obj/vxworks.obj ${CONFIG}/obj/wait.obj ${CONFIG}/obj/wide.obj ${CONFIG}/obj/win.obj ${CONFIG}/obj/wince.obj ${CONFIG}/obj/xml.obj ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/benchMpr.obj -Fd${CONFIG}/obj/benchMpr.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/benchMpr.c
 
@@ -136,11 +140,13 @@ cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
 "${CC}" -c -Fo${CONFIG}/obj/matrixssl.obj -Fd${CONFIG}/obj/matrixssl.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/matrixssl.c
 
+"${CC}" -c -Fo${CONFIG}/obj/mocana.obj -Fd${CONFIG}/obj/mocana.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/mocana.c
+
 "${CC}" -c -Fo${CONFIG}/obj/openssl.obj -Fd${CONFIG}/obj/openssl.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/openssl.c
 
 "${CC}" -c -Fo${CONFIG}/obj/ssl.obj -Fd${CONFIG}/obj/ssl.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/ssl/ssl.c
 
-"${LD}" -dll -out:${CONFIG}/bin/libmprssl.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/est.obj ${CONFIG}/obj/matrixssl.obj ${CONFIG}/obj/openssl.obj ${CONFIG}/obj/ssl.obj libmpr.lib ${LIBS}
+"${LD}" -dll -out:${CONFIG}/bin/libmprssl.dll -entry:_DllMainCRTStartup@12 ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/est.obj ${CONFIG}/obj/matrixssl.obj ${CONFIG}/obj/mocana.obj ${CONFIG}/obj/openssl.obj ${CONFIG}/obj/ssl.obj libmpr.lib ${LIBS}
 
 "${CC}" -c -Fo${CONFIG}/obj/testArgv.obj -Fd${CONFIG}/obj/testArgv.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc test/testArgv.c
 

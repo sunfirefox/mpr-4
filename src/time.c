@@ -70,7 +70,7 @@ static TimeToken fullDays[] = {
 };
 
 /*
-    Make origin 1 to correspond to user date entries 10/28/2012
+    Make origin 1 to correspond to user date entries 10/28/2013
  */
 static TimeToken months[] = {
     { "jan",  1 | TOKEN_MONTH },
@@ -306,24 +306,24 @@ PUBLIC MprTime mprGetTime()
  */
 #if MPR_HIGH_RES_TIMER
     #if (LINUX || MACOSX) && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
-        uint64 mprGetHiResTime() {
+        uint64 mprGetHiResTicks() {
             uint64  now;
             __asm__ __volatile__ ("rdtsc" : "=A" (now));
             return now;
         }
     #elif WINDOWS
-        uint64 mprGetHiResTime() {
+        uint64 mprGetHiResTicks() {
             LARGE_INTEGER  now;
             QueryPerformanceCounter(&now);
             return (((uint64) now.HighPart) << 32) + now.LowPart;
         }
     #else
-        uint64 mprGetHiResTime() {
+        uint64 mprGetHiResTicks() {
             return (uint64) mprGetTicks();
         }
     #endif
 #else 
-    uint64 mprGetHiResTime() {
+    uint64 mprGetHiResTicks() {
         return (uint64) mprGetTicks();
     }
 #endif
@@ -385,7 +385,7 @@ PUBLIC MprTicks mprGetRemainingTicks(MprTicks mark, MprTicks timeout)
         /*
             Detect time going backwards. Should never happen now.
          */
-        assure(diff >= 0);
+        assert(diff >= 0);
         diff = 0;
     }
     return (timeout - diff);
@@ -704,15 +704,15 @@ static void decodeTime(struct tm *tp, MprTime when, bool local)
     } else {
         tp->tm_mday = tp->tm_yday - normalMonthStart[tp->tm_mon] + 1;
     }
-    assure(tp->tm_hour >= 0);
-    assure(tp->tm_min >= 0);
-    assure(tp->tm_sec >= 0);
-    assure(tp->tm_wday >= 0);
-    assure(tp->tm_mon >= 0);
+    assert(tp->tm_hour >= 0);
+    assert(tp->tm_min >= 0);
+    assert(tp->tm_sec >= 0);
+    assert(tp->tm_wday >= 0);
+    assert(tp->tm_mon >= 0);
     /* This asserts with some calculating some intermediate dates <= year 100 */
-    assure(tp->tm_yday >= 0);
-    assure(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
-    assure(tp->tm_mday >= 1);
+    assert(tp->tm_yday >= 0);
+    assert(tp->tm_yday < 365 || (tp->tm_yday < 366 && leapYear(year)));
+    assert(tp->tm_mday >= 1);
 }
 
 
@@ -1061,7 +1061,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
             mprPutCharToBuf(buf, '%');
             break;
 
-        case '+' :                                      /* date (Mon May 18 23:29:50 PDT 2012) */
+        case '+' :                                      /* date (Mon May 18 23:29:50 PDT 2013) */
             mprPutStringToBuf(buf, abbrevDay[tp->tm_wday]);
             mprPutCharToBuf(buf, ' ');
             mprPutStringToBuf(buf, abbrevMonth[tp->tm_mon]);
@@ -1213,7 +1213,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
             break;
 
         case 's':                                       /* seconds since epoch */
-            mprPutFmtToBuf(buf, "%d", mprMakeTime(tp) / MS_PER_SEC);
+            mprPutToBuf(buf, "%d", mprMakeTime(tp) / MS_PER_SEC);
             break;
 
         case 'T':
@@ -1355,7 +1355,7 @@ static int getNumOrSym(char **token, int sep, int kind, int *isAlpah)
     char    *cp;
     int     num;
 
-    assure(token && *token);
+    assert(token && *token);
 
     if (*token == 0) {
         return 0;
@@ -1446,7 +1446,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
     while (token && *token) {
         if (snumber(token)) {
             /*
-                Parse either day of month or year. Priority to day of month. Format: <29> Jan <15> <2012>
+                Parse either day of month or year. Priority to day of month. Format: <29> Jan <15> <2013>
              */ 
             value = stoi(token);
             if (value > 3000) {
@@ -1533,7 +1533,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
             }
             if (dateSep) {
                 /*
-                    Date:  07/28/2012, 07/28/08, Jan/28/2012, Jaunuary-28-2012, 28-jan-2012
+                    Date:  07/28/2013, 07/28/08, Jan/28/2013, Jaunuary-28-2013, 28-jan-2013
                     Support order: dd/mm/yy, mm/dd/yy and yyyy/mm/dd
                     Support separators "/", ".", "-"
                  */
@@ -1756,7 +1756,7 @@ PUBLIC int gettimeofday(struct timeval *tv, struct timezone *tz)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

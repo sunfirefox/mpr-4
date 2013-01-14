@@ -73,10 +73,10 @@ int main(int argc, char **argv)
 
 static void printUsage(Mpr *mpr)
 {
-    mprPrintfError("usage: makerom [options] files... >output.c\n");
-    mprPrintfError("  Makerom options:\n");
-    mprPrintfError("  --prefix prefix       # File prefix to remove\n");
-    mprPrintfError("  --name structName     # Name of top level C struct\n");
+    mprEprintf("usage: makerom [options] files... >output.c\n");
+    mprEprintf("  Makerom options:\n");
+    mprEprintf("  --prefix prefix       # File prefix to remove\n");
+    mprEprintf("  --name structName     # Name of top level C struct\n");
 }
 
 
@@ -164,7 +164,7 @@ static int binToC(MprList *files, char *romName, char *prefix)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

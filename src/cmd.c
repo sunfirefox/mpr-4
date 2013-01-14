@@ -181,7 +181,7 @@ static void vxCmdManager(MprCmd *cmd)
 
 PUBLIC void mprDestroyCmd(MprCmd *cmd)
 {
-    assure(cmd);
+    assert(cmd);
     slock(cmd);
     resetCmd(cmd);
     if (cmd->signal) {
@@ -197,7 +197,7 @@ static void resetCmd(MprCmd *cmd)
     MprCmdFile      *files;
     int             i;
 
-    assure(cmd);
+    assert(cmd);
     files = cmd->files;
     for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->handlers[i]) {
@@ -229,7 +229,7 @@ PUBLIC void mprDisconnectCmd(MprCmd *cmd)
 {
     int     i;
 
-    assure(cmd);
+    assert(cmd);
 
     for (i = 0; i < MPR_CMD_MAX_PIPE; i++) {
         if (cmd->handlers[i]) {
@@ -245,8 +245,8 @@ PUBLIC void mprDisconnectCmd(MprCmd *cmd)
  */
 PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
 {
-    assure(cmd);
-    assure(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
+    assert(cmd);
+    assert(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
 
     if (cmd->handlers[channel]) {
         mprRemoveWaitHandler(cmd->handlers[channel]);
@@ -269,15 +269,15 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
                 }
             }
         }
-        mprLog(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
+        mprTrace(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
     }
 }
 
 
 PUBLIC void mprFinalizeCmd(MprCmd *cmd)
 {
-    mprLog(6, "mprFinalizeCmd");
-    assure(cmd);
+    mprTrace(6, "mprFinalizeCmd");
+    assert(cmd);
     mprCloseCmdFd(cmd, MPR_CMD_STDIN);
 }
 
@@ -296,7 +296,7 @@ PUBLIC int mprRunCmd(MprCmd *cmd, cchar *command, cchar **envp, char **out, char
     cchar   **argv;
     int     argc;
 
-    assure(cmd);
+    assert(cmd);
     if ((argc = mprMakeArgv(command, &argv, 0)) < 0 || argv == 0) {
         return 0;
     }
@@ -334,7 +334,7 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
 {
     int     rc, status;
 
-    assure(cmd);
+    assert(cmd);
     if (err) {
         *err = 0;
         flags |= MPR_CMD_ERR;
@@ -424,8 +424,8 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
     cchar       *program, *search, *pair;
     int         rc, next, i;
 
-    assure(cmd);
-    assure(argv);
+    assert(cmd);
+    assert(argv);
 
     if (argc <= 0 || argv == NULL || argv[0] == NULL) {
         return MPR_ERR_BAD_ARGS;
@@ -508,7 +508,7 @@ static int makeCmdIO(MprCmd *cmd)
  */
 PUBLIC int mprStopCmd(MprCmd *cmd, int signal)
 {
-    mprLog(7, "cmd: stop");
+    mprTrace(7, "cmd: stop");
 
     if (signal < 0) {
         signal = SIGTERM;
@@ -537,7 +537,7 @@ PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
     /*
         Need to detect EOF in windows. Pipe always in blocking mode, but reads block even with no one on the other end.
      */
-    assure(cmd->files[channel].handle);
+    assert(cmd->files[channel].handle);
     rc = PeekNamedPipe(cmd->files[channel].handle, NULL, 0, NULL, &count, NULL);
     if (rc > 0 && count > 0) {
         return read(cmd->files[channel].fd, buf, (uint) bufsize);
@@ -572,7 +572,7 @@ PUBLIC ssize mprReadCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
     return rc;
 
 #else
-    assure(cmd->files[channel].fd >= 0);
+    assert(cmd->files[channel].fd >= 0);
     return read(cmd->files[channel].fd, buf, bufsize);
 #endif
 }
@@ -696,7 +696,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
     MprTicks    expires, remaining;
 
-    assure(cmd);
+    assert(cmd);
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -729,7 +729,7 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
     if (cmd->pid) {
         return MPR_ERR_TIMEOUT;
     }
-    mprLog(6, "cmd: waitForChild: status %d", cmd->status);
+    mprTrace(6, "cmd: waitForChild: status %d", cmd->status);
     return 0;
 }
 
@@ -743,7 +743,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
 {
     int     status, rc;
 
-    mprLog(6, "reapCmd CHECK pid %d, eof %d, required %d", cmd->pid, cmd->eofCount, cmd->requiredEof);
+    mprTrace(6, "reapCmd CHECK pid %d, eof %d, required %d", cmd->pid, cmd->eofCount, cmd->requiredEof);
     
     status = 0;
     if (cmd->pid == 0) {
@@ -751,28 +751,28 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     }
 #if BIT_UNIX_LIKE
     if ((rc = waitpid(cmd->pid, &status, WNOHANG | __WALL)) < 0) {
-        mprLog(6, "waitpid failed for pid %d, errno %d", cmd->pid, errno);
+        mprTrace(6, "waitpid failed for pid %d, errno %d", cmd->pid, errno);
 
     } else if (rc == cmd->pid) {
-        mprLog(6, "waitpid pid %d, thread %s", cmd->pid, mprGetCurrentThreadName());
+        mprTrace(6, "waitpid pid %d, thread %s", cmd->pid, mprGetCurrentThreadName());
         if (!WIFSTOPPED(status)) {
             if (WIFEXITED(status)) {
                 cmd->status = WEXITSTATUS(status);
-                mprLog(6, "waitpid exited pid %d, status %d", cmd->pid, cmd->status);
+                mprTrace(6, "waitpid exited pid %d, status %d", cmd->pid, cmd->status);
             } else if (WIFSIGNALED(status)) {
                 cmd->status = WTERMSIG(status);
             } else {
-                mprLog(7, "waitpid FUNNY pid %d, errno %d", cmd->pid, errno);
+                mprTrace(7, "waitpid FUNNY pid %d, errno %d", cmd->pid, errno);
             }
             cmd->pid = 0;
-            assure(cmd->signal);
+            assert(cmd->signal);
             mprRemoveSignalHandler(cmd->signal);
             cmd->signal = 0;
         } else {
-            mprLog(7, "waitpid ELSE pid %d, errno %d", cmd->pid, errno);
+            mprTrace(7, "waitpid ELSE pid %d, errno %d", cmd->pid, errno);
         }
     } else {
-        mprLog(6, "waitpid still running pid %d, thread %s", cmd->pid, mprGetCurrentThreadName());
+        mprTrace(6, "waitpid still running pid %d, thread %s", cmd->pid, mprGetCurrentThreadName());
     }
 #endif
 #if VXWORKS
@@ -792,15 +792,15 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
 #endif
 #if BIT_WIN_LIKE
     if (GetExitCodeProcess(cmd->process, (ulong*) &status) == 0) {
-        mprLog(3, "cmd: GetExitProcess error");
+        mprTrace(3, "cmd: GetExitProcess error");
         return;
     }
     if (status != STILL_ACTIVE) {
         cmd->status = status;
         rc = CloseHandle(cmd->process);
-        assure(rc != 0);
+        assert(rc != 0);
         rc = CloseHandle(cmd->thread);
-        assure(rc != 0);
+        assert(rc != 0);
         cmd->process = 0;
         cmd->thread = 0;
         cmd->pid = 0;
@@ -810,7 +810,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
         if (cmd->eofCount >= cmd->requiredEof) {
             cmd->complete = 1;
         }
-        mprLog(6, "Cmd reaped: status %d, pid %d, eof %d / %d", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
+        mprTrace(6, "Cmd reaped: status %d, pid %d, eof %d / %d", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
         if (cmd->callback) {
             (cmd->callback)(cmd, -1, cmd->callbackData);
             /* WARNING - this above call may invoke httpPump and complete the request. HttpConn.tx may be null */
@@ -859,7 +859,7 @@ static void defaultCmdCallback(MprCmd *cmd, int channel, void *data)
     }
     len = mprReadCmd(cmd, channel, mprGetBufEnd(buf), space);
     errCode = mprGetError();
-    LOG(6, "defaultCmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
+    mprTrace(6, "defaultCmdCallback channel %d, read len %d, pid %d, eof %d/%d", channel, len, cmd->pid, cmd->eofCount, 
         cmd->requiredEof);
     if (len <= 0) {
         if (len == 0 || (len < 0 && !(errCode == EAGAIN || errCode == EWOULDBLOCK))) {
@@ -913,7 +913,7 @@ PUBLIC void mprSetCmdCallback(MprCmd *cmd, MprCmdProc proc, void *data)
 
 PUBLIC int mprGetCmdExitStatus(MprCmd *cmd)
 {
-    assure(cmd);
+    assert(cmd);
 
     if (cmd->pid == 0) {
         return cmd->status;
@@ -932,7 +932,7 @@ PUBLIC bool mprIsCmdRunning(MprCmd *cmd)
 
 PUBLIC void mprSetCmdTimeout(MprCmd *cmd, MprTicks timeout)
 {
-    assure(0);
+    assert(0);
 #if KEEP
     cmd->timeoutPeriod = timeout;
 #endif
@@ -956,7 +956,7 @@ PUBLIC void mprSetCmdDir(MprCmd *cmd, cchar *dir)
 #if VXWORKS
     mprError("WARNING: Setting working directory on VxWorks is global: %s", dir);
 #else
-    assure(dir && *dir);
+    assert(dir && *dir);
 
     cmd->dir = sclone(dir);
 #endif
@@ -1072,7 +1072,7 @@ static cchar *makeWinEnvBlock(MprCmd *cmd)
     /* Windows requires two nulls */
     *dp++ = '\0';
     *dp++ = '\0';
-    assure(dp <= ep);
+    assert(dp <= ep);
     return env;
 }
 #endif
@@ -1103,7 +1103,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     ssize       len;
     int         quote;
 
-    assure(argc > 0 && argv[0] != NULL);
+    assert(argc > 0 && argv[0] != NULL);
 
     cmd->argv = argv;
     cmd->argc = argc;
@@ -1373,7 +1373,7 @@ static int makeChannel(MprCmd *cmd, int index)
         file->fd = fds[0];              /* read fd */
     }
     fcntl(file->fd, F_SETFL, fcntl(file->fd, F_GETFL) | O_NONBLOCK);
-    mprLog(7, "makeChannel: pipe handles[%d] read %d, write %d", index, fds[0], fds[1]);
+    mprTrace(7, "makeChannel: pipe handles[%d] read %d, write %d", index, fds[0], fds[1]);
     return 0;
 }
 
@@ -1545,7 +1545,7 @@ PUBLIC int startProcess(MprCmd *cmd)
         mprError("start: can't create task %s, errno %d", entryPoint, mprGetOsError());
         return MPR_ERR_CANT_CREATE;
     }
-    mprLog(7, "cmd, child taskId %d", cmd->pid);
+    mprTrace(7, "cmd, child taskId %d", cmd->pid);
 
     if (semTake(cmd->startCond, MPR_TIMEOUT_START_TASK) != OK) {
         mprError("start: child %s did not initialize, errno %d", cmd->program, mprGetOsError());
@@ -1657,7 +1657,7 @@ static void closeFiles(MprCmd *cmd)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

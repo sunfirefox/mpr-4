@@ -64,7 +64,7 @@ PUBLIC MprCache *mprCreateCache(int options)
 
 PUBLIC void *mprDestroyCache(MprCache *cache)
 {
-    assure(cache);
+    assert(cache);
 
     if (cache->timer && cache != shared) {
         mprRemoveEvent(cache->timer);
@@ -81,12 +81,12 @@ PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTicks expires)
 {
     CacheItem   *item;
 
-    assure(cache);
-    assure(key && *key);
+    assert(cache);
+    assert(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        assure(cache == shared);
+        assert(cache == shared);
     }
     lock(cache);
     if ((item = mprLookupKey(cache->store, key)) == 0) {
@@ -108,12 +108,12 @@ PUBLIC int64 mprIncCache(MprCache *cache, cchar *key, int64 amount)
     CacheItem   *item;
     int64       value;
 
-    assure(cache);
-    assure(key && *key);
+    assert(cache);
+    assert(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        assure(cache == shared);
+        assert(cache == shared);
     }
     value = amount;
 
@@ -143,12 +143,12 @@ PUBLIC char *mprReadCache(MprCache *cache, cchar *key, MprTime *modified, int64 
     CacheItem   *item;
     char        *result;
 
-    assure(cache);
-    assure(key && *key);
+    assert(cache);
+    assert(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        assure(cache == shared);
+        assert(cache == shared);
     }
     lock(cache);
     if ((item = mprLookupKey(cache->store, key)) == 0) {
@@ -178,12 +178,12 @@ PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key)
     CacheItem   *item;
     bool        result;
 
-    assure(cache);
-    assure(key && *key);
+    assert(cache);
+    assert(key && *key);
 
     if (cache->shared) {
         cache = cache->shared;
-        assure(cache == shared);
+        assert(cache == shared);
     }
     lock(cache);
     if (key) {
@@ -208,11 +208,11 @@ PUBLIC bool mprRemoveCache(MprCache *cache, cchar *key)
 
 PUBLIC void mprSetCacheLimits(MprCache *cache, int64 keys, MprTicks lifespan, int64 memory, int resolution)
 {
-    assure(cache);
+    assert(cache);
 
     if (cache->shared) {
         cache = cache->shared;
-        assure(cache == shared);
+        assert(cache == shared);
     }
     if (keys > 0) {
         cache->maxKeys = (ssize) keys;
@@ -245,13 +245,13 @@ PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
     ssize       len, oldLen;
     int         exists, add, set, prepend, append, throw;
 
-    assure(cache);
-    assure(key && *key);
-    assure(value);
+    assert(cache);
+    assert(key && *key);
+    assert(value);
 
     if (cache->shared) {
         cache = cache->shared;
-        assure(cache == shared);
+        assert(cache == shared);
     }
     exists = add = prepend = append = throw = 0;
     add = options & MPR_CACHE_ADD;
@@ -304,7 +304,7 @@ PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
     cache->usedMem += (len - oldLen);
 
     if (cache->timer == 0) {
-        mprLog(5, "Start Cache pruner with resolution %d", cache->resolution);
+        mprTrace(5, "Start Cache pruner with resolution %d", cache->resolution);
         /* 
             Use the MPR dispatcher incase this VM is destroyed 
          */
@@ -318,8 +318,8 @@ PUBLIC ssize mprWriteCache(MprCache *cache, cchar *key, cchar *value, MprTime mo
 
 static void removeItem(MprCache *cache, CacheItem *item)
 {
-    assure(cache);
-    assure(item);
+    assert(cache);
+    assert(item);
 
     lock(cache);
     mprRemoveKey(cache->store, item->key);
@@ -353,14 +353,14 @@ static void pruneCache(MprCache *cache, MprEvent *event)
          */
         for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
             item = (CacheItem*) kp->data;
-            mprLog(6, "Cache: \"%s\" lifespan %d, expires in %d secs", item->key, 
+            mprTrace(6, "Cache: \"%s\" lifespan %d, expires in %d secs", item->key, 
                     item->lifespan / 1000, (item->expires - when) / 1000);
             if (item->expires && item->expires <= when) {
-                mprLog(5, "Cache prune expired key %s", kp->key);
+                mprTrace(5, "Cache prune expired key %s", kp->key);
                 removeItem(cache, item);
             }
         }
-        assure(cache->usedMem >= 0);
+        assert(cache->usedMem >= 0);
 
         /*
             If too many keys or too much memory used, prune keys that expire soonest.
@@ -376,7 +376,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 for (kp = 0; (kp = mprGetNextKey(cache->store, kp)) != 0; ) {
                     item = (CacheItem*) kp->data;
                     if (item->expires && item->expires <= when) {
-                        mprLog(5, "Cache too big execess keys %Ld, mem %Ld, prune key %s", 
+                        mprTrace(5, "Cache too big execess keys %Ld, mem %Ld, prune key %s", 
                                 excessKeys, (cache->maxMem - cache->usedMem), kp->key);
                         removeItem(cache, item);
                     }
@@ -385,7 +385,7 @@ static void pruneCache(MprCache *cache, MprEvent *event)
                 when += factor;
             }
         }
-        assure(cache->usedMem >= 0);
+        assert(cache->usedMem >= 0);
 
         if (mprGetHashLength(cache->store) == 0) {
             if (event) {
@@ -432,7 +432,7 @@ static void manageCacheItem(CacheItem *item, int flags)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

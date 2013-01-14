@@ -208,7 +208,7 @@ PUBLIC char *mprDecode64Block(cchar *s, ssize *len, int flags)
             shift -= 6;
         }
         --i;
-        assure((bp + i) < &buffer[size]);
+        assert((bp + i) < &buffer[size]);
         for (j = 0; j < i; j++) {
             *bp++ = (char) ((bitBuf >> (8 * (2 - j))) & 0xff);
         }
@@ -692,7 +692,7 @@ static void shaPad(MprSha *sha)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

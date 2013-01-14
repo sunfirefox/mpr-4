@@ -74,16 +74,16 @@ static void testCopyPath(MprTestGroup *gp)
     char        *from, *to;
 
     from = sfmt("copyTest-%s.tmp", mprGetCurrentThreadName(gp));
-    assert(from != 0);
+    tassert(from != 0);
     file = mprOpenFile(from, O_CREAT | O_TRUNC | O_WRONLY, 0664);
-    assert(file != 0);
+    tassert(file != 0);
     mprWriteFileString(file, "Hello World");
     mprCloseFile(file);
 
     to = sfmt("newTest-%s.tmp", mprGetCurrentThreadName(gp));
-    assert(mprPathExists(from, F_OK));
+    tassert(mprPathExists(from, F_OK));
     mprCopyPath(from, to, 0664);
-    assert(mprPathExists(to, F_OK));
+    tassert(mprPathExists(to, F_OK));
     mprDeletePath(from);
     mprDeletePath(to);
 }
@@ -110,52 +110,52 @@ static void testAbsPath(MprTestGroup *gp)
 #endif
 
     path = mprGetAbsPath("");
-    assert(mprIsPathAbs(path));
+    tassert(mprIsPathAbs(path));
     
     path = mprGetAbsPath("/");
-    assert(mprIsPathAbs(path));
+    tassert(mprIsPathAbs(path));
     
     path = mprGetAbsPath("../../../../../../../../../../..");
-    assert(mprIsPathAbs(path));
-    assert(mprIsPathAbs(mprGetAbsPath("Makefile")));
+    tassert(mprIsPathAbs(path));
+    tassert(mprIsPathAbs(mprGetAbsPath("Makefile")));
 
     /*
         Manually check incase mprIsAbs gets it wrong
      */
     path = mprGetAbsPath("Makefile");
-    assert(path && *path);
-    assert(mprIsPathAbs(path));
+    tassert(path && *path);
+    tassert(mprIsPathAbs(path));
 #if BIT_WIN_LIKE
-    assert(isalpha(path[0]));
-    assert(path[1] == ':' && path[2] == '\\');
+    tassert(isalpha(path[0]));
+    tassert(path[1] == ':' && path[2] == '\\');
 #elif BIT_UNIX_LIKE
-    assert(path[0] == '/' && path[1] != '/');
+    tassert(path[0] == '/' && path[1] != '/');
 #endif
-    assert(strcmp(mprGetPathBase(path), "Makefile") == 0);
+    tassert(strcmp(mprGetPathBase(path), "Makefile") == 0);
 }
 
 
 static void testJoinPath(MprTestGroup *gp)
 {
 #if BIT_WIN_LIKE
-    assert(strcmp(mprJoinPath("\\tmp", "Makefile"), "\\tmp\\Makefile") == 0);
-    assert(strcmp(mprJoinPath("\\tmp", "\\Makefile"), "\\Makefile") == 0);
-    assert(strcmp(mprJoinPath("\\tmp", NULL), "\\tmp") == 0);
-    assert(strcmp(mprJoinPath("\\tmp", "."), "\\tmp") == 0);
-    assert(strcmp(mprJoinPath("\\\\\\tmp\\\\\\", "Makefile\\\\\\"), "\\tmp\\Makefile") == 0);
+    tassert(strcmp(mprJoinPath("\\tmp", "Makefile"), "\\tmp\\Makefile") == 0);
+    tassert(strcmp(mprJoinPath("\\tmp", "\\Makefile"), "\\Makefile") == 0);
+    tassert(strcmp(mprJoinPath("\\tmp", NULL), "\\tmp") == 0);
+    tassert(strcmp(mprJoinPath("\\tmp", "."), "\\tmp") == 0);
+    tassert(strcmp(mprJoinPath("\\\\\\tmp\\\\\\", "Makefile\\\\\\"), "\\tmp\\Makefile") == 0);
 #else
-    assert(strcmp(mprJoinPath("/tmp", "Makefile"), "/tmp/Makefile") == 0);
-    assert(strcmp(mprJoinPath("/tmp", "/Makefile"), "/Makefile") == 0);
-    assert(strcmp(mprJoinPath("/tmp", NULL), "/tmp") == 0);
-    assert(strcmp(mprJoinPath("/tmp", "."), "/tmp") == 0);
-    assert(strcmp(mprJoinPath("///tmp///", "Makefile///"), "/tmp/Makefile") == 0);
+    tassert(strcmp(mprJoinPath("/tmp", "Makefile"), "/tmp/Makefile") == 0);
+    tassert(strcmp(mprJoinPath("/tmp", "/Makefile"), "/Makefile") == 0);
+    tassert(strcmp(mprJoinPath("/tmp", NULL), "/tmp") == 0);
+    tassert(strcmp(mprJoinPath("/tmp", "."), "/tmp") == 0);
+    tassert(strcmp(mprJoinPath("///tmp///", "Makefile///"), "/tmp/Makefile") == 0);
 #endif
-    assert(strcmp(mprJoinPath("", "Makefile"), "Makefile") == 0);
+    tassert(strcmp(mprJoinPath("", "Makefile"), "Makefile") == 0);
 
-    assert(strcmp(mprJoinPathExt("/abc", ".exe"), "/abc.exe") == 0);
-    assert(strcmp(mprJoinPathExt("/abc.bat", ".exe"), "/abc.bat") == 0);
-    assert(strcmp(mprJoinPathExt("/abc", ""), "/abc") == 0);
-    assert(strcmp(mprJoinPathExt("ejs.web/file", ".mod"), "ejs.web/file.mod") == 0);
+    tassert(strcmp(mprJoinPathExt("/abc", ".exe"), "/abc.exe") == 0);
+    tassert(strcmp(mprJoinPathExt("/abc.bat", ".exe"), "/abc.bat") == 0);
+    tassert(strcmp(mprJoinPathExt("/abc", ""), "/abc") == 0);
+    tassert(strcmp(mprJoinPathExt("ejs.web/file", ".mod"), "ejs.web/file.mod") == 0);
 }
 
 
@@ -168,11 +168,11 @@ static void testMakeDir(MprTestGroup *gp)
 
     mprGlobalLock(gp);
     rc = mprMakeDir(ts->dir1, DIRMODE, -1, -1, 1);
-    assert(rc == 0);
-    assert(access(ts->dir1, X_OK) == 0);
+    tassert(rc == 0);
+    tassert(access(ts->dir1, X_OK) == 0);
 
     rmdir(ts->dir1);
-    assert(access(ts->dir1, X_OK) < 0);
+    tassert(access(ts->dir1, X_OK) < 0);
 
     rmdir(ts->dir2);
     rmdir(ts->dir1);
@@ -180,22 +180,22 @@ static void testMakeDir(MprTestGroup *gp)
     /*
         Dir should not exist before test
      */
-    assert(access(ts->dir1, X_OK) < 0);
+    tassert(access(ts->dir1, X_OK) < 0);
 
     /*
         Make directory path
      */
     rc = mprMakeDir(ts->dir2, DIRMODE, -1, -1, 1);
-    assert(rc == 0);
-    assert(access(ts->dir2, X_OK) == 0);
+    tassert(rc == 0);
+    tassert(access(ts->dir2, X_OK) == 0);
 
     rc = mprDeletePath(ts->dir2);
-    assert(rc == 0);
+    tassert(rc == 0);
     rc = mprDeletePath(ts->dir1);
-    assert(rc == 0);
+    tassert(rc == 0);
     
-    assert(access(ts->dir1, X_OK) < 0);
-    assert(access(ts->dir2, X_OK) < 0);
+    tassert(access(ts->dir1, X_OK) < 0);
+    tassert(access(ts->dir2, X_OK) < 0);
     mprGlobalUnlock(gp);
 }
 
@@ -204,36 +204,36 @@ static void testNormalize(MprTestGroup *gp)
 {
     char        *path;
 
-    assert(strcmp(mprNormalizePath(""), "") == 0);
-    assert(strcmp(mprNormalizePath("/"), "/") == 0);
-    assert(strcmp(mprNormalizePath("."), ".") == 0);
-    assert(strcmp(mprNormalizePath("abc/"), "abc") == 0);
-    assert(strcmp(mprNormalizePath("./"), ".") == 0);
-    assert(strcmp(mprNormalizePath("../"), "..") == 0);
-    assert(strcmp(mprNormalizePath("/.."), "/") == 0);
-    assert(strcmp(mprNormalizePath("./.."), "..") == 0);
-    assert(strcmp(mprNormalizePath("//.."), "/") == 0);
-    assert(strcmp(mprNormalizePath("/abc/.."), "/") == 0);
-    assert(strcmp(mprNormalizePath("abc/.."), ".") == 0);
-    assert(strcmp(mprNormalizePath("/abc/../def"), "/def") == 0);
-    assert(strcmp(mprNormalizePath("/abc/../def/../xyz"), "/xyz") == 0);
-    assert(strcmp(mprNormalizePath("/abc/def/../.."), "/") == 0);
-    assert(strcmp(mprNormalizePath("/abc/def/../../xyz"), "/xyz") == 0);
-    assert(strcmp(mprNormalizePath("/abc/def/.././../xyz"), "/xyz") == 0);
-    assert(strcmp(mprNormalizePath("//a//b//./././c/d/e/f/../../g"), "/a/b/c/d/g") == 0);
-    assert(strcmp(mprNormalizePath("../../modules/ejs.mod"), "../../modules/ejs.mod") == 0);
+    tassert(strcmp(mprNormalizePath(""), "") == 0);
+    tassert(strcmp(mprNormalizePath("/"), "/") == 0);
+    tassert(strcmp(mprNormalizePath("."), ".") == 0);
+    tassert(strcmp(mprNormalizePath("abc/"), "abc") == 0);
+    tassert(strcmp(mprNormalizePath("./"), ".") == 0);
+    tassert(strcmp(mprNormalizePath("../"), "..") == 0);
+    tassert(strcmp(mprNormalizePath("/.."), "/") == 0);
+    tassert(strcmp(mprNormalizePath("./.."), "..") == 0);
+    tassert(strcmp(mprNormalizePath("//.."), "/") == 0);
+    tassert(strcmp(mprNormalizePath("/abc/.."), "/") == 0);
+    tassert(strcmp(mprNormalizePath("abc/.."), ".") == 0);
+    tassert(strcmp(mprNormalizePath("/abc/../def"), "/def") == 0);
+    tassert(strcmp(mprNormalizePath("/abc/../def/../xyz"), "/xyz") == 0);
+    tassert(strcmp(mprNormalizePath("/abc/def/../.."), "/") == 0);
+    tassert(strcmp(mprNormalizePath("/abc/def/../../xyz"), "/xyz") == 0);
+    tassert(strcmp(mprNormalizePath("/abc/def/.././../xyz"), "/xyz") == 0);
+    tassert(strcmp(mprNormalizePath("//a//b//./././c/d/e/f/../../g"), "/a/b/c/d/g") == 0);
+    tassert(strcmp(mprNormalizePath("../../modules/ejs.mod"), "../../modules/ejs.mod") == 0);
 
     path = mprNormalizePath("//a//b//./././c/d/e/f/../../g");
-    assert(strcmp(path, "/a/b/c/d/g") == 0);
+    tassert(strcmp(path, "/a/b/c/d/g") == 0);
 
 #if VXWORKS || BIT_WIN_LIKE
     path = mprNormalizePath("\\\\a\\\\b\\\\.\\.\\.\\c\\d\\e\\f\\..\\..\\g");
-    assure(strcmp(path, "\\a\\b\\c\\d\\g") == 0);
-    assert(strcmp(mprNormalizePath("host:"), "host:.") == 0);
-    assert(strcmp(mprNormalizePath("host:/"), "host:/") == 0);
-    assert(strcmp(mprNormalizePath("host:////"), "host:/") == 0);
-    assert(strcmp(mprNormalizePath("host:abc"), "host:abc") == 0);
-    assert(strcmp(mprNormalizePath("c:abc"), "c:abc") == 0);
+    tassert(strcmp(path, "\\a\\b\\c\\d\\g") == 0);
+    tassert(strcmp(mprNormalizePath("host:"), "host:.") == 0);
+    tassert(strcmp(mprNormalizePath("host:/"), "host:/") == 0);
+    tassert(strcmp(mprNormalizePath("host:////"), "host:/") == 0);
+    tassert(strcmp(mprNormalizePath("host:abc"), "host:abc") == 0);
+    tassert(strcmp(mprNormalizePath("c:abc"), "c:abc") == 0);
 #endif
 }
 
@@ -243,53 +243,53 @@ static void testRelPath(MprTestGroup *gp)
     char    *path, *absPath;
     
     path = mprGetRelPath("Makefile", 0);
-    assert(strcmp(path, "Makefile") == 0);
+    tassert(strcmp(path, "Makefile") == 0);
     
     path = mprNormalizePath("../a.b");
-    assert(strcmp(path, "../a.b") == 0);
+    tassert(strcmp(path, "../a.b") == 0);
 
     path = mprGetRelPath("/", 0);
-    assert(mprIsPathRel(path));
-    assert(strncmp(path, "../", 3) == 0);
+    tassert(mprIsPathRel(path));
+    tassert(strncmp(path, "../", 3) == 0);
     
     path = mprGetRelPath("//", 0);
-    assert(mprIsPathRel(path));
-    assert(strncmp(path, "../", 3) == 0);
+    tassert(mprIsPathRel(path));
+    tassert(strncmp(path, "../", 3) == 0);
     
     path = mprGetRelPath("/tmp", 0);
-    assert(mprIsPathRel(path));
-    assert(strncmp(path, "../", 3) == 0);
+    tassert(mprIsPathRel(path));
+    tassert(strncmp(path, "../", 3) == 0);
 
     path = mprGetRelPath("/Unknown/someone/junk", 0);
-    assert(mprIsPathRel(path));
-    assert(strncmp(path, "../", 3) == 0);
+    tassert(mprIsPathRel(path));
+    tassert(strncmp(path, "../", 3) == 0);
            
     path = mprGetRelPath("/Users/mob/junk", 0);
-    assert(mprIsPathRel(path));
-    assert(strncmp(path, "../", 3) == 0);
+    tassert(mprIsPathRel(path));
+    tassert(strncmp(path, "../", 3) == 0);
     
     path = mprGetRelPath("/Users/mob/././../mob/junk", 0);
-    assert(mprIsPathRel(path));
-    assert(strncmp(path, "../", 3) == 0);
+    tassert(mprIsPathRel(path));
+    tassert(strncmp(path, "../", 3) == 0);
     
     path = mprGetRelPath(".", 0);
-    assert(strcmp(path, ".") == 0);
+    tassert(strcmp(path, ".") == 0);
 
     path = mprGetRelPath("..", 0);
-    assert(strcmp(path, "..") == 0);
+    tassert(strcmp(path, "..") == 0);
 
     path = mprGetRelPath("/Users/mob/github/admin", 0);
-    assert(sstarts(path, ".."));
+    tassert(sstarts(path, ".."));
 
     path = mprGetRelPath("/Users/mob/git", 0);
     path = mprGetRelPath("/Users/mob/git/mpr/test", 0);
     /* Can't really test the result of this */
 
     absPath = mprGetAbsPath("Makefile");
-    assert(mprIsPathAbs(absPath));
+    tassert(mprIsPathAbs(absPath));
     path = mprGetRelPath(absPath, 0);
-    assert(!mprIsPathAbs(path));
-    assert(strcmp(path, "Makefile") == 0);
+    tassert(!mprIsPathAbs(path));
+    tassert(strcmp(path, "Makefile") == 0);
 
 #if FUTURE
     //  MOB - problem in that we don't know the cwd when testMpr runs
@@ -297,7 +297,7 @@ static void testRelPath(MprTestGroup *gp)
 
     out = mprGetAbsPath("../../out");
     cwd = mprGetCurrentPath();
-    assert(smatch(mprGetRelPath(cwd, out), "../src/test"));
+    tassert(smatch(mprGetRelPath(cwd, out), "../src/test"));
 #endif
 }
 
@@ -308,7 +308,7 @@ static void testResolvePath(MprTestGroup *gp)
     char    *path, *absPath, *out;
     
     out = mprGetAbsPath("../out");
-    assert(smatch(mprResolvePath(out, mprGetCurrentPath()), "../src/test"));
+    tassert(smatch(mprResolvePath(out, mprGetCurrentPath()), "../src/test"));
 #endif
 }
 
@@ -316,14 +316,14 @@ static void testResolvePath(MprTestGroup *gp)
 static void testSame(MprTestGroup *gp)
 {
     /* Assumes running in test/utest/api */
-    assert(mprSamePath("testFile", "./testFile"));
+    tassert(mprSamePath("testFile", "./testFile"));
 #if AVOID
     /*
         This forces the tests to be run in a specific directory
      */
-    assert(mprSamePath("testFile", "../test/api/testFile"));
-    assert(mprSamePath(mprGetAbsPath("testFile"), "../test/api/testFile"));
-    assert(mprSamePath("testFile", mprGetAbsPath("../test/api/testFile")));
+    tassert(mprSamePath("testFile", "../test/api/testFile"));
+    tassert(mprSamePath(mprGetAbsPath("testFile"), "../test/api/testFile"));
+    tassert(mprSamePath("testFile", mprGetAbsPath("../test/api/testFile")));
 #endif
 }
 
@@ -333,9 +333,9 @@ static void testTemp(MprTestGroup *gp)
     char    *path;
 
     path = mprGetTempPath(NULL);
-    assert(path && *path);
-    assert(mprIsPathAbs(path));
-    assert(mprPathExists(path, F_OK));
+    tassert(path && *path);
+    tassert(mprIsPathAbs(path));
+    tassert(mprPathExists(path, F_OK));
     mprDeletePath(path);
 }
 
@@ -345,44 +345,44 @@ static void testTransform(MprTestGroup *gp)
     char    *path;
 
     path = mprTransformPath("/", MPR_PATH_ABS);
-    assert(mprIsPathAbs(path));
+    tassert(mprIsPathAbs(path));
 
     path = mprTransformPath("/", MPR_PATH_REL);
-    assert(mprIsPathRel(path));
-    assert(path[0] == '.');
+    tassert(mprIsPathRel(path));
+    tassert(path[0] == '.');
 
     path = mprTransformPath("/", 0);
-    assert(strcmp(path, "/") == 0);
+    tassert(strcmp(path, "/") == 0);
 
     path = mprTransformPath("/", MPR_PATH_ABS);
-    assure(mprIsPathAbs(path));
+    tassert(mprIsPathAbs(path));
 
 #if BIT_WIN_LIKE || CYGWIN
     /* Test MapSeparators */
     path = sclone("\\a\\b\\c\\d");
     mprMapSeparators(path, '/');
-    assert(*path == '/');
-    assert(strchr(path, '\\') == 0);
+    tassert(*path == '/');
+    tassert(strchr(path, '\\') == 0);
 
     /* Test PortablePath */
     path = sclone("\\a\\b\\c\\d");
     path = mprGetPortablePath(path);
-    assure(*path == '/');
-    assert(strchr(path, '\\') == 0);
-    assert(mprIsPathAbs(path));
+    tassert(*path == '/');
+    tassert(strchr(path, '\\') == 0);
+    tassert(mprIsPathAbs(path));
 #endif
 
 #if CYGWIN
     path = mprGetAbsPath("c:/a/b");
-    assert(smatch(path, "/cygdrive/c/a/b"));
+    tassert(smatch(path, "/cygdrive/c/a/b"));
     path = mprGetAbsPath("/a/b");
-    assert(smatch(path, "/a/b"));
+    tassert(smatch(path, "/a/b"));
     path = mprGetAbsPath("c:/cygwin/a/b");
-    assert(smatch(path, "/a/b"));
+    tassert(smatch(path, "/a/b"));
     path = mprGetWinPath("c:/a/b");
-    assert(smatch(path, "C:\\a\\b"));
+    tassert(smatch(path, "C:\\a\\b"));
     path = mprGetWinPath("/cygdrive/c/a/b");
-    assert(smatch(path, "C:\\a\\b"));
+    tassert(smatch(path, "C:\\a\\b"));
 #endif
 }
 
@@ -417,7 +417,7 @@ MprTestDef testPath = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

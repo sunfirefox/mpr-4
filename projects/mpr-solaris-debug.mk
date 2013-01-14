@@ -9,7 +9,7 @@ LD       ?= /usr/bin/ld
 PROFILE  ?= debug
 CONFIG   ?= $(OS)-$(ARCH)-$(PROFILE)
 
-CFLAGS   += -fPIC   -w
+CFLAGS   += -fPIC  -w
 DFLAGS   += -D_REENTRANT -DPIC 
 IFLAGS   += -I$(CONFIG)/inc
 LDFLAGS  += '-g'
@@ -24,6 +24,7 @@ CFLAGS          += $(CFLAGS-$(PROFILE))
 LDFLAGS         += $(LDFLAGS-$(PROFILE))
 
 all: prep \
+        $(CONFIG)/bin/ca.crt \
         $(CONFIG)/bin/benchMpr \
         $(CONFIG)/bin/runProgram \
         $(CONFIG)/bin/testMpr \
@@ -39,12 +40,14 @@ prep:
 	@if [ "$(CONFIG)" = "" ] ; then echo WARNING: CONFIG not set ; exit 255 ; fi
 	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc $(CONFIG)/obj $(CONFIG)/lib $(CONFIG)/bin ; true
 	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/mpr-$(OS)-$(PROFILE)-bit.h $(CONFIG)/inc/bit.h ; true
+	@[ ! -f $(CONFIG)/inc/bitos.h ] && cp src/bitos.h $(CONFIG)/inc/bitos.h ; true
 	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-$(OS)-$(PROFILE)-bit.h >/dev/null ; then\
 		echo cp projects/mpr-$(OS)-$(PROFILE)-bit.h $(CONFIG)/inc/bit.h  ; \
 		cp projects/mpr-$(OS)-$(PROFILE)-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
 
 clean:
+	rm -rf $(CONFIG)/bin/ca.crt
 	rm -rf $(CONFIG)/bin/benchMpr
 	rm -rf $(CONFIG)/bin/runProgram
 	rm -rf $(CONFIG)/bin/testMpr
@@ -88,7 +91,7 @@ clean:
 	rm -rf $(CONFIG)/obj/file.o
 	rm -rf $(CONFIG)/obj/fs.o
 	rm -rf $(CONFIG)/obj/hash.o
-	rm -rf $(CONFIG)/obj/jSON.o
+	rm -rf $(CONFIG)/obj/json.o
 	rm -rf $(CONFIG)/obj/kqueue.o
 	rm -rf $(CONFIG)/obj/list.o
 	rm -rf $(CONFIG)/obj/lock.o
@@ -118,6 +121,7 @@ clean:
 	rm -rf $(CONFIG)/obj/xml.o
 	rm -rf $(CONFIG)/obj/est.o
 	rm -rf $(CONFIG)/obj/matrixssl.o
+	rm -rf $(CONFIG)/obj/mocana.o
 	rm -rf $(CONFIG)/obj/openssl.o
 	rm -rf $(CONFIG)/obj/ssl.o
 	rm -rf $(CONFIG)/obj/manager.o
@@ -126,6 +130,10 @@ clean:
 
 clobber: clean
 	rm -fr ./$(CONFIG)
+
+$(CONFIG)/bin/ca.crt: 
+	rm -fr $(CONFIG)/bin/ca.crt
+	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
 
 $(CONFIG)/inc/bitos.h:  \
         $(CONFIG)/inc/bit.h
@@ -228,11 +236,11 @@ $(CONFIG)/obj/hash.o: \
         $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/hash.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/hash.c
 
-$(CONFIG)/obj/jSON.o: \
-        src/jSON.c \
+$(CONFIG)/obj/json.o: \
+        src/json.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/jSON.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/jSON.c
+	$(CC) -c -o $(CONFIG)/obj/json.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/json.c
 
 $(CONFIG)/obj/kqueue.o: \
         src/kqueue.c \
@@ -414,7 +422,7 @@ $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/obj/file.o \
         $(CONFIG)/obj/fs.o \
         $(CONFIG)/obj/hash.o \
-        $(CONFIG)/obj/jSON.o \
+        $(CONFIG)/obj/json.o \
         $(CONFIG)/obj/kqueue.o \
         $(CONFIG)/obj/list.o \
         $(CONFIG)/obj/lock.o \
@@ -442,7 +450,7 @@ $(CONFIG)/bin/libmpr.so:  \
         $(CONFIG)/obj/win.o \
         $(CONFIG)/obj/wince.o \
         $(CONFIG)/obj/xml.o
-	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/jSON.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libmpr.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/json.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS)
 
 $(CONFIG)/obj/benchMpr.o: \
         test/benchMpr.c \
@@ -483,6 +491,12 @@ $(CONFIG)/obj/matrixssl.o: \
         $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/matrixssl.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/matrixssl.c
 
+$(CONFIG)/obj/mocana.o: \
+        src/ssl/mocana.c \
+        $(CONFIG)/inc/bit.h \
+        $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/mocana.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/ssl/mocana.c
+
 $(CONFIG)/obj/openssl.o: \
         src/ssl/openssl.c \
         $(CONFIG)/inc/bit.h \
@@ -499,9 +513,10 @@ $(CONFIG)/bin/libmprssl.so:  \
         $(CONFIG)/bin/libmpr.so \
         $(CONFIG)/obj/est.o \
         $(CONFIG)/obj/matrixssl.o \
+        $(CONFIG)/obj/mocana.o \
         $(CONFIG)/obj/openssl.o \
         $(CONFIG)/obj/ssl.o
-	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o -lmpr $(LIBS)
+	$(CC) -shared -o $(CONFIG)/bin/libmprssl.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/mocana.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/testArgv.o: \
         test/testArgv.c \

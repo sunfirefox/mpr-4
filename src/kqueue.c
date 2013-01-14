@@ -77,7 +77,7 @@ static int growEvents(MprWaitService *ws)
     ws->interest = mprRealloc(ws->interest, sizeof(struct kevent) * ws->interestMax);
     ws->events = mprRealloc(ws->events, sizeof(struct kevent) * ws->eventsMax);
     if (ws->interest == 0 || ws->events == 0) {
-        assure(!MPR_ERR_MEMORY);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     return 0;
@@ -89,13 +89,13 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
     struct kevent   *kp, *start;
     int             fd;
 
-    assure(wp);
+    assert(wp);
     fd = wp->fd;
 
     lock(ws);
-    mprLog(7, "mprNotifyOn: fd %d, mask %x, old mask %x", wp->fd, mask, wp->desiredMask);
+    mprTrace(7, "mprNotifyOn: fd %d, mask %x, old mask %x", wp->fd, mask, wp->desiredMask);
     if (wp->desiredMask != mask) {
-        assure(fd >= 0);
+        assert(fd >= 0);
         while ((ws->interestCount + 4) >= ws->interestMax) {
             growEvents(ws);
         }
@@ -120,11 +120,11 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (fd >= ws->handlerMax) {
             ws->handlerMax = fd + 32;
             if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                assure(!MPR_ERR_MEMORY);
+                assert(!MPR_ERR_MEMORY);
                 return MPR_ERR_MEMORY;
             }
         }
-        assure(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
+        assert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
         if (wp->event) {
             mprRemoveEvent(wp->event);
@@ -165,7 +165,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     rc = kevent(kq, interest, interestCount, events, 1, &ts);
     close(kq);
     if (rc < 0) {
-        mprLog(7, "Kevent returned %d, errno %d", rc, errno);
+        mprTrace(7, "Kevent returned %d, errno %d", rc, errno);
     } else if (rc > 0) {
         if (rc > 0) {
             if (events[0].filter & EVFILT_READ) {
@@ -188,7 +188,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     struct timespec ts;
     int             rc;
 
-    assure(timeout > 0);
+    assert(timeout > 0);
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -212,14 +212,14 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     ws->interestCount = 1;
     unlock(ws);
 
-    LOG(8, "kevent sleep for %d", timeout);
+    mprTrace(8, "kevent sleep for %d", timeout);
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = kevent(ws->kq, ws->stableInterest, ws->stableInterestCount, ws->events, ws->eventsMax, &ts);
     mprResetYield();
-    LOG(8, "kevent wakes rc %d", rc);
+    mprTrace(8, "kevent wakes rc %d", rc);
 
     if (rc < 0) {
-        mprLog(7, "Kevent returned %d, errno %d", rc, mprGetOsError());
+        mprTrace(7, "Kevent returned %d, errno %d", rc, mprGetOsError());
     } else if (rc > 0) {
         serviceIO(ws, rc);
     }
@@ -238,7 +238,7 @@ static void serviceIO(MprWaitService *ws, int count)
     for (i = 0; i < count; i++) {
         kev = &ws->events[i];
         fd = (int) kev->ident;
-        assure(fd < ws->handlerMax);
+        assert(fd < ws->handlerMax);
         if ((wp = ws->handlerMap[fd]) == 0) {
             if (kev->filter == EVFILT_READ && fd == ws->breakPipe[MPR_READ_PIPE]) {
                 (void) read(fd, buf, sizeof(buf));
@@ -253,7 +253,7 @@ static void serviceIO(MprWaitService *ws, int count)
                 mprNotifyOn(ws, wp, 0);
                 wp->desiredMask = 0;
                 mprNotifyOn(ws, wp, mask);
-                mprLog(7, "kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
+                mprTrace(7, "kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
 
             } else if (err == EBADF) {
                 /* File descriptor was closed */
@@ -261,7 +261,7 @@ static void serviceIO(MprWaitService *ws, int count)
                 mprNotifyOn(ws, wp, 0);
                 wp->desiredMask = 0;
                 mprNotifyOn(ws, wp, mask);
-                mprLog(7, "kqueue: invalid file descriptor %d, fd %d", wp->fd);
+                mprTrace(7, "kqueue: invalid file descriptor %d, fd %d", wp->fd);
             }
             continue;
         }
@@ -273,9 +273,9 @@ static void serviceIO(MprWaitService *ws, int count)
             mask |= MPR_WRITABLE;
         }
         wp->presentMask = mask & wp->desiredMask;
-        LOG(7, "Got I/O event mask %x", wp->presentMask);
+        mprTrace(7, "Got I/O event mask %x", wp->presentMask);
         if (wp->presentMask) {
-            LOG(7, "ServiceIO for wp %p", wp);
+            mprTrace(7, "ServiceIO for wp %p", wp);
             /* Suppress further events while this event is being serviced. User must re-enable */
             mprNotifyOn(ws, wp, 0);            
             mprQueueIOEvent(wp);
@@ -307,7 +307,7 @@ PUBLIC void mprWakeNotifier()
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

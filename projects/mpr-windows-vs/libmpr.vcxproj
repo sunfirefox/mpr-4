@@ -115,7 +115,7 @@
     <ClCompile Include="..\..\src\file.c" />
     <ClCompile Include="..\..\src\fs.c" />
     <ClCompile Include="..\..\src\hash.c" />
-    <ClCompile Include="..\..\src\jSON.c" />
+    <ClCompile Include="..\..\src\json.c" />
     <ClCompile Include="..\..\src\kqueue.c" />
     <ClCompile Include="..\..\src\list.c" />
     <ClCompile Include="..\..\src\lock.c" />

@@ -66,7 +66,7 @@ PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path)
 
 PUBLIC void mprAddFileSystem(MprFileSystem *fs)
 {
-    assure(fs);
+    assert(fs);
     
     /* NOTE: this does not currently add a file system. It merely replaces the existing file system. */
     MPR->fileSystem = fs;
@@ -86,7 +86,7 @@ PUBLIC cchar *mprGetPathNewline(cchar *path)
 {
     MprFileSystem   *fs;
 
-    assure(path);
+    assert(path);
 
     fs = mprLookupFileSystem(path);
     return fs->newline;
@@ -97,7 +97,7 @@ PUBLIC cchar *mprGetPathSeparators(cchar *path)
 {
     MprFileSystem   *fs;
 
-    assure(path);
+    assert(path);
 
     fs = mprLookupFileSystem(path);
     return fs->separators;
@@ -108,8 +108,8 @@ PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 {
     MprFileSystem   *fs;
 
-    assure(path);
-    assure(separators);
+    assert(path);
+    assert(separators);
     
     fs = mprLookupFileSystem(path);
     fs->separators = sclone(separators);
@@ -120,8 +120,8 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 {
     MprFileSystem   *fs;
     
-    assure(path);
-    assure(newline);
+    assert(path);
+    assert(newline);
     
     fs = mprLookupFileSystem(path);
     fs->newline = sclone(newline);
@@ -131,7 +131,7 @@ PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

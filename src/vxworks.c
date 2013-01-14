@@ -55,7 +55,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     void            *handle;
     int             fd;
 
-    assure(mp);
+    assert(mp);
     fn = 0;
     handle = 0;
 
@@ -115,7 +115,7 @@ PUBLIC void mprNap(MprTicks milliseconds)
     struct timespec timeout;
     int             rc;
 
-    assure(milliseconds >= 0);
+    assert(milliseconds >= 0);
     timeout.tv_sec = milliseconds / 1000;
     timeout.tv_nsec = (milliseconds % 1000) * 1000000;
     do {
@@ -189,7 +189,7 @@ double  __mpr_floating_point_resolution(double a, double b, int64 c, int64 d, ui
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

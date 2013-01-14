@@ -5,15 +5,10 @@
     configure or define variables in your Makefile to override these default values.
  */
 
+
 /* Settings */
-#ifndef BIT_ASSERT
-    #define BIT_ASSERT 1
-#endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
-#endif
-#ifndef BIT_CIPHERS
-    #define BIT_CIPHERS "HIGH:MEDIUM"
 #endif
 #ifndef BIT_COMPANY
     #define BIT_COMPANY "Embedthis"
@@ -21,20 +16,17 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
-#ifndef BIT_FLOAT
-    #define BIT_FLOAT 1
-#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
-    #define BIT_HAS_DOUBLE_BRACES 1
+    #define BIT_HAS_DOUBLE_BRACES 0
 #endif
 #ifndef BIT_HAS_DYN_LOAD
     #define BIT_HAS_DYN_LOAD 1
 #endif
 #ifndef BIT_HAS_LIB_EDIT
-    #define BIT_HAS_LIB_EDIT 1
+    #define BIT_HAS_LIB_EDIT 0
 #endif
 #ifndef BIT_HAS_LIB_RT
-    #define BIT_HAS_LIB_RT 0
+    #define BIT_HAS_LIB_RT 1
 #endif
 #ifndef BIT_HAS_MMU
     #define BIT_HAS_MMU 1
@@ -43,7 +35,7 @@
     #define BIT_HAS_MTUNE 1
 #endif
 #ifndef BIT_HAS_PAM
-    #define BIT_HAS_PAM 1
+    #define BIT_HAS_PAM 0
 #endif
 #ifndef BIT_HAS_STACK_PROTECTOR
     #define BIT_HAS_STACK_PROTECTOR 1
@@ -52,16 +44,22 @@
     #define BIT_HAS_SYNC 1
 #endif
 #ifndef BIT_HAS_SYNC_CAS
-    #define BIT_HAS_SYNC_CAS 1
+    #define BIT_HAS_SYNC_CAS 0
 #endif
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
-#ifndef BIT_MANAGER
-    #define BIT_MANAGER "manager"
+#ifndef BIT_MPR_LOGGING
+    #define BIT_MPR_LOGGING 1
+#endif
+#ifndef BIT_MPR_MANAGER
+    #define BIT_MPR_MANAGER "manager"
+#endif
+#ifndef BIT_MPR_TRACING
+    #define BIT_MPR_TRACING 1
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "doxygen,man,man2html,md5,openssl,ssl,utest"
+    #define BIT_OPTIONAL "doxygen,dsi,ejs,est,man,man2html,md5,utest"
 #endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "mpr"
@@ -79,13 +77,13 @@
     #define BIT_VERSION "4.3.0"
 #endif
 #ifndef BIT_WARN64TO32
-    #define BIT_WARN64TO32 1
+    #define BIT_WARN64TO32 0
 #endif
 #ifndef BIT_WARN_UNUSED
-    #define BIT_WARN_UNUSED 0
+    #define BIT_WARN_UNUSED 1
 #endif
 #ifndef BIT_WITHOUT_ALL
-    #define BIT_WITHOUT_ALL "doxygen,dsi,est,man,man2html,pmaker,ssl,matrixssl,openssl"
+    #define BIT_WITHOUT_ALL "doxygen,dsi,est,man,man2html,pmaker"
 #endif
 
 /* Prefixes */
@@ -169,6 +167,9 @@
 #ifndef BIT_PACK_DSI
     #define BIT_PACK_DSI 0
 #endif
+#ifndef BIT_PACK_EJS
+    #define BIT_PACK_EJS 1
+#endif
 #ifndef BIT_PACK_EST
     #define BIT_PACK_EST 0
 #endif
@@ -190,20 +191,23 @@
 #ifndef BIT_PACK_MD5
     #define BIT_PACK_MD5 1
 #endif
+#ifndef BIT_PACK_MOCANA
+    #define BIT_PACK_MOCANA 0
+#endif
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 0
 #endif
 #ifndef BIT_PACK_PMAKER
     #define BIT_PACK_PMAKER 0
 #endif
-#ifndef BIT_PACK_SSL
-    #define BIT_PACK_SSL 0
-#endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
 #endif
 #ifndef BIT_PACK_COMPILER_PATH
     #define BIT_PACK_COMPILER_PATH "/usr/bin/gcc"
+#endif
+#ifndef BIT_PACK_EJS_PATH
+    #define BIT_PACK_EJS_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/ejs"
 #endif
 #ifndef BIT_PACK_LIB_PATH
     #define BIT_PACK_LIB_PATH "/usr/bin/ar"

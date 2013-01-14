@@ -52,7 +52,7 @@ PUBLIC int mprStartModuleService()
     int                 next;
 
     ms = MPR->moduleService;
-    assure(ms);
+    assert(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         if (mprStartModule(mp) < 0) {
@@ -73,7 +73,7 @@ PUBLIC void mprStopModuleService()
     int                 next;
 
     ms = MPR->moduleService;
-    assure(ms);
+    assert(ms);
     mprLock(ms->mutex);
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
         mprStopModule(mp);
@@ -89,7 +89,7 @@ PUBLIC MprModule *mprCreateModule(cchar *name, cchar *path, cchar *entry, void *
     int                 index;
 
     ms = MPR->moduleService;
-    assure(ms);
+    assert(ms);
 
     if ((mp = mprAllocObj(MprModule, manageModule)) == 0) {
         return 0;
@@ -122,7 +122,7 @@ static void manageModule(MprModule *mp, int flags)
 
 PUBLIC int mprStartModule(MprModule *mp)
 {
-    assure(mp);
+    assert(mp);
 
     if (mp->start && !(mp->flags & MPR_MODULE_STARTED)) {
         if (mp->start(mp) < 0) {
@@ -136,7 +136,7 @@ PUBLIC int mprStartModule(MprModule *mp)
 
 PUBLIC int mprStopModule(MprModule *mp)
 {
-    assure(mp);
+    assert(mp);
 
     if (mp->stop && (mp->flags & MPR_MODULE_STARTED) && !(mp->flags & MPR_MODULE_STOPPED)) {
         if (mp->stop(mp) < 0) {
@@ -157,13 +157,13 @@ PUBLIC MprModule *mprLookupModule(cchar *name)
     MprModule           *mp;
     int                 next;
 
-    assure(name && name);
+    assert(name && name);
 
     ms = MPR->moduleService;
-    assure(ms);
+    assert(ms);
 
     for (next = 0; (mp = mprGetNextItem(ms->modules, &next)) != 0; ) {
-        assure(mp->name);
+        assert(mp->name);
         if (mp && strcmp(mp->name, name) == 0) {
             return mp;
         }
@@ -185,7 +185,7 @@ PUBLIC void *mprLookupModuleData(cchar *name)
 
 PUBLIC void mprSetModuleTimeout(MprModule *module, MprTicks timeout)
 {
-    assure(module);
+    assert(module);
     if (module) {
         module->timeout = timeout;
     }
@@ -194,7 +194,7 @@ PUBLIC void mprSetModuleTimeout(MprModule *module, MprTicks timeout)
 
 PUBLIC void mprSetModuleFinalizer(MprModule *module, MprModuleProc stop)
 {
-    assure(module);
+    assert(module);
     if (module) {
         module->stop = stop;
     }
@@ -226,7 +226,7 @@ PUBLIC cchar *mprGetModuleSearchPath()
 PUBLIC int mprLoadModule(MprModule *mp)
 {
 #if BIT_HAS_DYN_LOAD
-    assure(mp);
+    assert(mp);
 
     if (mprLoadNativeModule(mp) < 0) {
         return MPR_ERR_CANT_READ;
@@ -242,7 +242,7 @@ PUBLIC int mprLoadModule(MprModule *mp)
 
 PUBLIC int mprUnloadModule(MprModule *mp)
 {
-    mprLog(6, "Unloading native module %s from %s", mp->name, mp->path);
+    mprTrace(6, "Unloading native module %s from %s", mp->name, mp->path);
     if (mprStopModule(mp) < 0) {
         return MPR_ERR_NOT_READY;
     }
@@ -268,16 +268,15 @@ static char *probe(cchar *filename)
 {
     char    *path;
 
-    assure(filename && *filename);
+    assert(filename && *filename);
 
-    mprLog(7, "Probe for native module %s", filename);
+    mprTrace(7, "Probe for native module %s", filename);
     if (mprPathExists(filename, R_OK)) {
         return sclone(filename);
     }
-
     if (strstr(filename, BIT_SHOBJ) == 0) {
         path = sjoin(filename, BIT_SHOBJ, NULL);
-        mprLog(7, "Probe for native module %s", path);
+        mprTrace(7, "Probe for native module %s", path);
         if (mprPathExists(path, R_OK)) {
             return path;
         }
@@ -301,7 +300,7 @@ PUBLIC char *mprSearchForModule(cchar *filename)
         Search for the path directly
      */
     if ((path = probe(filename)) != 0) {
-        mprLog(6, "Found native module %s at %s", filename, path);
+        mprTrace(6, "Found native module %s at %s", filename, path);
         return path;
     }
 
@@ -314,7 +313,7 @@ PUBLIC char *mprSearchForModule(cchar *filename)
     while (dir && *dir) {
         f = mprJoinPath(dir, filename);
         if ((path = probe(f)) != 0) {
-            mprLog(6, "Found native module %s at %s", filename, path);
+            mprTrace(6, "Found native module %s at %s", filename, path);
             return path;
         }
         dir = stok(0, MPR_SEARCH_SEP, &tok);
@@ -327,7 +326,7 @@ PUBLIC char *mprSearchForModule(cchar *filename)
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
