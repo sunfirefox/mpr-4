@@ -48,9 +48,8 @@ PUBLIC void mprCreateLogService()
 PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
 {
     MprFile     *file;
-    MprPath     info;
     char        *levelSpec, *path;
-    int         level, mode;
+    int         level;
 
     level = -1;
     if (logSpec == 0) {
@@ -66,7 +65,10 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
             file = MPR->stdOutput;
         } else if (strcmp(path, "stderr") == 0) {
             file = MPR->stdError;
+#if !BIT_ROM
         } else {
+            MprPath     info;
+            int         mode;
             mode = (MPR->flags & MPR_LOG_APPEND)  ? O_APPEND : O_TRUNC;
             mode |= O_CREAT | O_WRONLY | O_TEXT;
             if (MPR->logBackup > 0) {
@@ -79,6 +81,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
                 mprError("Cannot open log file %s", path);
                 return -1;
             }
+#endif
         }
         if (level >= 0) {
             mprSetLogLevel(level);
@@ -315,32 +318,36 @@ static void logOutput(int flags, int level, cchar *msg)
 static void defaultLogHandler(int flags, int level, cchar *msg)
 {
     MprFile     *file;
-    MprPath     info;
     char        *prefix, buf[BIT_MAX_LOGLINE], *tag;
-    int         mode;
-    static int  check = 0;
 
     if ((file = MPR->logFile) == 0) {
         return;
     }
     prefix = MPR->name;
 
-    if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
-        mprGetPathInfo(MPR->logPath, &info);
-        if (info.valid && info.size > MPR->logSize) {
-            lock(MPR);
-            mprSetLogFile(0);
-            mprBackupLog(MPR->logPath, MPR->logBackup);
-            mode = O_CREAT | O_WRONLY | O_TEXT;
-            if ((file = mprOpenFile(MPR->logPath, mode, 0664)) == 0) {
-                mprError("Cannot open log file %s", MPR->logPath);
+#if !BIT_ROM
+    {
+        static int  check = 0;
+        MprPath     info;
+        int         mode;
+        if (MPR->logBackup > 0 && MPR->logSize && (check++ % 1000) == 0) {
+            mprGetPathInfo(MPR->logPath, &info);
+            if (info.valid && info.size > MPR->logSize) {
+                lock(MPR);
+                mprSetLogFile(0);
+                mprBackupLog(MPR->logPath, MPR->logBackup);
+                mode = O_CREAT | O_WRONLY | O_TEXT;
+                if ((file = mprOpenFile(MPR->logPath, mode, 0664)) == 0) {
+                    mprError("Cannot open log file %s", MPR->logPath);
+                    unlock(MPR);
+                    return;
+                }
+                mprSetLogFile(file);
                 unlock(MPR);
-                return;
             }
-            mprSetLogFile(file);
-            unlock(MPR);
         }
     }
+#endif
     while (*msg == '\n') {
         mprWriteFile(file, "\n", 1);
         msg++;

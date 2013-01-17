@@ -694,7 +694,7 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
  */
 PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTicks    expires, remaining;
+    MprTicks    expires, remaining, delay;
 
     assert(cmd);
 
@@ -719,10 +719,11 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
         }
 #if BIT_WIN_LIKE && !WINCE
         mprPollWinCmd(cmd, remaining);
-        mprWaitForEvent(cmd->dispatcher, 10);
+        delay = 10;
 #else
-        mprWaitForEvent(cmd->dispatcher, remaining);
+        delay = (cmd->eofCount >= cmd->requiredEof) ? 10 : remaining;
 #endif
+        mprWaitForEvent(cmd->dispatcher, delay);
         remaining = (expires - mprGetTicks());
     }
     mprRemoveRoot(cmd);

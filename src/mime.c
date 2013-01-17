@@ -76,6 +76,7 @@ static void manageMimeType(MprMime *mt, int flags);
 PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
 {
     MprHash     *table;
+#if !BIT_ROM
     MprFile     *file;
     char        *buf, *tok, *ext, *type;
     int         line;
@@ -107,7 +108,9 @@ PUBLIC MprHash *mprCreateMimeTypes(cchar *path)
         }
         mprCloseFile(file);
 
-    } else {
+    } else 
+#endif
+    {
         if ((table = mprCreateHash(59, 0)) == 0) {
             return 0;
         }

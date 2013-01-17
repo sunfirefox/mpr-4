@@ -153,13 +153,12 @@ static int getPathInfo(MprRomFileSystem *rfs, cchar *path, MprPath *info)
 
     assert(path && *path);
 
-    info->checked = 1;
-
     if ((ri = (MprRomInode*) lookup(rfs, path)) == 0) {
         return MPR_ERR_CANT_FIND;
     }
     memset(info, 0, sizeof(MprPath));
 
+    info->checked = 1;
     info->valid = 1;
     info->size = ri->size;
     info->mtime = 0;
@@ -242,7 +241,9 @@ PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
         mprMark(fs->cygwin);
 #endif
         mprMark(rfs->fileIndex);
+#if UNUSED
         mprMark(rfs->romInodes);
+#endif
 #endif
     }
 }
