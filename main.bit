@@ -52,6 +52,7 @@ Bit.load({
         },
 
         manager: {
+            enable: 'bit.settings.mpr.manager',
             type: 'exe',
             rule: 'gui',
             depends: [ 'libmpr' ],
@@ -59,6 +60,7 @@ Bit.load({
         },
 
         makerom: {
+            enable: 'bit.settings.rom',
             type: 'exe',
             depends: [ 'libmpr', ],
             sources: ['src/utils/makerom.c'],
