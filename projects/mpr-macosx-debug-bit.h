@@ -16,6 +16,9 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_DISCOVER
+    #define BIT_DISCOVER "doxygen,dsi,ejs,est,man,man2html,md5,utest"
+#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 1
 #endif
@@ -59,13 +62,16 @@
     #define BIT_MPR_TRACING 1
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "doxygen,dsi,ejs,est,man,man2html,md5,utest"
+    #define BIT_OPTIONAL ""
 #endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "mpr"
 #endif
 #ifndef BIT_REQUIRED
     #define BIT_REQUIRED "compiler,lib,link"
+#endif
+#ifndef BIT_SSL
+    #define BIT_SSL 1
 #endif
 #ifndef BIT_SYNC
     #define BIT_SYNC "bitos,est"
@@ -84,6 +90,9 @@
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "doxygen,dsi,est,man,man2html,pmaker"
+#endif
+#ifndef BIT_WITHOUT_DEFAULT
+    #define BIT_WITHOUT_DEFAULT "doxygen,dsi,man,man2html,pmaker"
 #endif
 
 /* Prefixes */
@@ -134,7 +143,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 -without all -configure . -gen sh,make"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64 -without default -configure . -gen sh,make"
 #endif
 #ifndef BIT_MPR_PRODUCT
     #define BIT_MPR_PRODUCT 1
@@ -161,17 +170,20 @@
 #ifndef BIT_PACK_CC
     #define BIT_PACK_CC 1
 #endif
+#ifndef BIT_PACK_DEFAULT
+    #define BIT_PACK_DEFAULT 0
+#endif
 #ifndef BIT_PACK_DOXYGEN
-    #define BIT_PACK_DOXYGEN 0
+    #define BIT_PACK_DOXYGEN 1
 #endif
 #ifndef BIT_PACK_DSI
-    #define BIT_PACK_DSI 0
+    #define BIT_PACK_DSI 1
 #endif
 #ifndef BIT_PACK_EJS
     #define BIT_PACK_EJS 1
 #endif
 #ifndef BIT_PACK_EST
-    #define BIT_PACK_EST 0
+    #define BIT_PACK_EST 1
 #endif
 #ifndef BIT_PACK_LIB
     #define BIT_PACK_LIB 1
@@ -180,10 +192,10 @@
     #define BIT_PACK_LINK 1
 #endif
 #ifndef BIT_PACK_MAN
-    #define BIT_PACK_MAN 0
+    #define BIT_PACK_MAN 1
 #endif
 #ifndef BIT_PACK_MAN2HTML
-    #define BIT_PACK_MAN2HTML 0
+    #define BIT_PACK_MAN2HTML 1
 #endif
 #ifndef BIT_PACK_MATRIXSSL
     #define BIT_PACK_MATRIXSSL 0
@@ -197,23 +209,35 @@
 #ifndef BIT_PACK_OPENSSL
     #define BIT_PACK_OPENSSL 0
 #endif
-#ifndef BIT_PACK_PMAKER
-    #define BIT_PACK_PMAKER 0
-#endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
 #endif
 #ifndef BIT_PACK_COMPILER_PATH
     #define BIT_PACK_COMPILER_PATH "/usr/bin/clang"
 #endif
+#ifndef BIT_PACK_DOXYGEN_PATH
+    #define BIT_PACK_DOXYGEN_PATH "/usr/local/bin/doxygen"
+#endif
+#ifndef BIT_PACK_DSI_PATH
+    #define BIT_PACK_DSI_PATH "/opt/bin/dsi"
+#endif
 #ifndef BIT_PACK_EJS_PATH
     #define BIT_PACK_EJS_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/ejs"
+#endif
+#ifndef BIT_PACK_EST_PATH
+    #define BIT_PACK_EST_PATH "/Users/mob/git/mpr/src/deps/est"
 #endif
 #ifndef BIT_PACK_LIB_PATH
     #define BIT_PACK_LIB_PATH "/usr/bin/ar"
 #endif
 #ifndef BIT_PACK_LINK_PATH
     #define BIT_PACK_LINK_PATH "/usr/bin/ld"
+#endif
+#ifndef BIT_PACK_MAN_PATH
+    #define BIT_PACK_MAN_PATH "/usr/bin/man"
+#endif
+#ifndef BIT_PACK_MAN2HTML_PATH
+    #define BIT_PACK_MAN2HTML_PATH "/opt/bin/man2html"
 #endif
 #ifndef BIT_PACK_MD5_PATH
     #define BIT_PACK_MD5_PATH "/sbin/md5"

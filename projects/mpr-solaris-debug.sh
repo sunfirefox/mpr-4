@@ -184,10 +184,6 @@ ${CC} -c -o ${CONFIG}/obj/manager.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc s
 
 ${CC} -o ${CONFIG}/bin/manager ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/manager.o -lmpr ${LIBS} ${LDFLAGS}
 
-${CC} -c -o ${CONFIG}/obj/makerom.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/makerom.c
-
-${CC} -o ${CONFIG}/bin/makerom ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/makerom.o -lmpr ${LIBS} ${LDFLAGS}
-
 ${CC} -c -o ${CONFIG}/obj/charGen.o -fPIC ${LDFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/charGen.c
 
 ${CC} -o ${CONFIG}/bin/chargen ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/charGen.o -lmpr ${LIBS} ${LDFLAGS}

@@ -188,10 +188,6 @@ cp -r src/deps/est/est.h ${CONFIG}/inc/est.h
 
 "${LD}" -out:${CONFIG}/bin/manager.exe -entry:WinMainCRTStartup -subsystem:Windows ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/manager.obj libmpr.lib ${LIBS}
 
-"${CC}" -c -Fo${CONFIG}/obj/makerom.obj -Fd${CONFIG}/obj/makerom.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/makerom.c
-
-"${LD}" -out:${CONFIG}/bin/makerom.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/makerom.obj libmpr.lib ${LIBS}
-
 "${CC}" -c -Fo${CONFIG}/obj/charGen.obj -Fd${CONFIG}/obj/charGen.pdb ${CFLAGS} ${DFLAGS} -I${CONFIG}/inc src/utils/charGen.c
 
 "${LD}" -out:${CONFIG}/bin/chargen.exe -entry:mainCRTStartup -subsystem:console ${LDFLAGS} ${LIBPATHS} ${CONFIG}/obj/charGen.obj libmpr.lib ${LIBS}

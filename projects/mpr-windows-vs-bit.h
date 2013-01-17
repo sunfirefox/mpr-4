@@ -16,6 +16,9 @@
 #ifndef BIT_DEPTH
     #define BIT_DEPTH 1
 #endif
+#ifndef BIT_DISCOVER
+    #define BIT_DISCOVER "doxygen,dsi,ejs,est,man,man2html,md5,utest"
+#endif
 #ifndef BIT_HAS_DYN_LOAD
     #define BIT_HAS_DYN_LOAD 1
 #endif
@@ -41,7 +44,7 @@
     #define BIT_MPR_TRACING 1
 #endif
 #ifndef BIT_OPTIONAL
-    #define BIT_OPTIONAL "doxygen,dsi,ejs,est,man,man2html,md5,utest"
+    #define BIT_OPTIONAL ""
 #endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "mpr"
@@ -60,6 +63,9 @@
 #endif
 #ifndef BIT_WITHOUT_ALL
     #define BIT_WITHOUT_ALL "doxygen,dsi,est,man,man2html,pmaker"
+#endif
+#ifndef BIT_WITHOUT_MINIMAL
+    #define BIT_WITHOUT_MINIMAL "doxygen,dsi,man,man2html,pmaker"
 #endif
 
 /* Prefixes */
