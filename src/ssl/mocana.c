@@ -353,7 +353,7 @@ static void traceCert(MprSocket *sp)
     } else {
         mprRawLog(4, "%s", x509parse_cert_inf("", ssl->peer_cert));
     }
-    sp->flags |= MPR_SOCKET_TRACED;
+    sp->flags |= MPR_SOCKET_CHECKED;
 }
 #endif
 

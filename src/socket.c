@@ -49,6 +49,7 @@ PUBLIC MprSocketService *mprCreateSocketService()
 {
     MprSocketService    *ss;
     char                hostName[BIT_MAX_IP], serverName[BIT_MAX_IP], domainName[BIT_MAX_IP], *dp;
+    int                 fd;
 
     if ((ss = mprAllocObj(MprSocketService, manageSocketService)) == 0) {
         return 0;
@@ -82,8 +83,11 @@ PUBLIC MprSocketService *mprCreateSocketService()
     mprSetDomainName(domainName);
     mprSetHostName(hostName);
     ss->secureSockets = mprCreateList(0, 0);
-    ss->hasIPv6 = socket(AF_INET6, SOCK_STREAM, 0) != 0;
-    if (!ss->hasIPv6) {
+
+    if ((fd = socket(AF_INET6, SOCK_STREAM, 0)) != -1) {
+        ss->hasIPv6 = 1;
+        closesocket(fd);
+    } else {
         mprInfo("System has only IPv4 support");
     }
     return ss;
@@ -1680,7 +1684,7 @@ PUBLIC MprSsl *mprCreateSsl(int server)
         ssl->verifyPeer = 0;
         ssl->verifyIssuer = 0;
     } else {
-        ssl->verifyDepth = MPR->verifySsl;
+        ssl->verifyDepth = 10;
         ssl->verifyPeer = MPR->verifySsl;
         ssl->verifyIssuer = MPR->verifySsl;
         ssl->caFile = mprJoinPath(mprGetAppDir(), MPR_CA_CERT);
