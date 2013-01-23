@@ -6412,7 +6412,7 @@ typedef struct MprSocketProvider {
     void    (*closeSocket)(struct MprSocket *socket, bool gracefully);
     void    (*disconnectSocket)(struct MprSocket *socket);
     ssize   (*flushSocket)(struct MprSocket *socket);
-    int     (*listenSocket)(struct MprSocket *socket, cchar *host, int port, int flags);
+    Socket  (*listenSocket)(struct MprSocket *socket, cchar *host, int port, int flags);
     ssize   (*readSocket)(struct MprSocket *socket, void *buf, ssize len);
     ssize   (*writeSocket)(struct MprSocket *socket, cvoid *buf, ssize len);
     int     (*upgradeSocket)(struct MprSocket *socket, struct MprSsl *ssl, cchar *peerName);
@@ -6538,7 +6538,7 @@ typedef struct MprSocket {
     char            *errorMsg;          /**< Connection related error messages */
     int             acceptPort;         /**< Server port doing the listening */
     int             port;               /**< Port to listen or connect on */
-    int             fd;                 /**< Actual socket file handle */
+    Socket          fd;                 /**< Actual socket file handle */
     int             flags;              /**< Current state flags */
     MprSocketProvider *provider;        /**< Socket implementation provider */
     struct MprSocket *listenSock;       /**< Listening socket */
@@ -6801,7 +6801,7 @@ PUBLIC bool mprIsSocketEof(MprSocket *sp);
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags);
+PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags);
 
 /**
     Parse an socket address IP address. 

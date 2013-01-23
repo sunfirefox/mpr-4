@@ -49,7 +49,7 @@ PUBLIC MprSocketService *mprCreateSocketService()
 {
     MprSocketService    *ss;
     char                hostName[BIT_MAX_IP], serverName[BIT_MAX_IP], domainName[BIT_MAX_IP], *dp;
-    int                 fd;
+    Socket              fd;
 
     if ((ss = mprAllocObj(MprSocketService, manageSocketService)) == 0) {
         return 0;
@@ -252,7 +252,7 @@ PUBLIC bool mprHasIPv6()
 /*  
     Open a server connection
  */
-PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
+PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 {
     if (sp->provider == 0) {
         return MPR_ERR_NOT_INITIALIZED;
@@ -261,7 +261,7 @@ PUBLIC int mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 }
 
 
-static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
+static Socket listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 {
     struct sockaddr     *addr;
     Socklen             addrlen;
@@ -293,7 +293,7 @@ static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         return MPR_ERR_CANT_FIND;
     }
     sp->fd = (int) socket(family, datagram ? SOCK_DGRAM: SOCK_STREAM, protocol);
-    if (sp->fd < 0) {
+    if (sp->fd == SOCKET_ERROR) {
         unlock(sp);
         return MPR_ERR_CANT_OPEN;
     }
@@ -674,7 +674,8 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     struct sockaddr             *addr, *saddr;
     char                        ip[BIT_MAX_IP], acceptIp[BIT_MAX_IP];
     Socklen                     addrlen, saddrlen;
-    int                         fd, port, acceptPort;
+    Socket                      fd;
+    int                         port, acceptPort;
 
     ss = MPR->socketService;
     addr = (struct sockaddr*) &addrStorage;
@@ -683,11 +684,11 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     if (listen->flags & MPR_SOCKET_BLOCK) {
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     }
-    fd = (int) accept(listen->fd, addr, &addrlen);
+    fd = accept(listen->fd, addr, &addrlen);
     if (listen->flags & MPR_SOCKET_BLOCK) {
         mprResetYield();
     }
-    if (fd < 0) {
+    if (fd == SOCKET_ERROR) {
         if (mprGetError() != EAGAIN) {
             mprTrace(6, "socket: accept failed, errno %d", mprGetOsError());
         }
