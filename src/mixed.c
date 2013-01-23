@@ -144,9 +144,6 @@ PUBLIC wchar *mjoin(wchar *str, ...)
 }
 
 
-/*
-    MOB - comment required. What does this do?
- */
 PUBLIC wchar *mjoinv(wchar *buf, va_list args)
 {
     va_list     ap;

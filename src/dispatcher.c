@@ -476,10 +476,6 @@ PUBLIC void mprRelayEvent(MprDispatcher *dispatcher, void *proc, void *data, Mpr
     if (event) {
         event->timestamp = dispatcher->service->now;
     }
-    //  MOB - remove
-    assert(dispatcher->flags & MPR_DISPATCHER_ENABLED);
-    dispatcher->flags |= MPR_DISPATCHER_ENABLED;
-
     dispatcher->owner = mprGetCurrentOsThread();
     makeRunnable(dispatcher);
     ((MprEventProc) proc)(data, event);
@@ -516,8 +512,6 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
     lock(es);
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
 
-    //  MOB - remove
-    assert((dispatcher->flags & MPR_DISPATCHER_ENABLED));
     if (isRunning(dispatcher) || !(dispatcher->flags & MPR_DISPATCHER_ENABLED)) {
         /* Wake up if waiting in mprWaitForIO */
         mustWakeWaitService = es->waiting;
@@ -643,8 +637,6 @@ static void serviceDispatcherMain(MprDispatcher *dispatcher)
     assert(dispatcher->parent);
     es = dispatcher->service;
     lock(es);
-    //  MOB - should never be destroyed as it runs from gc when all threads give their ascent
-    assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     if (!(dispatcher->flags & MPR_DISPATCHER_ENABLED) || (dispatcher->flags & MPR_DISPATCHER_DESTROYED)) {
         /* Dispatcher may have been disabled after starting the worker */
         unlock(es);

@@ -172,7 +172,6 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     if (flags & MPR_FATAL_MSG) {
         sflag = LOG_ERR;
     } else if (flags & MPR_INFO_MSG) {
-        //  MOB - check value
         sflag = LOG_WARNING;
     } else if (flags & MPR_ASSERT_MSG) {
         sflag = LOG_WARNING;

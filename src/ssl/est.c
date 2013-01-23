@@ -31,6 +31,7 @@ typedef struct EstConfig {
  */
 typedef struct EstSocket {
     MprSocket       *sock;              /* MPR socket object */
+    MprTicks        started;            /* When connection begun */
     EstConfig       *cfg;               /* Configuration */
     havege_state    hs;                 /* Random HAVEGE state */
     ssl_context     ctx;                /* SSL state */
@@ -81,7 +82,6 @@ static int      getSession(ssl_context *ssl);
 /************************************* Code ***********************************/
 /*
     Create the EST module. This is called only once
-    MOB - should this be Create or Open
  */
 PUBLIC int mprCreateEstModule()
 {
@@ -111,6 +111,7 @@ static void manageEstProvider(MprSocketProvider *provider, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(defaultEstConfig);
         mprMark(sessions);
+
     } else if (flags & MPR_MANAGE_FREE) {
         defaultEstConfig = 0;
         sessions = 0;
@@ -267,6 +268,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         ssl_set_own_cert(&est->ctx, &cfg->cert, &cfg->rsa);
     }
 	ssl_set_dh_param(&est->ctx, dhKey, dhG);
+    est->started = mprGetTicks();
 
     if (handshakeEst(sp) < 0) {
         return -1;
@@ -292,23 +294,22 @@ static int handshakeEst(MprSocket *sp)
 
     est = (EstSocket*) sp->sslSocket;
     assert(!(est->ctx.state == SSL_HANDSHAKE_OVER));
-
-    trusted = 1;
-    sp->flags |= MPR_SOCKET_HANDSHAKING;
     rc = 0;
+    trusted = 1;
 
-    while (est->ctx.state != SSL_HANDSHAKE_OVER) {
-        if ((rc = ssl_handshake(&est->ctx)) != 0) {
-            if (rc == EST_ERR_NET_TRY_AGAIN) {
-                if (!mprGetSocketBlockingMode(sp)) {
-                    return 0;
-                }
-                continue;
+    sp->flags |= MPR_SOCKET_HANDSHAKING;
+    while (est->ctx.state != SSL_HANDSHAKE_OVER && (rc = ssl_handshake(&est->ctx)) != 0) {
+        if (rc == EST_ERR_NET_TRY_AGAIN) {
+            if (!mprGetSocketBlockingMode(sp)) {
+                return 0;
             }
-            break;
+            continue;
         }
+        /* Error */
+        break;
     }
     sp->flags &= ~MPR_SOCKET_HANDSHAKING;
+    mprLog(4, "Est handshake complete in %,d msec", mprGetTicks() - est->started);
 
     /*
         Analyze the handshake result
@@ -396,6 +397,7 @@ static ssize readEst(MprSocket *sp, void *buf, ssize len)
         mprLog(5, "EST: ssl_read %d", rc);
         if (rc < 0) {
             if (rc == EST_ERR_NET_TRY_AGAIN)  {
+                rc = 0;
                 break;
             } else if (rc == EST_ERR_SSL_PEER_CLOSE_NOTIFY) {
                 mprLog(5, "EST: connection was closed gracefully\n");
@@ -444,7 +446,6 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
         mprLog(7, "EST: written %d, requested len %d", rc, len);
         if (rc <= 0) {
             if (rc == EST_ERR_NET_TRY_AGAIN) {                                                          
-                /* MOB - but what about buffered pending data? */
                 break;
             }
             if (rc == EST_ERR_NET_CONN_RESET) {                                                         

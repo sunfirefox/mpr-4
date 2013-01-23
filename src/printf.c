@@ -300,29 +300,6 @@ PUBLIC char *fmtv(char *buf, ssize bufsize, cchar *fmt, va_list arg)
 }
 
 
-#if UNUSED
-PUBLIC char *mprAsprintf(cchar *fmt, ...)
-{
-    va_list     ap;
-    char        *buf;
-
-    assert(fmt);
-
-    va_start(ap, fmt);
-    buf = mprPrintfCore(NULL, -1, fmt, ap);
-    va_end(ap);
-    return buf;
-}
-
-
-PUBLIC char *mprAsprintfv(cchar *fmt, va_list arg)
-{
-    assert(fmt);
-    return mprPrintfCore(NULL, -1, fmt, arg);
-}
-#endif
-
-
 static int getState(char c, int state)
 {
     int     chrClass;
@@ -938,22 +915,6 @@ static int growBuf(Format *fmt)
     return 1;
 }
 
-
-#if UNUSED
-/*
-    For easy debug trace
- */
-PUBLIC int print(cchar *fmt, ...)
-{
-    va_list     ap;
-    int         len;
-
-    va_start(ap, fmt);
-    len = vprintf(fmt, ap);
-    va_end(ap);
-    return len;
-}
-#endif
 
 /*
     @copy   default

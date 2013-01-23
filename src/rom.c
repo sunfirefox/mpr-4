@@ -240,9 +240,6 @@ PUBLIC void manageRomFileSystem(MprRomFileSystem *rfs, int flags)
         mprMark(fs->cygwin);
 #endif
         mprMark(rfs->fileIndex);
-#if UNUSED
-        mprMark(rfs->romInodes);
-#endif
 #endif
     }
 }
