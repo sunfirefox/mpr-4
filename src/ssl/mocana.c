@@ -113,7 +113,7 @@ certDistinguishedName testCert = {
 static void     closeMoc(MprSocket *sp, bool gracefully);
 static void     disconnectMoc(MprSocket *sp);
 static char     *getMocState(MprSocket *sp);
-static int      listenMoc(MprSocket *sp, cchar *host, int port, int flags);
+static Socket   listenMoc(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageMocConfig(MocConfig *cfg, int flags);
 static void     manageMocProvider(MprSocketProvider *provider, int flags);
 static void     manageMocSocket(MocSocket *ssp, int flags);
@@ -228,7 +228,7 @@ static void closeMoc(MprSocket *sp, bool gracefully)
 /*
     Initialize a new server-side connection
  */
-static int listenMoc(MprSocket *sp, cchar *host, int port, int flags)
+static Socket listenMoc(MprSocket *sp, cchar *host, int port, int flags)
 {
     assert(sp);
     assert(port);

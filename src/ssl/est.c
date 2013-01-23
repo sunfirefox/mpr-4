@@ -68,7 +68,7 @@ static void     disconnectEst(MprSocket *sp);
 static void     estTrace(void *fp, int level, char *str);
 static int      handshakeEst(MprSocket *sp);
 static char     *getEstState(MprSocket *sp);
-static int      listenEst(MprSocket *sp, cchar *host, int port, int flags);
+static Socket   listenEst(MprSocket *sp, cchar *host, int port, int flags);
 static void     manageEstConfig(EstConfig *cfg, int flags);
 static void     manageEstProvider(MprSocketProvider *provider, int flags);
 static void     manageEstSocket(EstSocket *ssp, int flags);
@@ -163,7 +163,7 @@ static void closeEst(MprSocket *sp, bool gracefully)
 /*
     Initialize a new server-side connection
  */
-static int listenEst(MprSocket *sp, cchar *host, int port, int flags)
+static Socket listenEst(MprSocket *sp, cchar *host, int port, int flags)
 {
     assert(sp);
     assert(port);
