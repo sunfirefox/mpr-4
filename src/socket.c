@@ -32,7 +32,7 @@ static void disconnectSocket(MprSocket *sp);
 static ssize flushSocket(MprSocket *sp);
 static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int size, int *port);
 static int ipv6(cchar *ip);
-static int listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags);
+static Socket listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags);
 static void manageSocket(MprSocket *sp, int flags);
 static void manageSocketService(MprSocketService *ss, int flags);
 static void manageSsl(MprSsl *ssl, int flags);
@@ -336,8 +336,7 @@ static Socket listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
             return MPR_ERR_CANT_OPEN;
         }
     }
-    rc = bind(sp->fd, addr, addrlen);
-    if (rc < 0) {
+    if ((rc = bind(sp->fd, addr, addrlen)) < 0) {
         rc = errno;
         if (rc == EADDRINUSE) {
             mprLog(3, "Cannot bind, address %s:%d already in use", ip, port);
