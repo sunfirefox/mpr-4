@@ -400,7 +400,7 @@ PUBLIC MprWaitHandler *mprAddSocketHandler(MprSocket *sp, int mask, MprDispatche
     if (sp->flags & MPR_SOCKET_BUFFERED_WRITE) {
         mask |= MPR_WRITABLE;
     }
-    sp->handler = mprCreateWaitHandler(sp->fd, mask, dispatcher, proc, data, flags);
+    sp->handler = mprCreateWaitHandler((int) sp->fd, mask, dispatcher, proc, data, flags);
     return sp->handler;
 }
 
@@ -543,7 +543,7 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         mprSetSocketNoDelay(sp, 1);
     }
     unlock(sp);
-    return sp->fd;
+    return 0;
 }
 
 
@@ -1173,7 +1173,7 @@ PUBLIC void mprSetSocketEof(MprSocket *sp, bool eof)
 /*
     Return the O/S socket file handle
  */
-PUBLIC int mprGetSocketFd(MprSocket *sp)
+PUBLIC Socket mprGetSocketFd(MprSocket *sp)
 {
     return sp->fd;
 }

@@ -6676,11 +6676,11 @@ PUBLIC int mprGetSocketError(MprSocket *sp);
     Get the socket file descriptor.
     @description Get the file descriptor associated with a socket.
     @param sp Socket object returned from #mprCreateSocket
-    @return The integer file descriptor used by the O/S for the socket.
+    @return The Socket file descriptor used by the O/S for the socket.
     @ingroup MprSocket
     @stability Stable
  */
-PUBLIC int mprGetSocketFd(MprSocket *sp);
+PUBLIC Socket mprGetSocketFd(MprSocket *sp);
 
 /**
     Get the socket for an IP:Port address
