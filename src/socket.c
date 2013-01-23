@@ -1185,7 +1185,6 @@ PUBLIC Socket mprGetSocketFd(MprSocket *sp)
 PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
 {
     assert(sp);
-
     return sp && (sp->flags & MPR_SOCKET_BLOCK);
 }
 
