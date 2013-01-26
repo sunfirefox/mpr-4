@@ -1523,7 +1523,7 @@ PUBLIC int startProcess(MprCmd *cmd)
         program = mprTrimPathExt(program);
         entryPoint = program;
     }
-    if (symFindByName(sysSymTbl, entryPoint, (char**) &entryFn, &symType) < 0) {
+    if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
         if ((mp = mprCreateModule(cmd->program, cmd->program, NULL, NULL)) == 0) {
             mprError("start: can't create module");
             return MPR_ERR_CANT_CREATE;
@@ -1532,7 +1532,7 @@ PUBLIC int startProcess(MprCmd *cmd)
             mprError("start: can't load DLL %s, errno %d", program, mprGetOsError());
             return MPR_ERR_CANT_READ;
         }
-        if (symFindByName(sysSymTbl, entryPoint, (char**) &entryFn, &symType) < 0) {
+        if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
             mprError("start: can't find symbol %s, errno %d", entryPoint, mprGetOsError());
             return MPR_ERR_CANT_ACCESS;
         }

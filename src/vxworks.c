@@ -59,7 +59,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
     fn = 0;
     handle = 0;
 
-    if (!mp->entry || symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
+    if (!mp->entry || symFindByName(sysSymTbl, mp->entry, (char**) (void*) &fn, &symType) == -1) {
         if ((at = mprSearchForModule(mp->path)) == 0) {
             mprError("Cannot find module \"%s\", cwd: \"%s\", search path \"%s\"", mp->path, mprGetCurrentPath(),
                 mprGetModuleSearchPath());
@@ -90,7 +90,7 @@ PUBLIC int mprLoadNativeModule(MprModule *mp)
         mprLog(2, "Activating module %s", mp->name);
     }
     if (mp->entry) {
-        if (symFindByName(sysSymTbl, mp->entry, (char**) &fn, &symType) == -1) {
+        if (symFindByName(sysSymTbl, mp->entry, (char**) (void*) &fn, &symType) == -1) {
             mprError("Cannot find symbol %s when loading %s", mp->entry, mp->path);
             return MPR_ERR_CANT_READ;
         }
