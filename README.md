@@ -10,14 +10,15 @@ See LICENSE.md for details.
   See doc/index.html
 
 ### Prerequisites:
-    Ejscript (http://www.ejscript.org/downloads/ejs/download.ejs) for the Bit and Utest tools to configure and build.
+    Bit (http://embedthis.com/downloads/bit/download.ejs) for Bit to configure and build.
+    Ejscript (http://ejscript.org/downloads/ejs/download.ejs) for utest to test.
 
 ### To Build:
 
     ./configure
     bit
 
-    Alternatively to build without Ejscript:
+    Alternatively to build without Bit:
 
     make
 
@@ -44,6 +45,5 @@ This will run appweb in the src/server directory using the src/server/appweb.con
 Resources
 ---
   - [Embedthis web site](http://embedthis.com/)
-  - [Appweb web site](http://appwebserver.org/)
   - [MPR GitHub repository](http://github.com/embedthis/mpr-4)
-  - [Appweb GitHub repository](http://github.com/embedthis/appweb-4)
+  - [Bit GitHub repository](http://github.com/embedthis/bit)

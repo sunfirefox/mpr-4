@@ -35,7 +35,6 @@ Bit.load({
 
     usage: {
         assert: 'Enable program assertions',
-        static: 'Build with static linking (true|false)',                                                  
     },
 
     targets: {
