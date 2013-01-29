@@ -40,7 +40,7 @@ ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
 else
     ARCH?=x86
 endif
-    MAKE:= projects/windows.bat $(ARCH)
+    MAKE:= projects/windows.bat
     EXT := nmake
 else
 	ARCH:= $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -50,10 +50,13 @@ BIN 	:= $(OS)-$(ARCH)-$(PROFILE)/bin
 .EXPORT_ALL_VARIABLES:
 
 all compile:
-	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+	$(MAKE) --no-print-directory -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 clean clobber install uninstall run:
-	$(MAKE) -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+	$(MAKE) --no-print-directory -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
+
+version:
+	@$(MAKE) --no-print-directory -f projects/$(NAME)-$(OS)-$(PROFILE).$(EXT) $@
 
 help:
 	@echo '' >&2
@@ -65,9 +68,9 @@ help:
 	@echo '      BIT_MPR_TRACING    # Enable debug tracing' >&2
 	@echo '      BIT_ROM            # Build for ROM without a file system' >&2
 	@echo '' >&2
-	@echo 'For example, to disable CGI:' >&2
+	@echo 'For example, to disable logging:' >&2
 	@echo '' >&2
-	@echo '      make BIT_PACK_CGI=0' >&2
+	@echo '      make BIT_MPR_LOGGING=0' >&2
 	@echo '' >&2
 	@echo 'Other make variables include:' >&2
 	@echo '' >&2
