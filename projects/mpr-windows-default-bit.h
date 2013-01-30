@@ -73,37 +73,37 @@
 
 /* Prefixes */
 #ifndef BIT_CFG_PREFIX
-    #define BIT_CFG_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime"
+    #define BIT_CFG_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_BIN_PREFIX
-    #define BIT_BIN_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/bin"
+    #define BIT_BIN_PREFIX "C:/Program Files/Multithreaded Portable Runtime/bin"
 #endif
 #ifndef BIT_INC_PREFIX
-    #define BIT_INC_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/inc"
+    #define BIT_INC_PREFIX "C:/Program Files/Multithreaded Portable Runtime/inc"
 #endif
 #ifndef BIT_LOG_PREFIX
-    #define BIT_LOG_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/logs"
+    #define BIT_LOG_PREFIX "C:/Program Files/Multithreaded Portable Runtime/logs"
 #endif
 #ifndef BIT_PRD_PREFIX
-    #define BIT_PRD_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime"
+    #define BIT_PRD_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_SPL_PREFIX
-    #define BIT_SPL_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/tmp"
+    #define BIT_SPL_PREFIX "C:/Program Files/Multithreaded Portable Runtime/tmp"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/src"
+    #define BIT_SRC_PREFIX "C:/Program Files/Multithreaded Portable Runtime/src"
 #endif
 #ifndef BIT_VER_PREFIX
-    #define BIT_VER_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime"
+    #define BIT_VER_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_WEB_PREFIX
-    #define BIT_WEB_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/web"
+    #define BIT_WEB_PREFIX "C:/Program Files/Multithreaded Portable Runtime/web"
 #endif
 #ifndef BIT_UBIN_PREFIX
-    #define BIT_UBIN_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/bin"
+    #define BIT_UBIN_PREFIX "C:/Program Files/Multithreaded Portable Runtime/bin"
 #endif
 #ifndef BIT_MAN_PREFIX
-    #define BIT_MAN_PREFIX "C:/Program Files (x86)/Multithreaded Portable Runtime/man"
+    #define BIT_MAN_PREFIX "C:/Program Files/Multithreaded Portable Runtime/man"
 #endif
 
 /* Suffixes */
