@@ -315,12 +315,13 @@
 		B8CD2258B8CD340200000018 /* estLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = estLib.c; path = src/deps/est/estLib.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000CF /* bit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bit.h; path = macosx-x64-default/inc/bit.h; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000D0 /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = macosx-x64-default/inc/est.h; sourceTree = "<group>"; };
+		B8CD2258B8CD3402000000D1 /* bitos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitos.h; path = macosx-x64-default/inc/bitos.h; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000A9 /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD34020000001A /* benchMpr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = benchMpr.c; path = test/benchMpr.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000D1 /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = macosx-x64-default/inc/mpr.h; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000D2 /* benchMpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = benchMpr; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8CD2258B8CD3402000000D2 /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = macosx-x64-default/inc/mpr.h; sourceTree = "<group>"; };
+		B8CD2258B8CD3402000000D3 /* benchMpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = benchMpr; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD34020000001C /* runProgram.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = runProgram.c; path = test/runProgram.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000D3 /* runProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = runProgram; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8CD2258B8CD3402000000D4 /* runProgram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = runProgram; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD34020000001E /* testArgv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testArgv.c; path = test/testArgv.c; sourceTree = "<group>"; };
 		B8CD2258B8CD340200000020 /* testBuf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testBuf.c; path = test/testBuf.c; sourceTree = "<group>"; };
 		B8CD2258B8CD340200000022 /* testCmd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testCmd.c; path = test/testCmd.c; sourceTree = "<group>"; };
@@ -338,7 +339,7 @@
 		B8CD2258B8CD34020000003A /* testThread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testThread.c; path = test/testThread.c; sourceTree = "<group>"; };
 		B8CD2258B8CD34020000003C /* testTime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testTime.c; path = test/testTime.c; sourceTree = "<group>"; };
 		B8CD2258B8CD34020000003E /* testUnicode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testUnicode.c; path = test/testUnicode.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000D4 /* testMpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testMpr; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8CD2258B8CD3402000000D5 /* testMpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testMpr; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD340200000040 /* async.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = async.c; path = src/async.c; sourceTree = "<group>"; };
 		B8CD2258B8CD340200000042 /* atomic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = atomic.c; path = src/atomic.c; sourceTree = "<group>"; };
 		B8CD2258B8CD340200000044 /* buf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = buf.c; path = src/buf.c; sourceTree = "<group>"; };
@@ -384,20 +385,20 @@
 		B8CD2258B8CD340200000094 /* xml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xml.c; path = src/xml.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000A4 /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD340200000096 /* est.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = est.c; path = src/ssl/est.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000D5 /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = src/deps/est/est.h; sourceTree = "<group>"; };
+		B8CD2258B8CD3402000000D6 /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = src/deps/est/est.h; sourceTree = "<group>"; };
 		B8CD2258B8CD340200000098 /* matrixssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = matrixssl.c; path = src/ssl/matrixssl.c; sourceTree = "<group>"; };
 		B8CD2258B8CD34020000009A /* mocana.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mocana.c; path = src/ssl/mocana.c; sourceTree = "<group>"; };
 		B8CD2258B8CD34020000009C /* openssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = openssl.c; path = src/ssl/openssl.c; sourceTree = "<group>"; };
 		B8CD2258B8CD34020000009E /* ssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl.c; path = src/ssl/ssl.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000A6 /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD3402000000A0 /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/manager.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000D6 /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = manager; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8CD2258B8CD3402000000D7 /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = manager; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD3402000000A2 /* charGen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = charGen.c; path = src/utils/charGen.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000D7 /* chargen */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = chargen; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8CD2258B8CD3402000000D8 /* chargen */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = chargen; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		B8CD2258B8CD3402000000D8 /* Frameworks and Libraries for libest */ = {
+		B8CD2258B8CD3402000000D9 /* Frameworks and Libraries for libest */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -405,7 +406,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		B8CD2258B8CD3402000000D9 /* Frameworks and Libraries for benchMpr */ = {
+		B8CD2258B8CD3402000000DA /* Frameworks and Libraries for benchMpr */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -413,7 +414,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		B8CD2258B8CD3402000000DA /* Frameworks and Libraries for runProgram */ = {
+		B8CD2258B8CD3402000000DB /* Frameworks and Libraries for runProgram */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -421,7 +422,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		B8CD2258B8CD3402000000DB /* Frameworks and Libraries for testMpr */ = {
+		B8CD2258B8CD3402000000DC /* Frameworks and Libraries for testMpr */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -431,7 +432,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		B8CD2258B8CD3402000000DC /* Frameworks and Libraries for libmpr */ = {
+		B8CD2258B8CD3402000000DD /* Frameworks and Libraries for libmpr */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -439,7 +440,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		B8CD2258B8CD3402000000DD /* Frameworks and Libraries for libmprssl */ = {
+		B8CD2258B8CD3402000000DE /* Frameworks and Libraries for libmprssl */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -448,7 +449,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		B8CD2258B8CD3402000000DE /* Frameworks and Libraries for manager */ = {
+		B8CD2258B8CD3402000000DF /* Frameworks and Libraries for manager */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -456,7 +457,7 @@
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
-		B8CD2258B8CD3402000000DF /* Frameworks and Libraries for chargen */ = {
+		B8CD2258B8CD3402000000E0 /* Frameworks and Libraries for chargen */ = {
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
@@ -467,44 +468,45 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		B8CD2258B8CD3402000000E0 /* Top Group */ = {
+		B8CD2258B8CD3402000000E1 /* Top Group */ = {
             isa = PBXGroup;
             children = (
-				B8CD2258B8CD3402000000E1 /* libest */,
-				B8CD2258B8CD3402000000E2 /* libmpr */,
-				B8CD2258B8CD3402000000E3 /* libmprssl */,
-				B8CD2258B8CD3402000000E4 /* benchMpr */,
-				B8CD2258B8CD3402000000E5 /* chargen */,
-				B8CD2258B8CD3402000000E6 /* manager */,
-				B8CD2258B8CD3402000000E7 /* runProgram */,
-				B8CD2258B8CD3402000000E8 /* testMpr */,
-				B8CD2258B8CD3402000000E9 /* Products */,
+				B8CD2258B8CD3402000000E2 /* libest */,
+				B8CD2258B8CD3402000000E3 /* libmpr */,
+				B8CD2258B8CD3402000000E4 /* libmprssl */,
+				B8CD2258B8CD3402000000E5 /* benchMpr */,
+				B8CD2258B8CD3402000000E6 /* chargen */,
+				B8CD2258B8CD3402000000E7 /* manager */,
+				B8CD2258B8CD3402000000E8 /* runProgram */,
+				B8CD2258B8CD3402000000E9 /* testMpr */,
+				B8CD2258B8CD3402000000EA /* Products */,
 			);
             sourceTree = "<group>";
         };
-		B8CD2258B8CD3402000000E1 /* libest */ = {
+		B8CD2258B8CD3402000000E2 /* libest */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
 				B8CD2258B8CD3402000000D0 /* est.h */,
+				B8CD2258B8CD3402000000D1 /* bitos.h */,
 				B8CD2258B8CD340200000018 /* estLib.c */,
 			);
             name = "libest";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E4 /* benchMpr */ = {
+		B8CD2258B8CD3402000000E5 /* benchMpr */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
-				B8CD2258B8CD3402000000D1 /* mpr.h */,
+				B8CD2258B8CD3402000000D2 /* mpr.h */,
 				B8CD2258B8CD34020000001A /* benchMpr.c */,
 			);
             name = "benchMpr";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E7 /* runProgram */ = {
+		B8CD2258B8CD3402000000E8 /* runProgram */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
@@ -514,11 +516,11 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E8 /* testMpr */ = {
+		B8CD2258B8CD3402000000E9 /* testMpr */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
-				B8CD2258B8CD3402000000D1 /* mpr.h */,
+				B8CD2258B8CD3402000000D2 /* mpr.h */,
 				B8CD2258B8CD34020000001E /* testArgv.c */,
 				B8CD2258B8CD340200000020 /* testBuf.c */,
 				B8CD2258B8CD340200000022 /* testCmd.c */,
@@ -541,11 +543,12 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E2 /* libmpr */ = {
+		B8CD2258B8CD3402000000E3 /* libmpr */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
-				B8CD2258B8CD3402000000D1 /* mpr.h */,
+				B8CD2258B8CD3402000000D2 /* mpr.h */,
+				B8CD2258B8CD3402000000D1 /* bitos.h */,
 				B8CD2258B8CD340200000040 /* async.c */,
 				B8CD2258B8CD340200000042 /* atomic.c */,
 				B8CD2258B8CD340200000044 /* buf.c */,
@@ -594,12 +597,13 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E3 /* libmprssl */ = {
+		B8CD2258B8CD3402000000E4 /* libmprssl */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
-				B8CD2258B8CD3402000000D1 /* mpr.h */,
-				B8CD2258B8CD3402000000D5 /* est.h */,
+				B8CD2258B8CD3402000000D2 /* mpr.h */,
+				B8CD2258B8CD3402000000D6 /* est.h */,
+				B8CD2258B8CD3402000000D1 /* bitos.h */,
 				B8CD2258B8CD340200000096 /* est.c */,
 				B8CD2258B8CD340200000098 /* matrixssl.c */,
 				B8CD2258B8CD34020000009A /* mocana.c */,
@@ -610,39 +614,39 @@
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E6 /* manager */ = {
+		B8CD2258B8CD3402000000E7 /* manager */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
-				B8CD2258B8CD3402000000D1 /* mpr.h */,
+				B8CD2258B8CD3402000000D2 /* mpr.h */,
 				B8CD2258B8CD3402000000A0 /* manager.c */,
 			);
             name = "manager";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E5 /* chargen */ = {
+		B8CD2258B8CD3402000000E6 /* chargen */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000CF /* bit.h */,
-				B8CD2258B8CD3402000000D1 /* mpr.h */,
+				B8CD2258B8CD3402000000D2 /* mpr.h */,
 				B8CD2258B8CD3402000000A2 /* charGen.c */,
 			);
             name = "chargen";
             path = ..;
             sourceTree = SOURCE_ROOT;
         };
-		B8CD2258B8CD3402000000E9 /* Products */ = {
+		B8CD2258B8CD3402000000EA /* Products */ = {
             isa = PBXGroup;
             children = (
 				B8CD2258B8CD3402000000A9 /* libest */,
-				B8CD2258B8CD3402000000D2 /* benchMpr */,
-				B8CD2258B8CD3402000000D3 /* runProgram */,
-				B8CD2258B8CD3402000000D4 /* testMpr */,
+				B8CD2258B8CD3402000000D3 /* benchMpr */,
+				B8CD2258B8CD3402000000D4 /* runProgram */,
+				B8CD2258B8CD3402000000D5 /* testMpr */,
 				B8CD2258B8CD3402000000A4 /* libmpr */,
 				B8CD2258B8CD3402000000A6 /* libmprssl */,
-				B8CD2258B8CD3402000000D6 /* manager */,
-				B8CD2258B8CD3402000000D7 /* chargen */,
+				B8CD2258B8CD3402000000D7 /* manager */,
+				B8CD2258B8CD3402000000D8 /* chargen */,
 			);
             name = "Products";
             path = ..;
@@ -653,15 +657,15 @@
 /* Begin PBXNativeTarget section */
 		B8CD2258B8CD3402000000C2 /* libest */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD3402000000EB /* Build configuration list for PBXNativeTarget "libest" */;
+			buildConfigurationList = B8CD2258B8CD3402000000EC /* Build configuration list for PBXNativeTarget "libest" */;
 			buildPhases = (
-				B8CD2258B8CD3402000000EA /* Sources */,
-				B8CD2258B8CD3402000000D8 /* Frameworks */,
+				B8CD2258B8CD3402000000EB /* Sources */,
+				B8CD2258B8CD3402000000D9 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B8CD2258B8CD3402000000EC /* Prep */,				
+				B8CD2258B8CD3402000000ED /* Prep */,				
 			);
 			name = libest;
 			productName = mpr;
@@ -670,70 +674,70 @@
 		};
 		B8CD2258B8CD3402000000C5 /* benchMpr */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD3402000000EE /* Build configuration list for PBXNativeTarget "benchMpr" */;
+			buildConfigurationList = B8CD2258B8CD3402000000EF /* Build configuration list for PBXNativeTarget "benchMpr" */;
 			buildPhases = (
-				B8CD2258B8CD3402000000ED /* Sources */,
-				B8CD2258B8CD3402000000D9 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				B8CD2258B8CD3402000000EF /* libmpr */,
-				B8CD2258B8CD3402000000F0 /* Prep */,				
-			);
-			name = benchMpr;
-			productName = mpr;
-			productReference = B8CD2258B8CD3402000000D2 /* benchMpr */;
-			productType = "com.apple.product-type.tool";
-		};
-		B8CD2258B8CD3402000000B8 /* runProgram */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD3402000000F2 /* Build configuration list for PBXNativeTarget "runProgram" */;
-			buildPhases = (
-				B8CD2258B8CD3402000000F1 /* Sources */,
+				B8CD2258B8CD3402000000EE /* Sources */,
 				B8CD2258B8CD3402000000DA /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B8CD2258B8CD3402000000F3 /* Prep */,				
+				B8CD2258B8CD3402000000F0 /* libmpr */,
+				B8CD2258B8CD3402000000F1 /* Prep */,				
 			);
-			name = runProgram;
+			name = benchMpr;
 			productName = mpr;
-			productReference = B8CD2258B8CD3402000000D3 /* runProgram */;
+			productReference = B8CD2258B8CD3402000000D3 /* benchMpr */;
 			productType = "com.apple.product-type.tool";
 		};
-		B8CD2258B8CD3402000000C8 /* testMpr */ = {
+		B8CD2258B8CD3402000000B8 /* runProgram */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD3402000000F5 /* Build configuration list for PBXNativeTarget "testMpr" */;
+			buildConfigurationList = B8CD2258B8CD3402000000F3 /* Build configuration list for PBXNativeTarget "runProgram" */;
 			buildPhases = (
-				B8CD2258B8CD3402000000F4 /* Sources */,
+				B8CD2258B8CD3402000000F2 /* Sources */,
 				B8CD2258B8CD3402000000DB /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B8CD2258B8CD3402000000F6 /* libmpr */,
-				B8CD2258B8CD3402000000F7 /* libmprssl */,
-				B8CD2258B8CD3402000000F8 /* runProgram */,
-				B8CD2258B8CD3402000000F9 /* Prep */,				
+				B8CD2258B8CD3402000000F4 /* Prep */,				
 			);
-			name = testMpr;
+			name = runProgram;
 			productName = mpr;
-			productReference = B8CD2258B8CD3402000000D4 /* testMpr */;
+			productReference = B8CD2258B8CD3402000000D4 /* runProgram */;
 			productType = "com.apple.product-type.tool";
 		};
-		B8CD2258B8CD3402000000B1 /* libmpr */ = {
+		B8CD2258B8CD3402000000C8 /* testMpr */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD3402000000FB /* Build configuration list for PBXNativeTarget "libmpr" */;
+			buildConfigurationList = B8CD2258B8CD3402000000F6 /* Build configuration list for PBXNativeTarget "testMpr" */;
 			buildPhases = (
-				B8CD2258B8CD3402000000FA /* Sources */,
+				B8CD2258B8CD3402000000F5 /* Sources */,
 				B8CD2258B8CD3402000000DC /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B8CD2258B8CD3402000000FC /* Prep */,				
+				B8CD2258B8CD3402000000F7 /* libmpr */,
+				B8CD2258B8CD3402000000F8 /* libmprssl */,
+				B8CD2258B8CD3402000000F9 /* runProgram */,
+				B8CD2258B8CD3402000000FA /* Prep */,				
+			);
+			name = testMpr;
+			productName = mpr;
+			productReference = B8CD2258B8CD3402000000D5 /* testMpr */;
+			productType = "com.apple.product-type.tool";
+		};
+		B8CD2258B8CD3402000000B1 /* libmpr */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8CD2258B8CD3402000000FC /* Build configuration list for PBXNativeTarget "libmpr" */;
+			buildPhases = (
+				B8CD2258B8CD3402000000FB /* Sources */,
+				B8CD2258B8CD3402000000DD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B8CD2258B8CD3402000000FD /* Prep */,				
 			);
 			name = libmpr;
 			productName = mpr;
@@ -742,16 +746,16 @@
 		};
 		B8CD2258B8CD3402000000B6 /* libmprssl */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD3402000000FE /* Build configuration list for PBXNativeTarget "libmprssl" */;
+			buildConfigurationList = B8CD2258B8CD3402000000FF /* Build configuration list for PBXNativeTarget "libmprssl" */;
 			buildPhases = (
-				B8CD2258B8CD3402000000FD /* Sources */,
-				B8CD2258B8CD3402000000DD /* Frameworks */,
+				B8CD2258B8CD3402000000FE /* Sources */,
+				B8CD2258B8CD3402000000DE /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B8CD2258B8CD3402000000FF /* libmpr */,
-				B8CD2258B8CD340200000100 /* Prep */,				
+				B8CD2258B8CD340200000100 /* libmpr */,
+				B8CD2258B8CD340200000101 /* Prep */,				
 			);
 			name = libmprssl;
 			productName = mpr;
@@ -760,38 +764,38 @@
 		};
 		B8CD2258B8CD3402000000CC /* manager */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD340200000102 /* Build configuration list for PBXNativeTarget "manager" */;
+			buildConfigurationList = B8CD2258B8CD340200000103 /* Build configuration list for PBXNativeTarget "manager" */;
 			buildPhases = (
-				B8CD2258B8CD340200000101 /* Sources */,
-				B8CD2258B8CD3402000000DE /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				B8CD2258B8CD340200000103 /* libmpr */,
-				B8CD2258B8CD340200000104 /* Prep */,				
-			);
-			name = manager;
-			productName = mpr;
-			productReference = B8CD2258B8CD3402000000D6 /* manager */;
-			productType = "com.apple.product-type.tool";
-		};
-		B8CD2258B8CD3402000000CE /* chargen */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = B8CD2258B8CD340200000106 /* Build configuration list for PBXNativeTarget "chargen" */;
-			buildPhases = (
-				B8CD2258B8CD340200000105 /* Sources */,
+				B8CD2258B8CD340200000102 /* Sources */,
 				B8CD2258B8CD3402000000DF /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				B8CD2258B8CD340200000107 /* libmpr */,
-				B8CD2258B8CD340200000108 /* Prep */,				
+				B8CD2258B8CD340200000104 /* libmpr */,
+				B8CD2258B8CD340200000105 /* Prep */,				
+			);
+			name = manager;
+			productName = mpr;
+			productReference = B8CD2258B8CD3402000000D7 /* manager */;
+			productType = "com.apple.product-type.tool";
+		};
+		B8CD2258B8CD3402000000CE /* chargen */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8CD2258B8CD340200000107 /* Build configuration list for PBXNativeTarget "chargen" */;
+			buildPhases = (
+				B8CD2258B8CD340200000106 /* Sources */,
+				B8CD2258B8CD3402000000E0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B8CD2258B8CD340200000108 /* libmpr */,
+				B8CD2258B8CD340200000109 /* Prep */,				
 			);
 			name = chargen;
 			productName = mpr;
-			productReference = B8CD2258B8CD3402000000D7 /* chargen */;
+			productReference = B8CD2258B8CD3402000000D8 /* chargen */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -862,8 +866,8 @@ fi";
 			knownRegions = (
 				en,
 			);
-			mainGroup = B8CD2258B8CD3402000000E0;
-			productRefGroup = B8CD2258B8CD3402000000E9 /* Products */;
+			mainGroup = B8CD2258B8CD3402000000E1;
+			productRefGroup = B8CD2258B8CD3402000000EA /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -883,7 +887,7 @@ fi";
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		B8CD2258B8CD3402000000EA /* libest Sources */ = {
+		B8CD2258B8CD3402000000EB /* libest Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -891,7 +895,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B8CD2258B8CD3402000000ED /* benchMpr Sources */ = {
+		B8CD2258B8CD3402000000EE /* benchMpr Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -899,7 +903,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B8CD2258B8CD3402000000F1 /* runProgram Sources */ = {
+		B8CD2258B8CD3402000000F2 /* runProgram Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -907,7 +911,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B8CD2258B8CD3402000000F4 /* testMpr Sources */ = {
+		B8CD2258B8CD3402000000F5 /* testMpr Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -931,7 +935,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B8CD2258B8CD3402000000FA /* libmpr Sources */ = {
+		B8CD2258B8CD3402000000FB /* libmpr Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -981,7 +985,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B8CD2258B8CD3402000000FD /* libmprssl Sources */ = {
+		B8CD2258B8CD3402000000FE /* libmprssl Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -993,7 +997,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B8CD2258B8CD340200000101 /* manager Sources */ = {
+		B8CD2258B8CD340200000102 /* manager Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1001,7 +1005,7 @@ fi";
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B8CD2258B8CD340200000105 /* chargen Sources */ = {
+		B8CD2258B8CD340200000106 /* chargen Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1012,7 +1016,7 @@ fi";
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		B8CD2258B8CD3402000000EC /* PBXTargetDependency libest depends on Prep */ = {
+		B8CD2258B8CD3402000000ED /* PBXTargetDependency libest depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000AE /* PBXContainerItemProxy */;
@@ -1022,72 +1026,72 @@ fi";
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000AF /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000EF /* PBXTargetDependency benchMpr depends on libmpr */ = {
+		B8CD2258B8CD3402000000F0 /* PBXTargetDependency benchMpr depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD3402000000B1 /* libmpr */;
 			targetProxy = B8CD2258B8CD3402000000B0 /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000F0 /* PBXTargetDependency benchMpr depends on Prep */ = {
+		B8CD2258B8CD3402000000F1 /* PBXTargetDependency benchMpr depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000B2 /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000F3 /* PBXTargetDependency runProgram depends on Prep */ = {
+		B8CD2258B8CD3402000000F4 /* PBXTargetDependency runProgram depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000B3 /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000F6 /* PBXTargetDependency testMpr depends on libmpr */ = {
+		B8CD2258B8CD3402000000F7 /* PBXTargetDependency testMpr depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD3402000000B1 /* libmpr */;
 			targetProxy = B8CD2258B8CD3402000000B4 /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000F7 /* PBXTargetDependency testMpr depends on libmprssl */ = {
+		B8CD2258B8CD3402000000F8 /* PBXTargetDependency testMpr depends on libmprssl */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD3402000000B6 /* libmprssl */;
 			targetProxy = B8CD2258B8CD3402000000B5 /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000F8 /* PBXTargetDependency testMpr depends on runProgram */ = {
+		B8CD2258B8CD3402000000F9 /* PBXTargetDependency testMpr depends on runProgram */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD3402000000B8 /* runProgram */;
 			targetProxy = B8CD2258B8CD3402000000B7 /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000F9 /* PBXTargetDependency testMpr depends on Prep */ = {
+		B8CD2258B8CD3402000000FA /* PBXTargetDependency testMpr depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000B9 /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000FC /* PBXTargetDependency libmpr depends on Prep */ = {
+		B8CD2258B8CD3402000000FD /* PBXTargetDependency libmpr depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000BA /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD3402000000FF /* PBXTargetDependency libmprssl depends on libmpr */ = {
+		B8CD2258B8CD340200000100 /* PBXTargetDependency libmprssl depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD3402000000B1 /* libmpr */;
 			targetProxy = B8CD2258B8CD3402000000BB /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD340200000100 /* PBXTargetDependency libmprssl depends on Prep */ = {
+		B8CD2258B8CD340200000101 /* PBXTargetDependency libmprssl depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000BC /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD340200000103 /* PBXTargetDependency manager depends on libmpr */ = {
+		B8CD2258B8CD340200000104 /* PBXTargetDependency manager depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD3402000000B1 /* libmpr */;
 			targetProxy = B8CD2258B8CD3402000000BD /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD340200000104 /* PBXTargetDependency manager depends on Prep */ = {
+		B8CD2258B8CD340200000105 /* PBXTargetDependency manager depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000BE /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD340200000107 /* PBXTargetDependency chargen depends on libmpr */ = {
+		B8CD2258B8CD340200000108 /* PBXTargetDependency chargen depends on libmpr */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD3402000000B1 /* libmpr */;
 			targetProxy = B8CD2258B8CD3402000000BF /* PBXContainerItemProxy */;
 		};
-		B8CD2258B8CD340200000108 /* PBXTargetDependency chargen depends on Prep */ = {
+		B8CD2258B8CD340200000109 /* PBXTargetDependency chargen depends on Prep */ = {
 			isa = PBXTargetDependency;
 			target = B8CD2258B8CD340200000015 /* Prep */;
 			targetProxy = B8CD2258B8CD3402000000C0 /* PBXContainerItemProxy */;
@@ -1280,7 +1284,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD340200000109 /* Debug */ = {
+		B8CD2258B8CD34020000010A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libest;
@@ -1292,7 +1296,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD34020000010A /* Release */ = {
+		B8CD2258B8CD34020000010B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libest;
@@ -1301,7 +1305,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD34020000010B /* Debug */ = {
+		B8CD2258B8CD34020000010C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = ca-crt;
@@ -1313,7 +1317,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD34020000010C /* Release */ = {
+		B8CD2258B8CD34020000010D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = ca-crt;
@@ -1322,7 +1326,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD34020000010D /* Debug */ = {
+		B8CD2258B8CD34020000010E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = benchMpr;
@@ -1334,7 +1338,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD34020000010E /* Release */ = {
+		B8CD2258B8CD34020000010F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = benchMpr;
@@ -1343,7 +1347,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD34020000010F /* Debug */ = {
+		B8CD2258B8CD340200000110 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = runProgram;
@@ -1355,7 +1359,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD340200000110 /* Release */ = {
+		B8CD2258B8CD340200000111 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = runProgram;
@@ -1364,7 +1368,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD340200000111 /* Debug */ = {
+		B8CD2258B8CD340200000112 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = testMpr;
@@ -1376,7 +1380,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD340200000112 /* Release */ = {
+		B8CD2258B8CD340200000113 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = testMpr;
@@ -1385,7 +1389,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD340200000113 /* Debug */ = {
+		B8CD2258B8CD340200000114 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmpr;
@@ -1397,7 +1401,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD340200000114 /* Release */ = {
+		B8CD2258B8CD340200000115 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmpr;
@@ -1406,7 +1410,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD340200000115 /* Debug */ = {
+		B8CD2258B8CD340200000116 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmprssl;
@@ -1422,7 +1426,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD340200000116 /* Release */ = {
+		B8CD2258B8CD340200000117 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = libmprssl;
@@ -1435,7 +1439,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD340200000117 /* Debug */ = {
+		B8CD2258B8CD340200000118 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = manager;
@@ -1447,7 +1451,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD340200000118 /* Release */ = {
+		B8CD2258B8CD340200000119 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = manager;
@@ -1456,7 +1460,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD340200000119 /* Debug */ = {
+		B8CD2258B8CD34020000011A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = chargen;
@@ -1468,7 +1472,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD34020000011A /* Release */ = {
+		B8CD2258B8CD34020000011B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = chargen;
@@ -1477,7 +1481,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD34020000011B /* Debug */ = {
+		B8CD2258B8CD34020000011C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = All;
@@ -1489,7 +1493,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD34020000011C /* Release */ = {
+		B8CD2258B8CD34020000011D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = All;
@@ -1498,7 +1502,7 @@ fi";
 			};
 			name = Release;
 		};
-		B8CD2258B8CD34020000011D /* Debug */ = {
+		B8CD2258B8CD34020000011E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = Prep;
@@ -1510,7 +1514,7 @@ fi";
 			};
 			name = Debug;
 		};
-		B8CD2258B8CD34020000011E /* Release */ = {
+		B8CD2258B8CD34020000011F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = Prep;
@@ -1531,11 +1535,11 @@ fi";
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD3402000000EB /* Build configuration list for PBXNativeTarget "libest" */ = {
+		B8CD2258B8CD3402000000EC /* Build configuration list for PBXNativeTarget "libest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD340200000109 /* Debug */,
-				B8CD2258B8CD34020000010A /* Release */,
+				B8CD2258B8CD34020000010A /* Debug */,
+				B8CD2258B8CD34020000010B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1543,71 +1547,71 @@ fi";
 		B8CD2258B8CD340200000005 /* Build configuration list for PBXNativeTarget "ca-crt" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD34020000010B /* Debug */,
-				B8CD2258B8CD34020000010C /* Release */,
+				B8CD2258B8CD34020000010C /* Debug */,
+				B8CD2258B8CD34020000010D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD3402000000EE /* Build configuration list for PBXNativeTarget "benchMpr" */ = {
+		B8CD2258B8CD3402000000EF /* Build configuration list for PBXNativeTarget "benchMpr" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD34020000010D /* Debug */,
-				B8CD2258B8CD34020000010E /* Release */,
+				B8CD2258B8CD34020000010E /* Debug */,
+				B8CD2258B8CD34020000010F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD3402000000F2 /* Build configuration list for PBXNativeTarget "runProgram" */ = {
+		B8CD2258B8CD3402000000F3 /* Build configuration list for PBXNativeTarget "runProgram" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD34020000010F /* Debug */,
-				B8CD2258B8CD340200000110 /* Release */,
+				B8CD2258B8CD340200000110 /* Debug */,
+				B8CD2258B8CD340200000111 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD3402000000F5 /* Build configuration list for PBXNativeTarget "testMpr" */ = {
+		B8CD2258B8CD3402000000F6 /* Build configuration list for PBXNativeTarget "testMpr" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD340200000111 /* Debug */,
-				B8CD2258B8CD340200000112 /* Release */,
+				B8CD2258B8CD340200000112 /* Debug */,
+				B8CD2258B8CD340200000113 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD3402000000FB /* Build configuration list for PBXNativeTarget "libmpr" */ = {
+		B8CD2258B8CD3402000000FC /* Build configuration list for PBXNativeTarget "libmpr" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD340200000113 /* Debug */,
-				B8CD2258B8CD340200000114 /* Release */,
+				B8CD2258B8CD340200000114 /* Debug */,
+				B8CD2258B8CD340200000115 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD3402000000FE /* Build configuration list for PBXNativeTarget "libmprssl" */ = {
+		B8CD2258B8CD3402000000FF /* Build configuration list for PBXNativeTarget "libmprssl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD340200000115 /* Debug */,
-				B8CD2258B8CD340200000116 /* Release */,
+				B8CD2258B8CD340200000116 /* Debug */,
+				B8CD2258B8CD340200000117 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD340200000102 /* Build configuration list for PBXNativeTarget "manager" */ = {
+		B8CD2258B8CD340200000103 /* Build configuration list for PBXNativeTarget "manager" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD340200000117 /* Debug */,
-				B8CD2258B8CD340200000118 /* Release */,
+				B8CD2258B8CD340200000118 /* Debug */,
+				B8CD2258B8CD340200000119 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B8CD2258B8CD340200000106 /* Build configuration list for PBXNativeTarget "chargen" */ = {
+		B8CD2258B8CD340200000107 /* Build configuration list for PBXNativeTarget "chargen" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD340200000119 /* Debug */,
-				B8CD2258B8CD34020000011A /* Release */,
+				B8CD2258B8CD34020000011A /* Debug */,
+				B8CD2258B8CD34020000011B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1615,8 +1619,8 @@ fi";
 		B8CD2258B8CD340200000009 /* Build configuration list for PBXNativeTarget "All" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD34020000011B /* Debug */,
-				B8CD2258B8CD34020000011C /* Release */,
+				B8CD2258B8CD34020000011C /* Debug */,
+				B8CD2258B8CD34020000011D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1624,8 +1628,8 @@ fi";
 		B8CD2258B8CD340200000014 /* Build configuration list for PBXNativeTarget "Prep" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				B8CD2258B8CD34020000011D /* Debug */,
-				B8CD2258B8CD34020000011E /* Release */,
+				B8CD2258B8CD34020000011E /* Debug */,
+				B8CD2258B8CD34020000011F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

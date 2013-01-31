@@ -156,21 +156,20 @@ clean:
 clobber: clean
 	rm -fr ./$(CONFIG)
 
+$(CONFIG)/inc/est.h: 
+	rm -fr $(CONFIG)/inc/est.h
+	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
+
 $(CONFIG)/inc/bitos.h:  \
         $(CONFIG)/inc/bit.h
 	rm -fr $(CONFIG)/inc/bitos.h
 	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
 
-$(CONFIG)/inc/est.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/bitos.h
-	rm -fr $(CONFIG)/inc/est.h
-	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
-
 $(CONFIG)/obj/estLib.o: \
         src/deps/est/estLib.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/est.h
+        $(CONFIG)/inc/est.h \
+        $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch x86_64 $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
 
 $(CONFIG)/bin/libest.dylib:  \
@@ -182,16 +181,15 @@ $(CONFIG)/bin/ca.crt: src/deps/est/ca.crt
 	rm -fr $(CONFIG)/bin/ca.crt
 	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
 
-$(CONFIG)/inc/mpr.h:  \
-        $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/bitos.h
+$(CONFIG)/inc/mpr.h: 
 	rm -fr $(CONFIG)/inc/mpr.h
 	cp -r src/mpr.h $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/async.o: \
         src/async.c \
         $(CONFIG)/inc/bit.h \
-        $(CONFIG)/inc/mpr.h
+        $(CONFIG)/inc/mpr.h \
+        $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/async.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/async.c
 
 $(CONFIG)/obj/atomic.o: \
@@ -518,7 +516,8 @@ $(CONFIG)/obj/est.o: \
         src/ssl/est.c \
         $(CONFIG)/inc/bit.h \
         $(CONFIG)/inc/mpr.h \
-        src/deps/est/est.h
+        src/deps/est/est.h \
+        $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/est.o -arch x86_64 $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc -Isrc/deps/est src/ssl/est.c
 
 $(CONFIG)/obj/matrixssl.o: \
