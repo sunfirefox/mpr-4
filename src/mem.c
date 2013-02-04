@@ -147,7 +147,7 @@ static int stopSeqno = -1;
     static MPR_INLINE int ffsl(ulong word);
     static MPR_INLINE int flsl(ulong word);
 
-#elif !MACOSX && !FREEBSD
+#elif !BIT_BSD_LIKE
     #define NEED_FFSL 1
     #define NEED_FLSL 1
     static MPR_INLINE int ffsl(ulong word);
@@ -2085,7 +2085,7 @@ static void getSystemInfo()
     memStats.pageSize = info.dwPageSize;
 
 }
-#elif FREEBSD
+#elif BIT_BSD_LIKE
     {
         int     cmd[2];
         ssize   len;
@@ -2175,7 +2175,7 @@ PUBLIC MprMemStats *mprGetMemStats()
         close(fd);
     }
 #endif
-#if MACOSX || FREEBSD
+#if BIT_BSD_LIKE
     size_t len;
     int         mib[2];
 #if FREEBSD
@@ -2239,7 +2239,7 @@ PUBLIC ssize mprGetMem()
     if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t) &info, &count) == KERN_SUCCESS) {
         size = info.resident_size;
     }
-#elif FREEBSD
+#elif BIT_BSD_LIKE
     struct rusage   rusage;
     getrusage(RUSAGE_SELF, &rusage);
     size = rusage.ru_maxrss;

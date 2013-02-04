@@ -311,7 +311,7 @@ PUBLIC char *mprGetAppPath()
     pbuf[len] = '\0';
     MPR->appPath = mprGetAbsPath(pbuf);
 }
-#elif FREEBSD 
+#elif BIT_BSD_LIKE 
 {
     char    pbuf[BIT_MAX_PATH];
     int     len;
