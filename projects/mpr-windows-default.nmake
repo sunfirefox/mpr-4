@@ -35,7 +35,7 @@ BIT_VER_PREFIX  = $(BIT_ROOT_PREFIX)Program Files\Multithreaded Portable Runtime
 BIT_CFG_PREFIX  = $(BIT_VER_PREFIX)
 BIT_BIN_PREFIX  = $(BIT_VER_PREFIX)\bin
 BIT_INC_PREFIX  = $(BIT_VER_PREFIX)\inc
-BIT_LOG_PREFIX  = $(BIT_VER_PREFIX)\logs
+BIT_LOG_PREFIX  = $(BIT_VER_PREFIX)\log
 BIT_SPL_PREFIX  = $(BIT_VER_PREFIX)\tmp
 BIT_SRC_PREFIX  = $(BIT_VER_PREFIX)\src
 BIT_WEB_PREFIX  = $(BIT_VER_PREFIX)\web
@@ -51,6 +51,7 @@ all compile: prep \
         $(CONFIG)\bin\libmpr.dll \
         $(CONFIG)\bin\libmprssl.dll \
         $(CONFIG)\bin\manager.exe \
+        $(CONFIG)\bin\makerom.exe \
         $(CONFIG)\bin\chargen.exe
 
 .PHONY: prep
@@ -77,6 +78,7 @@ clean:
 	-if exist $(CONFIG)\bin\libmpr.dll del /Q $(CONFIG)\bin\libmpr.dll
 	-if exist $(CONFIG)\bin\libmprssl.dll del /Q $(CONFIG)\bin\libmprssl.dll
 	-if exist $(CONFIG)\bin\manager.exe del /Q $(CONFIG)\bin\manager.exe
+	-if exist $(CONFIG)\bin\makerom.exe del /Q $(CONFIG)\bin\makerom.exe
 	-if exist $(CONFIG)\bin\chargen.exe del /Q $(CONFIG)\bin\chargen.exe
 	-if exist $(CONFIG)\obj\estLib.obj del /Q $(CONFIG)\obj\estLib.obj
 	-if exist $(CONFIG)\obj\benchMpr.obj del /Q $(CONFIG)\obj\benchMpr.obj
@@ -682,6 +684,17 @@ $(CONFIG)\bin\manager.exe: \
     $(CONFIG)\bin\libmpr.dll \
     $(CONFIG)\obj\manager.obj
 	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj libmpr.lib $(LIBS)
+
+$(CONFIG)\obj\makerom.obj: \
+    src\utils\makerom.c\
+    $(CONFIG)\inc\bit.h \
+    $(CONFIG)\inc\mpr.h
+	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) -I$(CONFIG)\inc src\utils\makerom.c
+
+$(CONFIG)\bin\makerom.exe: \
+    $(CONFIG)\bin\libmpr.dll \
+    $(CONFIG)\obj\makerom.obj
+	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\charGen.obj: \
     src\utils\charGen.c\

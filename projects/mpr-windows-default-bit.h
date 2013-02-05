@@ -82,7 +82,7 @@
     #define BIT_INC_PREFIX "C:/Program Files/Multithreaded Portable Runtime/inc"
 #endif
 #ifndef BIT_LOG_PREFIX
-    #define BIT_LOG_PREFIX "C:/Program Files/Multithreaded Portable Runtime/logs"
+    #define BIT_LOG_PREFIX "C:/Program Files/Multithreaded Portable Runtime/log"
 #endif
 #ifndef BIT_PRD_PREFIX
     #define BIT_PRD_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
