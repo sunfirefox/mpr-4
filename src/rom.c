@@ -97,7 +97,6 @@ static long seekFile(MprFile *file, int seekType, long distance)
     MprRomInode     *inode;
 
     assert(seekType == SEEK_SET || seekType == SEEK_CUR || seekType == SEEK_END);
-
     inode = file->inode;
 
     switch (seekType) {
@@ -124,7 +123,6 @@ static long seekFile(MprFile *file, int seekType, long distance)
 static bool accessPath(MprRomFileSystem *fileSystem, cchar *path, int omode)
 {
     MprPath     info;
-
     return getPathInfo(fileSystem, path, &info) == 0 ? 1 : 0;
 }
 

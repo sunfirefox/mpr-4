@@ -52,6 +52,7 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
     int         level;
 
     level = -1;
+    file = 0;
     if (logSpec == 0) {
         logSpec = "stderr:0";
     }
@@ -86,8 +87,9 @@ PUBLIC int mprStartLogging(cchar *logSpec, int showConfig)
         if (level >= 0) {
             mprSetLogLevel(level);
         }
-        mprSetLogFile(file);
-
+        if (file) {
+            mprSetLogFile(file);
+        }
         if (showConfig) {
             mprLogHeader();
         }

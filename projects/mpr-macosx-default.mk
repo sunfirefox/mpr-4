@@ -55,6 +55,7 @@ all compile: prep \
         $(CONFIG)/bin/libmpr.dylib \
         $(CONFIG)/bin/libmprssl.dylib \
         $(CONFIG)/bin/manager \
+        $(CONFIG)/bin/makerom \
         $(CONFIG)/bin/chargen
 
 .PHONY: prep
@@ -80,6 +81,7 @@ clean:
 	rm -rf $(CONFIG)/bin/libmpr.dylib
 	rm -rf $(CONFIG)/bin/libmprssl.dylib
 	rm -rf $(CONFIG)/bin/manager
+	rm -rf $(CONFIG)/bin/makerom
 	rm -rf $(CONFIG)/bin/chargen
 	rm -rf $(CONFIG)/obj/estLib.o
 	rm -rf $(CONFIG)/obj/benchMpr.o
@@ -688,6 +690,17 @@ $(CONFIG)/bin/manager: \
     $(CONFIG)/bin/libmpr.dylib \
     $(CONFIG)/obj/manager.o
 	$(CC) -o $(CONFIG)/bin/manager -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o -lmpr $(LIBS)
+
+$(CONFIG)/obj/makerom.o: \
+    src/utils/makerom.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/makerom.c
+
+$(CONFIG)/bin/makerom: \
+    $(CONFIG)/bin/libmpr.dylib \
+    $(CONFIG)/obj/makerom.o
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o -lmpr $(LIBS)
 
 $(CONFIG)/obj/charGen.o: \
     src/utils/charGen.c\
