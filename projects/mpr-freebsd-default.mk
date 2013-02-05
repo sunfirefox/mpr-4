@@ -172,7 +172,7 @@ $(CONFIG)/obj/estLib.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/est.h \
     $(CONFIG)/inc/bitos.h
-	$(CC) -c -o $(CONFIG)/obj/estLib.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
 
 $(CONFIG)/bin/libest.so: \
     $(CONFIG)/inc/est.h \
@@ -192,259 +192,259 @@ $(CONFIG)/obj/async.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
     $(CONFIG)/inc/bitos.h
-	$(CC) -c -o $(CONFIG)/obj/async.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/async.c
+	$(CC) -c -o $(CONFIG)/obj/async.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/async.c
 
 $(CONFIG)/obj/atomic.o: \
     src/atomic.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/atomic.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/atomic.c
+	$(CC) -c -o $(CONFIG)/obj/atomic.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/atomic.c
 
 $(CONFIG)/obj/buf.o: \
     src/buf.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/buf.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/buf.c
+	$(CC) -c -o $(CONFIG)/obj/buf.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/buf.c
 
 $(CONFIG)/obj/cache.o: \
     src/cache.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/cache.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cache.c
+	$(CC) -c -o $(CONFIG)/obj/cache.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/cache.c
 
 $(CONFIG)/obj/cmd.o: \
     src/cmd.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/cmd.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cmd.c
+	$(CC) -c -o $(CONFIG)/obj/cmd.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/cmd.c
 
 $(CONFIG)/obj/cond.o: \
     src/cond.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/cond.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/cond.c
+	$(CC) -c -o $(CONFIG)/obj/cond.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/cond.c
 
 $(CONFIG)/obj/crypt.o: \
     src/crypt.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/crypt.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/crypt.c
+	$(CC) -c -o $(CONFIG)/obj/crypt.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/crypt.c
 
 $(CONFIG)/obj/disk.o: \
     src/disk.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/disk.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/disk.c
+	$(CC) -c -o $(CONFIG)/obj/disk.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/disk.c
 
 $(CONFIG)/obj/dispatcher.o: \
     src/dispatcher.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/dispatcher.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/dispatcher.c
+	$(CC) -c -o $(CONFIG)/obj/dispatcher.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/dispatcher.c
 
 $(CONFIG)/obj/encode.o: \
     src/encode.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/encode.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/encode.c
+	$(CC) -c -o $(CONFIG)/obj/encode.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/encode.c
 
 $(CONFIG)/obj/epoll.o: \
     src/epoll.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/epoll.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/epoll.c
+	$(CC) -c -o $(CONFIG)/obj/epoll.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/epoll.c
 
 $(CONFIG)/obj/event.o: \
     src/event.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/event.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/event.c
+	$(CC) -c -o $(CONFIG)/obj/event.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/event.c
 
 $(CONFIG)/obj/file.o: \
     src/file.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/file.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/file.c
+	$(CC) -c -o $(CONFIG)/obj/file.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/file.c
 
 $(CONFIG)/obj/fs.o: \
     src/fs.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/fs.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/fs.c
+	$(CC) -c -o $(CONFIG)/obj/fs.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/fs.c
 
 $(CONFIG)/obj/hash.o: \
     src/hash.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/hash.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/hash.c
+	$(CC) -c -o $(CONFIG)/obj/hash.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/hash.c
 
 $(CONFIG)/obj/json.o: \
     src/json.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/json.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/json.c
+	$(CC) -c -o $(CONFIG)/obj/json.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/json.c
 
 $(CONFIG)/obj/kqueue.o: \
     src/kqueue.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/kqueue.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/kqueue.c
+	$(CC) -c -o $(CONFIG)/obj/kqueue.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/kqueue.c
 
 $(CONFIG)/obj/list.o: \
     src/list.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/list.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/list.c
+	$(CC) -c -o $(CONFIG)/obj/list.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/list.c
 
 $(CONFIG)/obj/lock.o: \
     src/lock.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/lock.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/lock.c
+	$(CC) -c -o $(CONFIG)/obj/lock.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/lock.c
 
 $(CONFIG)/obj/log.o: \
     src/log.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/log.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/log.c
 
 $(CONFIG)/obj/mem.o: \
     src/mem.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mem.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mem.c
+	$(CC) -c -o $(CONFIG)/obj/mem.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/mem.c
 
 $(CONFIG)/obj/mime.o: \
     src/mime.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mime.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mime.c
+	$(CC) -c -o $(CONFIG)/obj/mime.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/mime.c
 
 $(CONFIG)/obj/mixed.o: \
     src/mixed.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mixed.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mixed.c
+	$(CC) -c -o $(CONFIG)/obj/mixed.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/mixed.c
 
 $(CONFIG)/obj/module.o: \
     src/module.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/module.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/module.c
+	$(CC) -c -o $(CONFIG)/obj/module.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/module.c
 
 $(CONFIG)/obj/mpr.o: \
     src/mpr.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mpr.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/mpr.c
+	$(CC) -c -o $(CONFIG)/obj/mpr.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/mpr.c
 
 $(CONFIG)/obj/path.o: \
     src/path.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/path.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/path.c
+	$(CC) -c -o $(CONFIG)/obj/path.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/path.c
 
 $(CONFIG)/obj/poll.o: \
     src/poll.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/poll.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/poll.c
+	$(CC) -c -o $(CONFIG)/obj/poll.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/poll.c
 
 $(CONFIG)/obj/posix.o: \
     src/posix.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/posix.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/posix.c
+	$(CC) -c -o $(CONFIG)/obj/posix.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/posix.c
 
 $(CONFIG)/obj/printf.o: \
     src/printf.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/printf.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/printf.c
+	$(CC) -c -o $(CONFIG)/obj/printf.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/printf.c
 
 $(CONFIG)/obj/rom.o: \
     src/rom.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/rom.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/rom.c
+	$(CC) -c -o $(CONFIG)/obj/rom.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/rom.c
 
 $(CONFIG)/obj/select.o: \
     src/select.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/select.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/select.c
+	$(CC) -c -o $(CONFIG)/obj/select.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/select.c
 
 $(CONFIG)/obj/signal.o: \
     src/signal.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/signal.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/signal.c
+	$(CC) -c -o $(CONFIG)/obj/signal.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/signal.c
 
 $(CONFIG)/obj/socket.o: \
     src/socket.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/socket.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/socket.c
+	$(CC) -c -o $(CONFIG)/obj/socket.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/socket.c
 
 $(CONFIG)/obj/string.o: \
     src/string.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/string.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/string.c
+	$(CC) -c -o $(CONFIG)/obj/string.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/string.c
 
 $(CONFIG)/obj/test.o: \
     src/test.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/test.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/test.c
+	$(CC) -c -o $(CONFIG)/obj/test.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/test.c
 
 $(CONFIG)/obj/thread.o: \
     src/thread.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/thread.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/thread.c
+	$(CC) -c -o $(CONFIG)/obj/thread.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/thread.c
 
 $(CONFIG)/obj/time.o: \
     src/time.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/time.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/time.c
+	$(CC) -c -o $(CONFIG)/obj/time.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/time.c
 
 $(CONFIG)/obj/vxworks.o: \
     src/vxworks.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/vxworks.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/vxworks.c
+	$(CC) -c -o $(CONFIG)/obj/vxworks.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/vxworks.c
 
 $(CONFIG)/obj/wait.o: \
     src/wait.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/wait.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wait.c
+	$(CC) -c -o $(CONFIG)/obj/wait.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/wait.c
 
 $(CONFIG)/obj/wide.o: \
     src/wide.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/wide.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wide.c
+	$(CC) -c -o $(CONFIG)/obj/wide.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/wide.c
 
 $(CONFIG)/obj/win.o: \
     src/win.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/win.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/win.c
+	$(CC) -c -o $(CONFIG)/obj/win.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/win.c
 
 $(CONFIG)/obj/wince.o: \
     src/wince.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/wince.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/wince.c
+	$(CC) -c -o $(CONFIG)/obj/wince.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/wince.c
 
 $(CONFIG)/obj/xml.o: \
     src/xml.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/xml.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/xml.c
+	$(CC) -c -o $(CONFIG)/obj/xml.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/xml.c
 
 $(CONFIG)/bin/libmpr.so: \
     $(CONFIG)/inc/bitos.h \
@@ -498,7 +498,7 @@ $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/benchMpr.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/benchMpr.c
+	$(CC) -c -o $(CONFIG)/obj/benchMpr.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/benchMpr.c
 
 $(CONFIG)/bin/benchMpr: \
     $(CONFIG)/bin/libmpr.so \
@@ -508,7 +508,7 @@ $(CONFIG)/bin/benchMpr: \
 $(CONFIG)/obj/runProgram.o: \
     test/runProgram.c\
     $(CONFIG)/inc/bit.h
-	$(CC) -c -o $(CONFIG)/obj/runProgram.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/runProgram.c
+	$(CC) -c -o $(CONFIG)/obj/runProgram.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/runProgram.c
 
 $(CONFIG)/bin/runProgram: \
     $(CONFIG)/obj/runProgram.o
@@ -520,31 +520,31 @@ $(CONFIG)/obj/est.o: \
     $(CONFIG)/inc/mpr.h \
     src/deps/est/est.h \
     $(CONFIG)/inc/bitos.h
-	$(CC) -c -o $(CONFIG)/obj/est.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc -Isrc/deps/est src/ssl/est.c
+	$(CC) -c -o $(CONFIG)/obj/est.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/est.c
 
 $(CONFIG)/obj/matrixssl.o: \
     src/ssl/matrixssl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/matrixssl.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc -Isrc/deps/est src/ssl/matrixssl.c
+	$(CC) -c -o $(CONFIG)/obj/matrixssl.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/matrixssl.c
 
 $(CONFIG)/obj/mocana.o: \
     src/ssl/mocana.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/mocana.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc -Isrc/deps/est src/ssl/mocana.c
+	$(CC) -c -o $(CONFIG)/obj/mocana.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/mocana.c
 
 $(CONFIG)/obj/openssl.o: \
     src/ssl/openssl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/openssl.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc -Isrc/deps/est src/ssl/openssl.c
+	$(CC) -c -o $(CONFIG)/obj/openssl.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/openssl.c
 
 $(CONFIG)/obj/ssl.o: \
     src/ssl/ssl.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/ssl.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc -Isrc/deps/est src/ssl/ssl.c
+	$(CC) -c -o $(CONFIG)/obj/ssl.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/ssl.c
 
 $(CONFIG)/bin/libmprssl.so: \
     $(CONFIG)/bin/libmpr.so \
@@ -559,103 +559,103 @@ $(CONFIG)/obj/testArgv.o: \
     test/testArgv.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testArgv.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testArgv.c
+	$(CC) -c -o $(CONFIG)/obj/testArgv.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testArgv.c
 
 $(CONFIG)/obj/testBuf.o: \
     test/testBuf.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testBuf.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testBuf.c
+	$(CC) -c -o $(CONFIG)/obj/testBuf.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testBuf.c
 
 $(CONFIG)/obj/testCmd.o: \
     test/testCmd.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testCmd.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCmd.c
+	$(CC) -c -o $(CONFIG)/obj/testCmd.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testCmd.c
 
 $(CONFIG)/obj/testCond.o: \
     test/testCond.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testCond.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testCond.c
+	$(CC) -c -o $(CONFIG)/obj/testCond.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testCond.c
 
 $(CONFIG)/obj/testEvent.o: \
     test/testEvent.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testEvent.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testEvent.c
+	$(CC) -c -o $(CONFIG)/obj/testEvent.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testEvent.c
 
 $(CONFIG)/obj/testFile.o: \
     test/testFile.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testFile.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testFile.c
+	$(CC) -c -o $(CONFIG)/obj/testFile.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testFile.c
 
 $(CONFIG)/obj/testHash.o: \
     test/testHash.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testHash.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testHash.c
+	$(CC) -c -o $(CONFIG)/obj/testHash.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testHash.c
 
 $(CONFIG)/obj/testList.o: \
     test/testList.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testList.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testList.c
+	$(CC) -c -o $(CONFIG)/obj/testList.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testList.c
 
 $(CONFIG)/obj/testLock.o: \
     test/testLock.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testLock.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testLock.c
+	$(CC) -c -o $(CONFIG)/obj/testLock.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testLock.c
 
 $(CONFIG)/obj/testMem.o: \
     test/testMem.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testMem.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMem.c
+	$(CC) -c -o $(CONFIG)/obj/testMem.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testMem.c
 
 $(CONFIG)/obj/testMpr.o: \
     test/testMpr.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testMpr.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testMpr.c
+	$(CC) -c -o $(CONFIG)/obj/testMpr.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testMpr.c
 
 $(CONFIG)/obj/testPath.o: \
     test/testPath.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testPath.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testPath.c
+	$(CC) -c -o $(CONFIG)/obj/testPath.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testPath.c
 
 $(CONFIG)/obj/testSocket.o: \
     test/testSocket.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testSocket.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSocket.c
+	$(CC) -c -o $(CONFIG)/obj/testSocket.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testSocket.c
 
 $(CONFIG)/obj/testSprintf.o: \
     test/testSprintf.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testSprintf.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testSprintf.c
+	$(CC) -c -o $(CONFIG)/obj/testSprintf.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testSprintf.c
 
 $(CONFIG)/obj/testThread.o: \
     test/testThread.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testThread.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testThread.c
+	$(CC) -c -o $(CONFIG)/obj/testThread.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testThread.c
 
 $(CONFIG)/obj/testTime.o: \
     test/testTime.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testTime.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testTime.c
+	$(CC) -c -o $(CONFIG)/obj/testTime.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testTime.c
 
 $(CONFIG)/obj/testUnicode.o: \
     test/testUnicode.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/testUnicode.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc test/testUnicode.c
+	$(CC) -c -o $(CONFIG)/obj/testUnicode.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) test/testUnicode.c
 
 $(CONFIG)/bin/testMpr: \
     $(CONFIG)/bin/libmpr.so \
@@ -684,7 +684,7 @@ $(CONFIG)/obj/manager.o: \
     src/manager.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/manager.c
 
 $(CONFIG)/bin/manager: \
     $(CONFIG)/bin/libmpr.so \
@@ -695,7 +695,7 @@ $(CONFIG)/obj/makerom.o: \
     src/utils/makerom.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/makerom.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/utils/makerom.c
 
 $(CONFIG)/bin/makerom: \
     $(CONFIG)/bin/libmpr.so \
@@ -706,7 +706,7 @@ $(CONFIG)/obj/charGen.o: \
     src/utils/charGen.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/charGen.o -fPIC $(LDFLAGS) $(DFLAGS) -I$(CONFIG)/inc src/utils/charGen.c
+	$(CC) -c -o $(CONFIG)/obj/charGen.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/utils/charGen.c
 
 $(CONFIG)/bin/chargen: \
     $(CONFIG)/bin/libmpr.so \
