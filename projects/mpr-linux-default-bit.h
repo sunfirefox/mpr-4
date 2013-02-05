@@ -149,7 +149,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform linux-x86-default -without default -configure . -gen make"
+    #define BIT_CONFIG_CMD "bit -d -q -platform linux-x86-default --without default -configure . -gen make"
 #endif
 #ifndef BIT_MPR_PRODUCT
     #define BIT_MPR_PRODUCT 1
