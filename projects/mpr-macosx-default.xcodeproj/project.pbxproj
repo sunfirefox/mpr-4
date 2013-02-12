@@ -881,8 +881,8 @@
 			shellPath = /bin/bash;
 			shellScript = "PATH=$PATH:/usr/local/bin
 cd ../src/deps/est
-rm -rf ../../${CFG_DIR}/bin/ca.crt
-cp -r ca.crt ../../${CFG_DIR}/bin/ca.crt
+rm -rf ../../${OUT_DIR}/bin/ca.crt
+cp -r ca.crt ../../${OUT_DIR}/bin/ca.crt
 ";
 		};
 		B8CD2258B8CD340200000017 /* ShellScript for Prep */ = {
@@ -905,14 +905,14 @@ cp -r ca.crt ../../${CFG_DIR}/bin/ca.crt
 if ! diff ${INC_DIR}/bit.h mpr-macosx-default-bit.h >/dev/null ; then
 cp mpr-macosx-default-bit.h ${INC_DIR}/bit.h
 fi
-if [ ../src/deps/est/est.h -nt ${CFG_DIR}/inc/est.h ] ; then
-cp ../src/deps/est/est.h ${CFG_DIR}/inc/est.h
+if [ ../src/deps/est/est.h -nt ${OUT_DIR}/inc/est.h ] ; then
+cp ../src/deps/est/est.h ${OUT_DIR}/inc/est.h
 fi
-if [ ../src/bitos.h -nt ${CFG_DIR}/inc/bitos.h ] ; then
-cp ../src/bitos.h ${CFG_DIR}/inc/bitos.h
+if [ ../src/bitos.h -nt ${OUT_DIR}/inc/bitos.h ] ; then
+cp ../src/bitos.h ${OUT_DIR}/inc/bitos.h
 fi
-if [ ../src/mpr.h -nt ${CFG_DIR}/inc/mpr.h ] ; then
-cp ../src/mpr.h ${CFG_DIR}/inc/mpr.h
+if [ ../src/mpr.h -nt ${OUT_DIR}/inc/mpr.h ] ; then
+cp ../src/mpr.h ${OUT_DIR}/inc/mpr.h
 fi";
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1250,7 +1250,7 @@ fi";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 
-                CFG_DIR = "../macosx-x64-default";
+                OUT_DIR = "../macosx-x64-default";
                 BIN_DIR = "../macosx-x64-default/bin";
                 LIB_DIR = "../macosx-x64-default/bin";
                 INC_DIR = "../macosx-x64-default/inc";
@@ -1320,7 +1320,7 @@ fi";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 
-                CFG_DIR = "../macosx-x64-default";
+                OUT_DIR = "../macosx-x64-default";
                 BIN_DIR = "../macosx-x64-default/bin";
                 LIB_DIR = "../macosx-x64-default/bin";
                 INC_DIR = "../macosx-x64-default/inc";
