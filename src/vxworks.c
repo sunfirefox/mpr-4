@@ -28,11 +28,14 @@ PUBLIC void mprStopOsService()
 }
 
 
+#if _WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)
+
 PUBLIC int access(const char *path, int mode)
 {
     struct stat sbuf;
     return stat((char*) path, &sbuf);
 }
+#endif
 
 
 PUBLIC int mprGetRandomBytes(char *buf, int length, bool block)
@@ -142,9 +145,12 @@ PUBLIC uint mprGetpid(void) {
 }
 
 
+#if _WRS_VXWORKS_MAJOR < 6 || (_WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR < 9)
+
 PUBLIC int fsync(int fd) { 
     return 0; 
 }
+#endif
 
 
 PUBLIC int ftruncate(int fd, off_t offset) { 

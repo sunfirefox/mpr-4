@@ -61,8 +61,14 @@
 #ifndef BIT_MPR_MANAGER
     #define BIT_MPR_MANAGER "manager"
 #endif
+#ifndef BIT_MPR_THREAD_STACK
+    #define BIT_MPR_THREAD_STACK 0
+#endif
 #ifndef BIT_MPR_TRACING
     #define BIT_MPR_TRACING 1
+#endif
+#ifndef BIT_PREFIXES
+    #define BIT_PREFIXES "embedthis-prefixes"
 #endif
 #ifndef BIT_PRODUCT
     #define BIT_PRODUCT "mpr"
@@ -96,8 +102,17 @@
 #endif
 
 /* Prefixes */
-#ifndef BIT_CFG_PREFIX
-    #define BIT_CFG_PREFIX "deploy"
+#ifndef BIT_ROOT_PREFIX
+    #define BIT_ROOT_PREFIX "deploy"
+#endif
+#ifndef BIT_BASE_PREFIX
+    #define BIT_BASE_PREFIX "deploy"
+#endif
+#ifndef BIT_DATA_PREFIX
+    #define BIT_DATA_PREFIX "deploy"
+#endif
+#ifndef BIT_STATE_PREFIX
+    #define BIT_STATE_PREFIX "deploy"
 #endif
 #ifndef BIT_BIN_PREFIX
     #define BIT_BIN_PREFIX "deploy"
@@ -105,29 +120,38 @@
 #ifndef BIT_INC_PREFIX
     #define BIT_INC_PREFIX "deploy/inc"
 #endif
-#ifndef BIT_LOG_PREFIX
-    #define BIT_LOG_PREFIX "deploy"
+#ifndef BIT_LIB_PREFIX
+    #define BIT_LIB_PREFIX "deploy"
 #endif
-#ifndef BIT_PRD_PREFIX
-    #define BIT_PRD_PREFIX "deploy"
+#ifndef BIT_MAN_PREFIX
+    #define BIT_MAN_PREFIX "deploy"
 #endif
-#ifndef BIT_SPL_PREFIX
-    #define BIT_SPL_PREFIX "deploy"
+#ifndef BIT_SBIN_PREFIX
+    #define BIT_SBIN_PREFIX "deploy"
 #endif
-#ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/mpr-4.3.0"
-#endif
-#ifndef BIT_VER_PREFIX
-    #define BIT_VER_PREFIX "deploy"
+#ifndef BIT_ETC_PREFIX
+    #define BIT_ETC_PREFIX "deploy"
 #endif
 #ifndef BIT_WEB_PREFIX
     #define BIT_WEB_PREFIX "deploy/web"
 #endif
-#ifndef BIT_UBIN_PREFIX
-    #define BIT_UBIN_PREFIX "deploy"
+#ifndef BIT_LOG_PREFIX
+    #define BIT_LOG_PREFIX "deploy"
 #endif
-#ifndef BIT_MAN_PREFIX
-    #define BIT_MAN_PREFIX "deploy"
+#ifndef BIT_SPOOL_PREFIX
+    #define BIT_SPOOL_PREFIX "deploy"
+#endif
+#ifndef BIT_CACHE_PREFIX
+    #define BIT_CACHE_PREFIX "deploy"
+#endif
+#ifndef BIT_APP_PREFIX
+    #define BIT_APP_PREFIX "deploy"
+#endif
+#ifndef BIT_VAPP_PREFIX
+    #define BIT_VAPP_PREFIX "deploy"
+#endif
+#ifndef BIT_SRC_PREFIX
+    #define BIT_SRC_PREFIX "/usr/src/mpr-4.3.0"
 #endif
 
 /* Suffixes */
