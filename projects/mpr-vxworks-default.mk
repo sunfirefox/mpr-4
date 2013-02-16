@@ -33,7 +33,7 @@ BIT_SPOOL_PREFIX      := $(BIT_VAPP_PREFIX)
 BIT_CACHE_PREFIX      := $(BIT_VAPP_PREFIX)
 BIT_APP_PREFIX        := $(BIT_BASE_PREFIX)
 BIT_VAPP_PREFIX       := $(BIT_APP_PREFIX)
-BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)usr/src/$(PRODUCT)-$(VERSION)
+BIT_SRC_PREFIX        := $(BIT_ROOT_PREFIX)/usr/src/$(PRODUCT)-$(VERSION)
 
 CFLAGS          += -fno-builtin -fno-defer-pop -fvolatile -w
 DFLAGS          += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS)))
@@ -92,6 +92,7 @@ clean:
 	rm -rf $(CONFIG)/bin/manager.out
 	rm -rf $(CONFIG)/bin/makerom.out
 	rm -rf $(CONFIG)/bin/chargen.out
+	rm -rf $(CONFIG)/obj/removeFiles.o
 	rm -rf $(CONFIG)/obj/estLib.o
 	rm -rf $(CONFIG)/obj/benchMpr.o
 	rm -rf $(CONFIG)/obj/runProgram.o
@@ -724,4 +725,21 @@ $(CONFIG)/bin/chargen.out: \
 
 version: 
 	@echo 4.3.0-0
+
+stop: 
+	
+
+installBinary: stop
+	
+
+
+start: 
+	
+
+install: stop installBinary start
+	
+
+uninstall: stop
+	
+
 

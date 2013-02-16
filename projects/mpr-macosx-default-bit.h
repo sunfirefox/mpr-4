@@ -7,6 +7,9 @@
 
 
 /* Settings */
+#ifndef BIT_BIT
+    #define BIT_BIT "0.8.1"
+#endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
 #endif
@@ -148,10 +151,10 @@
     #define BIT_SPOOL_PREFIX "/var/spool/mpr"
 #endif
 #ifndef BIT_CACHE_PREFIX
-    #define BIT_CACHE_PREFIX "/var/cache/mpr"
+    #define BIT_CACHE_PREFIX "/var/spool/mpr/cache"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/local/src/mpr-4.3.0"
+    #define BIT_SRC_PREFIX "mpr-4.3.0"
 #endif
 
 /* Suffixes */

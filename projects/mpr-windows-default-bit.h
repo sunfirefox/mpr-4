@@ -7,6 +7,9 @@
 
 
 /* Settings */
+#ifndef BIT_BIT
+    #define BIT_BIT "0.8.1"
+#endif
 #ifndef BIT_BUILD_NUMBER
     #define BIT_BUILD_NUMBER "0"
 #endif
@@ -79,55 +82,58 @@
 
 /* Prefixes */
 #ifndef BIT_ROOT_PREFIX
-    #define BIT_ROOT_PREFIX "/"
+    #define BIT_ROOT_PREFIX "C:"
+#endif
+#ifndef BIT_PROGRAMFILES_PREFIX
+    #define BIT_PROGRAMFILES_PREFIX "C:/Program Files"
+#endif
+#ifndef BIT_PROGRAMFILES32_PREFIX
+    #define BIT_PROGRAMFILES32_PREFIX "C:/Program Files"
 #endif
 #ifndef BIT_BASE_PREFIX
-    #define BIT_BASE_PREFIX "/usr/local"
-#endif
-#ifndef BIT_DATA_PREFIX
-    #define BIT_DATA_PREFIX "/"
-#endif
-#ifndef BIT_STATE_PREFIX
-    #define BIT_STATE_PREFIX "/var"
+    #define BIT_BASE_PREFIX "C:/Program Files"
 #endif
 #ifndef BIT_APP_PREFIX
-    #define BIT_APP_PREFIX "/usr/local/lib/mpr"
+    #define BIT_APP_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_VAPP_PREFIX
-    #define BIT_VAPP_PREFIX "/usr/local/lib/mpr/4.3.0"
+    #define BIT_VAPP_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
+#endif
+#ifndef BIT_DATA_PREFIX
+    #define BIT_DATA_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
+#endif
+#ifndef BIT_STATE_PREFIX
+    #define BIT_STATE_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_BIN_PREFIX
-    #define BIT_BIN_PREFIX "/usr/local/bin"
+    #define BIT_BIN_PREFIX "C:/Program Files/Multithreaded Portable Runtime/bin"
 #endif
 #ifndef BIT_INC_PREFIX
-    #define BIT_INC_PREFIX "/usr/local/include"
+    #define BIT_INC_PREFIX "C:/Program Files/Multithreaded Portable Runtime/inc"
 #endif
 #ifndef BIT_LIB_PREFIX
-    #define BIT_LIB_PREFIX "/usr/local/lib"
+    #define BIT_LIB_PREFIX "C:/Program Files/Multithreaded Portable Runtime/lib"
 #endif
 #ifndef BIT_MAN_PREFIX
-    #define BIT_MAN_PREFIX "/usr/local/share/man"
-#endif
-#ifndef BIT_SBIN_PREFIX
-    #define BIT_SBIN_PREFIX "/usr/local/sbin"
+    #define BIT_MAN_PREFIX "C:/Program Files/Multithreaded Portable Runtime/man"
 #endif
 #ifndef BIT_ETC_PREFIX
-    #define BIT_ETC_PREFIX "/etc/mpr"
+    #define BIT_ETC_PREFIX "C:/Program Files/Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_WEB_PREFIX
-    #define BIT_WEB_PREFIX "/var/www/mpr-default"
+    #define BIT_WEB_PREFIX "C:/Program Files/Multithreaded Portable Runtime/web"
 #endif
 #ifndef BIT_LOG_PREFIX
-    #define BIT_LOG_PREFIX "/var/log/mpr"
+    #define BIT_LOG_PREFIX "C:/Program Files/Multithreaded Portable Runtime/log"
 #endif
 #ifndef BIT_SPOOL_PREFIX
-    #define BIT_SPOOL_PREFIX "/var/spool/mpr"
+    #define BIT_SPOOL_PREFIX "C:/Program Files/Multithreaded Portable Runtime/tmp"
 #endif
 #ifndef BIT_CACHE_PREFIX
-    #define BIT_CACHE_PREFIX "/var/cache/mpr"
+    #define BIT_CACHE_PREFIX "C:/Program Files/Multithreaded Portable Runtime/cache"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/local/src/mpr-4.3.0"
+    #define BIT_SRC_PREFIX "C:/Program Files/Multithreaded Portable Runtime/src"
 #endif
 
 /* Suffixes */

@@ -21,6 +21,7 @@ Bit.load({
         company: 'Embedthis',
         version: '4.3.0',
         buildNumber: '0',
+        bit: '0.8.1'
         prefixes: 'embedthis-prefixes',
         sync: ['bitos', 'est'],
         '+required': [], 
@@ -81,34 +82,53 @@ Bit.load({
 
         packageSource: { },
 
-        packageCombo: {
-            depends: ['build'],
-            action: "
-                /* This is a combo/flat distribution only */
-                let d = bit.dir.pkg.join('${settings.product}-${settings.version}')
-                safeRemove(bit.dir.pkg)
-                install('package/mpr.bit', d.join('src/deps/mpr/mpr.bit'), {hidden: true})
-                install(['src/utils/makerom.c', 'src/manager.c'], d.join('src/deps/mpr'))
-                install(['doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], d.join('doc/api'))
-                install('doc/man/*.1', d.join('doc/man'))
-                install('src/mpr.h', d.join('src/deps/mpr/mpr.h'))
-                install(['src/mem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
-                    cat: true,
-                    filter: /^#inc.*mpr.*$/mg, 
-                    exclude: /manager|makerom/,
-                    header: '#include \"mpr.h\"',
-                    title: bit.settings.title + ' Library Source',
-                })
-                /* Must put matrix first - because they have screwed headers */
-                install(['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/mocana.c', 'src/ssl/ssl.c'], 
-                    d.join('src/deps/mpr/mprSsl.c'), {
-                    cat: true,
-                    title: bit.settings.title + ' SSL Source',
-                })
-                package(bit.dir.pkg, ['combo', 'flat'])
-            ",
-        },
     },
+    manifest: {
+        packages: {
+            combo: {
+                inherit:    'embedthis-manifest',
+                prefixes:   [ 'src'],
+                sets:       [ 'source' ],
+            },
+        },
+        files: [ 
+            {   from:   'package/mpr.bit', 
+                to:     '${src}/src/deps/mpr/mpr.bit',
+                set:    'source',
+            },{
+                from:   'src/mpr.h',
+                to:     '${src}/src/deps/mpr/mpr.h',
+                set:    'source',
+            },{
+                from:   ['src/mem.c', 'src/mpr.c', 'src/*.c'],
+                to:     '${src}/src/deps/mpr/mprLib.c',
+                cat:    true,
+                filter: /^#inc.*mpr.*$/mg, 
+                exclude: /manager|makerom/,
+                header: '#include \"mpr.h\"',
+                title:  '${settings.title} Library Source',
+                set:    'source',
+            },{
+                from:   ['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/mocana.c', 'src/ssl/ssl.c'], 
+                to:     '${src}/src/deps/mpr/mprSsl.c',
+                cat:    true,
+                title:  '${settings.title} SSL Source',
+                set:    'source',
+            },{
+                from:   ['src/utils/makerom.c', 'src/manager.c'], 
+                to:     '${src}/src/deps/mpr/',
+                set:    'source',
+            },{
+                from:   ['doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'],
+                to:     '${src}/doc/api/',
+                set:    'source',
+            },{
+                from:   'doc/man/*.1',
+                to:     '${src}/doc/man/',
+                set:    'source',
+            },
+        ],
+	},
 
     packs: {
         est: {},
