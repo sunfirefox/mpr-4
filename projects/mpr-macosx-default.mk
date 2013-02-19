@@ -165,15 +165,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/est.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/deps/est/est.h" "macosx-x64-default/inc/est.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/est/est.h" "$(CONFIG)/inc/est.h"
 
 $(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/bitos.h" "macosx-x64-default/inc/bitos.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -189,12 +189,12 @@ $(CONFIG)/bin/libest.dylib: \
 
 $(CONFIG)/bin/ca.crt: \
     src/deps/est/ca.crt
-	mkdir -p "macosx-x64-default/bin"
-	cp "src/deps/est/ca.crt" "macosx-x64-default/bin/ca.crt"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
 
 $(CONFIG)/inc/mpr.h: 
-	mkdir -p "macosx-x64-default/inc"
-	cp "src/mpr.h" "macosx-x64-default/inc/mpr.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/mpr.h" "$(CONFIG)/inc/mpr.h"
 
 $(CONFIG)/obj/async.o: \
     src/async.c\
@@ -513,7 +513,8 @@ $(CONFIG)/bin/libmpr.dylib: \
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c\
     $(CONFIG)/inc/bit.h \
-    $(CONFIG)/inc/mpr.h
+    $(CONFIG)/inc/mpr.h \
+    $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/benchMpr.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/benchMpr.c
 
 $(CONFIG)/bin/benchMpr: \
@@ -530,14 +531,11 @@ $(CONFIG)/bin/runProgram: \
     $(CONFIG)/obj/runProgram.o
 	$(CC) -o $(CONFIG)/bin/runProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS)
 
-src/deps/est/est.h: 
-
 $(CONFIG)/obj/est.o: \
     src/ssl/est.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
-    src/deps/est/est.h \
-    $(CONFIG)/inc/bitos.h
+    $(CONFIG)/inc/est.h
 	$(CC) -c -o $(CONFIG)/obj/est.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/est.c
 
 $(CONFIG)/obj/matrixssl.o: \

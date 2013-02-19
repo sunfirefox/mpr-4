@@ -165,15 +165,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/est.h: 
-	mkdir -p "freebsd-x86-default/inc"
-	cp "src/deps/est/est.h" "freebsd-x86-default/inc/est.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/deps/est/est.h" "$(CONFIG)/inc/est.h"
 
 $(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	mkdir -p "freebsd-x86-default/inc"
-	cp "src/bitos.h" "freebsd-x86-default/inc/bitos.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -189,12 +189,12 @@ $(CONFIG)/bin/libest.so: \
 
 $(CONFIG)/bin/ca.crt: \
     src/deps/est/ca.crt
-	mkdir -p "freebsd-x86-default/bin"
-	cp "src/deps/est/ca.crt" "freebsd-x86-default/bin/ca.crt"
+	mkdir -p "$(CONFIG)/bin"
+	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
 
 $(CONFIG)/inc/mpr.h: 
-	mkdir -p "freebsd-x86-default/inc"
-	cp "src/mpr.h" "freebsd-x86-default/inc/mpr.h"
+	mkdir -p "$(CONFIG)/inc"
+	cp "src/mpr.h" "$(CONFIG)/inc/mpr.h"
 
 $(CONFIG)/obj/async.o: \
     src/async.c\
