@@ -47,7 +47,6 @@ BIT_CACHE_PREFIX      = $(BIT_VAPP_PREFIX)\cache
 BIT_SRC_PREFIX        = $(BIT_VAPP_PREFIX)\src
 
 all compile: prep \
-        $(CONFIG)\bin\removeFiles.exe \
         $(CONFIG)\bin\libest.dll \
         $(CONFIG)\bin\ca.crt \
         $(CONFIG)\bin\benchMpr.exe \
@@ -74,8 +73,8 @@ prep:
 	@if not exist $(CONFIG)\inc md $(CONFIG)\inc
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
 	@if not exist $(CONFIG)\inc\bit.h copy projects\mpr-windows-default-bit.h $(CONFIG)\inc\bit.h
+
 clean:
-	-if exist $(CONFIG)\bin\removeFiles.exe del /Q $(CONFIG)\bin\removeFiles.exe
 	-if exist $(CONFIG)\bin\libest.dll del /Q $(CONFIG)\bin\libest.dll
 	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
 	-if exist $(CONFIG)\bin\benchMpr.exe del /Q $(CONFIG)\bin\benchMpr.exe
@@ -86,7 +85,6 @@ clean:
 	-if exist $(CONFIG)\bin\manager.exe del /Q $(CONFIG)\bin\manager.exe
 	-if exist $(CONFIG)\bin\makerom.exe del /Q $(CONFIG)\bin\makerom.exe
 	-if exist $(CONFIG)\bin\chargen.exe del /Q $(CONFIG)\bin\chargen.exe
-	-if exist $(CONFIG)\obj\removeFiles.obj del /Q $(CONFIG)\obj\removeFiles.obj
 	-if exist $(CONFIG)\obj\estLib.obj del /Q $(CONFIG)\obj\estLib.obj
 	-if exist $(CONFIG)\obj\benchMpr.obj del /Q $(CONFIG)\obj\benchMpr.obj
 	-if exist $(CONFIG)\obj\runProgram.obj del /Q $(CONFIG)\obj\runProgram.obj
@@ -159,20 +157,11 @@ clean:
 	-if exist $(CONFIG)\obj\makerom.obj del /Q $(CONFIG)\obj\makerom.obj
 	-if exist $(CONFIG)\obj\charGen.obj del /Q $(CONFIG)\obj\charGen.obj
 
-$(CONFIG)\inc\bit.h: 
-
-$(CONFIG)\obj\removeFiles.obj: \
-    ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c\
-    $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c
-
-$(CONFIG)\bin\removeFiles.exe: \
-    $(CONFIG)\obj\removeFiles.obj
-	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS)
-
 $(CONFIG)\inc\est.h: 
 	if not exist "$(CONFIG)\inc" md "$(CONFIG)\inc"
 	copy /Y "src\deps\est\est.h" "$(CONFIG)\inc\est.h"
+
+$(CONFIG)\inc\bit.h: 
 
 $(CONFIG)\inc\bitos.h: \
     $(CONFIG)\inc\bit.h

@@ -81,6 +81,7 @@ prep:
 		echo cp projects/mpr-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
 		cp projects/mpr-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
+
 clean:
 	rm -rf $(CONFIG)/bin/libest.out
 	rm -rf $(CONFIG)/bin/ca.crt
@@ -92,7 +93,6 @@ clean:
 	rm -rf $(CONFIG)/bin/manager.out
 	rm -rf $(CONFIG)/bin/makerom.out
 	rm -rf $(CONFIG)/bin/chargen.out
-	rm -rf $(CONFIG)/obj/removeFiles.o
 	rm -rf $(CONFIG)/obj/estLib.o
 	rm -rf $(CONFIG)/obj/benchMpr.o
 	rm -rf $(CONFIG)/obj/runProgram.o

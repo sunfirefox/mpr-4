@@ -77,6 +77,7 @@ prep:
 		echo cp projects/mpr-macosx-default-bit.h $(CONFIG)/inc/bit.h  ; \
 		cp projects/mpr-macosx-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
+
 clean:
 	rm -rf $(CONFIG)/bin/libest.dylib
 	rm -rf $(CONFIG)/bin/ca.crt
@@ -88,7 +89,6 @@ clean:
 	rm -rf $(CONFIG)/bin/manager
 	rm -rf $(CONFIG)/bin/makerom
 	rm -rf $(CONFIG)/bin/chargen
-	rm -rf $(CONFIG)/obj/removeFiles.o
 	rm -rf $(CONFIG)/obj/estLib.o
 	rm -rf $(CONFIG)/obj/benchMpr.o
 	rm -rf $(CONFIG)/obj/runProgram.o
