@@ -513,8 +513,7 @@ $(CONFIG)/bin/libmpr.dylib: \
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c\
     $(CONFIG)/inc/bit.h \
-    $(CONFIG)/inc/mpr.h \
-    $(CONFIG)/inc/bitos.h
+    $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/benchMpr.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/benchMpr.c
 
 $(CONFIG)/bin/benchMpr: \
@@ -531,11 +530,14 @@ $(CONFIG)/bin/runProgram: \
     $(CONFIG)/obj/runProgram.o
 	$(CC) -o $(CONFIG)/bin/runProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS)
 
+src/deps/est/est.h: 
+
 $(CONFIG)/obj/est.o: \
     src/ssl/est.c\
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h \
-    $(CONFIG)/inc/est.h
+    src/deps/est/est.h \
+    $(CONFIG)/inc/bitos.h
 	$(CC) -c -o $(CONFIG)/obj/est.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/est.c
 
 $(CONFIG)/obj/matrixssl.o: \
