@@ -129,6 +129,7 @@ clean:
 	rm -rf $(CONFIG)/obj/list.o
 	rm -rf $(CONFIG)/obj/lock.o
 	rm -rf $(CONFIG)/obj/log.o
+	rm -rf $(CONFIG)/obj/manager.o
 	rm -rf $(CONFIG)/obj/mem.o
 	rm -rf $(CONFIG)/obj/mime.o
 	rm -rf $(CONFIG)/obj/mixed.o
@@ -157,7 +158,6 @@ clean:
 	rm -rf $(CONFIG)/obj/mocana.o
 	rm -rf $(CONFIG)/obj/openssl.o
 	rm -rf $(CONFIG)/obj/ssl.o
-	rm -rf $(CONFIG)/obj/manager.o
 	rm -rf $(CONFIG)/obj/makerom.o
 	rm -rf $(CONFIG)/obj/charGen.o
 
@@ -165,13 +165,15 @@ clobber: clean
 	rm -fr ./$(CONFIG)
 
 $(CONFIG)/inc/est.h: 
-	rm -fr $(CONFIG)/inc/est.h
-	cp -r src/deps/est/est.h $(CONFIG)/inc/est.h
+	mkdir -p "/Users/mob/git/mpr/macosx-x64-default/inc"
+	cp "src/deps/est/est.h" "/Users/mob/git/mpr/macosx-x64-default/inc/est.h"
+
+$(CONFIG)/inc/bit.h: 
 
 $(CONFIG)/inc/bitos.h: \
     $(CONFIG)/inc/bit.h
-	rm -fr $(CONFIG)/inc/bitos.h
-	cp -r src/bitos.h $(CONFIG)/inc/bitos.h
+	mkdir -p "/Users/mob/git/mpr/macosx-x64-default/inc"
+	cp "src/bitos.h" "/Users/mob/git/mpr/macosx-x64-default/inc/bitos.h"
 
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c\
@@ -185,13 +187,14 @@ $(CONFIG)/bin/libest.dylib: \
     $(CONFIG)/obj/estLib.o
 	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libest.dylib $(CONFIG)/obj/estLib.o $(LIBS)
 
-$(CONFIG)/bin/ca.crt: src/deps/est/ca.crt
-	rm -fr $(CONFIG)/bin/ca.crt
-	cp -r src/deps/est/ca.crt $(CONFIG)/bin/ca.crt
+$(CONFIG)/bin/ca.crt: \
+    src/deps/est/ca.crt
+	mkdir -p "/Users/mob/git/mpr/macosx-x64-default/bin"
+	cp "src/deps/est/ca.crt" "/Users/mob/git/mpr/macosx-x64-default/bin/ca.crt"
 
 $(CONFIG)/inc/mpr.h: 
-	rm -fr $(CONFIG)/inc/mpr.h
-	cp -r src/mpr.h $(CONFIG)/inc/mpr.h
+	mkdir -p "/Users/mob/git/mpr/macosx-x64-default/inc"
+	cp "src/mpr.h" "/Users/mob/git/mpr/macosx-x64-default/inc/mpr.h"
 
 $(CONFIG)/obj/async.o: \
     src/async.c\
@@ -313,6 +316,12 @@ $(CONFIG)/obj/log.o: \
     $(CONFIG)/inc/bit.h \
     $(CONFIG)/inc/mpr.h
 	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/log.c
+
+$(CONFIG)/obj/manager.o: \
+    src/manager.c\
+    $(CONFIG)/inc/bit.h \
+    $(CONFIG)/inc/mpr.h
+	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/manager.c
 
 $(CONFIG)/obj/mem.o: \
     src/mem.c\
@@ -475,6 +484,7 @@ $(CONFIG)/bin/libmpr.dylib: \
     $(CONFIG)/obj/list.o \
     $(CONFIG)/obj/lock.o \
     $(CONFIG)/obj/log.o \
+    $(CONFIG)/obj/manager.o \
     $(CONFIG)/obj/mem.o \
     $(CONFIG)/obj/mime.o \
     $(CONFIG)/obj/mixed.o \
@@ -498,7 +508,7 @@ $(CONFIG)/bin/libmpr.dylib: \
     $(CONFIG)/obj/win.o \
     $(CONFIG)/obj/wince.o \
     $(CONFIG)/obj/xml.o
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/json.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS)
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmpr.dylib $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/json.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/manager.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS)
 
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c\
@@ -519,6 +529,8 @@ $(CONFIG)/obj/runProgram.o: \
 $(CONFIG)/bin/runProgram: \
     $(CONFIG)/obj/runProgram.o
 	$(CC) -o $(CONFIG)/bin/runProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS)
+
+src/deps/est/est.h: 
 
 $(CONFIG)/obj/est.o: \
     src/ssl/est.c\
@@ -686,12 +698,6 @@ $(CONFIG)/bin/testMpr: \
     $(CONFIG)/obj/testUnicode.o
 	$(CC) -o $(CONFIG)/bin/testMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o -lmprssl -lmpr $(LIBS) -lest
 
-$(CONFIG)/obj/manager.o: \
-    src/manager.c\
-    $(CONFIG)/inc/bit.h \
-    $(CONFIG)/inc/mpr.h
-	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/manager.c
-
 $(CONFIG)/bin/manager: \
     $(CONFIG)/bin/libmpr.dylib \
     $(CONFIG)/obj/manager.o
@@ -726,7 +732,6 @@ stop:
 	
 
 installBinary: stop
-	
 
 
 start: 
@@ -736,6 +741,5 @@ install: stop installBinary start
 	
 
 uninstall: stop
-	
 
 

@@ -79,3 +79,5 @@ projects/*macosx-full.xcodeproj
 *-mine
 *-mine*
 .flags
+/*-*-*/
+/*-*-*.bit

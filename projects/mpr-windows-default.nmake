@@ -127,6 +127,7 @@ clean:
 	-if exist $(CONFIG)\obj\list.obj del /Q $(CONFIG)\obj\list.obj
 	-if exist $(CONFIG)\obj\lock.obj del /Q $(CONFIG)\obj\lock.obj
 	-if exist $(CONFIG)\obj\log.obj del /Q $(CONFIG)\obj\log.obj
+	-if exist $(CONFIG)\obj\manager.obj del /Q $(CONFIG)\obj\manager.obj
 	-if exist $(CONFIG)\obj\mem.obj del /Q $(CONFIG)\obj\mem.obj
 	-if exist $(CONFIG)\obj\mime.obj del /Q $(CONFIG)\obj\mime.obj
 	-if exist $(CONFIG)\obj\mixed.obj del /Q $(CONFIG)\obj\mixed.obj
@@ -155,572 +156,346 @@ clean:
 	-if exist $(CONFIG)\obj\mocana.obj del /Q $(CONFIG)\obj\mocana.obj
 	-if exist $(CONFIG)\obj\openssl.obj del /Q $(CONFIG)\obj\openssl.obj
 	-if exist $(CONFIG)\obj\ssl.obj del /Q $(CONFIG)\obj\ssl.obj
-	-if exist $(CONFIG)\obj\manager.obj del /Q $(CONFIG)\obj\manager.obj
 	-if exist $(CONFIG)\obj\makerom.obj del /Q $(CONFIG)\obj\makerom.obj
 	-if exist $(CONFIG)\obj\charGen.obj del /Q $(CONFIG)\obj\charGen.obj
 
-$(CONFIG)\obj\removeFiles.obj: \
-    ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c\
-    $(CONFIG)\inc\bit.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) ..\bit\macosx-x64-release\bin\package\windows\removeFiles.c
+$(CONFIG)\inc\bit.h: 
 
-$(CONFIG)\bin\removeFiles.exe: \
-    $(CONFIG)\obj\removeFiles.obj
+$(CONFIG)\obj\removeFiles.obj: \
+    ..\bit\macosx-x64-debug\bin\package\windows\removeFiles.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\removeFiles.obj -Fd$(CONFIG)\obj\removeFiles.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) ..\bit\macosx-x64-debug\bin\package\windows\removeFiles.c
+
+$(CONFIG)\bin\removeFiles.exe: 
 	"$(LD)" -out:$(CONFIG)\bin\removeFiles.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\removeFiles.obj $(LIBS)
 
 $(CONFIG)\inc\est.h: 
-	-if exist $(CONFIG)\inc\est.h del /Q $(CONFIG)\inc\est.h
-	copy /Y src\deps\est\est.h $(CONFIG)\inc\est.h
+	if not exist "\Users\mob\git\mpr\windows-x86-default\inc" md "\Users\mob\git\mpr\windows-x86-default\inc"
+	copy /Y "src\deps\est\est.h" "\Users\mob\git\mpr\windows-x86-default\inc\est.h"
 
-$(CONFIG)\inc\bitos.h: \
-    $(CONFIG)\inc\bit.h
-	-if exist $(CONFIG)\inc\bitos.h del /Q $(CONFIG)\inc\bitos.h
-	copy /Y src\bitos.h $(CONFIG)\inc\bitos.h
+$(CONFIG)\inc\bitos.h: 
+	if not exist "\Users\mob\git\mpr\windows-x86-default\inc" md "\Users\mob\git\mpr\windows-x86-default\inc"
+	copy /Y "src\bitos.h" "\Users\mob\git\mpr\windows-x86-default\inc\bitos.h"
 
 $(CONFIG)\obj\estLib.obj: \
-    src\deps\est\estLib.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\est.h \
-    $(CONFIG)\inc\bitos.h
+    src\deps\est\estLib.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
-$(CONFIG)\bin\libest.dll: \
-    $(CONFIG)\inc\est.h \
-    $(CONFIG)\obj\estLib.obj
+$(CONFIG)\bin\libest.dll: 
 	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\estLib.obj $(LIBS)
 
-$(CONFIG)\bin\ca.crt: src/deps/est/ca.crt
-	-if exist $(CONFIG)\bin\ca.crt del /Q $(CONFIG)\bin\ca.crt
-	copy /Y src\deps\est\ca.crt $(CONFIG)\bin\ca.crt
+$(CONFIG)\bin\ca.crt: \
+    src\deps\est\ca.crt
+	if not exist "\Users\mob\git\mpr\windows-x86-default\bin" md "\Users\mob\git\mpr\windows-x86-default\bin"
+	copy /Y "src\deps\est\ca.crt" "\Users\mob\git\mpr\windows-x86-default\bin\ca.crt"
 
 $(CONFIG)\inc\mpr.h: 
-	-if exist $(CONFIG)\inc\mpr.h del /Q $(CONFIG)\inc\mpr.h
-	copy /Y src\mpr.h $(CONFIG)\inc\mpr.h
+	if not exist "\Users\mob\git\mpr\windows-x86-default\inc" md "\Users\mob\git\mpr\windows-x86-default\inc"
+	copy /Y "src\mpr.h" "\Users\mob\git\mpr\windows-x86-default\inc\mpr.h"
 
 $(CONFIG)\obj\async.obj: \
-    src\async.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\inc\bitos.h
+    src\async.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\async.obj -Fd$(CONFIG)\obj\async.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\async.c
 
 $(CONFIG)\obj\atomic.obj: \
-    src\atomic.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\atomic.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\atomic.obj -Fd$(CONFIG)\obj\atomic.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\atomic.c
 
 $(CONFIG)\obj\buf.obj: \
-    src\buf.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\buf.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\buf.obj -Fd$(CONFIG)\obj\buf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\buf.c
 
 $(CONFIG)\obj\cache.obj: \
-    src\cache.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\cache.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\cache.obj -Fd$(CONFIG)\obj\cache.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\cache.c
 
 $(CONFIG)\obj\cmd.obj: \
-    src\cmd.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\cmd.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\cmd.obj -Fd$(CONFIG)\obj\cmd.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\cmd.c
 
 $(CONFIG)\obj\cond.obj: \
-    src\cond.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\cond.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\cond.obj -Fd$(CONFIG)\obj\cond.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\cond.c
 
 $(CONFIG)\obj\crypt.obj: \
-    src\crypt.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\crypt.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\crypt.obj -Fd$(CONFIG)\obj\crypt.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\crypt.c
 
 $(CONFIG)\obj\disk.obj: \
-    src\disk.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\disk.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\disk.obj -Fd$(CONFIG)\obj\disk.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\disk.c
 
 $(CONFIG)\obj\dispatcher.obj: \
-    src\dispatcher.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\dispatcher.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\dispatcher.obj -Fd$(CONFIG)\obj\dispatcher.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\dispatcher.c
 
 $(CONFIG)\obj\encode.obj: \
-    src\encode.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\encode.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\encode.obj -Fd$(CONFIG)\obj\encode.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\encode.c
 
 $(CONFIG)\obj\epoll.obj: \
-    src\epoll.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\epoll.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\epoll.obj -Fd$(CONFIG)\obj\epoll.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\epoll.c
 
 $(CONFIG)\obj\event.obj: \
-    src\event.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\event.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\event.obj -Fd$(CONFIG)\obj\event.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\event.c
 
 $(CONFIG)\obj\file.obj: \
-    src\file.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\file.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\file.obj -Fd$(CONFIG)\obj\file.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\file.c
 
 $(CONFIG)\obj\fs.obj: \
-    src\fs.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\fs.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\fs.obj -Fd$(CONFIG)\obj\fs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\fs.c
 
 $(CONFIG)\obj\hash.obj: \
-    src\hash.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\hash.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\hash.obj -Fd$(CONFIG)\obj\hash.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\hash.c
 
 $(CONFIG)\obj\json.obj: \
-    src\json.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\json.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\json.obj -Fd$(CONFIG)\obj\json.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\json.c
 
 $(CONFIG)\obj\kqueue.obj: \
-    src\kqueue.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\kqueue.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\kqueue.obj -Fd$(CONFIG)\obj\kqueue.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\kqueue.c
 
 $(CONFIG)\obj\list.obj: \
-    src\list.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\list.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\list.obj -Fd$(CONFIG)\obj\list.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\list.c
 
 $(CONFIG)\obj\lock.obj: \
-    src\lock.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\lock.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\lock.obj -Fd$(CONFIG)\obj\lock.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\lock.c
 
 $(CONFIG)\obj\log.obj: \
-    src\log.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\log.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\log.c
 
+$(CONFIG)\obj\manager.obj: \
+    src\manager.c
+	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\manager.c
+
 $(CONFIG)\obj\mem.obj: \
-    src\mem.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\mem.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\mem.obj -Fd$(CONFIG)\obj\mem.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mem.c
 
 $(CONFIG)\obj\mime.obj: \
-    src\mime.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\mime.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\mime.obj -Fd$(CONFIG)\obj\mime.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mime.c
 
 $(CONFIG)\obj\mixed.obj: \
-    src\mixed.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\mixed.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\mixed.obj -Fd$(CONFIG)\obj\mixed.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mixed.c
 
 $(CONFIG)\obj\module.obj: \
-    src\module.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\module.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\module.obj -Fd$(CONFIG)\obj\module.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\module.c
 
 $(CONFIG)\obj\mpr.obj: \
-    src\mpr.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\mpr.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\mpr.obj -Fd$(CONFIG)\obj\mpr.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr.c
 
 $(CONFIG)\obj\path.obj: \
-    src\path.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\path.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\path.obj -Fd$(CONFIG)\obj\path.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\path.c
 
 $(CONFIG)\obj\poll.obj: \
-    src\poll.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\poll.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\poll.obj -Fd$(CONFIG)\obj\poll.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\poll.c
 
 $(CONFIG)\obj\posix.obj: \
-    src\posix.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\posix.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\posix.obj -Fd$(CONFIG)\obj\posix.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\posix.c
 
 $(CONFIG)\obj\printf.obj: \
-    src\printf.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\printf.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\printf.obj -Fd$(CONFIG)\obj\printf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\printf.c
 
 $(CONFIG)\obj\rom.obj: \
-    src\rom.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\rom.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\rom.obj -Fd$(CONFIG)\obj\rom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\rom.c
 
 $(CONFIG)\obj\select.obj: \
-    src\select.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\select.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\select.obj -Fd$(CONFIG)\obj\select.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\select.c
 
 $(CONFIG)\obj\signal.obj: \
-    src\signal.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\signal.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\signal.obj -Fd$(CONFIG)\obj\signal.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\signal.c
 
 $(CONFIG)\obj\socket.obj: \
-    src\socket.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\socket.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\socket.obj -Fd$(CONFIG)\obj\socket.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\socket.c
 
 $(CONFIG)\obj\string.obj: \
-    src\string.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\string.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\string.obj -Fd$(CONFIG)\obj\string.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\string.c
 
 $(CONFIG)\obj\test.obj: \
-    src\test.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\test.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\test.obj -Fd$(CONFIG)\obj\test.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\test.c
 
 $(CONFIG)\obj\thread.obj: \
-    src\thread.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\thread.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\thread.obj -Fd$(CONFIG)\obj\thread.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\thread.c
 
 $(CONFIG)\obj\time.obj: \
-    src\time.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\time.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\time.obj -Fd$(CONFIG)\obj\time.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\time.c
 
 $(CONFIG)\obj\vxworks.obj: \
-    src\vxworks.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\vxworks.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\vxworks.obj -Fd$(CONFIG)\obj\vxworks.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\vxworks.c
 
 $(CONFIG)\obj\wait.obj: \
-    src\wait.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\wait.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\wait.obj -Fd$(CONFIG)\obj\wait.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\wait.c
 
 $(CONFIG)\obj\wide.obj: \
-    src\wide.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\wide.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\wide.obj -Fd$(CONFIG)\obj\wide.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\wide.c
 
 $(CONFIG)\obj\win.obj: \
-    src\win.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\win.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\win.obj -Fd$(CONFIG)\obj\win.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\win.c
 
 $(CONFIG)\obj\wince.obj: \
-    src\wince.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\wince.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\wince.obj -Fd$(CONFIG)\obj\wince.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\wince.c
 
 $(CONFIG)\obj\xml.obj: \
-    src\xml.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\xml.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\xml.obj -Fd$(CONFIG)\obj\xml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\xml.c
 
-$(CONFIG)\bin\libmpr.dll: \
-    $(CONFIG)\inc\bitos.h \
-    $(CONFIG)\inc\mpr.h \
-    $(CONFIG)\obj\async.obj \
-    $(CONFIG)\obj\atomic.obj \
-    $(CONFIG)\obj\buf.obj \
-    $(CONFIG)\obj\cache.obj \
-    $(CONFIG)\obj\cmd.obj \
-    $(CONFIG)\obj\cond.obj \
-    $(CONFIG)\obj\crypt.obj \
-    $(CONFIG)\obj\disk.obj \
-    $(CONFIG)\obj\dispatcher.obj \
-    $(CONFIG)\obj\encode.obj \
-    $(CONFIG)\obj\epoll.obj \
-    $(CONFIG)\obj\event.obj \
-    $(CONFIG)\obj\file.obj \
-    $(CONFIG)\obj\fs.obj \
-    $(CONFIG)\obj\hash.obj \
-    $(CONFIG)\obj\json.obj \
-    $(CONFIG)\obj\kqueue.obj \
-    $(CONFIG)\obj\list.obj \
-    $(CONFIG)\obj\lock.obj \
-    $(CONFIG)\obj\log.obj \
-    $(CONFIG)\obj\mem.obj \
-    $(CONFIG)\obj\mime.obj \
-    $(CONFIG)\obj\mixed.obj \
-    $(CONFIG)\obj\module.obj \
-    $(CONFIG)\obj\mpr.obj \
-    $(CONFIG)\obj\path.obj \
-    $(CONFIG)\obj\poll.obj \
-    $(CONFIG)\obj\posix.obj \
-    $(CONFIG)\obj\printf.obj \
-    $(CONFIG)\obj\rom.obj \
-    $(CONFIG)\obj\select.obj \
-    $(CONFIG)\obj\signal.obj \
-    $(CONFIG)\obj\socket.obj \
-    $(CONFIG)\obj\string.obj \
-    $(CONFIG)\obj\test.obj \
-    $(CONFIG)\obj\thread.obj \
-    $(CONFIG)\obj\time.obj \
-    $(CONFIG)\obj\vxworks.obj \
-    $(CONFIG)\obj\wait.obj \
-    $(CONFIG)\obj\wide.obj \
-    $(CONFIG)\obj\win.obj \
-    $(CONFIG)\obj\wince.obj \
-    $(CONFIG)\obj\xml.obj
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS)
+$(CONFIG)\bin\libmpr.dll: 
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\manager.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS)
 
 $(CONFIG)\obj\benchMpr.obj: \
-    test\benchMpr.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\benchMpr.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\benchMpr.obj -Fd$(CONFIG)\obj\benchMpr.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\benchMpr.c
 
-$(CONFIG)\bin\benchMpr.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\benchMpr.obj
+$(CONFIG)\bin\benchMpr.exe: 
 	"$(LD)" -out:$(CONFIG)\bin\benchMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\benchMpr.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\runProgram.obj: \
-    test\runProgram.c\
-    $(CONFIG)\inc\bit.h
+    test\runProgram.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\runProgram.obj -Fd$(CONFIG)\obj\runProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\runProgram.c
 
-$(CONFIG)\bin\runProgram.exe: \
-    $(CONFIG)\obj\runProgram.obj
+$(CONFIG)\bin\runProgram.exe: 
 	"$(LD)" -out:$(CONFIG)\bin\runProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\runProgram.obj $(LIBS)
 
+src\deps\est\est.h: 
+
 $(CONFIG)\obj\est.obj: \
-    src\ssl\est.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h \
-    src\deps\est\est.h \
-    $(CONFIG)\inc\bitos.h
+    src\ssl\est.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\est.obj -Fd$(CONFIG)\obj\est.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\est.c
 
 $(CONFIG)\obj\matrixssl.obj: \
-    src\ssl\matrixssl.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\ssl\matrixssl.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\matrixssl.c
 
 $(CONFIG)\obj\mocana.obj: \
-    src\ssl\mocana.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\ssl\mocana.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\mocana.obj -Fd$(CONFIG)\obj\mocana.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\mocana.c
 
 $(CONFIG)\obj\openssl.obj: \
-    src\ssl\openssl.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\ssl\openssl.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\openssl.obj -Fd$(CONFIG)\obj\openssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\openssl.c
 
 $(CONFIG)\obj\ssl.obj: \
-    src\ssl\ssl.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\ssl\ssl.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\ssl.obj -Fd$(CONFIG)\obj\ssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\ssl.c
 
-$(CONFIG)\bin\libmprssl.dll: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\est.obj \
-    $(CONFIG)\obj\matrixssl.obj \
-    $(CONFIG)\obj\mocana.obj \
-    $(CONFIG)\obj\openssl.obj \
-    $(CONFIG)\obj\ssl.obj
+$(CONFIG)\bin\libmprssl.dll: 
 	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\mocana.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj libmpr.lib $(LIBS) libest.lib
 
 $(CONFIG)\obj\testArgv.obj: \
-    test\testArgv.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testArgv.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testArgv.obj -Fd$(CONFIG)\obj\testArgv.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testArgv.c
 
 $(CONFIG)\obj\testBuf.obj: \
-    test\testBuf.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testBuf.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testBuf.obj -Fd$(CONFIG)\obj\testBuf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testBuf.c
 
 $(CONFIG)\obj\testCmd.obj: \
-    test\testCmd.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testCmd.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testCmd.obj -Fd$(CONFIG)\obj\testCmd.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testCmd.c
 
 $(CONFIG)\obj\testCond.obj: \
-    test\testCond.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testCond.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testCond.obj -Fd$(CONFIG)\obj\testCond.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testCond.c
 
 $(CONFIG)\obj\testEvent.obj: \
-    test\testEvent.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testEvent.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testEvent.obj -Fd$(CONFIG)\obj\testEvent.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testEvent.c
 
 $(CONFIG)\obj\testFile.obj: \
-    test\testFile.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testFile.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testFile.obj -Fd$(CONFIG)\obj\testFile.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testFile.c
 
 $(CONFIG)\obj\testHash.obj: \
-    test\testHash.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testHash.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testHash.obj -Fd$(CONFIG)\obj\testHash.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testHash.c
 
 $(CONFIG)\obj\testList.obj: \
-    test\testList.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testList.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testList.obj -Fd$(CONFIG)\obj\testList.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testList.c
 
 $(CONFIG)\obj\testLock.obj: \
-    test\testLock.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testLock.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testLock.obj -Fd$(CONFIG)\obj\testLock.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testLock.c
 
 $(CONFIG)\obj\testMem.obj: \
-    test\testMem.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testMem.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testMem.obj -Fd$(CONFIG)\obj\testMem.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testMem.c
 
 $(CONFIG)\obj\testMpr.obj: \
-    test\testMpr.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testMpr.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testMpr.obj -Fd$(CONFIG)\obj\testMpr.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testMpr.c
 
 $(CONFIG)\obj\testPath.obj: \
-    test\testPath.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testPath.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testPath.obj -Fd$(CONFIG)\obj\testPath.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testPath.c
 
 $(CONFIG)\obj\testSocket.obj: \
-    test\testSocket.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testSocket.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testSocket.obj -Fd$(CONFIG)\obj\testSocket.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testSocket.c
 
 $(CONFIG)\obj\testSprintf.obj: \
-    test\testSprintf.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testSprintf.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testSprintf.obj -Fd$(CONFIG)\obj\testSprintf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testSprintf.c
 
 $(CONFIG)\obj\testThread.obj: \
-    test\testThread.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testThread.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testThread.obj -Fd$(CONFIG)\obj\testThread.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testThread.c
 
 $(CONFIG)\obj\testTime.obj: \
-    test\testTime.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testTime.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testTime.obj -Fd$(CONFIG)\obj\testTime.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testTime.c
 
 $(CONFIG)\obj\testUnicode.obj: \
-    test\testUnicode.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    test\testUnicode.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\testUnicode.obj -Fd$(CONFIG)\obj\testUnicode.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testUnicode.c
 
-$(CONFIG)\bin\testMpr.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\bin\libmprssl.dll \
-    $(CONFIG)\bin\runProgram.exe \
-    $(CONFIG)\obj\testArgv.obj \
-    $(CONFIG)\obj\testBuf.obj \
-    $(CONFIG)\obj\testCmd.obj \
-    $(CONFIG)\obj\testCond.obj \
-    $(CONFIG)\obj\testEvent.obj \
-    $(CONFIG)\obj\testFile.obj \
-    $(CONFIG)\obj\testHash.obj \
-    $(CONFIG)\obj\testList.obj \
-    $(CONFIG)\obj\testLock.obj \
-    $(CONFIG)\obj\testMem.obj \
-    $(CONFIG)\obj\testMpr.obj \
-    $(CONFIG)\obj\testPath.obj \
-    $(CONFIG)\obj\testSocket.obj \
-    $(CONFIG)\obj\testSprintf.obj \
-    $(CONFIG)\obj\testThread.obj \
-    $(CONFIG)\obj\testTime.obj \
-    $(CONFIG)\obj\testUnicode.obj
+$(CONFIG)\bin\testMpr.exe: 
 	"$(LD)" -out:$(CONFIG)\bin\testMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testArgv.obj $(CONFIG)\obj\testBuf.obj $(CONFIG)\obj\testCmd.obj $(CONFIG)\obj\testCond.obj $(CONFIG)\obj\testEvent.obj $(CONFIG)\obj\testFile.obj $(CONFIG)\obj\testHash.obj $(CONFIG)\obj\testList.obj $(CONFIG)\obj\testLock.obj $(CONFIG)\obj\testMem.obj $(CONFIG)\obj\testMpr.obj $(CONFIG)\obj\testPath.obj $(CONFIG)\obj\testSocket.obj $(CONFIG)\obj\testSprintf.obj $(CONFIG)\obj\testThread.obj $(CONFIG)\obj\testTime.obj $(CONFIG)\obj\testUnicode.obj libmprssl.lib libmpr.lib $(LIBS) libest.lib
 
-$(CONFIG)\obj\manager.obj: \
-    src\manager.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
-	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\manager.c
-
-$(CONFIG)\bin\manager.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\manager.obj
+$(CONFIG)\bin\manager.exe: 
 	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\makerom.obj: \
-    src\utils\makerom.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\utils\makerom.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\makerom.c
 
-$(CONFIG)\bin\makerom.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\makerom.obj
+$(CONFIG)\bin\makerom.exe: 
 	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj libmpr.lib $(LIBS)
 
 $(CONFIG)\obj\charGen.obj: \
-    src\utils\charGen.c\
-    $(CONFIG)\inc\bit.h \
-    $(CONFIG)\inc\mpr.h
+    src\utils\charGen.c
 	"$(CC)" -c -Fo$(CONFIG)\obj\charGen.obj -Fd$(CONFIG)\obj\charGen.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\charGen.c
 
-$(CONFIG)\bin\chargen.exe: \
-    $(CONFIG)\bin\libmpr.dll \
-    $(CONFIG)\obj\charGen.obj
+$(CONFIG)\bin\chargen.exe: 
 	"$(LD)" -out:$(CONFIG)\bin\chargen.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\charGen.obj libmpr.lib $(LIBS)
 
 version: 
@@ -729,17 +504,15 @@ version:
 stop: 
 
 
-installBinary: stop
-	
+installBinary: 
 
 
 start: 
 
 
-install: stop installBinary start
+install: 
 
 
-uninstall: stop
-	
+uninstall: 
 
 
