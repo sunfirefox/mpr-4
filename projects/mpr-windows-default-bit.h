@@ -233,27 +233,3 @@
 #ifndef BIT_PACK_WINSDK
     #define BIT_PACK_WINSDK 1
 #endif
-#ifndef BIT_PACK_COMPILER_PATH
-    #define BIT_PACK_COMPILER_PATH "cl.exe"
-#endif
-#ifndef BIT_PACK_EST_PATH
-    #define BIT_PACK_EST_PATH "/Users/mob/git/mpr/src/deps/est"
-#endif
-#ifndef BIT_PACK_LIB_PATH
-    #define BIT_PACK_LIB_PATH "lib.exe"
-#endif
-#ifndef BIT_PACK_LINK_PATH
-    #define BIT_PACK_LINK_PATH "link.exe"
-#endif
-#ifndef BIT_PACK_MD5_PATH
-    #define BIT_PACK_MD5_PATH "/sbin/md5"
-#endif
-#ifndef BIT_PACK_RC_PATH
-    #define BIT_PACK_RC_PATH "rc.exe"
-#endif
-#ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
-#endif
-#ifndef BIT_PACK_WINSDK_PATH
-    #define BIT_PACK_WINSDK_PATH "$(SDK)"
-#endif

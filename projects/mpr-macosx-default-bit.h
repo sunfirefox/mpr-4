@@ -176,7 +176,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default --without default -configure . -gen make"
+    #define BIT_CONFIG_CMD "bit -d -q -platform macosx-x64-default --without default -configure . -gen xcode"
 #endif
 #ifndef BIT_MPR_PRODUCT
     #define BIT_MPR_PRODUCT 1
@@ -244,22 +244,4 @@
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
-#endif
-#ifndef BIT_PACK_COMPILER_PATH
-    #define BIT_PACK_COMPILER_PATH "/usr/bin/clang"
-#endif
-#ifndef BIT_PACK_EST_PATH
-    #define BIT_PACK_EST_PATH "/Users/mob/git/mpr/src/deps/est"
-#endif
-#ifndef BIT_PACK_LIB_PATH
-    #define BIT_PACK_LIB_PATH "/usr/bin/ar"
-#endif
-#ifndef BIT_PACK_LINK_PATH
-    #define BIT_PACK_LINK_PATH "/usr/bin/ld"
-#endif
-#ifndef BIT_PACK_MD5_PATH
-    #define BIT_PACK_MD5_PATH "/sbin/md5"
-#endif
-#ifndef BIT_PACK_UTEST_PATH
-    #define BIT_PACK_UTEST_PATH "/Users/mob/git/ejs/macosx-x64-debug/bin/utest"
 #endif
