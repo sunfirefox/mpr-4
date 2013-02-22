@@ -24,7 +24,7 @@ Bit.load({
         bit: '0.8.1'
         prefixes: 'embedthis-prefixes',
         sync: ['bitos', 'est'],
-        '+required': [], 
+        '+required': [ 'compiler' ],
         '+discover': [ 'doxygen', 'dsi', 'est', 'man', 'man2html', 'md5', 'utest' ],
         'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker'],
         'without-default': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker'],
