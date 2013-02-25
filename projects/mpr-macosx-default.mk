@@ -13,6 +13,10 @@ LD              := /usr/bin/ld
 CONFIG          := $(OS)-$(ARCH)-$(PROFILE)
 LBIN            := $(CONFIG)/bin
 
+ifndef TRACE
+.SILENT:
+endif
+
 BIT_ROOT_PREFIX       := 
 BIT_BASE_PREFIX       := $(BIT_ROOT_PREFIX)/usr/local
 BIT_DATA_PREFIX       := $(BIT_ROOT_PREFIX)/
