@@ -155,7 +155,7 @@
 
 /* Profile */
 #ifndef BIT_CONFIG_CMD
-    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default --without default -configure . -gen vs"
+    #define BIT_CONFIG_CMD "bit -d -q -platform windows-x86-default -configure . --without default -gen vs"
 #endif
 #ifndef BIT_MPR_PRODUCT
     #define BIT_MPR_PRODUCT 1

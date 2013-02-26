@@ -784,7 +784,6 @@ $(CONFIG)/bin/libmpr.dylib: $(DEPS_52)
 #
 DEPS_53 += $(CONFIG)/inc/bit.h
 DEPS_53 += $(CONFIG)/inc/mpr.h
-DEPS_53 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c $(DEPS_53)
@@ -823,398 +822,404 @@ $(CONFIG)/bin/runProgram: $(DEPS_56)
 	$(CC) -o $(CONFIG)/bin/runProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS)
 
 #
+#   est.h
+#
+src/deps/est/est.h: $(DEPS_57)
+
+#
 #   est.o
 #
-DEPS_57 += $(CONFIG)/inc/bit.h
-DEPS_57 += $(CONFIG)/inc/mpr.h
-DEPS_57 += $(CONFIG)/inc/est.h
+DEPS_58 += $(CONFIG)/inc/bit.h
+DEPS_58 += $(CONFIG)/inc/mpr.h
+DEPS_58 += src/deps/est/est.h
+DEPS_58 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/est.o: \
-    src/ssl/est.c $(DEPS_57)
+    src/ssl/est.c $(DEPS_58)
 	@echo '   [Compile] src/ssl/est.c'
 	$(CC) -c -o $(CONFIG)/obj/est.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/est.c
 
 #
 #   matrixssl.o
 #
-DEPS_58 += $(CONFIG)/inc/bit.h
-DEPS_58 += $(CONFIG)/inc/mpr.h
+DEPS_59 += $(CONFIG)/inc/bit.h
+DEPS_59 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/matrixssl.o: \
-    src/ssl/matrixssl.c $(DEPS_58)
+    src/ssl/matrixssl.c $(DEPS_59)
 	@echo '   [Compile] src/ssl/matrixssl.c'
 	$(CC) -c -o $(CONFIG)/obj/matrixssl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/matrixssl.c
 
 #
 #   mocana.o
 #
-DEPS_59 += $(CONFIG)/inc/bit.h
-DEPS_59 += $(CONFIG)/inc/mpr.h
+DEPS_60 += $(CONFIG)/inc/bit.h
+DEPS_60 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/mocana.o: \
-    src/ssl/mocana.c $(DEPS_59)
+    src/ssl/mocana.c $(DEPS_60)
 	@echo '   [Compile] src/ssl/mocana.c'
 	$(CC) -c -o $(CONFIG)/obj/mocana.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/mocana.c
 
 #
 #   openssl.o
 #
-DEPS_60 += $(CONFIG)/inc/bit.h
-DEPS_60 += $(CONFIG)/inc/mpr.h
+DEPS_61 += $(CONFIG)/inc/bit.h
+DEPS_61 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/openssl.o: \
-    src/ssl/openssl.c $(DEPS_60)
+    src/ssl/openssl.c $(DEPS_61)
 	@echo '   [Compile] src/ssl/openssl.c'
 	$(CC) -c -o $(CONFIG)/obj/openssl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/openssl.c
 
 #
 #   ssl.o
 #
-DEPS_61 += $(CONFIG)/inc/bit.h
-DEPS_61 += $(CONFIG)/inc/mpr.h
+DEPS_62 += $(CONFIG)/inc/bit.h
+DEPS_62 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/ssl.o: \
-    src/ssl/ssl.c $(DEPS_61)
+    src/ssl/ssl.c $(DEPS_62)
 	@echo '   [Compile] src/ssl/ssl.c'
 	$(CC) -c -o $(CONFIG)/obj/ssl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/ssl.c
 
 #
 #   libmprssl
 #
-DEPS_62 += $(CONFIG)/bin/libmpr.dylib
-DEPS_62 += $(CONFIG)/obj/est.o
-DEPS_62 += $(CONFIG)/obj/matrixssl.o
-DEPS_62 += $(CONFIG)/obj/mocana.o
-DEPS_62 += $(CONFIG)/obj/openssl.o
-DEPS_62 += $(CONFIG)/obj/ssl.o
+DEPS_63 += $(CONFIG)/bin/libmpr.dylib
+DEPS_63 += $(CONFIG)/obj/est.o
+DEPS_63 += $(CONFIG)/obj/matrixssl.o
+DEPS_63 += $(CONFIG)/obj/mocana.o
+DEPS_63 += $(CONFIG)/obj/openssl.o
+DEPS_63 += $(CONFIG)/obj/ssl.o
 
-LIBS_62 += -lmpr
+LIBS_63 += -lmpr
 ifeq ($(BIT_PACK_EST),1)
-    LIBS_62 += -lest
+    LIBS_63 += -lest
 endif
 
-$(CONFIG)/bin/libmprssl.dylib: $(DEPS_62)
+$(CONFIG)/bin/libmprssl.dylib: $(DEPS_63)
 	@echo '      [Link] libmprssl'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/mocana.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o $(LIBS_62) $(LIBS_62) $(LIBS) -lest
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) -compatibility_version 4.3.0 -current_version 4.3.0 $(LIBPATHS) -install_name @rpath/libmprssl.dylib $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/mocana.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o $(LIBS_63) $(LIBS_63) $(LIBS) -lest
 
 #
 #   testArgv.o
 #
-DEPS_63 += $(CONFIG)/inc/bit.h
-DEPS_63 += $(CONFIG)/inc/mpr.h
+DEPS_64 += $(CONFIG)/inc/bit.h
+DEPS_64 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testArgv.o: \
-    test/testArgv.c $(DEPS_63)
+    test/testArgv.c $(DEPS_64)
 	@echo '   [Compile] test/testArgv.c'
 	$(CC) -c -o $(CONFIG)/obj/testArgv.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testArgv.c
 
 #
 #   testBuf.o
 #
-DEPS_64 += $(CONFIG)/inc/bit.h
-DEPS_64 += $(CONFIG)/inc/mpr.h
+DEPS_65 += $(CONFIG)/inc/bit.h
+DEPS_65 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testBuf.o: \
-    test/testBuf.c $(DEPS_64)
+    test/testBuf.c $(DEPS_65)
 	@echo '   [Compile] test/testBuf.c'
 	$(CC) -c -o $(CONFIG)/obj/testBuf.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testBuf.c
 
 #
 #   testCmd.o
 #
-DEPS_65 += $(CONFIG)/inc/bit.h
-DEPS_65 += $(CONFIG)/inc/mpr.h
+DEPS_66 += $(CONFIG)/inc/bit.h
+DEPS_66 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testCmd.o: \
-    test/testCmd.c $(DEPS_65)
+    test/testCmd.c $(DEPS_66)
 	@echo '   [Compile] test/testCmd.c'
 	$(CC) -c -o $(CONFIG)/obj/testCmd.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testCmd.c
 
 #
 #   testCond.o
 #
-DEPS_66 += $(CONFIG)/inc/bit.h
-DEPS_66 += $(CONFIG)/inc/mpr.h
+DEPS_67 += $(CONFIG)/inc/bit.h
+DEPS_67 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testCond.o: \
-    test/testCond.c $(DEPS_66)
+    test/testCond.c $(DEPS_67)
 	@echo '   [Compile] test/testCond.c'
 	$(CC) -c -o $(CONFIG)/obj/testCond.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testCond.c
 
 #
 #   testEvent.o
 #
-DEPS_67 += $(CONFIG)/inc/bit.h
-DEPS_67 += $(CONFIG)/inc/mpr.h
+DEPS_68 += $(CONFIG)/inc/bit.h
+DEPS_68 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testEvent.o: \
-    test/testEvent.c $(DEPS_67)
+    test/testEvent.c $(DEPS_68)
 	@echo '   [Compile] test/testEvent.c'
 	$(CC) -c -o $(CONFIG)/obj/testEvent.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testEvent.c
 
 #
 #   testFile.o
 #
-DEPS_68 += $(CONFIG)/inc/bit.h
-DEPS_68 += $(CONFIG)/inc/mpr.h
+DEPS_69 += $(CONFIG)/inc/bit.h
+DEPS_69 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testFile.o: \
-    test/testFile.c $(DEPS_68)
+    test/testFile.c $(DEPS_69)
 	@echo '   [Compile] test/testFile.c'
 	$(CC) -c -o $(CONFIG)/obj/testFile.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testFile.c
 
 #
 #   testHash.o
 #
-DEPS_69 += $(CONFIG)/inc/bit.h
-DEPS_69 += $(CONFIG)/inc/mpr.h
+DEPS_70 += $(CONFIG)/inc/bit.h
+DEPS_70 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testHash.o: \
-    test/testHash.c $(DEPS_69)
+    test/testHash.c $(DEPS_70)
 	@echo '   [Compile] test/testHash.c'
 	$(CC) -c -o $(CONFIG)/obj/testHash.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testHash.c
 
 #
 #   testList.o
 #
-DEPS_70 += $(CONFIG)/inc/bit.h
-DEPS_70 += $(CONFIG)/inc/mpr.h
+DEPS_71 += $(CONFIG)/inc/bit.h
+DEPS_71 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testList.o: \
-    test/testList.c $(DEPS_70)
+    test/testList.c $(DEPS_71)
 	@echo '   [Compile] test/testList.c'
 	$(CC) -c -o $(CONFIG)/obj/testList.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testList.c
 
 #
 #   testLock.o
 #
-DEPS_71 += $(CONFIG)/inc/bit.h
-DEPS_71 += $(CONFIG)/inc/mpr.h
+DEPS_72 += $(CONFIG)/inc/bit.h
+DEPS_72 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testLock.o: \
-    test/testLock.c $(DEPS_71)
+    test/testLock.c $(DEPS_72)
 	@echo '   [Compile] test/testLock.c'
 	$(CC) -c -o $(CONFIG)/obj/testLock.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testLock.c
 
 #
 #   testMem.o
 #
-DEPS_72 += $(CONFIG)/inc/bit.h
-DEPS_72 += $(CONFIG)/inc/mpr.h
+DEPS_73 += $(CONFIG)/inc/bit.h
+DEPS_73 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testMem.o: \
-    test/testMem.c $(DEPS_72)
+    test/testMem.c $(DEPS_73)
 	@echo '   [Compile] test/testMem.c'
 	$(CC) -c -o $(CONFIG)/obj/testMem.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testMem.c
 
 #
 #   testMpr.o
 #
-DEPS_73 += $(CONFIG)/inc/bit.h
-DEPS_73 += $(CONFIG)/inc/mpr.h
+DEPS_74 += $(CONFIG)/inc/bit.h
+DEPS_74 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testMpr.o: \
-    test/testMpr.c $(DEPS_73)
+    test/testMpr.c $(DEPS_74)
 	@echo '   [Compile] test/testMpr.c'
 	$(CC) -c -o $(CONFIG)/obj/testMpr.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testMpr.c
 
 #
 #   testPath.o
 #
-DEPS_74 += $(CONFIG)/inc/bit.h
-DEPS_74 += $(CONFIG)/inc/mpr.h
+DEPS_75 += $(CONFIG)/inc/bit.h
+DEPS_75 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testPath.o: \
-    test/testPath.c $(DEPS_74)
+    test/testPath.c $(DEPS_75)
 	@echo '   [Compile] test/testPath.c'
 	$(CC) -c -o $(CONFIG)/obj/testPath.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testPath.c
 
 #
 #   testSocket.o
 #
-DEPS_75 += $(CONFIG)/inc/bit.h
-DEPS_75 += $(CONFIG)/inc/mpr.h
+DEPS_76 += $(CONFIG)/inc/bit.h
+DEPS_76 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testSocket.o: \
-    test/testSocket.c $(DEPS_75)
+    test/testSocket.c $(DEPS_76)
 	@echo '   [Compile] test/testSocket.c'
 	$(CC) -c -o $(CONFIG)/obj/testSocket.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testSocket.c
 
 #
 #   testSprintf.o
 #
-DEPS_76 += $(CONFIG)/inc/bit.h
-DEPS_76 += $(CONFIG)/inc/mpr.h
+DEPS_77 += $(CONFIG)/inc/bit.h
+DEPS_77 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testSprintf.o: \
-    test/testSprintf.c $(DEPS_76)
+    test/testSprintf.c $(DEPS_77)
 	@echo '   [Compile] test/testSprintf.c'
 	$(CC) -c -o $(CONFIG)/obj/testSprintf.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testSprintf.c
 
 #
 #   testThread.o
 #
-DEPS_77 += $(CONFIG)/inc/bit.h
-DEPS_77 += $(CONFIG)/inc/mpr.h
+DEPS_78 += $(CONFIG)/inc/bit.h
+DEPS_78 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testThread.o: \
-    test/testThread.c $(DEPS_77)
+    test/testThread.c $(DEPS_78)
 	@echo '   [Compile] test/testThread.c'
 	$(CC) -c -o $(CONFIG)/obj/testThread.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testThread.c
 
 #
 #   testTime.o
 #
-DEPS_78 += $(CONFIG)/inc/bit.h
-DEPS_78 += $(CONFIG)/inc/mpr.h
+DEPS_79 += $(CONFIG)/inc/bit.h
+DEPS_79 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testTime.o: \
-    test/testTime.c $(DEPS_78)
+    test/testTime.c $(DEPS_79)
 	@echo '   [Compile] test/testTime.c'
 	$(CC) -c -o $(CONFIG)/obj/testTime.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testTime.c
 
 #
 #   testUnicode.o
 #
-DEPS_79 += $(CONFIG)/inc/bit.h
-DEPS_79 += $(CONFIG)/inc/mpr.h
+DEPS_80 += $(CONFIG)/inc/bit.h
+DEPS_80 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/testUnicode.o: \
-    test/testUnicode.c $(DEPS_79)
+    test/testUnicode.c $(DEPS_80)
 	@echo '   [Compile] test/testUnicode.c'
 	$(CC) -c -o $(CONFIG)/obj/testUnicode.o $(CFLAGS) $(DFLAGS) $(IFLAGS) test/testUnicode.c
 
 #
 #   testMpr
 #
-DEPS_80 += $(CONFIG)/bin/libmpr.dylib
-DEPS_80 += $(CONFIG)/bin/libmprssl.dylib
-DEPS_80 += $(CONFIG)/bin/runProgram
-DEPS_80 += $(CONFIG)/obj/testArgv.o
-DEPS_80 += $(CONFIG)/obj/testBuf.o
-DEPS_80 += $(CONFIG)/obj/testCmd.o
-DEPS_80 += $(CONFIG)/obj/testCond.o
-DEPS_80 += $(CONFIG)/obj/testEvent.o
-DEPS_80 += $(CONFIG)/obj/testFile.o
-DEPS_80 += $(CONFIG)/obj/testHash.o
-DEPS_80 += $(CONFIG)/obj/testList.o
-DEPS_80 += $(CONFIG)/obj/testLock.o
-DEPS_80 += $(CONFIG)/obj/testMem.o
-DEPS_80 += $(CONFIG)/obj/testMpr.o
-DEPS_80 += $(CONFIG)/obj/testPath.o
-DEPS_80 += $(CONFIG)/obj/testSocket.o
-DEPS_80 += $(CONFIG)/obj/testSprintf.o
-DEPS_80 += $(CONFIG)/obj/testThread.o
-DEPS_80 += $(CONFIG)/obj/testTime.o
-DEPS_80 += $(CONFIG)/obj/testUnicode.o
+DEPS_81 += $(CONFIG)/bin/libmpr.dylib
+DEPS_81 += $(CONFIG)/bin/libmprssl.dylib
+DEPS_81 += $(CONFIG)/bin/runProgram
+DEPS_81 += $(CONFIG)/obj/testArgv.o
+DEPS_81 += $(CONFIG)/obj/testBuf.o
+DEPS_81 += $(CONFIG)/obj/testCmd.o
+DEPS_81 += $(CONFIG)/obj/testCond.o
+DEPS_81 += $(CONFIG)/obj/testEvent.o
+DEPS_81 += $(CONFIG)/obj/testFile.o
+DEPS_81 += $(CONFIG)/obj/testHash.o
+DEPS_81 += $(CONFIG)/obj/testList.o
+DEPS_81 += $(CONFIG)/obj/testLock.o
+DEPS_81 += $(CONFIG)/obj/testMem.o
+DEPS_81 += $(CONFIG)/obj/testMpr.o
+DEPS_81 += $(CONFIG)/obj/testPath.o
+DEPS_81 += $(CONFIG)/obj/testSocket.o
+DEPS_81 += $(CONFIG)/obj/testSprintf.o
+DEPS_81 += $(CONFIG)/obj/testThread.o
+DEPS_81 += $(CONFIG)/obj/testTime.o
+DEPS_81 += $(CONFIG)/obj/testUnicode.o
 
-LIBS_80 += -lmprssl
-LIBS_80 += -lmpr
+LIBS_81 += -lmprssl
+LIBS_81 += -lmpr
 ifeq ($(BIT_PACK_EST),1)
-    LIBS_80 += -lest
+    LIBS_81 += -lest
 endif
 
-$(CONFIG)/bin/testMpr: $(DEPS_80)
+$(CONFIG)/bin/testMpr: $(DEPS_81)
 	@echo '      [Link] testMpr'
-	$(CC) -o $(CONFIG)/bin/testMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBS_80) $(LIBS_80) $(LIBS) -lest
+	$(CC) -o $(CONFIG)/bin/testMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBS_81) $(LIBS_81) $(LIBS) -lest
 
 #
 #   manager
 #
-DEPS_81 += $(CONFIG)/bin/libmpr.dylib
-DEPS_81 += $(CONFIG)/obj/manager.o
+DEPS_82 += $(CONFIG)/bin/libmpr.dylib
+DEPS_82 += $(CONFIG)/obj/manager.o
 
-LIBS_81 += -lmpr
+LIBS_82 += -lmpr
 
-$(CONFIG)/bin/manager: $(DEPS_81)
+$(CONFIG)/bin/manager: $(DEPS_82)
 	@echo '      [Link] manager'
-	$(CC) -o $(CONFIG)/bin/manager -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_81) $(LIBS_81) $(LIBS)
+	$(CC) -o $(CONFIG)/bin/manager -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_82) $(LIBS_82) $(LIBS)
 
 #
 #   makerom.o
 #
-DEPS_82 += $(CONFIG)/inc/bit.h
-DEPS_82 += $(CONFIG)/inc/mpr.h
+DEPS_83 += $(CONFIG)/inc/bit.h
+DEPS_83 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/makerom.o: \
-    src/utils/makerom.c $(DEPS_82)
+    src/utils/makerom.c $(DEPS_83)
 	@echo '   [Compile] src/utils/makerom.c'
 	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/makerom.c
 
 #
 #   makerom
 #
-DEPS_83 += $(CONFIG)/bin/libmpr.dylib
-DEPS_83 += $(CONFIG)/obj/makerom.o
+DEPS_84 += $(CONFIG)/bin/libmpr.dylib
+DEPS_84 += $(CONFIG)/obj/makerom.o
 
-LIBS_83 += -lmpr
+LIBS_84 += -lmpr
 
-$(CONFIG)/bin/makerom: $(DEPS_83)
+$(CONFIG)/bin/makerom: $(DEPS_84)
 	@echo '      [Link] makerom'
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_83) $(LIBS_83) $(LIBS)
+	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_84) $(LIBS_84) $(LIBS)
 
 #
 #   charGen.o
 #
-DEPS_84 += $(CONFIG)/inc/bit.h
-DEPS_84 += $(CONFIG)/inc/mpr.h
+DEPS_85 += $(CONFIG)/inc/bit.h
+DEPS_85 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/charGen.o: \
-    src/utils/charGen.c $(DEPS_84)
+    src/utils/charGen.c $(DEPS_85)
 	@echo '   [Compile] src/utils/charGen.c'
 	$(CC) -c -o $(CONFIG)/obj/charGen.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/charGen.c
 
 #
 #   chargen
 #
-DEPS_85 += $(CONFIG)/bin/libmpr.dylib
-DEPS_85 += $(CONFIG)/obj/charGen.o
+DEPS_86 += $(CONFIG)/bin/libmpr.dylib
+DEPS_86 += $(CONFIG)/obj/charGen.o
 
-LIBS_85 += -lmpr
+LIBS_86 += -lmpr
 
-$(CONFIG)/bin/chargen: $(DEPS_85)
+$(CONFIG)/bin/chargen: $(DEPS_86)
 	@echo '      [Link] chargen'
-	$(CC) -o $(CONFIG)/bin/chargen -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBS_85) $(LIBS_85) $(LIBS)
+	$(CC) -o $(CONFIG)/bin/chargen -arch x86_64 $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBS_86) $(LIBS_86) $(LIBS)
 
 #
 #   version
 #
-version: $(DEPS_86)
+version: $(DEPS_87)
 	@echo 4.3.0-0
 
 #
 #   stop
 #
-stop: $(DEPS_87)
+stop: $(DEPS_88)
 	
 
 #
 #   installBinary
 #
-DEPS_88 += stop
+DEPS_89 += stop
 
-installBinary: $(DEPS_88)
+installBinary: $(DEPS_89)
 
 #
 #   start
 #
-start: $(DEPS_89)
+start: $(DEPS_90)
 	
 
 #
 #   install
 #
-DEPS_90 += stop
-DEPS_90 += installBinary
-DEPS_90 += start
+DEPS_91 += stop
+DEPS_91 += installBinary
+DEPS_91 += start
 
-install: $(DEPS_90)
+install: $(DEPS_91)
 	
 
 #
 #   uninstall
 #
-DEPS_91 += stop
+DEPS_92 += stop
 
-uninstall: $(DEPS_91)
+uninstall: $(DEPS_92)
 
