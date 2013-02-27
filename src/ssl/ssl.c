@@ -14,7 +14,7 @@
  */
 PUBLIC int mprSslInit(void *unused, MprModule *module)
 {
-#if BIT_SSL
+#if BIT_PACK_SSL
     assert(module);
 
     /*

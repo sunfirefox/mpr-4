@@ -79,9 +79,6 @@
 #ifndef BIT_REQUIRED
     #define BIT_REQUIRED "compiler,lib,link"
 #endif
-#ifndef BIT_SSL
-    #define BIT_SSL 1
-#endif
 #ifndef BIT_SYNC
     #define BIT_SYNC "bitos,est"
 #endif
@@ -241,6 +238,9 @@
 #endif
 #ifndef BIT_PACK_PMAKER
     #define BIT_PACK_PMAKER 0
+#endif
+#ifndef BIT_PACK_SSL
+    #define BIT_PACK_SSL 1
 #endif
 #ifndef BIT_PACK_UTEST
     #define BIT_PACK_UTEST 1
