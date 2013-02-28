@@ -128,6 +128,46 @@ PUBLIC char *mprUriDecode(cchar *inbuf)
 
 
 /*  
+    Decode a string using URL encoding. This decodes in situ.
+ */
+PUBLIC char *mprUriDecodeInSitu(char *inbuf)
+{
+    char    *ip, *op;
+    int     num, i, c;
+
+    assert(inbuf);
+
+    for (op = ip = inbuf; ip && *ip; ip++, op++) {
+        if (*ip == '+') {
+            *op = ' ';
+
+        } else if (*ip == '%' && isxdigit((uchar) ip[1]) && isxdigit((uchar) ip[2])) {
+            ip++;
+            num = 0;
+            for (i = 0; i < 2; i++, ip++) {
+                c = tolower((uchar) *ip);
+                if (c >= 'a' && c <= 'f') {
+                    num = (num * 16) + 10 + c - 'a';
+                } else if (c >= '0' && c <= '9') {
+                    num = (num * 16) + c - '0';
+                } else {
+                    /* Bad chars in URL */
+                    return 0;
+                }
+            }
+            *op = (char) num;
+            ip--;
+
+        } else {
+            *op = *ip;
+        }
+    }
+    *op = '\0';
+    return inbuf;
+}
+
+
+/*  
     Escape a shell command. Not really Http, but useful anyway for CGI
  */
 PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
