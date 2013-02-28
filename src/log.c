@@ -277,7 +277,7 @@ PUBLIC void mprStaticError(cchar *fmt, ...)
 
 PUBLIC void mprAssert(cchar *loc, cchar *msg)
 {
-#if BIT_ASSERT
+#if BIT_MPR_TRACING
     char    buf[BIT_MAX_LOGLINE];
 
     if (loc) {
