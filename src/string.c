@@ -776,8 +776,7 @@ PUBLIC char *stok(char *str, cchar *delim, char **last)
     ssize   i;
 
     assert(delim);
-    start = (str || *last == 0) ? str : *last;
-
+    start = (str || !last) ? str : *last;
     if (start == 0) {
         if (last) {
             *last = 0;
