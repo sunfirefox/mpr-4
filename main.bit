@@ -21,7 +21,7 @@ Bit.load({
         company: 'Embedthis',
         version: '4.3.0',
         buildNumber: '0',
-        bit: '0.8.1'
+        bit: '0.8.4'
         prefixes: 'embedthis-prefixes',
         sync: ['bitos', 'est'],
         '+required': [ 'compiler' ],
@@ -50,7 +50,7 @@ Bit.load({
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'est', 'openssl', 'matrixssl', 'mocana' ],
+            depends: [ 'libmpr', 'est', 'openssl', 'matrixssl', 'nanossl' ],
             sources: [ 'src/ssl/*.c' ],
         },
 
@@ -82,6 +82,13 @@ Bit.load({
 
         packageSource: { },
 
+        mob: {
+            shell: "echo a b c",
+        },
+        mob2: {
+            run: ['echo', 'a b', 'b c', 'c d'],
+        },
+
     },
     manifest: {
         packages: {
@@ -110,7 +117,7 @@ Bit.load({
                 title:  '${settings.title} Library Source',
                 set:    'source',
             },{
-                from:   ['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/mocana.c', 'src/ssl/ssl.c'], 
+                from:   ['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/nanossl.c', 'src/ssl/ssl.c'], 
                 to:     '${src}/src/deps/mpr/mprSsl.c',
                 cat:    true,
                 title:  '${settings.title} SSL Source',
@@ -135,6 +142,6 @@ Bit.load({
         est: {},
         matrixssl: {},
         openssl: {},
-        mocana: {},
+        nanossl: {},
     },
 })

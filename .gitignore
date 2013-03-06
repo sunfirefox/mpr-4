@@ -81,3 +81,5 @@ projects/*macosx-full.xcodeproj
 .flags
 /*-*-*/
 /*-*-*.bit
+TODO.md
+*.sublime*

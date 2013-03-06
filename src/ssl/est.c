@@ -317,7 +317,7 @@ static int handshakeEst(MprSocket *sp)
     if (rc < 0) {
         //  MOB - more codes here or have est set a textual message (better)
         if (rc == EST_ERR_SSL_PRIVATE_KEY_REQUIRED && !(sp->ssl->keyFile || sp->ssl->certFile)) {
-            sp->errorMsg = sclone("Missing required certificate and key");
+            sp->errorMsg = sclone("Peer requires a certificate");
         } else {
             sp->errorMsg = sfmt("Cannot handshake: error -0x%x", -rc);
         }
@@ -368,7 +368,7 @@ static int handshakeEst(MprSocket *sp)
             }
         }
     } else {
-        mprLog(4, "Certificate validated");
+        mprLog(3, "EST: Certificate verified");
     }
     return 1;
 }

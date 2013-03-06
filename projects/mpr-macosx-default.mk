@@ -179,7 +179,7 @@ clobber: clean
 #   est.h
 #
 $(CONFIG)/inc/est.h: $(DEPS_1)
-	@echo '      [File] $(CONFIG)/inc/est.h'
+	@echo '      [Copy] $(CONFIG)/inc/est.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/deps/est/est.h" "$(CONFIG)/inc/est.h"
 
@@ -187,6 +187,7 @@ $(CONFIG)/inc/est.h: $(DEPS_1)
 #   bit.h
 #
 $(CONFIG)/inc/bit.h: $(DEPS_2)
+	@echo '      [Copy] $(CONFIG)/inc/bit.h'
 
 #
 #   bitos.h
@@ -194,7 +195,7 @@ $(CONFIG)/inc/bit.h: $(DEPS_2)
 DEPS_3 += $(CONFIG)/inc/bit.h
 
 $(CONFIG)/inc/bitos.h: $(DEPS_3)
-	@echo '      [File] $(CONFIG)/inc/bitos.h'
+	@echo '      [Copy] $(CONFIG)/inc/bitos.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/bitos.h" "$(CONFIG)/inc/bitos.h"
 
@@ -228,7 +229,7 @@ endif
 DEPS_6 += src/deps/est/ca.crt
 
 $(CONFIG)/bin/ca.crt: $(DEPS_6)
-	@echo '      [File] $(CONFIG)/bin/ca.crt'
+	@echo '      [Copy] $(CONFIG)/bin/ca.crt'
 	mkdir -p "$(CONFIG)/bin"
 	cp "src/deps/est/ca.crt" "$(CONFIG)/bin/ca.crt"
 
@@ -236,7 +237,7 @@ $(CONFIG)/bin/ca.crt: $(DEPS_6)
 #   mpr.h
 #
 $(CONFIG)/inc/mpr.h: $(DEPS_7)
-	@echo '      [File] $(CONFIG)/inc/mpr.h'
+	@echo '      [Copy] $(CONFIG)/inc/mpr.h'
 	mkdir -p "$(CONFIG)/inc"
 	cp "src/mpr.h" "$(CONFIG)/inc/mpr.h"
 
@@ -825,6 +826,7 @@ $(CONFIG)/bin/runProgram: $(DEPS_56)
 #   est.h
 #
 src/deps/est/est.h: $(DEPS_57)
+	@echo '      [Copy] src/deps/est/est.h'
 
 #
 #   est.o
@@ -1223,3 +1225,13 @@ DEPS_92 += stop
 
 uninstall: $(DEPS_92)
 
+#
+#   mob
+#
+mob: $(DEPS_93)
+	echo a b c
+#
+#   mob2
+#
+mob2: $(DEPS_94)
+	"echo" "a b" "b c" "c d"

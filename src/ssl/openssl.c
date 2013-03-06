@@ -497,7 +497,6 @@ static char *getOssState(MprSocket *sp)
 
     if ((cert = SSL_get_peer_certificate(osp->handle)) != 0) {
         prefix = sp->acceptIp ? "CLIENT_" : "SERVER_";
-
         X509_NAME_oneline(X509_get_subject_name(cert), subject, sizeof(subject) -1);
         parseCertFields(buf, prefix, "S_", &subject[1]);
 
@@ -594,7 +593,6 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
     ulong           serror;
     int             rc, error, retries, i;
 
-    //  MOB - review locking
     lock(sp);
     osp = (OpenSocket*) sp->sslSocket;
     assert(osp);
@@ -796,6 +794,7 @@ static int verifyX509Certificate(int ok, X509_STORE_CTX *xContext)
         mprLog(3, "OpenSSL: Certificate verified");
     } else {
         mprLog(3, "OpenSSL: Certificate cannot be verified (more trace at level 4)");
+        mprLog(3, "OpenSSL: %s", sp->errorMsg);
     }
     mprLog(4, "OpenSSL: Subject: %s", subject);
     mprLog(4, "OpenSSL: Issuer: %s", issuer);
