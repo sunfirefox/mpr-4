@@ -120,7 +120,7 @@
 		B8CD2258B8CD340200000096 /* xml.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000097 /* xml.c */; };
 		B8CD2258B8CD340200000098 /* est.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000099 /* est.c */; };
 		B8CD2258B8CD34020000009A /* matrixssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009B /* matrixssl.c */; };
-		B8CD2258B8CD34020000009C /* mocana.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009D /* mocana.c */; };
+		B8CD2258B8CD34020000009C /* nanossl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009D /* nanossl.c */; };
 		B8CD2258B8CD34020000009E /* openssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009F /* openssl.c */; };
 		B8CD2258B8CD3402000000A0 /* ssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A1 /* ssl.c */; };
 		B8CD2258B8CD340200000068 /* manager.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000069 /* manager.c */; };
@@ -413,7 +413,7 @@
 		B8CD2258B8CD340200000099 /* est.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = est.c; path = src/ssl/est.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000DE /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = src/deps/est/est.h; sourceTree = "<group>"; };
 		B8CD2258B8CD34020000009B /* matrixssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = matrixssl.c; path = src/ssl/matrixssl.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000009D /* mocana.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mocana.c; path = src/ssl/mocana.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000009D /* nanossl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nanossl.c; path = src/ssl/nanossl.c; sourceTree = "<group>"; };
 		B8CD2258B8CD34020000009F /* openssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = openssl.c; path = src/ssl/openssl.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000A1 /* ssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl.c; path = src/ssl/ssl.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000A9 /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -644,7 +644,7 @@
 				B8CD2258B8CD3402000000D9 /* bitos.h */,
 				B8CD2258B8CD340200000099 /* est.c */,
 				B8CD2258B8CD34020000009B /* matrixssl.c */,
-				B8CD2258B8CD34020000009D /* mocana.c */,
+				B8CD2258B8CD34020000009D /* nanossl.c */,
 				B8CD2258B8CD34020000009F /* openssl.c */,
 				B8CD2258B8CD3402000000A1 /* ssl.c */,
 			);
@@ -1061,7 +1061,7 @@ fi";
 			files = (
 				B8CD2258B8CD340200000098 /* est.c in Sources */,
 				B8CD2258B8CD34020000009A /* matrixssl.c in Sources */,
-				B8CD2258B8CD34020000009C /* mocana.c in Sources */,
+				B8CD2258B8CD34020000009C /* nanossl.c in Sources */,
 				B8CD2258B8CD34020000009E /* openssl.c in Sources */,
 				B8CD2258B8CD3402000000A0 /* ssl.c in Sources */,
 			);

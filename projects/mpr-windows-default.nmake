@@ -161,7 +161,7 @@ clean:
 	-if exist $(CONFIG)\obj\xml.obj del /Q $(CONFIG)\obj\xml.obj
 	-if exist $(CONFIG)\obj\est.obj del /Q $(CONFIG)\obj\est.obj
 	-if exist $(CONFIG)\obj\matrixssl.obj del /Q $(CONFIG)\obj\matrixssl.obj
-	-if exist $(CONFIG)\obj\mocana.obj del /Q $(CONFIG)\obj\mocana.obj
+	-if exist $(CONFIG)\obj\nanossl.obj del /Q $(CONFIG)\obj\nanossl.obj
 	-if exist $(CONFIG)\obj\openssl.obj del /Q $(CONFIG)\obj\openssl.obj
 	-if exist $(CONFIG)\obj\ssl.obj del /Q $(CONFIG)\obj\ssl.obj
 	-if exist $(CONFIG)\obj\makerom.obj del /Q $(CONFIG)\obj\makerom.obj
@@ -845,15 +845,15 @@ $(CONFIG)\obj\matrixssl.obj: \
 	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\matrixssl.c
 
 #
-#   mocana.obj
+#   nanossl.obj
 #
 DEPS_60 = $(DEPS_60) $(CONFIG)\inc\bit.h
 DEPS_60 = $(DEPS_60) $(CONFIG)\inc\mpr.h
 
-$(CONFIG)\obj\mocana.obj: \
-    src\ssl\mocana.c $(DEPS_60)
-	@echo '   [Compile] src/ssl/mocana.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\mocana.obj -Fd$(CONFIG)\obj\mocana.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\mocana.c
+$(CONFIG)\obj\nanossl.obj: \
+    src\ssl\nanossl.c $(DEPS_60)
+	@echo '   [Compile] src/ssl/nanossl.c'
+	"$(CC)" -c -Fo$(CONFIG)\obj\nanossl.obj -Fd$(CONFIG)\obj\nanossl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc\deps\est src\ssl\nanossl.c
 
 #
 #   openssl.obj
@@ -883,7 +883,7 @@ $(CONFIG)\obj\ssl.obj: \
 DEPS_63 = $(DEPS_63) $(CONFIG)\bin\libmpr.dll
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\est.obj
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\matrixssl.obj
-DEPS_63 = $(DEPS_63) $(CONFIG)\obj\mocana.obj
+DEPS_63 = $(DEPS_63) $(CONFIG)\obj\nanossl.obj
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\openssl.obj
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\ssl.obj
 
@@ -894,7 +894,7 @@ LIBS_63 = $(LIBS_63) libest.lib
 
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_63)
 	@echo '      [Link] libmprssl'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\mocana.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj $(LIBS_63) $(LIBS_63) $(LIBS) libest.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\nanossl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj $(LIBS_63) $(LIBS_63) $(LIBS) libest.lib
 
 #
 #   testArgv.obj
@@ -1217,13 +1217,3 @@ DEPS_92 = $(DEPS_92) stop
 
 uninstall: $(DEPS_92)
 
-#
-#   mob
-#
-mob: $(DEPS_93)
-	echo a b c
-#
-#   mob2
-#
-mob2: $(DEPS_94)
-	"echo" "a b" "b c" "c d"

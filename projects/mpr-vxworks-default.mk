@@ -170,7 +170,7 @@ clean:
 	rm -rf $(CONFIG)/obj/xml.o
 	rm -rf $(CONFIG)/obj/est.o
 	rm -rf $(CONFIG)/obj/matrixssl.o
-	rm -rf $(CONFIG)/obj/mocana.o
+	rm -rf $(CONFIG)/obj/nanossl.o
 	rm -rf $(CONFIG)/obj/openssl.o
 	rm -rf $(CONFIG)/obj/ssl.o
 	rm -rf $(CONFIG)/obj/makerom.o
@@ -857,15 +857,15 @@ $(CONFIG)/obj/matrixssl.o: \
 	$(CC) -c -o $(CONFIG)/obj/matrixssl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/matrixssl.c
 
 #
-#   mocana.o
+#   nanossl.o
 #
 DEPS_60 += $(CONFIG)/inc/bit.h
 DEPS_60 += $(CONFIG)/inc/mpr.h
 
-$(CONFIG)/obj/mocana.o: \
-    src/ssl/mocana.c $(DEPS_60)
-	@echo '   [Compile] src/ssl/mocana.c'
-	$(CC) -c -o $(CONFIG)/obj/mocana.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/mocana.c
+$(CONFIG)/obj/nanossl.o: \
+    src/ssl/nanossl.c $(DEPS_60)
+	@echo '   [Compile] src/ssl/nanossl.c'
+	$(CC) -c -o $(CONFIG)/obj/nanossl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -Isrc/deps/est src/ssl/nanossl.c
 
 #
 #   openssl.o
@@ -895,7 +895,7 @@ $(CONFIG)/obj/ssl.o: \
 DEPS_63 += $(CONFIG)/bin/libmpr.out
 DEPS_63 += $(CONFIG)/obj/est.o
 DEPS_63 += $(CONFIG)/obj/matrixssl.o
-DEPS_63 += $(CONFIG)/obj/mocana.o
+DEPS_63 += $(CONFIG)/obj/nanossl.o
 DEPS_63 += $(CONFIG)/obj/openssl.o
 DEPS_63 += $(CONFIG)/obj/ssl.o
 
@@ -906,7 +906,7 @@ endif
 
 $(CONFIG)/bin/libmprssl.out: $(DEPS_63)
 	@echo '      [Link] libmprssl'
-	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/mocana.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o 
+	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o 
 
 #
 #   testArgv.o
@@ -1229,13 +1229,3 @@ DEPS_92 += stop
 
 uninstall: $(DEPS_92)
 
-#
-#   mob
-#
-mob: $(DEPS_93)
-	echo a b c
-#
-#   mob2
-#
-mob2: $(DEPS_94)
-	"echo" "a b" "b c" "c d"

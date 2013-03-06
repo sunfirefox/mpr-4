@@ -102,7 +102,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\ssl\est.c" />
     <ClCompile Include="..\..\src\ssl\matrixssl.c" />
-    <ClCompile Include="..\..\src\ssl\mocana.c" />
+    <ClCompile Include="..\..\src\ssl\nanossl.c" />
     <ClCompile Include="..\..\src\ssl\openssl.c" />
     <ClCompile Include="..\..\src\ssl\ssl.c" />
   </ItemGroup>
