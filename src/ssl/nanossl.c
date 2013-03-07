@@ -6,8 +6,6 @@
 
 /********************************** Includes **********************************/
 
-#define ASYNC 0
-
 #include    "mpr.h"
 
 #if BIT_PACK_NANOSSL
@@ -106,19 +104,10 @@ PUBLIC int mprCreateNanoSslModule()
         return MPR_ERR_CANT_INITIALIZE;
     }
     MOCANA_initLog(nanoLog);
-
-#if ASYNC
-    #define MAX_SSL_CONNECTIONS_ALLOWED 10
-    if (SSL_ASYNC_init(MAX_SSL_CONNECTIONS_ALLOWED, MAX_SSL_CONNECTIONS_ALLOWED) < 0) {
-        mprError("SSL_ASYNC_init failed");
-        return MPR_ERR_CANT_INITIALIZE;
-    }
-#else
     if (SSL_init(SOMAXCONN, 0) < 0) {
         mprError("SSL_init failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
-#endif
     settings = SSL_sslSettings();
     settings->sslTimeOutHello = SSL_HELLO_TIMEOUT;
     settings->sslTimeOutReceive = SSL_RECV_TIMEOUT;
@@ -157,11 +146,7 @@ static void manageNanoSocket(NanoSocket *np, int flags)
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (np->handle) {
-#if ASYNC
-            SSL_ASYNC_closeConnection(np->handle);
-#else
             SSL_closeConnection(np->handle);
-#endif
             np->handle = 0;
         }
     }
@@ -174,11 +159,7 @@ static void nanoClose(MprSocket *sp, bool gracefully)
 
     np = sp->sslSocket;
     if (np->handle) {
-#if ASYNC
-        SSL_ASYNC_closeConnection(np->handle);
-#else
         SSL_closeConnection(np->handle);
-#endif
         np->handle = 0;
     }
     sp->service->standardProvider->closeSocket(sp, gracefully);
@@ -292,37 +273,20 @@ static int nanoUpgrade(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             SSL_setServerNameList(np->handle, list, slen(peerName) + 3);
         }
 #endif
-#if ASYNC && UNUSED
-        if (SSL_ASYNC_initServerCert(&cfg->cert, FALSE, 0)) {
-            mprError("SSL_initServerCert failed");
-            unlock(ssl);
-            return MPR_ERR_CANT_INITIALIZE;
-        }
-#else
         if (SSL_initServerCert(&cfg->cert, FALSE, 0)) {
             mprError("SSL_initServerCert failed");
             unlock(ssl);
             return MPR_ERR_CANT_INITIALIZE;
         }
-#endif
     }
     unlock(ssl);
 
     if (sp->flags & MPR_SOCKET_SERVER) {
-#if ASYNC
-        //  SSL_ASYNC_acceptConnection - mob does this start handshaking?
-        //  MOB - this must be serialized - read all doc for other such warnings
-        if ((np->handle = SSL_ASYNC_acceptConnection(sp->fd)) < 0) {
-            return -1;
-        }
-#else
         if ((np->handle = SSL_acceptConnection(sp->fd)) < 0) {
             return -1;
         }
-#endif
     } else {
-        //  MOB - need client side
-        //  MOB (client only) - SSL_ASYNC_start(np->handle);
+        mprError("NanoSSL does not support client side SSL");
     }
     return 0;
 }
@@ -350,13 +314,6 @@ static void checkCert(MprSocket *sp)
     } else if (ssl->caPath) {
         mprLog(4, "NanoSSL: Using certificates from directory %s", ssl->caPath);
     }
-#if MOB
-    if (ssl->peer_cert) {
-        mprLog(4, "NanoSSL: client supplied no certificate");
-    } else {
-        mprRawLog(4, "%s", x509parse_cert_inf("", ssl->peer_cert));
-    }
-#endif
     /*
         Trace cipher being used
      */
@@ -446,8 +403,6 @@ static int nanoHandshake(MprSocket *sp)
     rc = 0;
 
     while (!np->connected) {
-        //  MOB - is this sync or async
-        //  MOB - doc says only do this in sync
         if ((rc = SSL_negotiateConnection(np->handle)) < 0) {
             break;
 #if FUTURE
@@ -480,17 +435,6 @@ static int nanoHandshake(MprSocket *sp)
         } else if (rc == ERR_SSL_CERT_VALIDATION_FAILED) {
             sp->errorMsg = sclone("Certificate does not validate");
         }
-
-        /*
-            MOB - conditions to review
-            - certificate expired
-            - certificate revoked
-            - self-signed cert
-            - cert not trusted
-            - common name mismatch
-            - peer disconnected
-            - verify peer / issuer
-         */
         DISPLAY_ERROR(0, rc); 
         mprLog(4, "NanoSSL: Cannot handshake: error %d", rc);
         errno = EPROTO;
@@ -518,31 +462,15 @@ static ssize nanoRead(MprSocket *sp, void *buf, ssize len)
         return rc;
     }
     while (1) {
-#if ASYNC
-        ubyte *remainingBuf;
-        ubyte4 remainingCount;
-        rc = SSL_ASYNC_recvMessage(np->handle, buf, nbytes);
-        mprLog(5, "NanoSSL: ssl_read %d", rc);
-        if (rc < 0) {
-            /*
-                MOB - close notify, conn reset
-             */
-            //  MOB - DISPLAY_ERROR for a text message
-            return -1;
-        } 
-#else
         rc = SSL_recv(np->handle, buf, (sbyte4) len, &nbytes, 0);
         mprLog(5, "NanoSSL: ssl_read %d", rc);
         if (rc < 0) {
             return -1;
         }
         break;
-#endif
     }
-#if !ASYNC
     SSL_recvPending(np->handle, &count);
     mprHiddenSocketData(sp, count, MPR_READABLE);
-#endif
     return nbytes;
 }
 
@@ -566,19 +494,6 @@ static ssize nanoWrite(MprSocket *sp, cvoid *buf, ssize len)
     }
     totalWritten = 0;
     do {
-#if ASYNC
-        rc = SSL_ASYNC_sendMessage(np->handle, (sbyte*) buf, (int) len, &sent);
-        mprLog(7, "NanoSSL: written %d, requested len %d", sent, len);
-        if (rc <= 0) {
-            //  MOB - should this set EOF. What about other providers?
-            mprLog(0, "NanoSSL: SSL_send failed sent %d", rc);
-            return -1;
-        }
-        totalWritten += sent;
-        buf = (void*) ((char*) buf + sent);
-        len -= sent;
-        mprLog(7, "NanoSSL: write: len %d, written %d, total %d", len, sent, totalWritten);
-#else
         rc = sent = SSL_send(np->handle, (sbyte*) buf, (int) len);
         mprLog(7, "NanoSSL: written %d, requested len %d", sent, len);
         if (rc <= 0) {
@@ -590,13 +505,10 @@ static ssize nanoWrite(MprSocket *sp, cvoid *buf, ssize len)
         buf = (void*) ((char*) buf + sent);
         len -= sent;
         mprLog(7, "NanoSSL: write: len %d, written %d, total %d", len, sent, totalWritten);
-#endif
     } while (len > 0);
 
-#if !ASYNC
     SSL_sendPending(np->handle, &count);
     mprHiddenSocketData(sp, count, MPR_WRITABLE);
-#endif
     return totalWritten;
 }
 
