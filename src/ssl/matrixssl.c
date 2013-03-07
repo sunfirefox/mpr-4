@@ -229,6 +229,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     if (sp->flags & MPR_SOCKET_SERVER) {
         flags = (ssl->verifyPeer) ? SSL_FLAGS_CLIENT_AUTH : 0;
         if (matrixSslNewServerSession(&msp->ctx, cfg->keys, NULL, flags) < 0) {
+            mprError("MatrixSSL: Cannot create new server session");
             unlock(sp);
             return MPR_ERR_CANT_CREATE;
         }
@@ -238,6 +239,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         msp->peerName = sclone(peerName);
         cipherSuite = 0;
         if (matrixSslNewClientSession(&msp->ctx, cfg->keys, NULL, cipherSuite, verifyCert, NULL, NULL, 0) < 0) {
+            mprError("MatrixSSL: Cannot create new client session");
             unlock(sp);
             return MPR_ERR_CANT_CONNECT;
         }

@@ -367,8 +367,11 @@ static int handshakeEst(MprSocket *sp)
                 return -1;
             }
         }
+#if UNUSED
     } else {
+        /* MOB - being emitted when no cert supplied */
         mprLog(3, "EST: Certificate verified");
+#endif
     }
     return 1;
 }

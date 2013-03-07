@@ -2,12 +2,11 @@
     nanossl.c - Mocana NanoSSL
 
     Copyright (c) All Rights Reserved. See details at the end of the file.
-
  */
 
-    #define ASYNC 0
-
 /********************************** Includes **********************************/
+
+#define ASYNC 0
 
 #include    "mpr.h"
 
@@ -32,23 +31,23 @@
 /*
     Per-route SSL configuration
  */
-typedef struct MocConfig {
+typedef struct NanoConfig {
     certDescriptor  cert;
     certDescriptor  ca;
-} MocConfig;
+} NanoConfig;
 
 /*
     Per socket state
  */
-typedef struct MocSocket {
+typedef struct NanoSocket {
     MprSocket       *sock;
-    MocConfig       *cfg;
+    NanoConfig       *cfg;
     sbyte4          handle;
     int             connected;
-} MocSocket;
+} NanoSocket;
 
-static MprSocketProvider *mocProvider;
-static MocConfig *defaultMocConfig;
+static MprSocketProvider *nanoProvider;
+static NanoConfig *defaultNanoConfig;
 
 #if BIT_DEBUG
     #define SSL_HELLO_TIMEOUT   15000
@@ -63,18 +62,18 @@ static MocConfig *defaultMocConfig;
 
 /***************************** Forward Declarations ***************************/
 
-static void     closeMoc(MprSocket *sp, bool gracefully);
-static void     disconnectMoc(MprSocket *sp);
-static char     *getMocState(MprSocket *sp);
-static Socket   listenMoc(MprSocket *sp, cchar *host, int port, int flags);
-static void     logMoc(sbyte4 module, sbyte4 severity, sbyte *msg);
-static void     manageMocConfig(MocConfig *cfg, int flags);
-static void     manageMocProvider(MprSocketProvider *provider, int flags);
-static void     manageMocSocket(MocSocket *ssp, int flags);
-static ssize    readMoc(MprSocket *sp, void *buf, ssize len);
-static int      setMocCiphers(MprSocket *sp, cchar *cipherSuite);
-static int      upgradeMoc(MprSocket *sp, MprSsl *sslConfig, cchar *peerName);
-static ssize    writeMoc(MprSocket *sp, cvoid *buf, ssize len);
+static void     nanoClose(MprSocket *sp, bool gracefully);
+static void     nanoDisconnect(MprSocket *sp);
+static char     *getNanoState(MprSocket *sp);
+static Socket   nanoListen(MprSocket *sp, cchar *host, int port, int flags);
+static void     nanoLog(sbyte4 module, sbyte4 severity, sbyte *msg);
+static void     manageNanoConfig(NanoConfig *cfg, int flags);
+static void     manageNanoProvider(MprSocketProvider *provider, int flags);
+static void     manageNanoSocket(NanoSocket *ssp, int flags);
+static ssize    nanoRead(MprSocket *sp, void *buf, ssize len);
+static int      setNanoCiphers(MprSocket *sp, cchar *cipherSuite);
+static int      nanoUpgrade(MprSocket *sp, MprSsl *sslConfig, cchar *peerName);
+static ssize    nanoWrite(MprSocket *sp, cvoid *buf, ssize len);
 
 static void     DEBUG_PRINT(void *where, void *msg);
 static void     DEBUG_PRINTNL(void *where, void *msg);
@@ -87,26 +86,26 @@ PUBLIC int mprCreateNanoSslModule()
 {
     sslSettings     *settings;
 
-    if ((mocProvider = mprAllocObj(MprSocketProvider, manageMocProvider)) == NULL) {
+    if ((nanoProvider = mprAllocObj(MprSocketProvider, manageNanoProvider)) == NULL) {
         return MPR_ERR_MEMORY;
     }
-    mocProvider->upgradeSocket = upgradeMoc;
-    mocProvider->closeSocket = closeMoc;
-    mocProvider->disconnectSocket = disconnectMoc;
-    mocProvider->listenSocket = listenMoc;
-    mocProvider->readSocket = readMoc;
-    mocProvider->writeSocket = writeMoc;
-    mocProvider->socketState = getMocState;
-    mprAddSocketProvider("nanossl", mocProvider);
+    nanoProvider->upgradeSocket = nanoUpgrade;
+    nanoProvider->closeSocket = nanoClose;
+    nanoProvider->disconnectSocket = nanoDisconnect;
+    nanoProvider->listenSocket = nanoListen;
+    nanoProvider->readSocket = nanoRead;
+    nanoProvider->writeSocket = nanoWrite;
+    nanoProvider->socketState = getNanoState;
+    mprAddSocketProvider("nanossl", nanoProvider);
 
-    if ((defaultMocConfig = mprAllocObj(MocConfig, manageMocConfig)) == 0) {
+    if ((defaultNanoConfig = mprAllocObj(NanoConfig, manageNanoConfig)) == 0) {
         return MPR_ERR_MEMORY;
     }
     if (MOCANA_initMocana() < 0) {
         mprError("NanoSSL initialization failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    MOCANA_initLog(logMoc);
+    MOCANA_initLog(nanoLog);
 
 #if ASYNC
     #define MAX_SSL_CONNECTIONS_ALLOWED 10
@@ -127,20 +126,20 @@ PUBLIC int mprCreateNanoSslModule()
 }
 
 
-static void manageMocProvider(MprSocketProvider *provider, int flags)
+static void manageNanoProvider(MprSocketProvider *provider, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(defaultMocConfig);
+        mprMark(defaultNanoConfig);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        defaultMocConfig = 0;
+        defaultNanoConfig = 0;
         SSL_releaseTables();
         MOCANA_freeMocana();
     }
 }
 
 
-static void manageMocConfig(MocConfig *cfg, int flags)
+static void manageNanoConfig(NanoConfig *cfg, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
         ;
@@ -150,37 +149,37 @@ static void manageMocConfig(MocConfig *cfg, int flags)
 }
 
 
-static void manageMocSocket(MocSocket *mp, int flags)
+static void manageNanoSocket(NanoSocket *np, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(mp->cfg);
-        mprMark(mp->sock);
+        mprMark(np->cfg);
+        mprMark(np->sock);
 
     } else if (flags & MPR_MANAGE_FREE) {
-        if (mp->handle) {
+        if (np->handle) {
 #if ASYNC
-            SSL_ASYNC_closeConnection(mp->handle);
+            SSL_ASYNC_closeConnection(np->handle);
 #else
-            SSL_closeConnection(mp->handle);
+            SSL_closeConnection(np->handle);
 #endif
-            mp->handle = 0;
+            np->handle = 0;
         }
     }
 }
 
 
-static void closeMoc(MprSocket *sp, bool gracefully)
+static void nanoClose(MprSocket *sp, bool gracefully)
 {
-    MocSocket       *mp;
+    NanoSocket      *np;
 
-    mp = sp->sslSocket;
-    if (mp->handle) {
+    np = sp->sslSocket;
+    if (np->handle) {
 #if ASYNC
-        SSL_ASYNC_closeConnection(mp->handle);
+        SSL_ASYNC_closeConnection(np->handle);
 #else
-        SSL_closeConnection(mp->handle);
+        SSL_closeConnection(np->handle);
 #endif
-        mp->handle = 0;
+        np->handle = 0;
     }
     sp->service->standardProvider->closeSocket(sp, gracefully);
 }
@@ -189,7 +188,7 @@ static void closeMoc(MprSocket *sp, bool gracefully)
 /*
     Initialize a new server-side connection
  */
-static Socket listenMoc(MprSocket *sp, cchar *host, int port, int flags)
+static Socket nanoListen(MprSocket *sp, cchar *host, int port, int flags)
 {
     assert(sp);
     assert(port);
@@ -200,10 +199,10 @@ static Socket listenMoc(MprSocket *sp, cchar *host, int port, int flags)
 /*
     Upgrade a standard socket to use TLS
  */
-static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
+static int nanoUpgrade(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 {
-    MocSocket   *mp;
-    MocConfig   *cfg;
+    NanoSocket   *np;
+    NanoConfig   *cfg;
     int         rc;
 
     assert(sp);
@@ -211,26 +210,26 @@ static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     if (ssl == 0) {
         ssl = mprCreateSsl(sp->flags & MPR_SOCKET_SERVER);
     }
-    if ((mp = (MocSocket*) mprAllocObj(MocSocket, manageMocSocket)) == 0) {
+    if ((np = (NanoSocket*) mprAllocObj(NanoSocket, manageNanoSocket)) == 0) {
         return MPR_ERR_MEMORY;
     }
-    mp->sock = sp;
-    sp->sslSocket = mp;
+    np->sock = sp;
+    sp->sslSocket = np;
     sp->ssl = ssl;
 
     lock(ssl);
     if (ssl->config && !ssl->changed) {
-        mp->cfg = cfg = ssl->config;
+        np->cfg = cfg = ssl->config;
     } else {
         ssl->changed = 0;
         /*
             One time setup for the SSL configuration for this MprSsl
          */
-        if ((cfg = mprAllocObj(MocConfig, manageMocConfig)) == 0) {
+        if ((cfg = mprAllocObj(NanoConfig, manageNanoConfig)) == 0) {
             unlock(ssl);
             return MPR_ERR_MEMORY;
         }
-        mp->cfg = ssl->config = cfg;
+        np->cfg = ssl->config = cfg;
         if (ssl->certFile) {
             certDescriptor tmp;
             if ((rc = MOCANA_readFile((sbyte*) ssl->certFile, &tmp.pCertificate, &tmp.certLength)) < 0) {
@@ -290,7 +289,7 @@ static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             memset(list, 0, sizeof(list));
             list[2] = slen(peerName);
             scopy(&list[3], sizeof(list) - 4, peerName);
-            SSL_setServerNameList(mp->handle, list, slen(peerName) + 3);
+            SSL_setServerNameList(np->handle, list, slen(peerName) + 3);
         }
 #endif
 #if ASYNC && UNUSED
@@ -313,23 +312,23 @@ static int upgradeMoc(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 #if ASYNC
         //  SSL_ASYNC_acceptConnection - mob does this start handshaking?
         //  MOB - this must be serialized - read all doc for other such warnings
-        if ((mp->handle = SSL_ASYNC_acceptConnection(sp->fd)) < 0) {
+        if ((np->handle = SSL_ASYNC_acceptConnection(sp->fd)) < 0) {
             return -1;
         }
 #else
-        if ((mp->handle = SSL_acceptConnection(sp->fd)) < 0) {
+        if ((np->handle = SSL_acceptConnection(sp->fd)) < 0) {
             return -1;
         }
 #endif
     } else {
         //  MOB - need client side
-        //  MOB (client only) - SSL_ASYNC_start(mp->handle);
+        //  MOB (client only) - SSL_ASYNC_start(np->handle);
     }
     return 0;
 }
 
 
-static void disconnectMoc(MprSocket *sp)
+static void nanoDisconnect(MprSocket *sp)
 {
     sp->service->standardProvider->disconnectSocket(sp);
 }
@@ -337,14 +336,14 @@ static void disconnectMoc(MprSocket *sp)
 
 static void checkCert(MprSocket *sp)
 {
-    MocSocket   *mp;
+    NanoSocket  *np;
     MprCipher   *cp;
     MprSsl      *ssl;
     ubyte2      cipher;
     ubyte4      ecurve;
    
     ssl = sp->ssl;
-    mp = (MocSocket*) sp->sslSocket;
+    np = (NanoSocket*) sp->sslSocket;
 
     if (ssl->caFile) {
         mprLog(4, "NanoSSL: Using certificates from %s", ssl->caFile);
@@ -361,7 +360,7 @@ static void checkCert(MprSocket *sp)
     /*
         Trace cipher being used
      */
-    if (SSL_getCipherInfo(mp->handle, &cipher, &ecurve) < 0) {
+    if (SSL_getCipherInfo(np->handle, &cipher, &ecurve) < 0) {
         mprLog(0, "Cannot get cipher info");
         return;
     }
@@ -421,15 +420,15 @@ static sbyte4 verifyCertificateInStore(sbyte4 connectionInstance, ubyte *pCertif
     Initiate or continue SSL handshaking with the peer. This routine does not block.
     Return -1 on errors, 0 incomplete and awaiting I/O, 1 if successful
 */
-static int handshakeMoc(MprSocket *sp)
+static int nanoHandshake(MprSocket *sp)
 {
-    MocSocket   *mp;
+    NanoSocket  *np;
     ubyte4      flags;
     int         rc;
 
-    mp = (MocSocket*) sp->sslSocket;
+    np = (NanoSocket*) sp->sslSocket;
     sp->flags |= MPR_SOCKET_HANDSHAKING;
-    if (setMocCiphers(sp, sp->ssl->ciphers) < 0) {
+    if (setNanoCiphers(sp, sp->ssl->ciphers) < 0) {
         return 0;
     }
 #if NEXT
@@ -437,32 +436,31 @@ static int handshakeMoc(MprSocket *sp)
     SSL_sslSettings()->funcPtrCertificateStoreLookup  = findCertificateInStore;
     SSL_sslSettings()->funcPtrCertificateStoreRelease = releaseStoreCertificate;
 #endif
-    SSL_getSessionFlags(mp->handle, &flags);
+    SSL_getSessionFlags(np->handle, &flags);
     if (sp->ssl->verifyPeer) {
         flags |= SSL_FLAG_REQUIRE_MUTUAL_AUTH;
     } else {
         flags |= SSL_FLAG_NO_MUTUAL_AUTH_REQUEST;
     }
-    SSL_setSessionFlags(mp->handle, flags);
+    SSL_setSessionFlags(np->handle, flags);
     rc = 0;
 
-    while (!mp->connected) {
+    while (!np->connected) {
         //  MOB - is this sync or async
         //  MOB - doc says only do this in sync
-        if ((rc = SSL_negotiateConnection(mp->handle)) < 0) {
+        if ((rc = SSL_negotiateConnection(np->handle)) < 0) {
             break;
 #if FUTURE
             if (!mprGetSocketBlockingMode(sp)) {
                 DISPLAY_ERROR(0, rc); 
-                mprLog(4, "NanoSSL: readMoc: Cannot handshake: error %d", rc);
-                sp->flags |= MPR_SOCKET_EOF;
+                mprLog(4, "NanoSSL: Cannot handshake: error %d", rc);
                 errno = EPROTO;
                 return 0;
             }
             continue;
 #endif
         }
-        mp->connected = 1;
+        np->connected = 1;
         break;
     }
     sp->flags &= ~MPR_SOCKET_HANDSHAKING;
@@ -494,8 +492,7 @@ static int handshakeMoc(MprSocket *sp)
             - verify peer / issuer
          */
         DISPLAY_ERROR(0, rc); 
-        mprLog(4, "NanoSSL: readMoc: Cannot handshake: error %d", rc);
-        sp->flags |= MPR_SOCKET_EOF;
+        mprLog(4, "NanoSSL: Cannot handshake: error %d", rc);
         errno = EPROTO;
         return -1;
     }
@@ -507,51 +504,43 @@ static int handshakeMoc(MprSocket *sp)
 /*
     Return the number of bytes read. Return -1 on errors and EOF. Distinguish EOF via mprIsSocketEof
  */
-static ssize readMoc(MprSocket *sp, void *buf, ssize len)
+static ssize nanoRead(MprSocket *sp, void *buf, ssize len)
 {
-    MocSocket   *mp;
+    NanoSocket  *np;
     sbyte4      nbytes, count;
     int         rc;
 
-    mp = (MocSocket*) sp->sslSocket;
+    np = (NanoSocket*) sp->sslSocket;
     assert(mp);
-    assert(mp->cfg);
+    assert(np->cfg);
 
-    if (!mp->connected && (rc = handshakeMoc(sp)) <= 0) {
+    if (!np->connected && (rc = nanoHandshake(sp)) <= 0) {
         return rc;
     }
     while (1) {
 #if ASYNC
         ubyte *remainingBuf;
         ubyte4 remainingCount;
-        rc = SSL_ASYNC_recvMessage(mp->handle, buf, nbytes);
+        rc = SSL_ASYNC_recvMessage(np->handle, buf, nbytes);
         mprLog(5, "NanoSSL: ssl_read %d", rc);
         if (rc < 0) {
             /*
                 MOB - close notify, conn reset
              */
-            sp->flags |= MPR_SOCKET_EOF;
             //  MOB - DISPLAY_ERROR for a text message
             return -1;
         } 
 #else
-        /*
-            This will do the actual blocking I/O
-         */
-        rc = SSL_recv(mp->handle, buf, (sbyte4) len, &nbytes, 0);
+        rc = SSL_recv(np->handle, buf, (sbyte4) len, &nbytes, 0);
         mprLog(5, "NanoSSL: ssl_read %d", rc);
         if (rc < 0) {
-            /*
-                MOB - close notify, conn reset
-             */
-            sp->flags |= MPR_SOCKET_EOF;
             return -1;
         }
         break;
 #endif
     }
 #if !ASYNC
-    SSL_recvPending(mp->handle, &count);
+    SSL_recvPending(np->handle, &count);
     mprHiddenSocketData(sp, count, MPR_READABLE);
 #endif
     return nbytes;
@@ -561,24 +550,24 @@ static ssize readMoc(MprSocket *sp, void *buf, ssize len)
 /*
     Write data. Return the number of bytes written or -1 on errors.
  */
-static ssize writeMoc(MprSocket *sp, cvoid *buf, ssize len)
+static ssize nanoWrite(MprSocket *sp, cvoid *buf, ssize len)
 {
-    MocSocket   *mp;
+    NanoSocket  *np;
     ssize       totalWritten;
     int         rc, count, sent;
 
-    mp = (MocSocket*) sp->sslSocket;
+    np = (NanoSocket*) sp->sslSocket;
     if (len <= 0) {
         assert(0);
         return -1;
     }
-    if (!mp->connected && (rc = handshakeMoc(sp)) <= 0) {
+    if (!np->connected && (rc = nanoHandshake(sp)) <= 0) {
         return rc;
     }
     totalWritten = 0;
     do {
 #if ASYNC
-        rc = SSL_ASYNC_sendMessage(mp->handle, (sbyte*) buf, (int) len, &sent);
+        rc = SSL_ASYNC_sendMessage(np->handle, (sbyte*) buf, (int) len, &sent);
         mprLog(7, "NanoSSL: written %d, requested len %d", sent, len);
         if (rc <= 0) {
             //  MOB - should this set EOF. What about other providers?
@@ -590,7 +579,7 @@ static ssize writeMoc(MprSocket *sp, cvoid *buf, ssize len)
         len -= sent;
         mprLog(7, "NanoSSL: write: len %d, written %d, total %d", len, sent, totalWritten);
 #else
-        rc = sent = SSL_send(mp->handle, (sbyte*) buf, (int) len);
+        rc = sent = SSL_send(np->handle, (sbyte*) buf, (int) len);
         mprLog(7, "NanoSSL: written %d, requested len %d", sent, len);
         if (rc <= 0) {
             //  MOB - should this set EOF. What about other providers?
@@ -605,20 +594,20 @@ static ssize writeMoc(MprSocket *sp, cvoid *buf, ssize len)
     } while (len > 0);
 
 #if !ASYNC
-    SSL_sendPending(mp->handle, &count);
+    SSL_sendPending(np->handle, &count);
     mprHiddenSocketData(sp, count, MPR_WRITABLE);
 #endif
     return totalWritten;
 }
 
 
-static char *getMocState(MprSocket *sp)
+static char *getNanoState(MprSocket *sp)
 {
 #if MOB
     sslGetCipherInfo
 
 
-    MocSocket       *moc;
+    NanoSocket       *moc;
     ssl_context     *ctx;
     MprBuf          *buf;
     char            *own, *peer;
@@ -648,15 +637,15 @@ static char *getMocState(MprSocket *sp)
 }
 
 
-static int setMocCiphers(MprSocket *sp, cchar *cipherSuite)
+static int setNanoCiphers(MprSocket *sp, cchar *cipherSuite)
 {
-    MocSocket   *mp;
+    NanoSocket  *np;
     char        *suite, *cipher, *next;
     ubyte2      *ciphers;
     int         count, cipherCode;
 
 
-    mp = sp->sslSocket;
+    np = sp->sslSocket;
     ciphers = malloc((MAX_CIPHERS + 1) * sizeof(ubyte2));
 
     if (!cipherSuite || cipherSuite[0] == '\0') {
@@ -672,7 +661,7 @@ static int setMocCiphers(MprSocket *sp, cchar *cipherSuite)
         }
         suite = 0;
     }
-    if (SSL_enableCiphers(mp->handle, ciphers, count) < 0) {
+    if (SSL_enableCiphers(np->handle, ciphers, count) < 0) {
         mprError("Requested cipher suite %s is not supported by this provider", cipherSuite);
         return MPR_ERR_BAD_STATE;
     }
@@ -690,7 +679,7 @@ static void DEBUG_PRINTNL(void *where, void *msg)
     mprLog(0, "%s", msg);
 }
 
-static void logMoc(sbyte4 module, sbyte4 severity, sbyte *msg)
+static void nanoLog(sbyte4 module, sbyte4 severity, sbyte *msg)
 {
     mprLog(0, "%s", (cchar*) msg);
 }
