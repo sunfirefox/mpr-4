@@ -97,7 +97,7 @@ PUBLIC int mprCreateNanoSslModule()
     mocProvider->readSocket = readMoc;
     mocProvider->writeSocket = writeMoc;
     mocProvider->socketState = getMocState;
-    mprAddSocketProvider("mocana", mocProvider);
+    mprAddSocketProvider("nanossl", mocProvider);
 
     if ((defaultMocConfig = mprAllocObj(MocConfig, manageMocConfig)) == 0) {
         return MPR_ERR_MEMORY;

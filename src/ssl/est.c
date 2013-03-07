@@ -244,10 +244,10 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         cfg->ciphers = ssl_create_ciphers(ssl->ciphers);
     }
     unlock(ssl);
-    ssl_free(&est->ctx);
 
     //  MOB - convert to proper entropy source API
     //  MOB - can't put this in cfg yet as it is not thread safe
+    ssl_free(&est->ctx);
     havege_init(&est->hs);
     ssl_init(&est->ctx);
 	ssl_set_endpoint(&est->ctx, sp->flags & MPR_SOCKET_SERVER ? SSL_IS_SERVER : SSL_IS_CLIENT);

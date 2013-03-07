@@ -236,13 +236,6 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
 
     } else {
         msp->peerName = sclone(peerName);
-#if UNUSED
-        if (matrixSslLoadRsaKeys(cfg->keys, NULL, NULL, password, ssl->caFile) < 0) {
-            mprError("MatrixSSL: Could not read or decode certificate or key file."); 
-            unlock(sp);
-            return MPR_ERR_CANT_INITIALIZE;
-        }
-#endif
         cipherSuite = 0;
         if (matrixSslNewClientSession(&msp->ctx, cfg->keys, NULL, cipherSuite, verifyCert, NULL, NULL, 0) < 0) {
             unlock(sp);
@@ -655,8 +648,6 @@ static ssize readMss(MprSocket *sp, void *buf, ssize len)
     msp = (MatrixSocket*) sp->sslSocket;
     if (msp->more) {
         mprHiddenSocketData(sp, msp->more, MPR_READABLE);
-        //  UNUSED MOB sp->flags |= MPR_SOCKET_BUFFERED_READ;
-        //  UNUSED mprRecallWaitHandlerByFd(sp->fd);
     }
     unlock(sp);
     return bytes;
