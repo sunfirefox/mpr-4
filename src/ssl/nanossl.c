@@ -455,7 +455,7 @@ static ssize nanoRead(MprSocket *sp, void *buf, ssize len)
     int         rc;
 
     np = (NanoSocket*) sp->sslSocket;
-    assert(mp);
+    assert(np);
     assert(np->cfg);
 
     if (!np->connected && (rc = nanoHandshake(sp)) <= 0) {
