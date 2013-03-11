@@ -401,6 +401,16 @@ PUBLIC int mprGetOsError()
 }
 
 
+PUBLIC void mprSetOsError(int error)
+{
+#if BIT_WIN_LIKE
+    SetLastError(error);
+#elif BIT_UNIX_LIKE || VXWORKS
+    errno = error;
+#endif
+}
+
+
 /*
     Return the mapped (portable, Posix) error code
  */
@@ -412,7 +422,6 @@ PUBLIC int mprGetError()
     int     err;
 
     err = mprGetOsError();
-
     switch (err) {
     case ERROR_SUCCESS:
         return 0;
