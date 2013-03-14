@@ -81,8 +81,8 @@ Bit.load({
         },
 
         packageSource: { },
-
     },
+
     manifest: {
         packages: {
             combo: {
