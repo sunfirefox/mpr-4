@@ -925,7 +925,7 @@ static void workerMain(MprWorker *worker, MprThread *tp)
     worker->thread = 0;
     ws->numThreads--;
     unlock(ws);
-    mprLog(4, "Worker exiting. There are %d workers remaining in the pool.", ws->numThreads);
+    mprLog(6, "Worker exiting. There are %d workers remaining in the pool.", ws->numThreads);
 }
 
 

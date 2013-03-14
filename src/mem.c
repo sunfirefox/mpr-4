@@ -32,6 +32,9 @@ static MprMem *stopAlloc = 0;
 static int stopSeqno = -1;
 #endif
 
+#undef GET_SIZE
+#undef GET_MEM
+#undef GET_PTR
 #define GET_MEM(ptr)                ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
 #define GET_PTR(mp)                 ((char*) (((char*) mp) + sizeof(MprMem)))
 #define GET_USIZE(mp)               ((ssize) (GET_SIZE(mp) - sizeof(MprMem) - (HAS_MANAGER(mp) * sizeof(void*))))
@@ -1346,9 +1349,20 @@ void *palloc(ssize size)
  */
 void pfree(void *ptr)
 {
-    mprRelease(ptr);
+    if (ptr) {
+        mprRelease(ptr);
+    }
 }
 
+
+void *prealloc(void *ptr, ssize size)
+{
+    mprRelease(ptr);
+    if ((ptr =  mprRealloc(ptr, size)) != 0) {
+        mprHold(ptr);
+    }
+    return ptr;
+}
 
 
 /* 
