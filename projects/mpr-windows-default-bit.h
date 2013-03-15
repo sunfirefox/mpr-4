@@ -59,7 +59,7 @@
     #define BIT_PRODUCT "mpr"
 #endif
 #ifndef BIT_REQUIRED
-    #define BIT_REQUIRED "winsdk,compiler,lib,link,dumpbin,rc"
+    #define BIT_REQUIRED "winsdk,compiler,lib,link,rc"
 #endif
 #ifndef BIT_SYNC
     #define BIT_SYNC "bitos,est"
@@ -184,9 +184,6 @@
 #endif
 #ifndef BIT_PACK_DSI
     #define BIT_PACK_DSI 0
-#endif
-#ifndef BIT_PACK_DUMPBIN
-    #define BIT_PACK_DUMPBIN 0
 #endif
 #ifndef BIT_PACK_EST
     #define BIT_PACK_EST 1
