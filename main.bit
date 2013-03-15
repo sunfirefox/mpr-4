@@ -21,13 +21,14 @@ Bit.load({
         company: 'Embedthis',
         version: '4.3.0',
         buildNumber: '0',
-        bit: '0.8.4'
+        bit: '0.8.5'
         prefixes: 'embedthis-prefixes',
-        sync: ['bitos', 'est'],
+        sync: [ 'bitos', 'est' ],
         '+required': [ 'compiler' ],
-        '+discover': [ 'doxygen', 'dsi', 'est', 'man', 'man2html', 'md5', 'utest' ],
-        'without-all': ['doxygen', 'dsi', 'est', 'man', 'man2html', 'pmaker'],
-        'without-default': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker'],
+        '+discover': [ 'doxygen', 'dsi', 'man', 'man2html', 'md5', 'ssl', 'utest' ],
+        'without-all': [ 'doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl' ],
+        'without-default': [ 'doxygen', 'dsi', 'man', 'man2html', 'pmaker' ],
+
         mpr: {
             logging: true,          /* Enable logging of mprLog calls */
             manager: 'manager',     /* Enable watch-dog manager */
@@ -50,7 +51,7 @@ Bit.load({
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'est', 'openssl', 'matrixssl', 'nanossl' ],
+            depends: [ 'libmpr', 'ssl' ],
             sources: [ 'src/ssl/*.c' ],
         },
 
@@ -130,11 +131,4 @@ Bit.load({
             },
         ],
 	},
-
-    packs: {
-        est: {},
-        matrixssl: {},
-        openssl: {},
-        nanossl: {},
-    },
 })
