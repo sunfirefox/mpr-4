@@ -13,10 +13,9 @@ LD                := /usr/bin/ld
 CONFIG            := $(OS)-$(ARCH)-$(PROFILE)
 LBIN              := $(CONFIG)/bin
 
-BIT_PACK_EST      := 1
 
 CFLAGS            += -fPIC  -w
-DFLAGS            += -D_REENTRANT -DPIC  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) 
+DFLAGS            += -D_REENTRANT -DPIC  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) 
 IFLAGS            += -I$(CONFIG)/inc
 LDFLAGS           += '-g'
 LIBPATHS          += -L$(CONFIG)/bin
@@ -52,9 +51,7 @@ BIT_CACHE_PREFIX  := $(BIT_ROOT_PREFIX)/var/spool/$(PRODUCT)/cache
 BIT_SRC_PREFIX    := $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
 
 
-ifeq ($(BIT_PACK_EST),1)
 TARGETS           += $(CONFIG)/bin/libest.so
-endif
 TARGETS           += $(CONFIG)/bin/ca.crt
 TARGETS           += $(CONFIG)/bin/benchMpr
 TARGETS           += $(CONFIG)/bin/runProgram
@@ -216,7 +213,6 @@ $(CONFIG)/obj/estLib.o: \
 	@echo '   [Compile] src/deps/est/estLib.c'
 	$(CC) -c -o $(CONFIG)/obj/estLib.o -fPIC $(LDFLAGS) $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
 
-ifeq ($(BIT_PACK_EST),1)
 #
 #   libest
 #
@@ -226,7 +222,6 @@ DEPS_6 += $(CONFIG)/obj/estLib.o
 $(CONFIG)/bin/libest.so: $(DEPS_6)
 	@echo '      [Link] libest'
 	$(CC) -shared -o $(CONFIG)/bin/libest.so $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/estLib.o $(LIBS)
-endif
 
 #
 #   ca-crt
@@ -894,9 +889,7 @@ DEPS_63 += $(CONFIG)/obj/openssl.o
 DEPS_63 += $(CONFIG)/obj/ssl.o
 
 LIBS_63 += -lmpr
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_63 += -lest
-endif
+LIBS_63 += -lest
 
 $(CONFIG)/bin/libmprssl.so: $(DEPS_63)
 	@echo '      [Link] libmprssl'
@@ -1115,9 +1108,7 @@ DEPS_81 += $(CONFIG)/obj/testUnicode.o
 
 LIBS_81 += -lmprssl
 LIBS_81 += -lmpr
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_81 += -lest
-endif
+LIBS_81 += -lest
 
 $(CONFIG)/bin/testMpr: $(DEPS_81)
 	@echo '      [Link] testMpr'

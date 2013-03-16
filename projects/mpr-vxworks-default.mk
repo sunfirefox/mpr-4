@@ -17,13 +17,12 @@ LD                := /usr/bin/ld
 CONFIG            := $(OS)-$(ARCH)-$(PROFILE)
 LBIN              := $(CONFIG)/bin
 
-BIT_PACK_EST      := 1
 
-CFLAGS            += -fno-builtin -fno-defer-pop -fvolatile  -w
-DFLAGS            += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL  -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) 
+CFLAGS            += -fno-builtin -fno-defer-pop -fvolatile -w
+DFLAGS            += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) 
 IFLAGS            += -I$(CONFIG)/inc -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip
 LDFLAGS           += '-Wl,-r'
-LIBPATHS          += -L$(CONFIG)/bin -L$(CONFIG)/bin
+LIBPATHS          += -L$(CONFIG)/bin
 LIBS              += 
 
 DEBUG             := debug
@@ -56,9 +55,7 @@ BIT_VAPP_PREFIX   := $(BIT_APP_PREFIX)
 BIT_SRC_PREFIX    := $(BIT_ROOT_PREFIX)/usr/src/$(PRODUCT)-$(VERSION)
 
 
-ifeq ($(BIT_PACK_EST),1)
 TARGETS           += $(CONFIG)/bin/libest.out
-endif
 TARGETS           += $(CONFIG)/bin/ca.crt
 TARGETS           += $(CONFIG)/bin/benchMpr.out
 TARGETS           += $(CONFIG)/bin/runProgram.out
@@ -220,7 +217,6 @@ $(CONFIG)/obj/estLib.o: \
 	@echo '   [Compile] src/deps/est/estLib.c'
 	$(CC) -c -o $(CONFIG)/obj/estLib.o -fno-builtin -fno-defer-pop -fvolatile $(DFLAGS) $(IFLAGS) src/deps/est/estLib.c
 
-ifeq ($(BIT_PACK_EST),1)
 #
 #   libest
 #
@@ -230,7 +226,6 @@ DEPS_6 += $(CONFIG)/obj/estLib.o
 $(CONFIG)/bin/libest.out: $(DEPS_6)
 	@echo '      [Link] libest'
 	$(CC) -r -o $(CONFIG)/bin/libest.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/estLib.o 
-endif
 
 #
 #   ca-crt
@@ -898,9 +893,7 @@ DEPS_63 += $(CONFIG)/obj/openssl.o
 DEPS_63 += $(CONFIG)/obj/ssl.o
 
 LIBS_63 += -lmpr
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_63 += -lest
-endif
+LIBS_63 += -lest
 
 $(CONFIG)/bin/libmprssl.out: $(DEPS_63)
 	@echo '      [Link] libmprssl'
@@ -1119,9 +1112,7 @@ DEPS_81 += $(CONFIG)/obj/testUnicode.o
 
 LIBS_81 += -lmprssl
 LIBS_81 += -lmpr
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_81 += -lest
-endif
+LIBS_81 += -lest
 
 $(CONFIG)/bin/testMpr.out: $(DEPS_81)
 	@echo '      [Link] testMpr'
