@@ -40,7 +40,7 @@ PUBLIC MprThreadService *mprCreateThreadService()
     }
     MPR->mainOsThread = mprGetCurrentOsThread();
     MPR->threadService = ts;
-    ts->stackSize = BIT_MPR_THREAD_STACK;
+    ts->stackSize = BIT_STACK_SIZE;
     /*
         Don't actually create the thread. Just create a thread object for this main thread.
      */
