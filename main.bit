@@ -35,6 +35,15 @@ Bit.load({
             threadStack: 0,         /* Use the system default stack size */
             tracing: true,          /* Enable logging of mprTrace and assert() */
         },
+        /*
+            Pack settings for when generating projects
+         */
+        projects: {
+            est: true,
+            matrixssl: false,
+            openssl: false,
+            ssl: true,
+        },
     },
 
     usage: {

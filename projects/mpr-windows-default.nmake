@@ -19,12 +19,16 @@ ENTRY             = _DllMainCRTStartup@12
 OS                = windows
 CONFIG            = $(OS)-$(ARCH)-$(PROFILE)
 LBIN              = $(CONFIG)\bin
+BIT_PACK_EST       = 1
+BIT_PACK_MATRIXSSL = 0
+BIT_PACK_OPENSSL   = 0
+BIT_PACK_SSL       = 1
 
 CC                = cl
 LD                = link
 RC                = rc
 CFLAGS            = -nologo -GR- -W3 -Zi -Od -MDd
-DFLAGS            = -D_REENTRANT -D_MT -DBIT_DEBUG 
+DFLAGS            = -D_REENTRANT -D_MT -DBIT_DEBUG -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS            = -I$(CONFIG)\inc
 LDFLAGS           = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS          = -libpath:$(CONFIG)\bin
@@ -48,14 +52,16 @@ BIT_CACHE_PREFIX  = $(BIT_VAPP_PREFIX)\cache
 BIT_SRC_PREFIX    = $(BIT_VAPP_PREFIX)\src
 
 
-TARGETS           = $(TARGETS) $(CONFIG)\bin\libest.dll
-TARGETS           = $(TARGETS) $(CONFIG)\bin\ca.crt
-TARGETS           = $(TARGETS) $(CONFIG)\bin\benchMpr.exe
-TARGETS           = $(TARGETS) $(CONFIG)\bin\runProgram.exe
-TARGETS           = $(TARGETS) $(CONFIG)\bin\testMpr.exe
-TARGETS           = $(TARGETS) $(CONFIG)\bin\manager.exe
-TARGETS           = $(TARGETS) $(CONFIG)\bin\makerom.exe
-TARGETS           = $(TARGETS) $(CONFIG)\bin\chargen.exe
+!IF "$(BIT_PACK_EST)" == "1"
+TARGETS            = $(TARGETS) $(CONFIG)\bin\libest.dll
+!ENDIF
+TARGETS            = $(TARGETS) $(CONFIG)\bin\ca.crt
+TARGETS            = $(TARGETS) $(CONFIG)\bin\benchMpr.exe
+TARGETS            = $(TARGETS) $(CONFIG)\bin\runProgram.exe
+TARGETS            = $(TARGETS) $(CONFIG)\bin\testMpr.exe
+TARGETS            = $(TARGETS) $(CONFIG)\bin\manager.exe
+TARGETS            = $(TARGETS) $(CONFIG)\bin\makerom.exe
+TARGETS            = $(TARGETS) $(CONFIG)\bin\chargen.exe
 
 !IFNDEF SHOW
 .SILENT:
@@ -206,6 +212,7 @@ $(CONFIG)\obj\estLib.obj: \
 	@echo '   [Compile] src/deps/est/estLib.c'
 	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
+!IF "$(BIT_PACK_EST)" == "1"
 #
 #   libest
 #
@@ -214,7 +221,8 @@ DEPS_6 = $(DEPS_6) $(CONFIG)\obj\estLib.obj
 
 $(CONFIG)\bin\libest.dll: $(DEPS_6)
 	@echo '      [Link] libest'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\estLib.obj $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\estLib.obj $(LIBS) 
+!ENDIF
 
 #
 #   ca-crt
@@ -771,7 +779,7 @@ DEPS_53 = $(DEPS_53) $(CONFIG)\obj\xml.obj
 
 $(CONFIG)\bin\libmpr.dll: $(DEPS_53)
 	@echo '      [Link] libmpr'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\manager.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS)
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\manager.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS) 
 
 #
 #   benchMpr.obj
@@ -794,7 +802,7 @@ LIBS_55 = $(LIBS_55) libmpr.lib
 
 $(CONFIG)\bin\benchMpr.exe: $(DEPS_55)
 	@echo '      [Link] benchMpr'
-	"$(LD)" -out:$(CONFIG)\bin\benchMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\benchMpr.obj $(LIBS_55) $(LIBS_55) $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\benchMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\benchMpr.obj $(LIBS_55) $(LIBS_55) $(LIBS) 
 
 #
 #   runProgram.obj
@@ -813,7 +821,7 @@ DEPS_57 = $(DEPS_57) $(CONFIG)\obj\runProgram.obj
 
 $(CONFIG)\bin\runProgram.exe: $(DEPS_57)
 	@echo '      [Link] runProgram'
-	"$(LD)" -out:$(CONFIG)\bin\runProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\runProgram.obj $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\runProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\runProgram.obj $(LIBS) 
 
 #
 #   est.obj
@@ -882,11 +890,13 @@ DEPS_63 = $(DEPS_63) $(CONFIG)\obj\openssl.obj
 DEPS_63 = $(DEPS_63) $(CONFIG)\obj\ssl.obj
 
 LIBS_63 = $(LIBS_63) libmpr.lib
+!IF "$(BIT_PACK_EST)" == "1"
 LIBS_63 = $(LIBS_63) libest.lib
+!ENDIF
 
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_63)
 	@echo '      [Link] libmprssl'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\nanossl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj $(LIBS_63) $(LIBS_63) $(LIBS) libest.lib
+	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\nanossl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj $(LIBS_63) $(LIBS_63) $(LIBS) 
 
 #
 #   testArgv.obj
@@ -1101,11 +1111,13 @@ DEPS_81 = $(DEPS_81) $(CONFIG)\obj\testUnicode.obj
 
 LIBS_81 = $(LIBS_81) libmprssl.lib
 LIBS_81 = $(LIBS_81) libmpr.lib
+!IF "$(BIT_PACK_EST)" == "1"
 LIBS_81 = $(LIBS_81) libest.lib
+!ENDIF
 
 $(CONFIG)\bin\testMpr.exe: $(DEPS_81)
 	@echo '      [Link] testMpr'
-	"$(LD)" -out:$(CONFIG)\bin\testMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testArgv.obj $(CONFIG)\obj\testBuf.obj $(CONFIG)\obj\testCmd.obj $(CONFIG)\obj\testCond.obj $(CONFIG)\obj\testEvent.obj $(CONFIG)\obj\testFile.obj $(CONFIG)\obj\testHash.obj $(CONFIG)\obj\testList.obj $(CONFIG)\obj\testLock.obj $(CONFIG)\obj\testMem.obj $(CONFIG)\obj\testMpr.obj $(CONFIG)\obj\testPath.obj $(CONFIG)\obj\testSocket.obj $(CONFIG)\obj\testSprintf.obj $(CONFIG)\obj\testThread.obj $(CONFIG)\obj\testTime.obj $(CONFIG)\obj\testUnicode.obj $(LIBS_81) $(LIBS_81) $(LIBS) libest.lib
+	"$(LD)" -out:$(CONFIG)\bin\testMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testArgv.obj $(CONFIG)\obj\testBuf.obj $(CONFIG)\obj\testCmd.obj $(CONFIG)\obj\testCond.obj $(CONFIG)\obj\testEvent.obj $(CONFIG)\obj\testFile.obj $(CONFIG)\obj\testHash.obj $(CONFIG)\obj\testList.obj $(CONFIG)\obj\testLock.obj $(CONFIG)\obj\testMem.obj $(CONFIG)\obj\testMpr.obj $(CONFIG)\obj\testPath.obj $(CONFIG)\obj\testSocket.obj $(CONFIG)\obj\testSprintf.obj $(CONFIG)\obj\testThread.obj $(CONFIG)\obj\testTime.obj $(CONFIG)\obj\testUnicode.obj $(LIBS_81) $(LIBS_81) $(LIBS) 
 
 #
 #   manager
@@ -1117,7 +1129,7 @@ LIBS_82 = $(LIBS_82) libmpr.lib
 
 $(CONFIG)\bin\manager.exe: $(DEPS_82)
 	@echo '      [Link] manager'
-	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBS_82) $(LIBS_82) $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
 #   makerom.obj
@@ -1140,7 +1152,7 @@ LIBS_84 = $(LIBS_84) libmpr.lib
 
 $(CONFIG)\bin\makerom.exe: $(DEPS_84)
 	@echo '      [Link] makerom'
-	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBS_84) $(LIBS_84) $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBS_84) $(LIBS_84) $(LIBS) 
 
 #
 #   charGen.obj
@@ -1163,7 +1175,7 @@ LIBS_86 = $(LIBS_86) libmpr.lib
 
 $(CONFIG)\bin\chargen.exe: $(DEPS_86)
 	@echo '      [Link] chargen'
-	"$(LD)" -out:$(CONFIG)\bin\chargen.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\charGen.obj $(LIBS_86) $(LIBS_86) $(LIBS)
+	"$(LD)" -out:$(CONFIG)\bin\chargen.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\charGen.obj $(LIBS_86) $(LIBS_86) $(LIBS) 
 
 #
 #   stop
@@ -1176,7 +1188,6 @@ stop: $(DEPS_87)
 DEPS_88 = $(DEPS_88) stop
 
 installBinary: $(DEPS_88)
-#  Omit build script installBinary
 
 #
 #   start
@@ -1199,5 +1210,4 @@ install: $(DEPS_90)
 DEPS_91 = $(DEPS_91) stop
 
 uninstall: $(DEPS_91)
-
 
