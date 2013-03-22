@@ -105,11 +105,16 @@ prep:
 	@[ ! -x $(CONFIG)/obj ] && mkdir -p $(CONFIG)/obj; true
 	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/mpr-vxworks-default-bit.h $(CONFIG)/inc/bit.h ; true
 	@[ ! -f $(CONFIG)/inc/bitos.h ] && cp src/bitos.h $(CONFIG)/inc/bitos.h ; true
+	@if ! diff $(CONFIG)/inc/bitos.h src/bitos.h >/dev/null ; then\
+		cp src/bitos.h $(CONFIG)/inc/bitos.h  ; \
+	fi; true
 	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-vxworks-default-bit.h >/dev/null ; then\
 		cp projects/mpr-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
-	@if [ -f "$(CONFIG)/.makeflags" -a "$(MAKEFLAGS)" != " `cat $(CONFIG)/.makeflags`" ] ; then \
-		echo "   [Warning] Make flags have changed since the last build: "`cat $(CONFIG)/.makeflags`"" ; \
+	@if [ -f "$(CONFIG)/.makeflags" ] ; then \
+		if [ "$(MAKEFLAGS)" != " ` cat $(CONFIG)/.makeflags`" ] ; then \
+			echo "   [Warning] Make flags have changed since the last build: "`cat $(CONFIG)/.makeflags`"" ; \
+		fi ; \
 	fi
 	@echo $(MAKEFLAGS) >$(CONFIG)/.makeflags
 clean:
@@ -832,7 +837,7 @@ LIBS_55 += -lmpr
 
 $(CONFIG)/bin/benchMpr.out: $(DEPS_55)
 	@echo '      [Link] benchMpr'
-	$(CC) -o $(CONFIG)/bin/benchMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/benchMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LDFLAGS)  $(LIBS_55) $(LIBS_55)
 
 #
 #   runProgram.o
@@ -926,7 +931,7 @@ endif
 
 $(CONFIG)/bin/libmprssl.out: $(DEPS_63)
 	@echo '      [Link] libmprssl'
-	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o  
+	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o   $(LIBS_63) $(LIBS_63)
 
 #
 #   testArgv.o
@@ -1147,7 +1152,7 @@ endif
 
 $(CONFIG)/bin/testMpr.out: $(DEPS_81)
 	@echo '      [Link] testMpr'
-	$(CC) -o $(CONFIG)/bin/testMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LDFLAGS)  $(LIBS_81) $(LIBS_81)
 
 #
 #   manager
@@ -1159,7 +1164,7 @@ LIBS_82 += -lmpr
 
 $(CONFIG)/bin/manager.out: $(DEPS_82)
 	@echo '      [Link] manager'
-	$(CC) -o $(CONFIG)/bin/manager.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/manager.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LDFLAGS)  $(LIBS_82) $(LIBS_82)
 
 #
 #   makerom.o
@@ -1182,7 +1187,7 @@ LIBS_84 += -lmpr
 
 $(CONFIG)/bin/makerom.out: $(DEPS_84)
 	@echo '      [Link] makerom'
-	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LDFLAGS)  $(LIBS_84) $(LIBS_84)
 
 #
 #   charGen.o
@@ -1205,7 +1210,7 @@ LIBS_86 += -lmpr
 
 $(CONFIG)/bin/chargen.out: $(DEPS_86)
 	@echo '      [Link] chargen'
-	$(CC) -o $(CONFIG)/bin/chargen.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/chargen.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LDFLAGS)  $(LIBS_86) $(LIBS_86)
 
 #
 #   stop
