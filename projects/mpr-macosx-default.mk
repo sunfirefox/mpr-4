@@ -104,7 +104,10 @@ prep:
 	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-macosx-default-bit.h >/dev/null ; then\
 		cp projects/mpr-macosx-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
-
+	@if [ -f "$(CONFIG)/.makeflags" -a "$(MAKEFLAGS)" != " `cat $(CONFIG)/.makeflags`" ] ; then \
+		echo "   [Warning] Make flags have changed since the last build: "`cat $(CONFIG)/.makeflags`"" ; \
+	fi
+	@echo $(MAKEFLAGS) >$(CONFIG)/.makeflags
 clean:
 	rm -fr "$(CONFIG)/bin/libest.dylib"
 	rm -fr "$(CONFIG)/bin/ca.crt"
@@ -809,6 +812,7 @@ $(CONFIG)/bin/libmpr.dylib: $(DEPS_53)
 #
 DEPS_54 += $(CONFIG)/inc/bit.h
 DEPS_54 += $(CONFIG)/inc/mpr.h
+DEPS_54 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c $(DEPS_54)

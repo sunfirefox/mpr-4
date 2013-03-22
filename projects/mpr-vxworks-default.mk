@@ -108,7 +108,10 @@ prep:
 	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-vxworks-default-bit.h >/dev/null ; then\
 		cp projects/mpr-vxworks-default-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
-
+	@if [ -f "$(CONFIG)/.makeflags" -a "$(MAKEFLAGS)" != " `cat $(CONFIG)/.makeflags`" ] ; then \
+		echo "   [Warning] Make flags have changed since the last build: "`cat $(CONFIG)/.makeflags`"" ; \
+	fi
+	@echo $(MAKEFLAGS) >$(CONFIG)/.makeflags
 clean:
 	rm -fr "$(CONFIG)/bin/libest.out"
 	rm -fr "$(CONFIG)/bin/ca.crt"

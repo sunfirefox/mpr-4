@@ -536,6 +536,7 @@
             children = (
 				B8CD2258B8CD3402000000D7 /* bit.h */,
 				B8CD2258B8CD3402000000DA /* mpr.h */,
+				B8CD2258B8CD3402000000D9 /* bitos.h */,
 				B8CD2258B8CD34020000001B /* benchMpr.c */,
 			);
             name = "benchMpr";
