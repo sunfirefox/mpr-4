@@ -27,7 +27,6 @@ Bit.load({
         '+requires': [ 'compiler' ],
         '+discover': [ 'doxygen', 'dsi', 'man', 'man2html', 'md5', 'ssl', 'utest' ],
         'without-all': [ 'doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl' ],
-        'without-default': [ 'doxygen', 'dsi', 'man', 'man2html', 'pmaker' ],
 
         mpr: {
             logging: true,          /* Enable logging of mprLog calls */
