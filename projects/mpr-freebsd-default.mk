@@ -18,6 +18,22 @@ BIT_PACK_MATRIXSSL := 0
 BIT_PACK_OPENSSL   := 0
 BIT_PACK_SSL       := 1
 
+ifeq ($(BIT_PACK_EST),1)
+    BIT_PACK_SSL := 1
+endif
+ifeq ($(BIT_PACK_LIB),1)
+    BIT_PACK_COMPILER := 1
+endif
+ifeq ($(BIT_PACK_MATRIXSSL),1)
+    BIT_PACK_SSL := 1
+endif
+ifeq ($(BIT_PACK_NANOSSL),1)
+    BIT_PACK_SSL := 1
+endif
+ifeq ($(BIT_PACK_OPENSSL),1)
+    BIT_PACK_SSL := 1
+endif
+
 CFLAGS             += -fPIC  -w
 DFLAGS             += -D_REENTRANT -DPIC  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS             += -I$(CONFIG)/inc
@@ -90,87 +106,87 @@ prep:
 	fi; true
 
 clean:
-	rm -f "$(CONFIG)/bin/libest.so"
-	rm -f "$(CONFIG)/bin/ca.crt"
-	rm -f "$(CONFIG)/bin/benchMpr"
-	rm -f "$(CONFIG)/bin/runProgram"
-	rm -f "$(CONFIG)/bin/testMpr"
-	rm -f "$(CONFIG)/bin/libmpr.so"
-	rm -f "$(CONFIG)/bin/libmprssl.so"
-	rm -f "$(CONFIG)/bin/manager"
-	rm -f "$(CONFIG)/bin/makerom"
-	rm -f "$(CONFIG)/bin/chargen"
-	rm -f "$(CONFIG)/obj/estLib.o"
-	rm -f "$(CONFIG)/obj/benchMpr.o"
-	rm -f "$(CONFIG)/obj/runProgram.o"
-	rm -f "$(CONFIG)/obj/testArgv.o"
-	rm -f "$(CONFIG)/obj/testBuf.o"
-	rm -f "$(CONFIG)/obj/testCmd.o"
-	rm -f "$(CONFIG)/obj/testCond.o"
-	rm -f "$(CONFIG)/obj/testEvent.o"
-	rm -f "$(CONFIG)/obj/testFile.o"
-	rm -f "$(CONFIG)/obj/testHash.o"
-	rm -f "$(CONFIG)/obj/testList.o"
-	rm -f "$(CONFIG)/obj/testLock.o"
-	rm -f "$(CONFIG)/obj/testMem.o"
-	rm -f "$(CONFIG)/obj/testMpr.o"
-	rm -f "$(CONFIG)/obj/testPath.o"
-	rm -f "$(CONFIG)/obj/testSocket.o"
-	rm -f "$(CONFIG)/obj/testSprintf.o"
-	rm -f "$(CONFIG)/obj/testThread.o"
-	rm -f "$(CONFIG)/obj/testTime.o"
-	rm -f "$(CONFIG)/obj/testUnicode.o"
-	rm -f "$(CONFIG)/obj/async.o"
-	rm -f "$(CONFIG)/obj/atomic.o"
-	rm -f "$(CONFIG)/obj/buf.o"
-	rm -f "$(CONFIG)/obj/cache.o"
-	rm -f "$(CONFIG)/obj/cmd.o"
-	rm -f "$(CONFIG)/obj/cond.o"
-	rm -f "$(CONFIG)/obj/crypt.o"
-	rm -f "$(CONFIG)/obj/disk.o"
-	rm -f "$(CONFIG)/obj/dispatcher.o"
-	rm -f "$(CONFIG)/obj/encode.o"
-	rm -f "$(CONFIG)/obj/epoll.o"
-	rm -f "$(CONFIG)/obj/event.o"
-	rm -f "$(CONFIG)/obj/file.o"
-	rm -f "$(CONFIG)/obj/fs.o"
-	rm -f "$(CONFIG)/obj/hash.o"
-	rm -f "$(CONFIG)/obj/json.o"
-	rm -f "$(CONFIG)/obj/kqueue.o"
-	rm -f "$(CONFIG)/obj/list.o"
-	rm -f "$(CONFIG)/obj/lock.o"
-	rm -f "$(CONFIG)/obj/log.o"
-	rm -f "$(CONFIG)/obj/manager.o"
-	rm -f "$(CONFIG)/obj/mem.o"
-	rm -f "$(CONFIG)/obj/mime.o"
-	rm -f "$(CONFIG)/obj/mixed.o"
-	rm -f "$(CONFIG)/obj/module.o"
-	rm -f "$(CONFIG)/obj/mpr.o"
-	rm -f "$(CONFIG)/obj/path.o"
-	rm -f "$(CONFIG)/obj/poll.o"
-	rm -f "$(CONFIG)/obj/posix.o"
-	rm -f "$(CONFIG)/obj/printf.o"
-	rm -f "$(CONFIG)/obj/rom.o"
-	rm -f "$(CONFIG)/obj/select.o"
-	rm -f "$(CONFIG)/obj/signal.o"
-	rm -f "$(CONFIG)/obj/socket.o"
-	rm -f "$(CONFIG)/obj/string.o"
-	rm -f "$(CONFIG)/obj/test.o"
-	rm -f "$(CONFIG)/obj/thread.o"
-	rm -f "$(CONFIG)/obj/time.o"
-	rm -f "$(CONFIG)/obj/vxworks.o"
-	rm -f "$(CONFIG)/obj/wait.o"
-	rm -f "$(CONFIG)/obj/wide.o"
-	rm -f "$(CONFIG)/obj/win.o"
-	rm -f "$(CONFIG)/obj/wince.o"
-	rm -f "$(CONFIG)/obj/xml.o"
-	rm -f "$(CONFIG)/obj/est.o"
-	rm -f "$(CONFIG)/obj/matrixssl.o"
-	rm -f "$(CONFIG)/obj/nanossl.o"
-	rm -f "$(CONFIG)/obj/openssl.o"
-	rm -f "$(CONFIG)/obj/ssl.o"
-	rm -f "$(CONFIG)/obj/makerom.o"
-	rm -f "$(CONFIG)/obj/charGen.o"
+	rm -fr "$(CONFIG)/bin/libest.so"
+	rm -fr "$(CONFIG)/bin/ca.crt"
+	rm -fr "$(CONFIG)/bin/benchMpr"
+	rm -fr "$(CONFIG)/bin/runProgram"
+	rm -fr "$(CONFIG)/bin/testMpr"
+	rm -fr "$(CONFIG)/bin/libmpr.so"
+	rm -fr "$(CONFIG)/bin/libmprssl.so"
+	rm -fr "$(CONFIG)/bin/manager"
+	rm -fr "$(CONFIG)/bin/makerom"
+	rm -fr "$(CONFIG)/bin/chargen"
+	rm -fr "$(CONFIG)/obj/estLib.o"
+	rm -fr "$(CONFIG)/obj/benchMpr.o"
+	rm -fr "$(CONFIG)/obj/runProgram.o"
+	rm -fr "$(CONFIG)/obj/testArgv.o"
+	rm -fr "$(CONFIG)/obj/testBuf.o"
+	rm -fr "$(CONFIG)/obj/testCmd.o"
+	rm -fr "$(CONFIG)/obj/testCond.o"
+	rm -fr "$(CONFIG)/obj/testEvent.o"
+	rm -fr "$(CONFIG)/obj/testFile.o"
+	rm -fr "$(CONFIG)/obj/testHash.o"
+	rm -fr "$(CONFIG)/obj/testList.o"
+	rm -fr "$(CONFIG)/obj/testLock.o"
+	rm -fr "$(CONFIG)/obj/testMem.o"
+	rm -fr "$(CONFIG)/obj/testMpr.o"
+	rm -fr "$(CONFIG)/obj/testPath.o"
+	rm -fr "$(CONFIG)/obj/testSocket.o"
+	rm -fr "$(CONFIG)/obj/testSprintf.o"
+	rm -fr "$(CONFIG)/obj/testThread.o"
+	rm -fr "$(CONFIG)/obj/testTime.o"
+	rm -fr "$(CONFIG)/obj/testUnicode.o"
+	rm -fr "$(CONFIG)/obj/async.o"
+	rm -fr "$(CONFIG)/obj/atomic.o"
+	rm -fr "$(CONFIG)/obj/buf.o"
+	rm -fr "$(CONFIG)/obj/cache.o"
+	rm -fr "$(CONFIG)/obj/cmd.o"
+	rm -fr "$(CONFIG)/obj/cond.o"
+	rm -fr "$(CONFIG)/obj/crypt.o"
+	rm -fr "$(CONFIG)/obj/disk.o"
+	rm -fr "$(CONFIG)/obj/dispatcher.o"
+	rm -fr "$(CONFIG)/obj/encode.o"
+	rm -fr "$(CONFIG)/obj/epoll.o"
+	rm -fr "$(CONFIG)/obj/event.o"
+	rm -fr "$(CONFIG)/obj/file.o"
+	rm -fr "$(CONFIG)/obj/fs.o"
+	rm -fr "$(CONFIG)/obj/hash.o"
+	rm -fr "$(CONFIG)/obj/json.o"
+	rm -fr "$(CONFIG)/obj/kqueue.o"
+	rm -fr "$(CONFIG)/obj/list.o"
+	rm -fr "$(CONFIG)/obj/lock.o"
+	rm -fr "$(CONFIG)/obj/log.o"
+	rm -fr "$(CONFIG)/obj/manager.o"
+	rm -fr "$(CONFIG)/obj/mem.o"
+	rm -fr "$(CONFIG)/obj/mime.o"
+	rm -fr "$(CONFIG)/obj/mixed.o"
+	rm -fr "$(CONFIG)/obj/module.o"
+	rm -fr "$(CONFIG)/obj/mpr.o"
+	rm -fr "$(CONFIG)/obj/path.o"
+	rm -fr "$(CONFIG)/obj/poll.o"
+	rm -fr "$(CONFIG)/obj/posix.o"
+	rm -fr "$(CONFIG)/obj/printf.o"
+	rm -fr "$(CONFIG)/obj/rom.o"
+	rm -fr "$(CONFIG)/obj/select.o"
+	rm -fr "$(CONFIG)/obj/signal.o"
+	rm -fr "$(CONFIG)/obj/socket.o"
+	rm -fr "$(CONFIG)/obj/string.o"
+	rm -fr "$(CONFIG)/obj/test.o"
+	rm -fr "$(CONFIG)/obj/thread.o"
+	rm -fr "$(CONFIG)/obj/time.o"
+	rm -fr "$(CONFIG)/obj/vxworks.o"
+	rm -fr "$(CONFIG)/obj/wait.o"
+	rm -fr "$(CONFIG)/obj/wide.o"
+	rm -fr "$(CONFIG)/obj/win.o"
+	rm -fr "$(CONFIG)/obj/wince.o"
+	rm -fr "$(CONFIG)/obj/xml.o"
+	rm -fr "$(CONFIG)/obj/est.o"
+	rm -fr "$(CONFIG)/obj/matrixssl.o"
+	rm -fr "$(CONFIG)/obj/nanossl.o"
+	rm -fr "$(CONFIG)/obj/openssl.o"
+	rm -fr "$(CONFIG)/obj/ssl.o"
+	rm -fr "$(CONFIG)/obj/makerom.o"
+	rm -fr "$(CONFIG)/obj/charGen.o"
 
 clobber: clean
 	rm -fr ./$(CONFIG)
@@ -809,7 +825,7 @@ LIBS_55 += -lmpr
 
 $(CONFIG)/bin/benchMpr: $(DEPS_55)
 	@echo '      [Link] benchMpr'
-	$(CC) -o $(CONFIG)/bin/benchMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LIBS_55) $(LIBS_55) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/benchMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LIBS_55) $(LIBS_55) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   runProgram.o
@@ -828,7 +844,7 @@ DEPS_57 += $(CONFIG)/obj/runProgram.o
 
 $(CONFIG)/bin/runProgram: $(DEPS_57)
 	@echo '      [Link] runProgram'
-	$(CC) -o $(CONFIG)/bin/runProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/runProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   est.o
@@ -1124,7 +1140,7 @@ endif
 
 $(CONFIG)/bin/testMpr: $(DEPS_81)
 	@echo '      [Link] testMpr'
-	$(CC) -o $(CONFIG)/bin/testMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBS_81) $(LIBS_81) $(LIBS) -lest $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBS_81) $(LIBS_81) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   manager
@@ -1136,7 +1152,7 @@ LIBS_82 += -lmpr
 
 $(CONFIG)/bin/manager: $(DEPS_82)
 	@echo '      [Link] manager'
-	$(CC) -o $(CONFIG)/bin/manager $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_82) $(LIBS_82) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/manager $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS_82) $(LIBS_82) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   makerom.o
@@ -1159,7 +1175,7 @@ LIBS_84 += -lmpr
 
 $(CONFIG)/bin/makerom: $(DEPS_84)
 	@echo '      [Link] makerom'
-	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_84) $(LIBS_84) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS_84) $(LIBS_84) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   charGen.o
@@ -1182,7 +1198,7 @@ LIBS_86 += -lmpr
 
 $(CONFIG)/bin/chargen: $(DEPS_86)
 	@echo '      [Link] chargen'
-	$(CC) -o $(CONFIG)/bin/chargen $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBS_86) $(LIBS_86) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/chargen $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBS_86) $(LIBS_86) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
 
 #
 #   stop
