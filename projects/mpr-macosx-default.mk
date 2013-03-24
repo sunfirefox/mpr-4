@@ -8,8 +8,8 @@ BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 OS                 := macosx
-CC                 := /usr/bin/clang
-LD                 := /usr/bin/ld
+CC                 := clang
+LD                 := link
 CONFIG             := $(OS)-$(ARCH)-$(PROFILE)
 LBIN               := $(CONFIG)/bin
 
@@ -1216,8 +1216,6 @@ stop: $(DEPS_87)
 #
 #   installBinary
 #
-DEPS_88 += stop
-
 installBinary: $(DEPS_88)
 
 #
