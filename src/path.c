@@ -947,7 +947,7 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
     }
     assert(commonSegments >= 0);
 
-    if (*cp && *op) {
+    if (*cp || *op) {
         op = lastop;
         cp = lastcp;
     }
