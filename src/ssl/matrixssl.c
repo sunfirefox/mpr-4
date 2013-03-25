@@ -9,6 +9,9 @@
 #include    "bit.h"
 
 #if BIT_PACK_MATRIXSSL
+
+#define MATRIX_USE_FILE_SYSTEM
+
 /* 
     Work-around to allow the windows 7.* SDK to be used with VS 2013 
  */
@@ -23,8 +26,11 @@
 #if WIN32
  #include   <winsock2.h>
  #include   <windows.h>
+ #define    WIN32 1
+#else
+ #define    POSIX 1
 #endif
- #include    "matrixsslApi.h"
+ #include   "matrixsslApi.h"
 
 #define     HAS_INT16 1
 #define     HAS_UINT16 1

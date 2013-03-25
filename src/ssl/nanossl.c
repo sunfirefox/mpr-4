@@ -8,6 +8,29 @@
 
 #include    "mpr.h"
 
+#if WINDOWS
+    #define __RTOS_WIN32__
+#elif MACOSX
+    #define __RTOS_OSX__
+#elif VXWORKS
+    #define __RTOS_VXWORKS__
+#else
+    #define __RTOS_LINUX__
+#endif
+
+#define __ENABLE_MOCANA_SSL_SERVER__
+#define __ENABLE_MOCANA_PEM_CONVERSION__
+#define __ENABLE_ALL_DEBUGGING__
+#define __ENABLE_MOCANA_DEBUG_CONSOLE__
+#define __MOCANA_DUMP_CONSOLE_TO_STDOUT__
+
+#if UNUSED
+    __ENABLE_MOCANA_SSL_ASYNC_SERVER_API__ 
+    __ENABLE_MOCANA_SSL_ASYNC_CLIENT_API__
+    __ENABLE_MOCANA_SSL_ASYNC_API_EXTENSIONS__
+    __ENABLE_MOCANA_SSL_CLIENT__
+#endif
+
 #if BIT_PACK_NANOSSL
  #include "common/moptions.h"
  #include "common/mdefs.h"
