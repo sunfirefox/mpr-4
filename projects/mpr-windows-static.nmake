@@ -1,11 +1,11 @@
 #
-#   mpr-windows-default.nmake -- Makefile to build Multithreaded Portable Runtime for windows
+#   mpr-windows-static.nmake -- Makefile to build Multithreaded Portable Runtime for windows
 #
 
 PRODUCT            = mpr
 VERSION            = 4.3.0
 BUILD_NUMBER       = 0
-PROFILE            = default
+PROFILE            = static
 PA                 = $(PROCESSOR_ARCHITECTURE)
 
 !IF "$(PA)" == "AMD64"
@@ -96,7 +96,7 @@ BIT_SRC_PREFIX     = $(BIT_VAPP_PREFIX)\src
 
 
 !IF "$(BIT_PACK_EST)" == "1"
-TARGETS            = $(TARGETS) $(CONFIG)\bin\libest.dll
+TARGETS            = $(TARGETS) $(CONFIG)\bin\libest.lib
 !ENDIF
 TARGETS            = $(TARGETS) $(CONFIG)\bin\ca.crt
 TARGETS            = $(TARGETS) $(CONFIG)\bin\benchMpr.exe
@@ -126,16 +126,16 @@ prep:
 	@if not exist $(CONFIG)\bin md $(CONFIG)\bin
 	@if not exist $(CONFIG)\inc md $(CONFIG)\inc
 	@if not exist $(CONFIG)\obj md $(CONFIG)\obj
-	@if not exist $(CONFIG)\inc\bit.h copy projects\mpr-windows-default-bit.h $(CONFIG)\inc\bit.h
+	@if not exist $(CONFIG)\inc\bit.h copy projects\mpr-windows-static-bit.h $(CONFIG)\inc\bit.h
 
 clean:
-	if exist "$(CONFIG)\bin\libest.dll" rd /Q /S"$(CONFIG)\bin\libest.dll"
+	if exist "$(CONFIG)\bin\libest.lib" rd /Q /S"$(CONFIG)\bin\libest.lib"
 	if exist "$(CONFIG)\bin\ca.crt" rd /Q /S"$(CONFIG)\bin\ca.crt"
 	if exist "$(CONFIG)\bin\benchMpr.exe" rd /Q /S"$(CONFIG)\bin\benchMpr.exe"
 	if exist "$(CONFIG)\bin\runProgram.exe" rd /Q /S"$(CONFIG)\bin\runProgram.exe"
 	if exist "$(CONFIG)\bin\testMpr.exe" rd /Q /S"$(CONFIG)\bin\testMpr.exe"
-	if exist "$(CONFIG)\bin\libmpr.dll" rd /Q /S"$(CONFIG)\bin\libmpr.dll"
-	if exist "$(CONFIG)\bin\libmprssl.dll" rd /Q /S"$(CONFIG)\bin\libmprssl.dll"
+	if exist "$(CONFIG)\bin\libmpr.lib" rd /Q /S"$(CONFIG)\bin\libmpr.lib"
+	if exist "$(CONFIG)\bin\libmprssl.lib" rd /Q /S"$(CONFIG)\bin\libmprssl.lib"
 	if exist "$(CONFIG)\bin\manager.exe" rd /Q /S"$(CONFIG)\bin\manager.exe"
 	if exist "$(CONFIG)\bin\makerom.exe" rd /Q /S"$(CONFIG)\bin\makerom.exe"
 	if exist "$(CONFIG)\bin\chargen.exe" rd /Q /S"$(CONFIG)\bin\chargen.exe"
@@ -262,9 +262,9 @@ $(CONFIG)\obj\estLib.obj: \
 DEPS_6 = $(DEPS_6) $(CONFIG)\inc\est.h
 DEPS_6 = $(DEPS_6) $(CONFIG)\obj\estLib.obj
 
-$(CONFIG)\bin\libest.dll: $(DEPS_6)
+$(CONFIG)\bin\libest.lib: $(DEPS_6)
 	@echo '      [Link] libest'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\estLib.obj $(LIBS) 
+	"lib.exe" -nologo -out:$(CONFIG)\bin\libest.lib $(CONFIG)\obj\estLib.obj
 !ENDIF
 
 #
@@ -808,9 +808,9 @@ DEPS_52 = $(DEPS_52) $(CONFIG)\obj\win.obj
 DEPS_52 = $(DEPS_52) $(CONFIG)\obj\wince.obj
 DEPS_52 = $(DEPS_52) $(CONFIG)\obj\xml.obj
 
-$(CONFIG)\bin\libmpr.dll: $(DEPS_52)
+$(CONFIG)\bin\libmpr.lib: $(DEPS_52)
 	@echo '      [Link] libmpr'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj $(LIBS) 
+	"lib.exe" -nologo -out:$(CONFIG)\bin\libmpr.lib $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj
 
 #
 #   benchMpr.obj
@@ -826,7 +826,7 @@ $(CONFIG)\obj\benchMpr.obj: \
 #
 #   benchMpr
 #
-DEPS_54 = $(DEPS_54) $(CONFIG)\bin\libmpr.dll
+DEPS_54 = $(DEPS_54) $(CONFIG)\bin\libmpr.lib
 DEPS_54 = $(DEPS_54) $(CONFIG)\obj\benchMpr.obj
 
 LIBS_54 = $(LIBS_54) libmpr.lib
@@ -913,21 +913,16 @@ $(CONFIG)\obj\ssl.obj: \
 #
 #   libmprssl
 #
-DEPS_62 = $(DEPS_62) $(CONFIG)\bin\libmpr.dll
+DEPS_62 = $(DEPS_62) $(CONFIG)\bin\libmpr.lib
 DEPS_62 = $(DEPS_62) $(CONFIG)\obj\est.obj
 DEPS_62 = $(DEPS_62) $(CONFIG)\obj\matrixssl.obj
 DEPS_62 = $(DEPS_62) $(CONFIG)\obj\nanossl.obj
 DEPS_62 = $(DEPS_62) $(CONFIG)\obj\openssl.obj
 DEPS_62 = $(DEPS_62) $(CONFIG)\obj\ssl.obj
 
-!IF "$(BIT_PACK_EST)" == "1"
-LIBS_62 = $(LIBS_62) libest.lib
-!ENDIF
-LIBS_62 = $(LIBS_62) libmpr.lib
-
-$(CONFIG)\bin\libmprssl.dll: $(DEPS_62)
+$(CONFIG)\bin\libmprssl.lib: $(DEPS_62)
 	@echo '      [Link] libmprssl'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\nanossl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj $(LIBS_62) $(LIBS_62) $(LIBS) 
+	"lib.exe" -nologo -out:$(CONFIG)\bin\libmprssl.lib $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\nanossl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj
 
 #
 #   testArgv.obj
@@ -1119,8 +1114,8 @@ $(CONFIG)\obj\testUnicode.obj: \
 #
 #   testMpr
 #
-DEPS_80 = $(DEPS_80) $(CONFIG)\bin\libmpr.dll
-DEPS_80 = $(DEPS_80) $(CONFIG)\bin\libmprssl.dll
+DEPS_80 = $(DEPS_80) $(CONFIG)\bin\libmpr.lib
+DEPS_80 = $(DEPS_80) $(CONFIG)\bin\libmprssl.lib
 DEPS_80 = $(DEPS_80) $(CONFIG)\bin\runProgram.exe
 DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testArgv.obj
 DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testBuf.obj
@@ -1164,7 +1159,7 @@ $(CONFIG)\obj\manager.obj: \
 #
 #   manager
 #
-DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmpr.dll
+DEPS_82 = $(DEPS_82) $(CONFIG)\bin\libmpr.lib
 DEPS_82 = $(DEPS_82) $(CONFIG)\obj\manager.obj
 
 LIBS_82 = $(LIBS_82) libmpr.lib
@@ -1187,7 +1182,7 @@ $(CONFIG)\obj\makerom.obj: \
 #
 #   makerom
 #
-DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmpr.dll
+DEPS_84 = $(DEPS_84) $(CONFIG)\bin\libmpr.lib
 DEPS_84 = $(DEPS_84) $(CONFIG)\obj\makerom.obj
 
 LIBS_84 = $(LIBS_84) libmpr.lib
@@ -1210,7 +1205,7 @@ $(CONFIG)\obj\charGen.obj: \
 #
 #   chargen
 #
-DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libmpr.dll
+DEPS_86 = $(DEPS_86) $(CONFIG)\bin\libmpr.lib
 DEPS_86 = $(DEPS_86) $(CONFIG)\obj\charGen.obj
 
 LIBS_86 = $(LIBS_86) libmpr.lib

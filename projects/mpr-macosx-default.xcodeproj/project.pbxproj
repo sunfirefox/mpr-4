@@ -94,44 +94,43 @@
 		B8CD2258B8CD340200000062 /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000063 /* list.c */; };
 		B8CD2258B8CD340200000064 /* lock.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000065 /* lock.c */; };
 		B8CD2258B8CD340200000066 /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000067 /* log.c */; };
-		B8CD2258B8CD340200000068 /* manager.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000069 /* manager.c */; };
-		B8CD2258B8CD34020000006A /* mem.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000006B /* mem.c */; };
-		B8CD2258B8CD34020000006C /* mime.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000006D /* mime.c */; };
-		B8CD2258B8CD34020000006E /* mixed.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000006F /* mixed.c */; };
-		B8CD2258B8CD340200000070 /* module.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000071 /* module.c */; };
-		B8CD2258B8CD340200000072 /* mpr.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000073 /* mpr.c */; };
-		B8CD2258B8CD340200000074 /* path.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000075 /* path.c */; };
-		B8CD2258B8CD340200000076 /* poll.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000077 /* poll.c */; };
-		B8CD2258B8CD340200000078 /* posix.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000079 /* posix.c */; };
-		B8CD2258B8CD34020000007A /* printf.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000007B /* printf.c */; };
-		B8CD2258B8CD34020000007C /* rom.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000007D /* rom.c */; };
-		B8CD2258B8CD34020000007E /* select.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000007F /* select.c */; };
-		B8CD2258B8CD340200000080 /* signal.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000081 /* signal.c */; };
-		B8CD2258B8CD340200000082 /* socket.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000083 /* socket.c */; };
-		B8CD2258B8CD340200000084 /* string.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000085 /* string.c */; };
-		B8CD2258B8CD340200000086 /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000087 /* test.c */; };
-		B8CD2258B8CD340200000088 /* thread.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000089 /* thread.c */; };
-		B8CD2258B8CD34020000008A /* time.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000008B /* time.c */; };
-		B8CD2258B8CD34020000008C /* vxworks.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000008D /* vxworks.c */; };
-		B8CD2258B8CD34020000008E /* wait.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000008F /* wait.c */; };
-		B8CD2258B8CD340200000090 /* wide.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000091 /* wide.c */; };
-		B8CD2258B8CD340200000092 /* win.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000093 /* win.c */; };
-		B8CD2258B8CD340200000094 /* wince.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000095 /* wince.c */; };
-		B8CD2258B8CD340200000096 /* xml.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000097 /* xml.c */; };
-		B8CD2258B8CD340200000098 /* est.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000099 /* est.c */; };
-		B8CD2258B8CD34020000009A /* matrixssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009B /* matrixssl.c */; };
-		B8CD2258B8CD34020000009C /* nanossl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009D /* nanossl.c */; };
-		B8CD2258B8CD34020000009E /* openssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009F /* openssl.c */; };
-		B8CD2258B8CD3402000000A0 /* ssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A1 /* ssl.c */; };
-		B8CD2258B8CD340200000068 /* manager.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000069 /* manager.c */; };
+		B8CD2258B8CD340200000068 /* mem.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000069 /* mem.c */; };
+		B8CD2258B8CD34020000006A /* mime.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000006B /* mime.c */; };
+		B8CD2258B8CD34020000006C /* mixed.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000006D /* mixed.c */; };
+		B8CD2258B8CD34020000006E /* module.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000006F /* module.c */; };
+		B8CD2258B8CD340200000070 /* mpr.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000071 /* mpr.c */; };
+		B8CD2258B8CD340200000072 /* path.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000073 /* path.c */; };
+		B8CD2258B8CD340200000074 /* poll.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000075 /* poll.c */; };
+		B8CD2258B8CD340200000076 /* posix.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000077 /* posix.c */; };
+		B8CD2258B8CD340200000078 /* printf.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000079 /* printf.c */; };
+		B8CD2258B8CD34020000007A /* rom.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000007B /* rom.c */; };
+		B8CD2258B8CD34020000007C /* select.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000007D /* select.c */; };
+		B8CD2258B8CD34020000007E /* signal.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000007F /* signal.c */; };
+		B8CD2258B8CD340200000080 /* socket.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000081 /* socket.c */; };
+		B8CD2258B8CD340200000082 /* string.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000083 /* string.c */; };
+		B8CD2258B8CD340200000084 /* test.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000085 /* test.c */; };
+		B8CD2258B8CD340200000086 /* thread.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000087 /* thread.c */; };
+		B8CD2258B8CD340200000088 /* time.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000089 /* time.c */; };
+		B8CD2258B8CD34020000008A /* vxworks.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000008B /* vxworks.c */; };
+		B8CD2258B8CD34020000008C /* wait.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000008D /* wait.c */; };
+		B8CD2258B8CD34020000008E /* wide.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000008F /* wide.c */; };
+		B8CD2258B8CD340200000090 /* win.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000091 /* win.c */; };
+		B8CD2258B8CD340200000092 /* wince.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000093 /* wince.c */; };
+		B8CD2258B8CD340200000094 /* xml.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000095 /* xml.c */; };
+		B8CD2258B8CD340200000096 /* est.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000097 /* est.c */; };
+		B8CD2258B8CD340200000098 /* matrixssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD340200000099 /* matrixssl.c */; };
+		B8CD2258B8CD34020000009A /* nanossl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009B /* nanossl.c */; };
+		B8CD2258B8CD34020000009C /* openssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009D /* openssl.c */; };
+		B8CD2258B8CD34020000009E /* ssl.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD34020000009F /* ssl.c */; };
+		B8CD2258B8CD3402000000A0 /* manager.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A1 /* manager.c */; };
 		B8CD2258B8CD3402000000A2 /* makerom.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A3 /* makerom.c */; };
 		B8CD2258B8CD3402000000A4 /* charGen.c in Sources */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A5 /* charGen.c */; };
 		B8CD2258B8CD3402000000A6 /* libmpr.dylib for benchMpr */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
-		B8CD2258B8CD3402000000A8 /* libmprssl.dylib for testMpr */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A9; };
-		B8CD2258B8CD3402000000AA /* libmpr.dylib for testMpr */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
-		B8CD2258B8CD3402000000AB /* libest.dylib for testMpr */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000AC; };
-		B8CD2258B8CD3402000000AD /* libmpr.dylib for libmprssl */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
-		B8CD2258B8CD3402000000AE /* libest.dylib for libmprssl */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000AC; };
+		B8CD2258B8CD3402000000A8 /* libest.dylib for testMpr */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A9; };
+		B8CD2258B8CD3402000000AA /* libmprssl.dylib for testMpr */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000AB; };
+		B8CD2258B8CD3402000000AC /* libmpr.dylib for testMpr */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
+		B8CD2258B8CD3402000000AD /* libest.dylib for libmprssl */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A9; };
+		B8CD2258B8CD3402000000AE /* libmpr.dylib for libmprssl */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
 		B8CD2258B8CD3402000000AF /* libmpr.dylib for manager */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
 		B8CD2258B8CD3402000000B0 /* libmpr.dylib for makerom */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
 		B8CD2258B8CD3402000000B1 /* libmpr.dylib for chargen */ = {isa = PBXBuildFile; fileRef = B8CD2258B8CD3402000000A7; };
@@ -341,7 +340,7 @@
 		B8CD2258B8CD3402000000D7 /* bit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bit.h; path = macosx-x64-default/inc/bit.h; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000D8 /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = macosx-x64-default/inc/est.h; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000D9 /* bitos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitos.h; path = macosx-x64-default/inc/bitos.h; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000AC /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8CD2258B8CD3402000000A9 /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD34020000001B /* benchMpr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = benchMpr.c; path = test/benchMpr.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000DA /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = macosx-x64-default/inc/mpr.h; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000DB /* benchMpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = benchMpr; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -385,38 +384,37 @@
 		B8CD2258B8CD340200000063 /* list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = list.c; path = src/list.c; sourceTree = "<group>"; };
 		B8CD2258B8CD340200000065 /* lock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lock.c; path = src/lock.c; sourceTree = "<group>"; };
 		B8CD2258B8CD340200000067 /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = log.c; path = src/log.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000069 /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/manager.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000006B /* mem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mem.c; path = src/mem.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000006D /* mime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mime.c; path = src/mime.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000006F /* mixed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mixed.c; path = src/mixed.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000071 /* module.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = module.c; path = src/module.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000073 /* mpr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mpr.c; path = src/mpr.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000075 /* path.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = path.c; path = src/path.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000077 /* poll.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = poll.c; path = src/poll.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000079 /* posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = posix.c; path = src/posix.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000007B /* printf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = printf.c; path = src/printf.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000007D /* rom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rom.c; path = src/rom.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000007F /* select.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = select.c; path = src/select.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000081 /* signal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = signal.c; path = src/signal.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000083 /* socket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = socket.c; path = src/socket.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000085 /* string.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = string.c; path = src/string.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000087 /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = test.c; path = src/test.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000089 /* thread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = thread.c; path = src/thread.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000008B /* time.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = time.c; path = src/time.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000008D /* vxworks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vxworks.c; path = src/vxworks.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000008F /* wait.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wait.c; path = src/wait.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000091 /* wide.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wide.c; path = src/wide.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000093 /* win.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = win.c; path = src/win.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000095 /* wince.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wince.c; path = src/wince.c; sourceTree = "<group>"; };
-		B8CD2258B8CD340200000097 /* xml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xml.c; path = src/xml.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000069 /* mem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mem.c; path = src/mem.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000006B /* mime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mime.c; path = src/mime.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000006D /* mixed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mixed.c; path = src/mixed.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000006F /* module.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = module.c; path = src/module.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000071 /* mpr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = mpr.c; path = src/mpr.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000073 /* path.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = path.c; path = src/path.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000075 /* poll.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = poll.c; path = src/poll.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000077 /* posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = posix.c; path = src/posix.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000079 /* printf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = printf.c; path = src/printf.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000007B /* rom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = rom.c; path = src/rom.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000007D /* select.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = select.c; path = src/select.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000007F /* signal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = signal.c; path = src/signal.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000081 /* socket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = socket.c; path = src/socket.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000083 /* string.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = string.c; path = src/string.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000085 /* test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = test.c; path = src/test.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000087 /* thread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = thread.c; path = src/thread.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000089 /* time.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = time.c; path = src/time.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000008B /* vxworks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vxworks.c; path = src/vxworks.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000008D /* wait.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wait.c; path = src/wait.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000008F /* wide.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wide.c; path = src/wide.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000091 /* win.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = win.c; path = src/win.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000093 /* wince.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = wince.c; path = src/wince.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000095 /* xml.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xml.c; path = src/xml.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000A7 /* libmpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmpr.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		B8CD2258B8CD340200000099 /* est.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = est.c; path = src/ssl/est.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000009B /* matrixssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = matrixssl.c; path = src/ssl/matrixssl.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000009D /* nanossl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nanossl.c; path = src/ssl/nanossl.c; sourceTree = "<group>"; };
-		B8CD2258B8CD34020000009F /* openssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = openssl.c; path = src/ssl/openssl.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000A1 /* ssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl.c; path = src/ssl/ssl.c; sourceTree = "<group>"; };
-		B8CD2258B8CD3402000000A9 /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		B8CD2258B8CD340200000069 /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/manager.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000097 /* est.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = est.c; path = src/ssl/est.c; sourceTree = "<group>"; };
+		B8CD2258B8CD340200000099 /* matrixssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = matrixssl.c; path = src/ssl/matrixssl.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000009B /* nanossl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nanossl.c; path = src/ssl/nanossl.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000009D /* openssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = openssl.c; path = src/ssl/openssl.c; sourceTree = "<group>"; };
+		B8CD2258B8CD34020000009F /* ssl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ssl.c; path = src/ssl/ssl.c; sourceTree = "<group>"; };
+		B8CD2258B8CD3402000000AB /* libmprssl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libmprssl.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8CD2258B8CD3402000000A1 /* manager.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = manager.c; path = src/manager.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000DE /* manager */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = manager; sourceTree = BUILT_PRODUCTS_DIR; };
 		B8CD2258B8CD3402000000A3 /* makerom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = makerom.c; path = src/utils/makerom.c; sourceTree = "<group>"; };
 		B8CD2258B8CD3402000000DF /* makerom */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = makerom; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -453,9 +451,9 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				B8CD2258B8CD3402000000A8 /* libmprssl */,
-				B8CD2258B8CD3402000000AA /* libmpr */,
-				B8CD2258B8CD3402000000AB /* libest */,				
+				B8CD2258B8CD3402000000A8 /* libest */,
+				B8CD2258B8CD3402000000AA /* libmprssl */,
+				B8CD2258B8CD3402000000AC /* libmpr */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -471,8 +469,8 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				B8CD2258B8CD3402000000AD /* libmpr */,
-				B8CD2258B8CD3402000000AE /* libest */,				
+				B8CD2258B8CD3402000000AD /* libest */,
+				B8CD2258B8CD3402000000AE /* libmpr */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -605,30 +603,29 @@
 				B8CD2258B8CD340200000063 /* list.c */,
 				B8CD2258B8CD340200000065 /* lock.c */,
 				B8CD2258B8CD340200000067 /* log.c */,
-				B8CD2258B8CD340200000069 /* manager.c */,
-				B8CD2258B8CD34020000006B /* mem.c */,
-				B8CD2258B8CD34020000006D /* mime.c */,
-				B8CD2258B8CD34020000006F /* mixed.c */,
-				B8CD2258B8CD340200000071 /* module.c */,
-				B8CD2258B8CD340200000073 /* mpr.c */,
-				B8CD2258B8CD340200000075 /* path.c */,
-				B8CD2258B8CD340200000077 /* poll.c */,
-				B8CD2258B8CD340200000079 /* posix.c */,
-				B8CD2258B8CD34020000007B /* printf.c */,
-				B8CD2258B8CD34020000007D /* rom.c */,
-				B8CD2258B8CD34020000007F /* select.c */,
-				B8CD2258B8CD340200000081 /* signal.c */,
-				B8CD2258B8CD340200000083 /* socket.c */,
-				B8CD2258B8CD340200000085 /* string.c */,
-				B8CD2258B8CD340200000087 /* test.c */,
-				B8CD2258B8CD340200000089 /* thread.c */,
-				B8CD2258B8CD34020000008B /* time.c */,
-				B8CD2258B8CD34020000008D /* vxworks.c */,
-				B8CD2258B8CD34020000008F /* wait.c */,
-				B8CD2258B8CD340200000091 /* wide.c */,
-				B8CD2258B8CD340200000093 /* win.c */,
-				B8CD2258B8CD340200000095 /* wince.c */,
-				B8CD2258B8CD340200000097 /* xml.c */,
+				B8CD2258B8CD340200000069 /* mem.c */,
+				B8CD2258B8CD34020000006B /* mime.c */,
+				B8CD2258B8CD34020000006D /* mixed.c */,
+				B8CD2258B8CD34020000006F /* module.c */,
+				B8CD2258B8CD340200000071 /* mpr.c */,
+				B8CD2258B8CD340200000073 /* path.c */,
+				B8CD2258B8CD340200000075 /* poll.c */,
+				B8CD2258B8CD340200000077 /* posix.c */,
+				B8CD2258B8CD340200000079 /* printf.c */,
+				B8CD2258B8CD34020000007B /* rom.c */,
+				B8CD2258B8CD34020000007D /* select.c */,
+				B8CD2258B8CD34020000007F /* signal.c */,
+				B8CD2258B8CD340200000081 /* socket.c */,
+				B8CD2258B8CD340200000083 /* string.c */,
+				B8CD2258B8CD340200000085 /* test.c */,
+				B8CD2258B8CD340200000087 /* thread.c */,
+				B8CD2258B8CD340200000089 /* time.c */,
+				B8CD2258B8CD34020000008B /* vxworks.c */,
+				B8CD2258B8CD34020000008D /* wait.c */,
+				B8CD2258B8CD34020000008F /* wide.c */,
+				B8CD2258B8CD340200000091 /* win.c */,
+				B8CD2258B8CD340200000093 /* wince.c */,
+				B8CD2258B8CD340200000095 /* xml.c */,
 			);
             name = "libmpr";
             path = ..;
@@ -640,11 +637,11 @@
 				B8CD2258B8CD3402000000D7 /* bit.h */,
 				B8CD2258B8CD3402000000DA /* mpr.h */,
 				B8CD2258B8CD3402000000D8 /* est.h */,
-				B8CD2258B8CD340200000099 /* est.c */,
-				B8CD2258B8CD34020000009B /* matrixssl.c */,
-				B8CD2258B8CD34020000009D /* nanossl.c */,
-				B8CD2258B8CD34020000009F /* openssl.c */,
-				B8CD2258B8CD3402000000A1 /* ssl.c */,
+				B8CD2258B8CD340200000097 /* est.c */,
+				B8CD2258B8CD340200000099 /* matrixssl.c */,
+				B8CD2258B8CD34020000009B /* nanossl.c */,
+				B8CD2258B8CD34020000009D /* openssl.c */,
+				B8CD2258B8CD34020000009F /* ssl.c */,
 			);
             name = "libmprssl";
             path = ..;
@@ -655,7 +652,7 @@
             children = (
 				B8CD2258B8CD3402000000D7 /* bit.h */,
 				B8CD2258B8CD3402000000DA /* mpr.h */,
-				B8CD2258B8CD340200000069 /* manager.c */,
+				B8CD2258B8CD3402000000A1 /* manager.c */,
 			);
             name = "manager";
             path = ..;
@@ -686,12 +683,12 @@
 		B8CD2258B8CD3402000000F4 /* Products */ = {
             isa = PBXGroup;
             children = (
-				B8CD2258B8CD3402000000AC /* libest */,
+				B8CD2258B8CD3402000000A9 /* libest */,
 				B8CD2258B8CD3402000000DB /* benchMpr */,
 				B8CD2258B8CD3402000000DC /* runProgram */,
 				B8CD2258B8CD3402000000DD /* testMpr */,
 				B8CD2258B8CD3402000000A7 /* libmpr */,
-				B8CD2258B8CD3402000000A9 /* libmprssl */,
+				B8CD2258B8CD3402000000AB /* libmprssl */,
 				B8CD2258B8CD3402000000DE /* manager */,
 				B8CD2258B8CD3402000000DF /* makerom */,
 				B8CD2258B8CD3402000000E0 /* chargen */,
@@ -717,7 +714,7 @@
 			);
 			name = libest;
 			productName = mpr;
-			productReference = B8CD2258B8CD3402000000AC /* libest */;
+			productReference = B8CD2258B8CD3402000000A9 /* libest */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		B8CD2258B8CD3402000000CB /* benchMpr */ = {
@@ -807,7 +804,7 @@
 			);
 			name = libmprssl;
 			productName = mpr;
-			productReference = B8CD2258B8CD3402000000A9 /* libmprssl */;
+			productReference = B8CD2258B8CD3402000000AB /* libmprssl */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		B8CD2258B8CD3402000000D2 /* manager */ = {
@@ -1026,30 +1023,29 @@ fi";
 				B8CD2258B8CD340200000062 /* list.c in Sources */,
 				B8CD2258B8CD340200000064 /* lock.c in Sources */,
 				B8CD2258B8CD340200000066 /* log.c in Sources */,
-				B8CD2258B8CD340200000068 /* manager.c in Sources */,
-				B8CD2258B8CD34020000006A /* mem.c in Sources */,
-				B8CD2258B8CD34020000006C /* mime.c in Sources */,
-				B8CD2258B8CD34020000006E /* mixed.c in Sources */,
-				B8CD2258B8CD340200000070 /* module.c in Sources */,
-				B8CD2258B8CD340200000072 /* mpr.c in Sources */,
-				B8CD2258B8CD340200000074 /* path.c in Sources */,
-				B8CD2258B8CD340200000076 /* poll.c in Sources */,
-				B8CD2258B8CD340200000078 /* posix.c in Sources */,
-				B8CD2258B8CD34020000007A /* printf.c in Sources */,
-				B8CD2258B8CD34020000007C /* rom.c in Sources */,
-				B8CD2258B8CD34020000007E /* select.c in Sources */,
-				B8CD2258B8CD340200000080 /* signal.c in Sources */,
-				B8CD2258B8CD340200000082 /* socket.c in Sources */,
-				B8CD2258B8CD340200000084 /* string.c in Sources */,
-				B8CD2258B8CD340200000086 /* test.c in Sources */,
-				B8CD2258B8CD340200000088 /* thread.c in Sources */,
-				B8CD2258B8CD34020000008A /* time.c in Sources */,
-				B8CD2258B8CD34020000008C /* vxworks.c in Sources */,
-				B8CD2258B8CD34020000008E /* wait.c in Sources */,
-				B8CD2258B8CD340200000090 /* wide.c in Sources */,
-				B8CD2258B8CD340200000092 /* win.c in Sources */,
-				B8CD2258B8CD340200000094 /* wince.c in Sources */,
-				B8CD2258B8CD340200000096 /* xml.c in Sources */,
+				B8CD2258B8CD340200000068 /* mem.c in Sources */,
+				B8CD2258B8CD34020000006A /* mime.c in Sources */,
+				B8CD2258B8CD34020000006C /* mixed.c in Sources */,
+				B8CD2258B8CD34020000006E /* module.c in Sources */,
+				B8CD2258B8CD340200000070 /* mpr.c in Sources */,
+				B8CD2258B8CD340200000072 /* path.c in Sources */,
+				B8CD2258B8CD340200000074 /* poll.c in Sources */,
+				B8CD2258B8CD340200000076 /* posix.c in Sources */,
+				B8CD2258B8CD340200000078 /* printf.c in Sources */,
+				B8CD2258B8CD34020000007A /* rom.c in Sources */,
+				B8CD2258B8CD34020000007C /* select.c in Sources */,
+				B8CD2258B8CD34020000007E /* signal.c in Sources */,
+				B8CD2258B8CD340200000080 /* socket.c in Sources */,
+				B8CD2258B8CD340200000082 /* string.c in Sources */,
+				B8CD2258B8CD340200000084 /* test.c in Sources */,
+				B8CD2258B8CD340200000086 /* thread.c in Sources */,
+				B8CD2258B8CD340200000088 /* time.c in Sources */,
+				B8CD2258B8CD34020000008A /* vxworks.c in Sources */,
+				B8CD2258B8CD34020000008C /* wait.c in Sources */,
+				B8CD2258B8CD34020000008E /* wide.c in Sources */,
+				B8CD2258B8CD340200000090 /* win.c in Sources */,
+				B8CD2258B8CD340200000092 /* wince.c in Sources */,
+				B8CD2258B8CD340200000094 /* xml.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1057,11 +1053,11 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B8CD2258B8CD340200000098 /* est.c in Sources */,
-				B8CD2258B8CD34020000009A /* matrixssl.c in Sources */,
-				B8CD2258B8CD34020000009C /* nanossl.c in Sources */,
-				B8CD2258B8CD34020000009E /* openssl.c in Sources */,
-				B8CD2258B8CD3402000000A0 /* ssl.c in Sources */,
+				B8CD2258B8CD340200000096 /* est.c in Sources */,
+				B8CD2258B8CD340200000098 /* matrixssl.c in Sources */,
+				B8CD2258B8CD34020000009A /* nanossl.c in Sources */,
+				B8CD2258B8CD34020000009C /* openssl.c in Sources */,
+				B8CD2258B8CD34020000009E /* ssl.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1069,7 +1065,7 @@ fi";
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B8CD2258B8CD340200000068 /* manager.c in Sources */,
+				B8CD2258B8CD3402000000A0 /* manager.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

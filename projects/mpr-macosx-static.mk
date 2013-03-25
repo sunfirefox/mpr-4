@@ -1,11 +1,11 @@
 #
-#   mpr-macosx-default.mk -- Makefile to build Multithreaded Portable Runtime for macosx
+#   mpr-macosx-static.mk -- Makefile to build Multithreaded Portable Runtime for macosx
 #
 
 PRODUCT            := mpr
 VERSION            := 4.3.0
 BUILD_NUMBER       := 0
-PROFILE            := default
+PROFILE            := static
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
 OS                 := macosx
 CC                 := clang
@@ -87,7 +87,7 @@ BIT_SRC_PREFIX     := $(BIT_ROOT_PREFIX)$(PRODUCT)-$(VERSION)
 
 
 ifeq ($(BIT_PACK_EST),1)
-TARGETS            += $(CONFIG)/bin/libest.dylib
+TARGETS            += $(CONFIG)/bin/libest.a
 endif
 TARGETS            += $(CONFIG)/bin/ca.crt
 TARGETS            += $(CONFIG)/bin/benchMpr
@@ -114,13 +114,13 @@ prep:
 	@[ ! -x $(CONFIG)/bin ] && mkdir -p $(CONFIG)/bin; true
 	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc; true
 	@[ ! -x $(CONFIG)/obj ] && mkdir -p $(CONFIG)/obj; true
-	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/mpr-macosx-default-bit.h $(CONFIG)/inc/bit.h ; true
+	@[ ! -f $(CONFIG)/inc/bit.h ] && cp projects/mpr-macosx-static-bit.h $(CONFIG)/inc/bit.h ; true
 	@[ ! -f $(CONFIG)/inc/bitos.h ] && cp src/bitos.h $(CONFIG)/inc/bitos.h ; true
 	@if ! diff $(CONFIG)/inc/bitos.h src/bitos.h >/dev/null ; then\
 		cp src/bitos.h $(CONFIG)/inc/bitos.h  ; \
 	fi; true
-	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-macosx-default-bit.h >/dev/null ; then\
-		cp projects/mpr-macosx-default-bit.h $(CONFIG)/inc/bit.h  ; \
+	@if ! diff $(CONFIG)/inc/bit.h projects/mpr-macosx-static-bit.h >/dev/null ; then\
+		cp projects/mpr-macosx-static-bit.h $(CONFIG)/inc/bit.h  ; \
 	fi; true
 	@if [ -f "$(CONFIG)/.makeflags" ] ; then \
 		if [ "$(MAKEFLAGS)" != " ` cat $(CONFIG)/.makeflags`" ] ; then \
@@ -129,13 +129,13 @@ prep:
 	fi
 	@echo $(MAKEFLAGS) >$(CONFIG)/.makeflags
 clean:
-	rm -fr "$(CONFIG)/bin/libest.dylib"
+	rm -fr "$(CONFIG)/bin/libest.a"
 	rm -fr "$(CONFIG)/bin/ca.crt"
 	rm -fr "$(CONFIG)/bin/benchMpr"
 	rm -fr "$(CONFIG)/bin/runProgram"
 	rm -fr "$(CONFIG)/bin/testMpr"
-	rm -fr "$(CONFIG)/bin/libmpr.dylib"
-	rm -fr "$(CONFIG)/bin/libmprssl.dylib"
+	rm -fr "$(CONFIG)/bin/libmpr.a"
+	rm -fr "$(CONFIG)/bin/libmprssl.a"
 	rm -fr "$(CONFIG)/bin/manager"
 	rm -fr "$(CONFIG)/bin/makerom"
 	rm -fr "$(CONFIG)/bin/chargen"
@@ -265,9 +265,9 @@ ifeq ($(BIT_PACK_EST),1)
 DEPS_6 += $(CONFIG)/inc/est.h
 DEPS_6 += $(CONFIG)/obj/estLib.o
 
-$(CONFIG)/bin/libest.dylib: $(DEPS_6)
+$(CONFIG)/bin/libest.a: $(DEPS_6)
 	@echo '      [Link] libest'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.3.0 -current_version 4.3.0 $(CONFIG)/obj/estLib.o $(LIBS) 
+	ar -cr $(CONFIG)/bin/libest.a $(CONFIG)/obj/estLib.o
 endif
 
 #
@@ -811,9 +811,9 @@ DEPS_52 += $(CONFIG)/obj/win.o
 DEPS_52 += $(CONFIG)/obj/wince.o
 DEPS_52 += $(CONFIG)/obj/xml.o
 
-$(CONFIG)/bin/libmpr.dylib: $(DEPS_52)
+$(CONFIG)/bin/libmpr.a: $(DEPS_52)
 	@echo '      [Link] libmpr'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 4.3.0 -current_version 4.3.0 $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/json.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o $(LIBS) 
+	ar -cr $(CONFIG)/bin/libmpr.a $(CONFIG)/obj/async.o $(CONFIG)/obj/atomic.o $(CONFIG)/obj/buf.o $(CONFIG)/obj/cache.o $(CONFIG)/obj/cmd.o $(CONFIG)/obj/cond.o $(CONFIG)/obj/crypt.o $(CONFIG)/obj/disk.o $(CONFIG)/obj/dispatcher.o $(CONFIG)/obj/encode.o $(CONFIG)/obj/epoll.o $(CONFIG)/obj/event.o $(CONFIG)/obj/file.o $(CONFIG)/obj/fs.o $(CONFIG)/obj/hash.o $(CONFIG)/obj/json.o $(CONFIG)/obj/kqueue.o $(CONFIG)/obj/list.o $(CONFIG)/obj/lock.o $(CONFIG)/obj/log.o $(CONFIG)/obj/mem.o $(CONFIG)/obj/mime.o $(CONFIG)/obj/mixed.o $(CONFIG)/obj/module.o $(CONFIG)/obj/mpr.o $(CONFIG)/obj/path.o $(CONFIG)/obj/poll.o $(CONFIG)/obj/posix.o $(CONFIG)/obj/printf.o $(CONFIG)/obj/rom.o $(CONFIG)/obj/select.o $(CONFIG)/obj/signal.o $(CONFIG)/obj/socket.o $(CONFIG)/obj/string.o $(CONFIG)/obj/test.o $(CONFIG)/obj/thread.o $(CONFIG)/obj/time.o $(CONFIG)/obj/vxworks.o $(CONFIG)/obj/wait.o $(CONFIG)/obj/wide.o $(CONFIG)/obj/win.o $(CONFIG)/obj/wince.o $(CONFIG)/obj/xml.o
 
 #
 #   benchMpr.o
@@ -829,7 +829,7 @@ $(CONFIG)/obj/benchMpr.o: \
 #
 #   benchMpr
 #
-DEPS_54 += $(CONFIG)/bin/libmpr.dylib
+DEPS_54 += $(CONFIG)/bin/libmpr.a
 DEPS_54 += $(CONFIG)/obj/benchMpr.o
 
 LIBS_54 += -lmpr
@@ -916,21 +916,16 @@ $(CONFIG)/obj/ssl.o: \
 #
 #   libmprssl
 #
-DEPS_62 += $(CONFIG)/bin/libmpr.dylib
+DEPS_62 += $(CONFIG)/bin/libmpr.a
 DEPS_62 += $(CONFIG)/obj/est.o
 DEPS_62 += $(CONFIG)/obj/matrixssl.o
 DEPS_62 += $(CONFIG)/obj/nanossl.o
 DEPS_62 += $(CONFIG)/obj/openssl.o
 DEPS_62 += $(CONFIG)/obj/ssl.o
 
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_62 += -lest
-endif
-LIBS_62 += -lmpr
-
-$(CONFIG)/bin/libmprssl.dylib: $(DEPS_62)
+$(CONFIG)/bin/libmprssl.a: $(DEPS_62)
 	@echo '      [Link] libmprssl'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmprssl.dylib -compatibility_version 4.3.0 -current_version 4.3.0 $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o $(LIBS_62) $(LIBS_62) $(LIBS) 
+	ar -cr $(CONFIG)/bin/libmprssl.a $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o
 
 #
 #   testArgv.o
@@ -1122,8 +1117,8 @@ $(CONFIG)/obj/testUnicode.o: \
 #
 #   testMpr
 #
-DEPS_80 += $(CONFIG)/bin/libmpr.dylib
-DEPS_80 += $(CONFIG)/bin/libmprssl.dylib
+DEPS_80 += $(CONFIG)/bin/libmpr.a
+DEPS_80 += $(CONFIG)/bin/libmprssl.a
 DEPS_80 += $(CONFIG)/bin/runProgram
 DEPS_80 += $(CONFIG)/obj/testArgv.o
 DEPS_80 += $(CONFIG)/obj/testBuf.o
@@ -1167,7 +1162,7 @@ $(CONFIG)/obj/manager.o: \
 #
 #   manager
 #
-DEPS_82 += $(CONFIG)/bin/libmpr.dylib
+DEPS_82 += $(CONFIG)/bin/libmpr.a
 DEPS_82 += $(CONFIG)/obj/manager.o
 
 LIBS_82 += -lmpr
@@ -1190,7 +1185,7 @@ $(CONFIG)/obj/makerom.o: \
 #
 #   makerom
 #
-DEPS_84 += $(CONFIG)/bin/libmpr.dylib
+DEPS_84 += $(CONFIG)/bin/libmpr.a
 DEPS_84 += $(CONFIG)/obj/makerom.o
 
 LIBS_84 += -lmpr
@@ -1213,7 +1208,7 @@ $(CONFIG)/obj/charGen.o: \
 #
 #   chargen
 #
-DEPS_86 += $(CONFIG)/bin/libmpr.dylib
+DEPS_86 += $(CONFIG)/bin/libmpr.a
 DEPS_86 += $(CONFIG)/obj/charGen.o
 
 LIBS_86 += -lmpr
