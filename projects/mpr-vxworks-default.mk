@@ -6,7 +6,7 @@ PRODUCT            := mpr
 VERSION            := 4.3.0
 BUILD_NUMBER       := 0
 PROFILE            := default
-ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
+ARCH               := $(shell echo $(WIND_HOST_TYPE) | sed 's/-.*//')
 OS                 := vxworks
 CC                 := cc$(subst x86,pentium,$(ARCH))
 LD                 := link
@@ -50,9 +50,8 @@ BIT_PACK_SSL_PATH         := ssl
 BIT_PACK_UTEST_PATH       := utest
 BIT_PACK_VXWORKS_PATH     := $(WIND_BASE)
 
-export WIND_BASE := $(WIND_BASE)
 export WIND_HOME := $(WIND_BASE)/..
-export WIND_PLATFORM := $(WIND_PLATFORM)
+export PATH := $(WIND_GNU_PATH)/$(WIND_HOST_TYPE)/bin:$(PATH)
 
 CFLAGS             += -fno-builtin -fno-defer-pop -fvolatile -w
 DFLAGS             += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
@@ -116,6 +115,9 @@ prep:
 	@echo "      [Info] Use "make SHOW=1" to trace executed commands."
 	@if [ "$(CONFIG)" = "" ] ; then echo WARNING: CONFIG not set ; exit 255 ; fi
 	@if [ "$(BIT_APP_PREFIX)" = "" ] ; then echo WARNING: BIT_APP_PREFIX not set ; exit 255 ; fi
+	@if [ "$(WIND_BASE)" = "" ] ; then echo WARNING: WIND_BASE not set. Run wrenv.sh. ; exit 255 ; fi
+	@if [ "$(WIND_HOST_TYPE)" = "" ] ; then echo WARNING: WIND_HOST_TYPE not set. Run wrenv.sh. ; exit 255 ; fi
+	@if [ "$(WIND_GNU_PATH)" = "" ] ; then echo WARNING: WIND_GNU_PATH not set. Run wrenv.sh. ; exit 255 ; fi
 	@[ ! -x $(CONFIG)/bin ] && mkdir -p $(CONFIG)/bin; true
 	@[ ! -x $(CONFIG)/inc ] && mkdir -p $(CONFIG)/inc; true
 	@[ ! -x $(CONFIG)/obj ] && mkdir -p $(CONFIG)/obj; true
@@ -825,6 +827,7 @@ $(CONFIG)/bin/libmpr.out: $(DEPS_52)
 #
 DEPS_53 += $(CONFIG)/inc/bit.h
 DEPS_53 += $(CONFIG)/inc/mpr.h
+DEPS_53 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c $(DEPS_53)
@@ -837,11 +840,9 @@ $(CONFIG)/obj/benchMpr.o: \
 DEPS_54 += $(CONFIG)/bin/libmpr.out
 DEPS_54 += $(CONFIG)/obj/benchMpr.o
 
-LIBS_54 += -lmpr
-
 $(CONFIG)/bin/benchMpr.out: $(DEPS_54)
 	@echo '      [Link] benchMpr'
-	$(CC) -o $(CONFIG)/bin/benchMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/benchMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LIBS) $(LDFLAGS) 
 
 #
 #   runProgram.o
@@ -928,14 +929,9 @@ DEPS_62 += $(CONFIG)/obj/nanossl.o
 DEPS_62 += $(CONFIG)/obj/openssl.o
 DEPS_62 += $(CONFIG)/obj/ssl.o
 
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_62 += -lest
-endif
-LIBS_62 += -lmpr
-
 $(CONFIG)/bin/libmprssl.out: $(DEPS_62)
 	@echo '      [Link] libmprssl'
-	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o $(LIBPATHS_62) $(LIBS_62) $(LIBS_62) $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o $(LIBS) 
 
 #
 #   testArgv.o
@@ -1148,15 +1144,9 @@ DEPS_80 += $(CONFIG)/obj/testThread.o
 DEPS_80 += $(CONFIG)/obj/testTime.o
 DEPS_80 += $(CONFIG)/obj/testUnicode.o
 
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_80 += -lest
-endif
-LIBS_80 += -lmprssl
-LIBS_80 += -lmpr
-
 $(CONFIG)/bin/testMpr.out: $(DEPS_80)
 	@echo '      [Link] testMpr'
-	$(CC) -o $(CONFIG)/bin/testMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBS) $(LDFLAGS) 
 
 #
 #   manager.o
@@ -1175,11 +1165,9 @@ $(CONFIG)/obj/manager.o: \
 DEPS_82 += $(CONFIG)/bin/libmpr.out
 DEPS_82 += $(CONFIG)/obj/manager.o
 
-LIBS_82 += -lmpr
-
 $(CONFIG)/bin/manager.out: $(DEPS_82)
 	@echo '      [Link] manager'
-	$(CC) -o $(CONFIG)/bin/manager.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/manager.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS) $(LDFLAGS) 
 
 #
 #   makerom.o
@@ -1198,11 +1186,9 @@ $(CONFIG)/obj/makerom.o: \
 DEPS_84 += $(CONFIG)/bin/libmpr.out
 DEPS_84 += $(CONFIG)/obj/makerom.o
 
-LIBS_84 += -lmpr
-
 $(CONFIG)/bin/makerom.out: $(DEPS_84)
 	@echo '      [Link] makerom'
-	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS) $(LDFLAGS) 
 
 #
 #   charGen.o
@@ -1221,11 +1207,9 @@ $(CONFIG)/obj/charGen.o: \
 DEPS_86 += $(CONFIG)/bin/libmpr.out
 DEPS_86 += $(CONFIG)/obj/charGen.o
 
-LIBS_86 += -lmpr
-
 $(CONFIG)/bin/chargen.out: $(DEPS_86)
 	@echo '      [Link] chargen'
-	$(CC) -o $(CONFIG)/bin/chargen.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/chargen.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBS) $(LDFLAGS) 
 
 #
 #   stop
