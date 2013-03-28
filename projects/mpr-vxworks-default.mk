@@ -50,8 +50,8 @@ BIT_PACK_SSL_PATH         := ssl
 BIT_PACK_UTEST_PATH       := utest
 BIT_PACK_VXWORKS_PATH     := $(WIND_BASE)
 
-export WIND_HOME := $(WIND_BASE)/..
-export PATH := $(WIND_GNU_PATH)/$(WIND_HOST_TYPE)/bin:$(PATH)
+export WIND_HOME          := $(WIND_BASE)/..
+export PATH               := $(WIND_GNU_PATH)/$(WIND_HOST_TYPE)/bin:$(PATH)
 
 CFLAGS             += -fno-builtin -fno-defer-pop -fvolatile -w
 DFLAGS             += -D_REENTRANT -DVXWORKS -DRW_MULTI_THREAD -D_GNU_TOOL -DCPU=PENTIUM $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
@@ -827,7 +827,6 @@ $(CONFIG)/bin/libmpr.out: $(DEPS_52)
 #
 DEPS_53 += $(CONFIG)/inc/bit.h
 DEPS_53 += $(CONFIG)/inc/mpr.h
-DEPS_53 += $(CONFIG)/inc/bitos.h
 
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c $(DEPS_53)
