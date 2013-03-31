@@ -298,6 +298,8 @@ PUBLIC void mprWakeNotifier()
     }
 }
 
+#else
+void epollDummy() {}
 #endif /* MPR_EVENT_EPOLL */
 
 /*

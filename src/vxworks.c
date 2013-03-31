@@ -189,7 +189,8 @@ double  __mpr_floating_point_resolution(double a, double b, int64 c, int64 d, ui
     return (a == b) ? a : b;
 }
 
-
+#else
+void vxworksDummy() {}
 #endif /* VXWORKS */
 
 /*

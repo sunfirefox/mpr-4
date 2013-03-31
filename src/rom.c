@@ -290,6 +290,8 @@ PUBLIC MprRomFileSystem *mprCreateRomFileSystem(cchar *path)
     return rfs;
 }
 
+#else
+void romDummy() {}
 
 #endif /* BIT_ROM */
 

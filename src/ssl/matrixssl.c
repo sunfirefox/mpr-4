@@ -733,6 +733,8 @@ static ssize flushMss(MprSocket *sp)
 #undef TLS_RSA_WITH_AES_128_CBC_SHA
 #undef TLS_RSA_WITH_AES_256_CBC_SHA
 
+#else
+void matrixsslDummy() {}
 #endif /* BIT_PACK_MATRIXSSL */
 
 /*

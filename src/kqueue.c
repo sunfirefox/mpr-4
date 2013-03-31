@@ -302,6 +302,8 @@ PUBLIC void mprWakeNotifier()
     }
 }
 
+#else
+void kqueueDummy() {}
 #endif /* MPR_EVENT_KQUEUE */
 
 /*

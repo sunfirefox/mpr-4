@@ -520,6 +520,8 @@ static void nanoLog(sbyte4 module, sbyte4 severity, sbyte *msg)
     mprLog(3, "%s", (cchar*) msg);
 }
 
+#else
+void nanosslDummy() {}
 #endif /* BIT_PACK_NANOSSL */
 
 /*

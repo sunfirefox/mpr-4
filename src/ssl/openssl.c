@@ -978,6 +978,8 @@ static DH *get_dh1024()
     return dh;
 }
 
+#else
+void opensslDummy() {}
 #endif /* BIT_PACK_OPENSSL */
 
 /*

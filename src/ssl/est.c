@@ -567,6 +567,8 @@ static void estTrace(void *fp, int level, char *str)
     }
 }
 
+#else
+void estDummy() {}
 #endif /* BIT_PACK_EST */
 
 /*

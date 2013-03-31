@@ -349,6 +349,8 @@ PUBLIC int mprWriteRegistry(cchar *key, cchar *name, cchar *value)
 }
 
 
+#else
+void winDummy() {}
 #endif /* (BIT_WIN_LIKE && !WINCE) || CYGWIN */
 
 /*

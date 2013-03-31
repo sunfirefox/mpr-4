@@ -308,6 +308,9 @@ static void readPipe(MprWaitService *ws)
 #endif
 }
 
+#else
+void selectDummy() {}
+
 #endif /* MPR_EVENT_SELECT */
 
 /*

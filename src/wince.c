@@ -873,6 +873,8 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
 {
 }
 
+#else
+void winceDummy() {}
 #endif /* WINCE */
 
 /*
