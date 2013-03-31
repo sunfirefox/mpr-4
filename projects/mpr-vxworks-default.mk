@@ -1078,186 +1078,209 @@ $(CONFIG)/bin/testMpr.out: $(DEPS_74)
 	@echo '      [Link] $(CONFIG)/bin/testMpr.out'
 	$(CC) -o $(CONFIG)/bin/testMpr.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBS) $(LDFLAGS) 
 
+ifeq ($(BIT_PACK_SSL),1)
+#
+#   est
+#
+ifeq ($(BIT_PACK_EST),1)
+    DEPS_75 += $(CONFIG)/bin/libest.out
+endif
+
+est: $(DEPS_75)
+endif
+
+#
+#   ssl
+#
+ifeq ($(BIT_PACK_SSL),1)
+    DEPS_76 += est
+endif
+
+ssl: $(DEPS_76)
 
 #
 #   est.o
 #
-DEPS_75 += $(CONFIG)/inc/bit.h
-DEPS_75 += $(CONFIG)/inc/mpr.h
-DEPS_75 += $(CONFIG)/inc/est.h
+DEPS_77 += $(CONFIG)/inc/bit.h
+DEPS_77 += $(CONFIG)/inc/mpr.h
+DEPS_77 += $(CONFIG)/inc/est.h
 
 $(CONFIG)/obj/est.o: \
-    src/ssl/est.c $(DEPS_75)
+    src/ssl/est.c $(DEPS_77)
 	@echo '   [Compile] $(CONFIG)/obj/est.o'
 	$(CC) -c -o $(CONFIG)/obj/est.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/ssl/est.c
 
 #
 #   matrixssl.o
 #
-DEPS_76 += $(CONFIG)/inc/bit.h
-DEPS_76 += $(CONFIG)/inc/mpr.h
+DEPS_78 += $(CONFIG)/inc/bit.h
+DEPS_78 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/matrixssl.o: \
-    src/ssl/matrixssl.c $(DEPS_76)
+    src/ssl/matrixssl.c $(DEPS_78)
 	@echo '   [Compile] $(CONFIG)/obj/matrixssl.o'
 	$(CC) -c -o $(CONFIG)/obj/matrixssl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/ssl/matrixssl.c
 
 #
 #   nanossl.o
 #
-DEPS_77 += $(CONFIG)/inc/bit.h
-DEPS_77 += $(CONFIG)/inc/mpr.h
+DEPS_79 += $(CONFIG)/inc/bit.h
+DEPS_79 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/nanossl.o: \
-    src/ssl/nanossl.c $(DEPS_77)
+    src/ssl/nanossl.c $(DEPS_79)
 	@echo '   [Compile] $(CONFIG)/obj/nanossl.o'
 	$(CC) -c -o $(CONFIG)/obj/nanossl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/ssl/nanossl.c
 
 #
 #   openssl.o
 #
-DEPS_78 += $(CONFIG)/inc/bit.h
-DEPS_78 += $(CONFIG)/inc/mpr.h
+DEPS_80 += $(CONFIG)/inc/bit.h
+DEPS_80 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/openssl.o: \
-    src/ssl/openssl.c $(DEPS_78)
+    src/ssl/openssl.c $(DEPS_80)
 	@echo '   [Compile] $(CONFIG)/obj/openssl.o'
 	$(CC) -c -o $(CONFIG)/obj/openssl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/ssl/openssl.c
 
 #
 #   ssl.o
 #
-DEPS_79 += $(CONFIG)/inc/bit.h
-DEPS_79 += $(CONFIG)/inc/mpr.h
+DEPS_81 += $(CONFIG)/inc/bit.h
+DEPS_81 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/ssl.o: \
-    src/ssl/ssl.c $(DEPS_79)
+    src/ssl/ssl.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/ssl.o'
 	$(CC) -c -o $(CONFIG)/obj/ssl.o $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl -I$(BIT_PACK_NANOSSL_PATH)/src -I$(BIT_PACK_OPENSSL_PATH)/include src/ssl/ssl.c
 
 #
 #   libmprssl
 #
-DEPS_80 += $(CONFIG)/bin/libmpr.out
-DEPS_80 += $(CONFIG)/obj/est.o
-DEPS_80 += $(CONFIG)/obj/matrixssl.o
-DEPS_80 += $(CONFIG)/obj/nanossl.o
-DEPS_80 += $(CONFIG)/obj/openssl.o
-DEPS_80 += $(CONFIG)/obj/ssl.o
+DEPS_82 += $(CONFIG)/bin/libmpr.out
+DEPS_82 += ssl
+DEPS_82 += $(CONFIG)/obj/est.o
+DEPS_82 += $(CONFIG)/obj/matrixssl.o
+DEPS_82 += $(CONFIG)/obj/nanossl.o
+DEPS_82 += $(CONFIG)/obj/openssl.o
+DEPS_82 += $(CONFIG)/obj/ssl.o
 
+ifeq ($(BIT_PACK_EST),1)
+    LIBS_82 += -lest
+endif
 ifeq ($(BIT_PACK_MATRIXSSL),1)
-    LIBS_80 += -lmatrixssl
-    LIBPATHS_80 += -L$(BIT_PACK_MATRIXSSL_PATH)
+    LIBS_82 += -lmatrixssl
+    LIBPATHS_82 += -L$(BIT_PACK_MATRIXSSL_PATH)
 endif
 ifeq ($(BIT_PACK_NANOSSL),1)
-    LIBS_80 += -lssls
-    LIBPATHS_80 += -L$(BIT_PACK_NANOSSL_PATH)/bin
+    LIBS_82 += -lssls
+    LIBPATHS_82 += -L$(BIT_PACK_NANOSSL_PATH)/bin
 endif
 ifeq ($(BIT_PACK_OPENSSL),1)
-    LIBS_80 += -lssl
-    LIBPATHS_80 += -L$(BIT_PACK_OPENSSL_PATH)
+    LIBS_82 += -lssl
+    LIBPATHS_82 += -L$(BIT_PACK_OPENSSL_PATH)
 endif
 ifeq ($(BIT_PACK_OPENSSL),1)
-    LIBS_80 += -lcrypto
-    LIBPATHS_80 += -L$(BIT_PACK_OPENSSL_PATH)
+    LIBS_82 += -lcrypto
+    LIBPATHS_82 += -L$(BIT_PACK_OPENSSL_PATH)
 endif
 
-$(CONFIG)/bin/libmprssl.out: $(DEPS_80)
+$(CONFIG)/bin/libmprssl.out: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.out'
-	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS)    $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
+	$(CC) -r -o $(CONFIG)/bin/libmprssl.out $(LDFLAGS) $(LIBPATHS)    $(CONFIG)/obj/est.o $(CONFIG)/obj/matrixssl.o $(CONFIG)/obj/nanossl.o $(CONFIG)/obj/openssl.o $(CONFIG)/obj/ssl.o $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
 #   manager.o
 #
-DEPS_81 += $(CONFIG)/inc/bit.h
-DEPS_81 += $(CONFIG)/inc/mpr.h
+DEPS_83 += $(CONFIG)/inc/bit.h
+DEPS_83 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/manager.o: \
-    src/manager.c $(DEPS_81)
+    src/manager.c $(DEPS_83)
 	@echo '   [Compile] $(CONFIG)/obj/manager.o'
 	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/manager.c
 
 #
 #   manager
 #
-DEPS_82 += $(CONFIG)/bin/libmpr.out
-DEPS_82 += $(CONFIG)/obj/manager.o
+DEPS_84 += $(CONFIG)/bin/libmpr.out
+DEPS_84 += $(CONFIG)/obj/manager.o
 
-$(CONFIG)/bin/manager.out: $(DEPS_82)
+$(CONFIG)/bin/manager.out: $(DEPS_84)
 	@echo '      [Link] $(CONFIG)/bin/manager.out'
 	$(CC) -o $(CONFIG)/bin/manager.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBS) $(LDFLAGS) 
 
 #
 #   makerom.o
 #
-DEPS_83 += $(CONFIG)/inc/bit.h
-DEPS_83 += $(CONFIG)/inc/mpr.h
+DEPS_85 += $(CONFIG)/inc/bit.h
+DEPS_85 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/makerom.o: \
-    src/utils/makerom.c $(DEPS_83)
+    src/utils/makerom.c $(DEPS_85)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.o'
 	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/makerom.c
 
 #
 #   makerom
 #
-DEPS_84 += $(CONFIG)/bin/libmpr.out
-DEPS_84 += $(CONFIG)/obj/makerom.o
+DEPS_86 += $(CONFIG)/bin/libmpr.out
+DEPS_86 += $(CONFIG)/obj/makerom.o
 
-$(CONFIG)/bin/makerom.out: $(DEPS_84)
+$(CONFIG)/bin/makerom.out: $(DEPS_86)
 	@echo '      [Link] $(CONFIG)/bin/makerom.out'
 	$(CC) -o $(CONFIG)/bin/makerom.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBS) $(LDFLAGS) 
 
 #
 #   charGen.o
 #
-DEPS_85 += $(CONFIG)/inc/bit.h
-DEPS_85 += $(CONFIG)/inc/mpr.h
+DEPS_87 += $(CONFIG)/inc/bit.h
+DEPS_87 += $(CONFIG)/inc/mpr.h
 
 $(CONFIG)/obj/charGen.o: \
-    src/utils/charGen.c $(DEPS_85)
+    src/utils/charGen.c $(DEPS_87)
 	@echo '   [Compile] $(CONFIG)/obj/charGen.o'
 	$(CC) -c -o $(CONFIG)/obj/charGen.o $(CFLAGS) $(DFLAGS) $(IFLAGS) src/utils/charGen.c
 
 #
 #   chargen
 #
-DEPS_86 += $(CONFIG)/bin/libmpr.out
-DEPS_86 += $(CONFIG)/obj/charGen.o
+DEPS_88 += $(CONFIG)/bin/libmpr.out
+DEPS_88 += $(CONFIG)/obj/charGen.o
 
-$(CONFIG)/bin/chargen.out: $(DEPS_86)
+$(CONFIG)/bin/chargen.out: $(DEPS_88)
 	@echo '      [Link] $(CONFIG)/bin/chargen.out'
 	$(CC) -o $(CONFIG)/bin/chargen.out $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBS) $(LDFLAGS) 
 
 #
 #   stop
 #
-stop: $(DEPS_87)
+stop: $(DEPS_89)
 
 #
 #   installBinary
 #
-installBinary: $(DEPS_88)
+installBinary: $(DEPS_90)
 
 #
 #   start
 #
-start: $(DEPS_89)
+start: $(DEPS_91)
 
 #
 #   install
 #
-DEPS_90 += stop
-DEPS_90 += installBinary
-DEPS_90 += start
+DEPS_92 += stop
+DEPS_92 += installBinary
+DEPS_92 += start
 
-install: $(DEPS_90)
+install: $(DEPS_92)
 	
 
 #
 #   uninstall
 #
-DEPS_91 += stop
+DEPS_93 += stop
 
-uninstall: $(DEPS_91)
+uninstall: $(DEPS_93)
 
