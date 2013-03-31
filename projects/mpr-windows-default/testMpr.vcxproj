@@ -121,7 +121,7 @@
 
   <ItemDefinitionGroup>
   <Link>
-    <AdditionalDependencies>libest.lib;libmprssl.lib;libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    <AdditionalDependencies>libmpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <AdditionalLibraryDirectories>$(OutDir);$(Cfg)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
   </Link>
   </ItemDefinitionGroup>
@@ -129,13 +129,6 @@
 <ItemGroup>
   <ProjectReference Include="libmpr.vcxproj">
   <Project>fd1e5b7f-6cf4-462e-80de-4ece9e6e081d</Project>
-  <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-  </ProjectReference>
-</ItemGroup>
-
-<ItemGroup>
-  <ProjectReference Include="libmprssl.vcxproj">
-  <Project>736b5724-a6f3-4c06-a404-858cff510878</Project>
   <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
   </ProjectReference>
 </ItemGroup>

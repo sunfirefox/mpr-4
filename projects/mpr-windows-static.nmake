@@ -102,6 +102,7 @@ TARGETS            = $(TARGETS) $(CONFIG)\bin\ca.crt
 TARGETS            = $(TARGETS) $(CONFIG)\bin\benchMpr.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\runProgram.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\testMpr.exe
+TARGETS            = $(TARGETS) $(CONFIG)\bin\libmprssl.lib
 TARGETS            = $(TARGETS) $(CONFIG)\bin\manager.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\makerom.exe
 TARGETS            = $(TARGETS) $(CONFIG)\bin\chargen.exe
@@ -130,7 +131,6 @@ prep:
 
 clean:
 	if exist "$(CONFIG)\bin\libest.lib" del /Q "$(CONFIG)\bin\libest.lib"
-	if exist "$(CONFIG)\bin\ca.crt\" rd /Q /S "$(CONFIG)\bin\ca.crt"
 	if exist "$(CONFIG)\bin\ca.crt" del /Q "$(CONFIG)\bin\ca.crt"
 	if exist "$(CONFIG)\bin\benchMpr.exe" del /Q "$(CONFIG)\bin\benchMpr.exe"
 	if exist "$(CONFIG)\bin\benchMpr.lib" del /Q "$(CONFIG)\bin\benchMpr.lib"
@@ -158,147 +158,76 @@ clean:
 	if exist "$(CONFIG)\bin\chargen.lib" del /Q "$(CONFIG)\bin\chargen.lib"
 	if exist "$(CONFIG)\bin\chargen.pdb" del /Q "$(CONFIG)\bin\chargen.pdb"
 	if exist "$(CONFIG)\bin\chargen.exp" del /Q "$(CONFIG)\bin\chargen.exp"
-	if exist "$(CONFIG)\obj\estLib.obj\" rd /Q /S "$(CONFIG)\obj\estLib.obj"
 	if exist "$(CONFIG)\obj\estLib.obj" del /Q "$(CONFIG)\obj\estLib.obj"
-	if exist "$(CONFIG)\obj\benchMpr.obj\" rd /Q /S "$(CONFIG)\obj\benchMpr.obj"
 	if exist "$(CONFIG)\obj\benchMpr.obj" del /Q "$(CONFIG)\obj\benchMpr.obj"
-	if exist "$(CONFIG)\obj\runProgram.obj\" rd /Q /S "$(CONFIG)\obj\runProgram.obj"
 	if exist "$(CONFIG)\obj\runProgram.obj" del /Q "$(CONFIG)\obj\runProgram.obj"
-	if exist "$(CONFIG)\obj\testArgv.obj\" rd /Q /S "$(CONFIG)\obj\testArgv.obj"
 	if exist "$(CONFIG)\obj\testArgv.obj" del /Q "$(CONFIG)\obj\testArgv.obj"
-	if exist "$(CONFIG)\obj\testBuf.obj\" rd /Q /S "$(CONFIG)\obj\testBuf.obj"
 	if exist "$(CONFIG)\obj\testBuf.obj" del /Q "$(CONFIG)\obj\testBuf.obj"
-	if exist "$(CONFIG)\obj\testCmd.obj\" rd /Q /S "$(CONFIG)\obj\testCmd.obj"
 	if exist "$(CONFIG)\obj\testCmd.obj" del /Q "$(CONFIG)\obj\testCmd.obj"
-	if exist "$(CONFIG)\obj\testCond.obj\" rd /Q /S "$(CONFIG)\obj\testCond.obj"
 	if exist "$(CONFIG)\obj\testCond.obj" del /Q "$(CONFIG)\obj\testCond.obj"
-	if exist "$(CONFIG)\obj\testEvent.obj\" rd /Q /S "$(CONFIG)\obj\testEvent.obj"
 	if exist "$(CONFIG)\obj\testEvent.obj" del /Q "$(CONFIG)\obj\testEvent.obj"
-	if exist "$(CONFIG)\obj\testFile.obj\" rd /Q /S "$(CONFIG)\obj\testFile.obj"
 	if exist "$(CONFIG)\obj\testFile.obj" del /Q "$(CONFIG)\obj\testFile.obj"
-	if exist "$(CONFIG)\obj\testHash.obj\" rd /Q /S "$(CONFIG)\obj\testHash.obj"
 	if exist "$(CONFIG)\obj\testHash.obj" del /Q "$(CONFIG)\obj\testHash.obj"
-	if exist "$(CONFIG)\obj\testList.obj\" rd /Q /S "$(CONFIG)\obj\testList.obj"
 	if exist "$(CONFIG)\obj\testList.obj" del /Q "$(CONFIG)\obj\testList.obj"
-	if exist "$(CONFIG)\obj\testLock.obj\" rd /Q /S "$(CONFIG)\obj\testLock.obj"
 	if exist "$(CONFIG)\obj\testLock.obj" del /Q "$(CONFIG)\obj\testLock.obj"
-	if exist "$(CONFIG)\obj\testMem.obj\" rd /Q /S "$(CONFIG)\obj\testMem.obj"
 	if exist "$(CONFIG)\obj\testMem.obj" del /Q "$(CONFIG)\obj\testMem.obj"
-	if exist "$(CONFIG)\obj\testMpr.obj\" rd /Q /S "$(CONFIG)\obj\testMpr.obj"
 	if exist "$(CONFIG)\obj\testMpr.obj" del /Q "$(CONFIG)\obj\testMpr.obj"
-	if exist "$(CONFIG)\obj\testPath.obj\" rd /Q /S "$(CONFIG)\obj\testPath.obj"
 	if exist "$(CONFIG)\obj\testPath.obj" del /Q "$(CONFIG)\obj\testPath.obj"
-	if exist "$(CONFIG)\obj\testSocket.obj\" rd /Q /S "$(CONFIG)\obj\testSocket.obj"
 	if exist "$(CONFIG)\obj\testSocket.obj" del /Q "$(CONFIG)\obj\testSocket.obj"
-	if exist "$(CONFIG)\obj\testSprintf.obj\" rd /Q /S "$(CONFIG)\obj\testSprintf.obj"
 	if exist "$(CONFIG)\obj\testSprintf.obj" del /Q "$(CONFIG)\obj\testSprintf.obj"
-	if exist "$(CONFIG)\obj\testThread.obj\" rd /Q /S "$(CONFIG)\obj\testThread.obj"
 	if exist "$(CONFIG)\obj\testThread.obj" del /Q "$(CONFIG)\obj\testThread.obj"
-	if exist "$(CONFIG)\obj\testTime.obj\" rd /Q /S "$(CONFIG)\obj\testTime.obj"
 	if exist "$(CONFIG)\obj\testTime.obj" del /Q "$(CONFIG)\obj\testTime.obj"
-	if exist "$(CONFIG)\obj\testUnicode.obj\" rd /Q /S "$(CONFIG)\obj\testUnicode.obj"
 	if exist "$(CONFIG)\obj\testUnicode.obj" del /Q "$(CONFIG)\obj\testUnicode.obj"
-	if exist "$(CONFIG)\obj\async.obj\" rd /Q /S "$(CONFIG)\obj\async.obj"
 	if exist "$(CONFIG)\obj\async.obj" del /Q "$(CONFIG)\obj\async.obj"
-	if exist "$(CONFIG)\obj\atomic.obj\" rd /Q /S "$(CONFIG)\obj\atomic.obj"
 	if exist "$(CONFIG)\obj\atomic.obj" del /Q "$(CONFIG)\obj\atomic.obj"
-	if exist "$(CONFIG)\obj\buf.obj\" rd /Q /S "$(CONFIG)\obj\buf.obj"
 	if exist "$(CONFIG)\obj\buf.obj" del /Q "$(CONFIG)\obj\buf.obj"
-	if exist "$(CONFIG)\obj\cache.obj\" rd /Q /S "$(CONFIG)\obj\cache.obj"
 	if exist "$(CONFIG)\obj\cache.obj" del /Q "$(CONFIG)\obj\cache.obj"
-	if exist "$(CONFIG)\obj\cmd.obj\" rd /Q /S "$(CONFIG)\obj\cmd.obj"
 	if exist "$(CONFIG)\obj\cmd.obj" del /Q "$(CONFIG)\obj\cmd.obj"
-	if exist "$(CONFIG)\obj\cond.obj\" rd /Q /S "$(CONFIG)\obj\cond.obj"
 	if exist "$(CONFIG)\obj\cond.obj" del /Q "$(CONFIG)\obj\cond.obj"
-	if exist "$(CONFIG)\obj\crypt.obj\" rd /Q /S "$(CONFIG)\obj\crypt.obj"
 	if exist "$(CONFIG)\obj\crypt.obj" del /Q "$(CONFIG)\obj\crypt.obj"
-	if exist "$(CONFIG)\obj\disk.obj\" rd /Q /S "$(CONFIG)\obj\disk.obj"
 	if exist "$(CONFIG)\obj\disk.obj" del /Q "$(CONFIG)\obj\disk.obj"
-	if exist "$(CONFIG)\obj\dispatcher.obj\" rd /Q /S "$(CONFIG)\obj\dispatcher.obj"
 	if exist "$(CONFIG)\obj\dispatcher.obj" del /Q "$(CONFIG)\obj\dispatcher.obj"
-	if exist "$(CONFIG)\obj\encode.obj\" rd /Q /S "$(CONFIG)\obj\encode.obj"
 	if exist "$(CONFIG)\obj\encode.obj" del /Q "$(CONFIG)\obj\encode.obj"
-	if exist "$(CONFIG)\obj\epoll.obj\" rd /Q /S "$(CONFIG)\obj\epoll.obj"
 	if exist "$(CONFIG)\obj\epoll.obj" del /Q "$(CONFIG)\obj\epoll.obj"
-	if exist "$(CONFIG)\obj\event.obj\" rd /Q /S "$(CONFIG)\obj\event.obj"
 	if exist "$(CONFIG)\obj\event.obj" del /Q "$(CONFIG)\obj\event.obj"
-	if exist "$(CONFIG)\obj\file.obj\" rd /Q /S "$(CONFIG)\obj\file.obj"
 	if exist "$(CONFIG)\obj\file.obj" del /Q "$(CONFIG)\obj\file.obj"
-	if exist "$(CONFIG)\obj\fs.obj\" rd /Q /S "$(CONFIG)\obj\fs.obj"
 	if exist "$(CONFIG)\obj\fs.obj" del /Q "$(CONFIG)\obj\fs.obj"
-	if exist "$(CONFIG)\obj\hash.obj\" rd /Q /S "$(CONFIG)\obj\hash.obj"
 	if exist "$(CONFIG)\obj\hash.obj" del /Q "$(CONFIG)\obj\hash.obj"
-	if exist "$(CONFIG)\obj\json.obj\" rd /Q /S "$(CONFIG)\obj\json.obj"
 	if exist "$(CONFIG)\obj\json.obj" del /Q "$(CONFIG)\obj\json.obj"
-	if exist "$(CONFIG)\obj\kqueue.obj\" rd /Q /S "$(CONFIG)\obj\kqueue.obj"
 	if exist "$(CONFIG)\obj\kqueue.obj" del /Q "$(CONFIG)\obj\kqueue.obj"
-	if exist "$(CONFIG)\obj\list.obj\" rd /Q /S "$(CONFIG)\obj\list.obj"
 	if exist "$(CONFIG)\obj\list.obj" del /Q "$(CONFIG)\obj\list.obj"
-	if exist "$(CONFIG)\obj\lock.obj\" rd /Q /S "$(CONFIG)\obj\lock.obj"
 	if exist "$(CONFIG)\obj\lock.obj" del /Q "$(CONFIG)\obj\lock.obj"
-	if exist "$(CONFIG)\obj\log.obj\" rd /Q /S "$(CONFIG)\obj\log.obj"
 	if exist "$(CONFIG)\obj\log.obj" del /Q "$(CONFIG)\obj\log.obj"
-	if exist "$(CONFIG)\obj\mem.obj\" rd /Q /S "$(CONFIG)\obj\mem.obj"
 	if exist "$(CONFIG)\obj\mem.obj" del /Q "$(CONFIG)\obj\mem.obj"
-	if exist "$(CONFIG)\obj\mime.obj\" rd /Q /S "$(CONFIG)\obj\mime.obj"
 	if exist "$(CONFIG)\obj\mime.obj" del /Q "$(CONFIG)\obj\mime.obj"
-	if exist "$(CONFIG)\obj\mixed.obj\" rd /Q /S "$(CONFIG)\obj\mixed.obj"
 	if exist "$(CONFIG)\obj\mixed.obj" del /Q "$(CONFIG)\obj\mixed.obj"
-	if exist "$(CONFIG)\obj\module.obj\" rd /Q /S "$(CONFIG)\obj\module.obj"
 	if exist "$(CONFIG)\obj\module.obj" del /Q "$(CONFIG)\obj\module.obj"
-	if exist "$(CONFIG)\obj\mpr.obj\" rd /Q /S "$(CONFIG)\obj\mpr.obj"
 	if exist "$(CONFIG)\obj\mpr.obj" del /Q "$(CONFIG)\obj\mpr.obj"
-	if exist "$(CONFIG)\obj\path.obj\" rd /Q /S "$(CONFIG)\obj\path.obj"
 	if exist "$(CONFIG)\obj\path.obj" del /Q "$(CONFIG)\obj\path.obj"
-	if exist "$(CONFIG)\obj\poll.obj\" rd /Q /S "$(CONFIG)\obj\poll.obj"
 	if exist "$(CONFIG)\obj\poll.obj" del /Q "$(CONFIG)\obj\poll.obj"
-	if exist "$(CONFIG)\obj\posix.obj\" rd /Q /S "$(CONFIG)\obj\posix.obj"
 	if exist "$(CONFIG)\obj\posix.obj" del /Q "$(CONFIG)\obj\posix.obj"
-	if exist "$(CONFIG)\obj\printf.obj\" rd /Q /S "$(CONFIG)\obj\printf.obj"
 	if exist "$(CONFIG)\obj\printf.obj" del /Q "$(CONFIG)\obj\printf.obj"
-	if exist "$(CONFIG)\obj\rom.obj\" rd /Q /S "$(CONFIG)\obj\rom.obj"
 	if exist "$(CONFIG)\obj\rom.obj" del /Q "$(CONFIG)\obj\rom.obj"
-	if exist "$(CONFIG)\obj\select.obj\" rd /Q /S "$(CONFIG)\obj\select.obj"
 	if exist "$(CONFIG)\obj\select.obj" del /Q "$(CONFIG)\obj\select.obj"
-	if exist "$(CONFIG)\obj\signal.obj\" rd /Q /S "$(CONFIG)\obj\signal.obj"
 	if exist "$(CONFIG)\obj\signal.obj" del /Q "$(CONFIG)\obj\signal.obj"
-	if exist "$(CONFIG)\obj\socket.obj\" rd /Q /S "$(CONFIG)\obj\socket.obj"
 	if exist "$(CONFIG)\obj\socket.obj" del /Q "$(CONFIG)\obj\socket.obj"
-	if exist "$(CONFIG)\obj\string.obj\" rd /Q /S "$(CONFIG)\obj\string.obj"
 	if exist "$(CONFIG)\obj\string.obj" del /Q "$(CONFIG)\obj\string.obj"
-	if exist "$(CONFIG)\obj\test.obj\" rd /Q /S "$(CONFIG)\obj\test.obj"
 	if exist "$(CONFIG)\obj\test.obj" del /Q "$(CONFIG)\obj\test.obj"
-	if exist "$(CONFIG)\obj\thread.obj\" rd /Q /S "$(CONFIG)\obj\thread.obj"
 	if exist "$(CONFIG)\obj\thread.obj" del /Q "$(CONFIG)\obj\thread.obj"
-	if exist "$(CONFIG)\obj\time.obj\" rd /Q /S "$(CONFIG)\obj\time.obj"
 	if exist "$(CONFIG)\obj\time.obj" del /Q "$(CONFIG)\obj\time.obj"
-	if exist "$(CONFIG)\obj\vxworks.obj\" rd /Q /S "$(CONFIG)\obj\vxworks.obj"
 	if exist "$(CONFIG)\obj\vxworks.obj" del /Q "$(CONFIG)\obj\vxworks.obj"
-	if exist "$(CONFIG)\obj\wait.obj\" rd /Q /S "$(CONFIG)\obj\wait.obj"
 	if exist "$(CONFIG)\obj\wait.obj" del /Q "$(CONFIG)\obj\wait.obj"
-	if exist "$(CONFIG)\obj\wide.obj\" rd /Q /S "$(CONFIG)\obj\wide.obj"
 	if exist "$(CONFIG)\obj\wide.obj" del /Q "$(CONFIG)\obj\wide.obj"
-	if exist "$(CONFIG)\obj\win.obj\" rd /Q /S "$(CONFIG)\obj\win.obj"
 	if exist "$(CONFIG)\obj\win.obj" del /Q "$(CONFIG)\obj\win.obj"
-	if exist "$(CONFIG)\obj\wince.obj\" rd /Q /S "$(CONFIG)\obj\wince.obj"
 	if exist "$(CONFIG)\obj\wince.obj" del /Q "$(CONFIG)\obj\wince.obj"
-	if exist "$(CONFIG)\obj\xml.obj\" rd /Q /S "$(CONFIG)\obj\xml.obj"
 	if exist "$(CONFIG)\obj\xml.obj" del /Q "$(CONFIG)\obj\xml.obj"
-	if exist "$(CONFIG)\obj\est.obj\" rd /Q /S "$(CONFIG)\obj\est.obj"
 	if exist "$(CONFIG)\obj\est.obj" del /Q "$(CONFIG)\obj\est.obj"
-	if exist "$(CONFIG)\obj\matrixssl.obj\" rd /Q /S "$(CONFIG)\obj\matrixssl.obj"
 	if exist "$(CONFIG)\obj\matrixssl.obj" del /Q "$(CONFIG)\obj\matrixssl.obj"
-	if exist "$(CONFIG)\obj\nanossl.obj\" rd /Q /S "$(CONFIG)\obj\nanossl.obj"
 	if exist "$(CONFIG)\obj\nanossl.obj" del /Q "$(CONFIG)\obj\nanossl.obj"
-	if exist "$(CONFIG)\obj\openssl.obj\" rd /Q /S "$(CONFIG)\obj\openssl.obj"
 	if exist "$(CONFIG)\obj\openssl.obj" del /Q "$(CONFIG)\obj\openssl.obj"
-	if exist "$(CONFIG)\obj\ssl.obj\" rd /Q /S "$(CONFIG)\obj\ssl.obj"
 	if exist "$(CONFIG)\obj\ssl.obj" del /Q "$(CONFIG)\obj\ssl.obj"
-	if exist "$(CONFIG)\obj\manager.obj\" rd /Q /S "$(CONFIG)\obj\manager.obj"
 	if exist "$(CONFIG)\obj\manager.obj" del /Q "$(CONFIG)\obj\manager.obj"
-	if exist "$(CONFIG)\obj\makerom.obj\" rd /Q /S "$(CONFIG)\obj\makerom.obj"
 	if exist "$(CONFIG)\obj\makerom.obj" del /Q "$(CONFIG)\obj\makerom.obj"
-	if exist "$(CONFIG)\obj\charGen.obj\" rd /Q /S "$(CONFIG)\obj\charGen.obj"
 	if exist "$(CONFIG)\obj\charGen.obj" del /Q "$(CONFIG)\obj\charGen.obj"
 
 
@@ -342,7 +271,7 @@ DEPS_5 = $(DEPS_5) $(CONFIG)\inc\bitos.h
 
 $(CONFIG)\obj\estLib.obj: \
     src\deps\est\estLib.c $(DEPS_5)
-	@echo '   [Compile] src/deps/est/estLib.c'
+	@echo '   [Compile] $(CONFIG)/obj/estLib.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\estLib.obj -Fd$(CONFIG)\obj\estLib.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\deps\est\estLib.c
 
 !IF "$(BIT_PACK_EST)" == "1"
@@ -353,7 +282,7 @@ DEPS_6 = $(DEPS_6) $(CONFIG)\inc\est.h
 DEPS_6 = $(DEPS_6) $(CONFIG)\obj\estLib.obj
 
 $(CONFIG)\bin\libest.lib: $(DEPS_6)
-	@echo '      [Link] libest'
+	@echo '      [Link] $(CONFIG)/bin/libest.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libest.lib $(CONFIG)\obj\estLib.obj
 !ENDIF
 
@@ -384,7 +313,7 @@ DEPS_9 = $(DEPS_9) $(CONFIG)\inc\bitos.h
 
 $(CONFIG)\obj\async.obj: \
     src\async.c $(DEPS_9)
-	@echo '   [Compile] src/async.c'
+	@echo '   [Compile] $(CONFIG)/obj/async.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\async.obj -Fd$(CONFIG)\obj\async.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\async.c
 
 #
@@ -395,7 +324,7 @@ DEPS_10 = $(DEPS_10) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\atomic.obj: \
     src\atomic.c $(DEPS_10)
-	@echo '   [Compile] src/atomic.c'
+	@echo '   [Compile] $(CONFIG)/obj/atomic.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\atomic.obj -Fd$(CONFIG)\obj\atomic.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\atomic.c
 
 #
@@ -406,7 +335,7 @@ DEPS_11 = $(DEPS_11) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\buf.obj: \
     src\buf.c $(DEPS_11)
-	@echo '   [Compile] src/buf.c'
+	@echo '   [Compile] $(CONFIG)/obj/buf.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\buf.obj -Fd$(CONFIG)\obj\buf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\buf.c
 
 #
@@ -417,7 +346,7 @@ DEPS_12 = $(DEPS_12) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\cache.obj: \
     src\cache.c $(DEPS_12)
-	@echo '   [Compile] src/cache.c'
+	@echo '   [Compile] $(CONFIG)/obj/cache.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cache.obj -Fd$(CONFIG)\obj\cache.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\cache.c
 
 #
@@ -428,7 +357,7 @@ DEPS_13 = $(DEPS_13) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\cmd.obj: \
     src\cmd.c $(DEPS_13)
-	@echo '   [Compile] src/cmd.c'
+	@echo '   [Compile] $(CONFIG)/obj/cmd.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cmd.obj -Fd$(CONFIG)\obj\cmd.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\cmd.c
 
 #
@@ -439,7 +368,7 @@ DEPS_14 = $(DEPS_14) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\cond.obj: \
     src\cond.c $(DEPS_14)
-	@echo '   [Compile] src/cond.c'
+	@echo '   [Compile] $(CONFIG)/obj/cond.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\cond.obj -Fd$(CONFIG)\obj\cond.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\cond.c
 
 #
@@ -450,7 +379,7 @@ DEPS_15 = $(DEPS_15) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\crypt.obj: \
     src\crypt.c $(DEPS_15)
-	@echo '   [Compile] src/crypt.c'
+	@echo '   [Compile] $(CONFIG)/obj/crypt.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\crypt.obj -Fd$(CONFIG)\obj\crypt.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\crypt.c
 
 #
@@ -461,7 +390,7 @@ DEPS_16 = $(DEPS_16) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\disk.obj: \
     src\disk.c $(DEPS_16)
-	@echo '   [Compile] src/disk.c'
+	@echo '   [Compile] $(CONFIG)/obj/disk.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\disk.obj -Fd$(CONFIG)\obj\disk.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\disk.c
 
 #
@@ -472,7 +401,7 @@ DEPS_17 = $(DEPS_17) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\dispatcher.obj: \
     src\dispatcher.c $(DEPS_17)
-	@echo '   [Compile] src/dispatcher.c'
+	@echo '   [Compile] $(CONFIG)/obj/dispatcher.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\dispatcher.obj -Fd$(CONFIG)\obj\dispatcher.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\dispatcher.c
 
 #
@@ -483,7 +412,7 @@ DEPS_18 = $(DEPS_18) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\encode.obj: \
     src\encode.c $(DEPS_18)
-	@echo '   [Compile] src/encode.c'
+	@echo '   [Compile] $(CONFIG)/obj/encode.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\encode.obj -Fd$(CONFIG)\obj\encode.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\encode.c
 
 #
@@ -494,7 +423,7 @@ DEPS_19 = $(DEPS_19) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\epoll.obj: \
     src\epoll.c $(DEPS_19)
-	@echo '   [Compile] src/epoll.c'
+	@echo '   [Compile] $(CONFIG)/obj/epoll.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\epoll.obj -Fd$(CONFIG)\obj\epoll.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\epoll.c
 
 #
@@ -505,7 +434,7 @@ DEPS_20 = $(DEPS_20) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\event.obj: \
     src\event.c $(DEPS_20)
-	@echo '   [Compile] src/event.c'
+	@echo '   [Compile] $(CONFIG)/obj/event.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\event.obj -Fd$(CONFIG)\obj\event.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\event.c
 
 #
@@ -516,7 +445,7 @@ DEPS_21 = $(DEPS_21) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\file.obj: \
     src\file.c $(DEPS_21)
-	@echo '   [Compile] src/file.c'
+	@echo '   [Compile] $(CONFIG)/obj/file.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\file.obj -Fd$(CONFIG)\obj\file.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\file.c
 
 #
@@ -527,7 +456,7 @@ DEPS_22 = $(DEPS_22) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\fs.obj: \
     src\fs.c $(DEPS_22)
-	@echo '   [Compile] src/fs.c'
+	@echo '   [Compile] $(CONFIG)/obj/fs.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\fs.obj -Fd$(CONFIG)\obj\fs.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\fs.c
 
 #
@@ -538,7 +467,7 @@ DEPS_23 = $(DEPS_23) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\hash.obj: \
     src\hash.c $(DEPS_23)
-	@echo '   [Compile] src/hash.c'
+	@echo '   [Compile] $(CONFIG)/obj/hash.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\hash.obj -Fd$(CONFIG)\obj\hash.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\hash.c
 
 #
@@ -549,7 +478,7 @@ DEPS_24 = $(DEPS_24) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\json.obj: \
     src\json.c $(DEPS_24)
-	@echo '   [Compile] src/json.c'
+	@echo '   [Compile] $(CONFIG)/obj/json.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\json.obj -Fd$(CONFIG)\obj\json.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\json.c
 
 #
@@ -560,7 +489,7 @@ DEPS_25 = $(DEPS_25) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\kqueue.obj: \
     src\kqueue.c $(DEPS_25)
-	@echo '   [Compile] src/kqueue.c'
+	@echo '   [Compile] $(CONFIG)/obj/kqueue.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\kqueue.obj -Fd$(CONFIG)\obj\kqueue.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\kqueue.c
 
 #
@@ -571,7 +500,7 @@ DEPS_26 = $(DEPS_26) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\list.obj: \
     src\list.c $(DEPS_26)
-	@echo '   [Compile] src/list.c'
+	@echo '   [Compile] $(CONFIG)/obj/list.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\list.obj -Fd$(CONFIG)\obj\list.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\list.c
 
 #
@@ -582,7 +511,7 @@ DEPS_27 = $(DEPS_27) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\lock.obj: \
     src\lock.c $(DEPS_27)
-	@echo '   [Compile] src/lock.c'
+	@echo '   [Compile] $(CONFIG)/obj/lock.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\lock.obj -Fd$(CONFIG)\obj\lock.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\lock.c
 
 #
@@ -593,7 +522,7 @@ DEPS_28 = $(DEPS_28) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\log.obj: \
     src\log.c $(DEPS_28)
-	@echo '   [Compile] src/log.c'
+	@echo '   [Compile] $(CONFIG)/obj/log.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\log.obj -Fd$(CONFIG)\obj\log.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\log.c
 
 #
@@ -604,7 +533,7 @@ DEPS_29 = $(DEPS_29) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\mem.obj: \
     src\mem.c $(DEPS_29)
-	@echo '   [Compile] src/mem.c'
+	@echo '   [Compile] $(CONFIG)/obj/mem.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mem.obj -Fd$(CONFIG)\obj\mem.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mem.c
 
 #
@@ -615,7 +544,7 @@ DEPS_30 = $(DEPS_30) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\mime.obj: \
     src\mime.c $(DEPS_30)
-	@echo '   [Compile] src/mime.c'
+	@echo '   [Compile] $(CONFIG)/obj/mime.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mime.obj -Fd$(CONFIG)\obj\mime.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mime.c
 
 #
@@ -626,7 +555,7 @@ DEPS_31 = $(DEPS_31) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\mixed.obj: \
     src\mixed.c $(DEPS_31)
-	@echo '   [Compile] src/mixed.c'
+	@echo '   [Compile] $(CONFIG)/obj/mixed.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mixed.obj -Fd$(CONFIG)\obj\mixed.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mixed.c
 
 #
@@ -637,7 +566,7 @@ DEPS_32 = $(DEPS_32) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\module.obj: \
     src\module.c $(DEPS_32)
-	@echo '   [Compile] src/module.c'
+	@echo '   [Compile] $(CONFIG)/obj/module.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\module.obj -Fd$(CONFIG)\obj\module.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\module.c
 
 #
@@ -648,7 +577,7 @@ DEPS_33 = $(DEPS_33) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\mpr.obj: \
     src\mpr.c $(DEPS_33)
-	@echo '   [Compile] src/mpr.c'
+	@echo '   [Compile] $(CONFIG)/obj/mpr.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\mpr.obj -Fd$(CONFIG)\obj\mpr.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\mpr.c
 
 #
@@ -659,7 +588,7 @@ DEPS_34 = $(DEPS_34) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\path.obj: \
     src\path.c $(DEPS_34)
-	@echo '   [Compile] src/path.c'
+	@echo '   [Compile] $(CONFIG)/obj/path.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\path.obj -Fd$(CONFIG)\obj\path.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\path.c
 
 #
@@ -670,7 +599,7 @@ DEPS_35 = $(DEPS_35) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\poll.obj: \
     src\poll.c $(DEPS_35)
-	@echo '   [Compile] src/poll.c'
+	@echo '   [Compile] $(CONFIG)/obj/poll.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\poll.obj -Fd$(CONFIG)\obj\poll.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\poll.c
 
 #
@@ -681,7 +610,7 @@ DEPS_36 = $(DEPS_36) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\posix.obj: \
     src\posix.c $(DEPS_36)
-	@echo '   [Compile] src/posix.c'
+	@echo '   [Compile] $(CONFIG)/obj/posix.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\posix.obj -Fd$(CONFIG)\obj\posix.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\posix.c
 
 #
@@ -692,7 +621,7 @@ DEPS_37 = $(DEPS_37) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\printf.obj: \
     src\printf.c $(DEPS_37)
-	@echo '   [Compile] src/printf.c'
+	@echo '   [Compile] $(CONFIG)/obj/printf.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\printf.obj -Fd$(CONFIG)\obj\printf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\printf.c
 
 #
@@ -703,7 +632,7 @@ DEPS_38 = $(DEPS_38) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\rom.obj: \
     src\rom.c $(DEPS_38)
-	@echo '   [Compile] src/rom.c'
+	@echo '   [Compile] $(CONFIG)/obj/rom.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\rom.obj -Fd$(CONFIG)\obj\rom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\rom.c
 
 #
@@ -714,7 +643,7 @@ DEPS_39 = $(DEPS_39) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\select.obj: \
     src\select.c $(DEPS_39)
-	@echo '   [Compile] src/select.c'
+	@echo '   [Compile] $(CONFIG)/obj/select.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\select.obj -Fd$(CONFIG)\obj\select.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\select.c
 
 #
@@ -725,7 +654,7 @@ DEPS_40 = $(DEPS_40) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\signal.obj: \
     src\signal.c $(DEPS_40)
-	@echo '   [Compile] src/signal.c'
+	@echo '   [Compile] $(CONFIG)/obj/signal.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\signal.obj -Fd$(CONFIG)\obj\signal.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\signal.c
 
 #
@@ -736,7 +665,7 @@ DEPS_41 = $(DEPS_41) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\socket.obj: \
     src\socket.c $(DEPS_41)
-	@echo '   [Compile] src/socket.c'
+	@echo '   [Compile] $(CONFIG)/obj/socket.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\socket.obj -Fd$(CONFIG)\obj\socket.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\socket.c
 
 #
@@ -747,7 +676,7 @@ DEPS_42 = $(DEPS_42) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\string.obj: \
     src\string.c $(DEPS_42)
-	@echo '   [Compile] src/string.c'
+	@echo '   [Compile] $(CONFIG)/obj/string.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\string.obj -Fd$(CONFIG)\obj\string.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\string.c
 
 #
@@ -758,7 +687,7 @@ DEPS_43 = $(DEPS_43) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\test.obj: \
     src\test.c $(DEPS_43)
-	@echo '   [Compile] src/test.c'
+	@echo '   [Compile] $(CONFIG)/obj/test.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\test.obj -Fd$(CONFIG)\obj\test.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\test.c
 
 #
@@ -769,7 +698,7 @@ DEPS_44 = $(DEPS_44) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\thread.obj: \
     src\thread.c $(DEPS_44)
-	@echo '   [Compile] src/thread.c'
+	@echo '   [Compile] $(CONFIG)/obj/thread.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\thread.obj -Fd$(CONFIG)\obj\thread.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\thread.c
 
 #
@@ -780,7 +709,7 @@ DEPS_45 = $(DEPS_45) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\time.obj: \
     src\time.c $(DEPS_45)
-	@echo '   [Compile] src/time.c'
+	@echo '   [Compile] $(CONFIG)/obj/time.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\time.obj -Fd$(CONFIG)\obj\time.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\time.c
 
 #
@@ -791,7 +720,7 @@ DEPS_46 = $(DEPS_46) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\vxworks.obj: \
     src\vxworks.c $(DEPS_46)
-	@echo '   [Compile] src/vxworks.c'
+	@echo '   [Compile] $(CONFIG)/obj/vxworks.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\vxworks.obj -Fd$(CONFIG)\obj\vxworks.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\vxworks.c
 
 #
@@ -802,7 +731,7 @@ DEPS_47 = $(DEPS_47) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\wait.obj: \
     src\wait.c $(DEPS_47)
-	@echo '   [Compile] src/wait.c'
+	@echo '   [Compile] $(CONFIG)/obj/wait.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\wait.obj -Fd$(CONFIG)\obj\wait.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\wait.c
 
 #
@@ -813,7 +742,7 @@ DEPS_48 = $(DEPS_48) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\wide.obj: \
     src\wide.c $(DEPS_48)
-	@echo '   [Compile] src/wide.c'
+	@echo '   [Compile] $(CONFIG)/obj/wide.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\wide.obj -Fd$(CONFIG)\obj\wide.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\wide.c
 
 #
@@ -824,7 +753,7 @@ DEPS_49 = $(DEPS_49) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\win.obj: \
     src\win.c $(DEPS_49)
-	@echo '   [Compile] src/win.c'
+	@echo '   [Compile] $(CONFIG)/obj/win.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\win.obj -Fd$(CONFIG)\obj\win.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\win.c
 
 #
@@ -835,7 +764,7 @@ DEPS_50 = $(DEPS_50) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\wince.obj: \
     src\wince.c $(DEPS_50)
-	@echo '   [Compile] src/wince.c'
+	@echo '   [Compile] $(CONFIG)/obj/wince.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\wince.obj -Fd$(CONFIG)\obj\wince.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\wince.c
 
 #
@@ -846,7 +775,7 @@ DEPS_51 = $(DEPS_51) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\xml.obj: \
     src\xml.c $(DEPS_51)
-	@echo '   [Compile] src/xml.c'
+	@echo '   [Compile] $(CONFIG)/obj/xml.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\xml.obj -Fd$(CONFIG)\obj\xml.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\xml.c
 
 #
@@ -899,7 +828,7 @@ DEPS_52 = $(DEPS_52) $(CONFIG)\obj\wince.obj
 DEPS_52 = $(DEPS_52) $(CONFIG)\obj\xml.obj
 
 $(CONFIG)\bin\libmpr.lib: $(DEPS_52)
-	@echo '      [Link] libmpr'
+	@echo '      [Link] $(CONFIG)/bin/libmpr.lib'
 	"lib.exe" -nologo -out:$(CONFIG)\bin\libmpr.lib $(CONFIG)\obj\async.obj $(CONFIG)\obj\atomic.obj $(CONFIG)\obj\buf.obj $(CONFIG)\obj\cache.obj $(CONFIG)\obj\cmd.obj $(CONFIG)\obj\cond.obj $(CONFIG)\obj\crypt.obj $(CONFIG)\obj\disk.obj $(CONFIG)\obj\dispatcher.obj $(CONFIG)\obj\encode.obj $(CONFIG)\obj\epoll.obj $(CONFIG)\obj\event.obj $(CONFIG)\obj\file.obj $(CONFIG)\obj\fs.obj $(CONFIG)\obj\hash.obj $(CONFIG)\obj\json.obj $(CONFIG)\obj\kqueue.obj $(CONFIG)\obj\list.obj $(CONFIG)\obj\lock.obj $(CONFIG)\obj\log.obj $(CONFIG)\obj\mem.obj $(CONFIG)\obj\mime.obj $(CONFIG)\obj\mixed.obj $(CONFIG)\obj\module.obj $(CONFIG)\obj\mpr.obj $(CONFIG)\obj\path.obj $(CONFIG)\obj\poll.obj $(CONFIG)\obj\posix.obj $(CONFIG)\obj\printf.obj $(CONFIG)\obj\rom.obj $(CONFIG)\obj\select.obj $(CONFIG)\obj\signal.obj $(CONFIG)\obj\socket.obj $(CONFIG)\obj\string.obj $(CONFIG)\obj\test.obj $(CONFIG)\obj\thread.obj $(CONFIG)\obj\time.obj $(CONFIG)\obj\vxworks.obj $(CONFIG)\obj\wait.obj $(CONFIG)\obj\wide.obj $(CONFIG)\obj\win.obj $(CONFIG)\obj\wince.obj $(CONFIG)\obj\xml.obj
 
 #
@@ -910,7 +839,7 @@ DEPS_53 = $(DEPS_53) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\benchMpr.obj: \
     test\benchMpr.c $(DEPS_53)
-	@echo '   [Compile] test/benchMpr.c'
+	@echo '   [Compile] $(CONFIG)/obj/benchMpr.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\benchMpr.obj -Fd$(CONFIG)\obj\benchMpr.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\benchMpr.c
 
 #
@@ -922,7 +851,7 @@ DEPS_54 = $(DEPS_54) $(CONFIG)\obj\benchMpr.obj
 LIBS_54 = $(LIBS_54) libmpr.lib
 
 $(CONFIG)\bin\benchMpr.exe: $(DEPS_54)
-	@echo '      [Link] benchMpr'
+	@echo '      [Link] $(CONFIG)/bin/benchMpr.exe'
 	"$(LD)" -out:$(CONFIG)\bin\benchMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\benchMpr.obj $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) 
 
 #
@@ -932,7 +861,7 @@ DEPS_55 = $(DEPS_55) $(CONFIG)\inc\bit.h
 
 $(CONFIG)\obj\runProgram.obj: \
     test\runProgram.c $(DEPS_55)
-	@echo '   [Compile] test/runProgram.c'
+	@echo '   [Compile] $(CONFIG)/obj/runProgram.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\runProgram.obj -Fd$(CONFIG)\obj\runProgram.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\runProgram.c
 
 #
@@ -941,299 +870,295 @@ $(CONFIG)\obj\runProgram.obj: \
 DEPS_56 = $(DEPS_56) $(CONFIG)\obj\runProgram.obj
 
 $(CONFIG)\bin\runProgram.exe: $(DEPS_56)
-	@echo '      [Link] runProgram'
+	@echo '      [Link] $(CONFIG)/bin/runProgram.exe'
 	"$(LD)" -out:$(CONFIG)\bin\runProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\runProgram.obj $(LIBS) 
-
-#
-#   est.obj
-#
-DEPS_57 = $(DEPS_57) $(CONFIG)\inc\bit.h
-DEPS_57 = $(DEPS_57) $(CONFIG)\inc\mpr.h
-DEPS_57 = $(DEPS_57) $(CONFIG)\inc\est.h
-
-$(CONFIG)\obj\est.obj: \
-    src\ssl\est.c $(DEPS_57)
-	@echo '   [Compile] src/ssl/est.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\est.obj -Fd$(CONFIG)\obj\est.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ssl\est.c
-
-#
-#   matrixssl.obj
-#
-DEPS_58 = $(DEPS_58) $(CONFIG)\inc\bit.h
-DEPS_58 = $(DEPS_58) $(CONFIG)\inc\mpr.h
-
-$(CONFIG)\obj\matrixssl.obj: \
-    src\ssl\matrixssl.c $(DEPS_58)
-	@echo '   [Compile] src/ssl/matrixssl.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ssl\matrixssl.c
-
-#
-#   nanossl.obj
-#
-DEPS_59 = $(DEPS_59) $(CONFIG)\inc\bit.h
-DEPS_59 = $(DEPS_59) $(CONFIG)\inc\mpr.h
-
-$(CONFIG)\obj\nanossl.obj: \
-    src\ssl\nanossl.c $(DEPS_59)
-	@echo '   [Compile] src/ssl/nanossl.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\nanossl.obj -Fd$(CONFIG)\obj\nanossl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ssl\nanossl.c
-
-#
-#   openssl.obj
-#
-DEPS_60 = $(DEPS_60) $(CONFIG)\inc\bit.h
-DEPS_60 = $(DEPS_60) $(CONFIG)\inc\mpr.h
-
-$(CONFIG)\obj\openssl.obj: \
-    src\ssl\openssl.c $(DEPS_60)
-	@echo '   [Compile] src/ssl/openssl.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\openssl.obj -Fd$(CONFIG)\obj\openssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ssl\openssl.c
-
-#
-#   ssl.obj
-#
-DEPS_61 = $(DEPS_61) $(CONFIG)\inc\bit.h
-DEPS_61 = $(DEPS_61) $(CONFIG)\inc\mpr.h
-
-$(CONFIG)\obj\ssl.obj: \
-    src\ssl\ssl.c $(DEPS_61)
-	@echo '   [Compile] src/ssl/ssl.c'
-	"$(CC)" -c -Fo$(CONFIG)\obj\ssl.obj -Fd$(CONFIG)\obj\ssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\ssl\ssl.c
-
-#
-#   libmprssl
-#
-DEPS_62 = $(DEPS_62) $(CONFIG)\bin\libmpr.lib
-DEPS_62 = $(DEPS_62) $(CONFIG)\obj\est.obj
-DEPS_62 = $(DEPS_62) $(CONFIG)\obj\matrixssl.obj
-DEPS_62 = $(DEPS_62) $(CONFIG)\obj\nanossl.obj
-DEPS_62 = $(DEPS_62) $(CONFIG)\obj\openssl.obj
-DEPS_62 = $(DEPS_62) $(CONFIG)\obj\ssl.obj
-
-$(CONFIG)\bin\libmprssl.lib: $(DEPS_62)
-	@echo '      [Link] libmprssl'
-	"lib.exe" -nologo -out:$(CONFIG)\bin\libmprssl.lib $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\nanossl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj
 
 #
 #   testArgv.obj
 #
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\bit.h
-DEPS_63 = $(DEPS_63) $(CONFIG)\inc\mpr.h
+DEPS_57 = $(DEPS_57) $(CONFIG)\inc\bit.h
+DEPS_57 = $(DEPS_57) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testArgv.obj: \
-    test\testArgv.c $(DEPS_63)
-	@echo '   [Compile] test/testArgv.c'
+    test\testArgv.c $(DEPS_57)
+	@echo '   [Compile] $(CONFIG)/obj/testArgv.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testArgv.obj -Fd$(CONFIG)\obj\testArgv.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testArgv.c
 
 #
 #   testBuf.obj
 #
-DEPS_64 = $(DEPS_64) $(CONFIG)\inc\bit.h
-DEPS_64 = $(DEPS_64) $(CONFIG)\inc\mpr.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\bit.h
+DEPS_58 = $(DEPS_58) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testBuf.obj: \
-    test\testBuf.c $(DEPS_64)
-	@echo '   [Compile] test/testBuf.c'
+    test\testBuf.c $(DEPS_58)
+	@echo '   [Compile] $(CONFIG)/obj/testBuf.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testBuf.obj -Fd$(CONFIG)\obj\testBuf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testBuf.c
 
 #
 #   testCmd.obj
 #
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\bit.h
-DEPS_65 = $(DEPS_65) $(CONFIG)\inc\mpr.h
+DEPS_59 = $(DEPS_59) $(CONFIG)\inc\bit.h
+DEPS_59 = $(DEPS_59) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testCmd.obj: \
-    test\testCmd.c $(DEPS_65)
-	@echo '   [Compile] test/testCmd.c'
+    test\testCmd.c $(DEPS_59)
+	@echo '   [Compile] $(CONFIG)/obj/testCmd.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testCmd.obj -Fd$(CONFIG)\obj\testCmd.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testCmd.c
 
 #
 #   testCond.obj
 #
-DEPS_66 = $(DEPS_66) $(CONFIG)\inc\bit.h
-DEPS_66 = $(DEPS_66) $(CONFIG)\inc\mpr.h
+DEPS_60 = $(DEPS_60) $(CONFIG)\inc\bit.h
+DEPS_60 = $(DEPS_60) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testCond.obj: \
-    test\testCond.c $(DEPS_66)
-	@echo '   [Compile] test/testCond.c'
+    test\testCond.c $(DEPS_60)
+	@echo '   [Compile] $(CONFIG)/obj/testCond.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testCond.obj -Fd$(CONFIG)\obj\testCond.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testCond.c
 
 #
 #   testEvent.obj
 #
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\bit.h
-DEPS_67 = $(DEPS_67) $(CONFIG)\inc\mpr.h
+DEPS_61 = $(DEPS_61) $(CONFIG)\inc\bit.h
+DEPS_61 = $(DEPS_61) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testEvent.obj: \
-    test\testEvent.c $(DEPS_67)
-	@echo '   [Compile] test/testEvent.c'
+    test\testEvent.c $(DEPS_61)
+	@echo '   [Compile] $(CONFIG)/obj/testEvent.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testEvent.obj -Fd$(CONFIG)\obj\testEvent.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testEvent.c
 
 #
 #   testFile.obj
 #
-DEPS_68 = $(DEPS_68) $(CONFIG)\inc\bit.h
-DEPS_68 = $(DEPS_68) $(CONFIG)\inc\mpr.h
+DEPS_62 = $(DEPS_62) $(CONFIG)\inc\bit.h
+DEPS_62 = $(DEPS_62) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testFile.obj: \
-    test\testFile.c $(DEPS_68)
-	@echo '   [Compile] test/testFile.c'
+    test\testFile.c $(DEPS_62)
+	@echo '   [Compile] $(CONFIG)/obj/testFile.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testFile.obj -Fd$(CONFIG)\obj\testFile.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testFile.c
 
 #
 #   testHash.obj
 #
-DEPS_69 = $(DEPS_69) $(CONFIG)\inc\bit.h
-DEPS_69 = $(DEPS_69) $(CONFIG)\inc\mpr.h
+DEPS_63 = $(DEPS_63) $(CONFIG)\inc\bit.h
+DEPS_63 = $(DEPS_63) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testHash.obj: \
-    test\testHash.c $(DEPS_69)
-	@echo '   [Compile] test/testHash.c'
+    test\testHash.c $(DEPS_63)
+	@echo '   [Compile] $(CONFIG)/obj/testHash.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testHash.obj -Fd$(CONFIG)\obj\testHash.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testHash.c
 
 #
 #   testList.obj
 #
-DEPS_70 = $(DEPS_70) $(CONFIG)\inc\bit.h
-DEPS_70 = $(DEPS_70) $(CONFIG)\inc\mpr.h
+DEPS_64 = $(DEPS_64) $(CONFIG)\inc\bit.h
+DEPS_64 = $(DEPS_64) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testList.obj: \
-    test\testList.c $(DEPS_70)
-	@echo '   [Compile] test/testList.c'
+    test\testList.c $(DEPS_64)
+	@echo '   [Compile] $(CONFIG)/obj/testList.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testList.obj -Fd$(CONFIG)\obj\testList.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testList.c
 
 #
 #   testLock.obj
 #
-DEPS_71 = $(DEPS_71) $(CONFIG)\inc\bit.h
-DEPS_71 = $(DEPS_71) $(CONFIG)\inc\mpr.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\bit.h
+DEPS_65 = $(DEPS_65) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testLock.obj: \
-    test\testLock.c $(DEPS_71)
-	@echo '   [Compile] test/testLock.c'
+    test\testLock.c $(DEPS_65)
+	@echo '   [Compile] $(CONFIG)/obj/testLock.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testLock.obj -Fd$(CONFIG)\obj\testLock.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testLock.c
 
 #
 #   testMem.obj
 #
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\bit.h
-DEPS_72 = $(DEPS_72) $(CONFIG)\inc\mpr.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\bit.h
+DEPS_66 = $(DEPS_66) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testMem.obj: \
-    test\testMem.c $(DEPS_72)
-	@echo '   [Compile] test/testMem.c'
+    test\testMem.c $(DEPS_66)
+	@echo '   [Compile] $(CONFIG)/obj/testMem.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testMem.obj -Fd$(CONFIG)\obj\testMem.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testMem.c
 
 #
 #   testMpr.obj
 #
-DEPS_73 = $(DEPS_73) $(CONFIG)\inc\bit.h
-DEPS_73 = $(DEPS_73) $(CONFIG)\inc\mpr.h
+DEPS_67 = $(DEPS_67) $(CONFIG)\inc\bit.h
+DEPS_67 = $(DEPS_67) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testMpr.obj: \
-    test\testMpr.c $(DEPS_73)
-	@echo '   [Compile] test/testMpr.c'
+    test\testMpr.c $(DEPS_67)
+	@echo '   [Compile] $(CONFIG)/obj/testMpr.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testMpr.obj -Fd$(CONFIG)\obj\testMpr.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testMpr.c
 
 #
 #   testPath.obj
 #
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\bit.h
-DEPS_74 = $(DEPS_74) $(CONFIG)\inc\mpr.h
+DEPS_68 = $(DEPS_68) $(CONFIG)\inc\bit.h
+DEPS_68 = $(DEPS_68) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testPath.obj: \
-    test\testPath.c $(DEPS_74)
-	@echo '   [Compile] test/testPath.c'
+    test\testPath.c $(DEPS_68)
+	@echo '   [Compile] $(CONFIG)/obj/testPath.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testPath.obj -Fd$(CONFIG)\obj\testPath.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testPath.c
 
 #
 #   testSocket.obj
 #
-DEPS_75 = $(DEPS_75) $(CONFIG)\inc\bit.h
-DEPS_75 = $(DEPS_75) $(CONFIG)\inc\mpr.h
+DEPS_69 = $(DEPS_69) $(CONFIG)\inc\bit.h
+DEPS_69 = $(DEPS_69) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testSocket.obj: \
-    test\testSocket.c $(DEPS_75)
-	@echo '   [Compile] test/testSocket.c'
+    test\testSocket.c $(DEPS_69)
+	@echo '   [Compile] $(CONFIG)/obj/testSocket.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testSocket.obj -Fd$(CONFIG)\obj\testSocket.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testSocket.c
 
 #
 #   testSprintf.obj
 #
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\bit.h
-DEPS_76 = $(DEPS_76) $(CONFIG)\inc\mpr.h
+DEPS_70 = $(DEPS_70) $(CONFIG)\inc\bit.h
+DEPS_70 = $(DEPS_70) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testSprintf.obj: \
-    test\testSprintf.c $(DEPS_76)
-	@echo '   [Compile] test/testSprintf.c'
+    test\testSprintf.c $(DEPS_70)
+	@echo '   [Compile] $(CONFIG)/obj/testSprintf.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testSprintf.obj -Fd$(CONFIG)\obj\testSprintf.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testSprintf.c
 
 #
 #   testThread.obj
 #
-DEPS_77 = $(DEPS_77) $(CONFIG)\inc\bit.h
-DEPS_77 = $(DEPS_77) $(CONFIG)\inc\mpr.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\bit.h
+DEPS_71 = $(DEPS_71) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testThread.obj: \
-    test\testThread.c $(DEPS_77)
-	@echo '   [Compile] test/testThread.c'
+    test\testThread.c $(DEPS_71)
+	@echo '   [Compile] $(CONFIG)/obj/testThread.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testThread.obj -Fd$(CONFIG)\obj\testThread.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testThread.c
 
 #
 #   testTime.obj
 #
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\bit.h
-DEPS_78 = $(DEPS_78) $(CONFIG)\inc\mpr.h
+DEPS_72 = $(DEPS_72) $(CONFIG)\inc\bit.h
+DEPS_72 = $(DEPS_72) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testTime.obj: \
-    test\testTime.c $(DEPS_78)
-	@echo '   [Compile] test/testTime.c'
+    test\testTime.c $(DEPS_72)
+	@echo '   [Compile] $(CONFIG)/obj/testTime.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testTime.obj -Fd$(CONFIG)\obj\testTime.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testTime.c
 
 #
 #   testUnicode.obj
 #
-DEPS_79 = $(DEPS_79) $(CONFIG)\inc\bit.h
-DEPS_79 = $(DEPS_79) $(CONFIG)\inc\mpr.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\bit.h
+DEPS_73 = $(DEPS_73) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\testUnicode.obj: \
-    test\testUnicode.c $(DEPS_79)
-	@echo '   [Compile] test/testUnicode.c'
+    test\testUnicode.c $(DEPS_73)
+	@echo '   [Compile] $(CONFIG)/obj/testUnicode.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\testUnicode.obj -Fd$(CONFIG)\obj\testUnicode.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) test\testUnicode.c
 
 #
 #   testMpr
 #
+DEPS_74 = $(DEPS_74) $(CONFIG)\bin\libmpr.lib
+DEPS_74 = $(DEPS_74) $(CONFIG)\bin\runProgram.exe
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testArgv.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testBuf.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testCmd.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testCond.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testEvent.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testFile.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testHash.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testList.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testLock.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testMem.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testMpr.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testPath.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testSocket.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testSprintf.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testThread.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testTime.obj
+DEPS_74 = $(DEPS_74) $(CONFIG)\obj\testUnicode.obj
+
+LIBS_74 = $(LIBS_74) libmpr.lib
+
+$(CONFIG)\bin\testMpr.exe: $(DEPS_74)
+	@echo '      [Link] $(CONFIG)/bin/testMpr.exe'
+	"$(LD)" -out:$(CONFIG)\bin\testMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testArgv.obj $(CONFIG)\obj\testBuf.obj $(CONFIG)\obj\testCmd.obj $(CONFIG)\obj\testCond.obj $(CONFIG)\obj\testEvent.obj $(CONFIG)\obj\testFile.obj $(CONFIG)\obj\testHash.obj $(CONFIG)\obj\testList.obj $(CONFIG)\obj\testLock.obj $(CONFIG)\obj\testMem.obj $(CONFIG)\obj\testMpr.obj $(CONFIG)\obj\testPath.obj $(CONFIG)\obj\testSocket.obj $(CONFIG)\obj\testSprintf.obj $(CONFIG)\obj\testThread.obj $(CONFIG)\obj\testTime.obj $(CONFIG)\obj\testUnicode.obj $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) 
+
+
+#
+#   est.obj
+#
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\bit.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\mpr.h
+DEPS_75 = $(DEPS_75) $(CONFIG)\inc\est.h
+
+$(CONFIG)\obj\est.obj: \
+    src\ssl\est.c $(DEPS_75)
+	@echo '   [Compile] $(CONFIG)/obj/est.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\est.obj -Fd$(CONFIG)\obj\est.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\ssl\est.c
+
+#
+#   matrixssl.obj
+#
+DEPS_76 = $(DEPS_76) $(CONFIG)\inc\bit.h
+DEPS_76 = $(DEPS_76) $(CONFIG)\inc\mpr.h
+
+$(CONFIG)\obj\matrixssl.obj: \
+    src\ssl\matrixssl.c $(DEPS_76)
+	@echo '   [Compile] $(CONFIG)/obj/matrixssl.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\matrixssl.obj -Fd$(CONFIG)\obj\matrixssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\ssl\matrixssl.c
+
+#
+#   nanossl.obj
+#
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\bit.h
+DEPS_77 = $(DEPS_77) $(CONFIG)\inc\mpr.h
+
+$(CONFIG)\obj\nanossl.obj: \
+    src\ssl\nanossl.c $(DEPS_77)
+	@echo '   [Compile] $(CONFIG)/obj/nanossl.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\nanossl.obj -Fd$(CONFIG)\obj\nanossl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\ssl\nanossl.c
+
+#
+#   openssl.obj
+#
+DEPS_78 = $(DEPS_78) $(CONFIG)\inc\bit.h
+DEPS_78 = $(DEPS_78) $(CONFIG)\inc\mpr.h
+
+$(CONFIG)\obj\openssl.obj: \
+    src\ssl\openssl.c $(DEPS_78)
+	@echo '   [Compile] $(CONFIG)/obj/openssl.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\openssl.obj -Fd$(CONFIG)\obj\openssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\ssl\openssl.c
+
+#
+#   ssl.obj
+#
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\bit.h
+DEPS_79 = $(DEPS_79) $(CONFIG)\inc\mpr.h
+
+$(CONFIG)\obj\ssl.obj: \
+    src\ssl\ssl.c $(DEPS_79)
+	@echo '   [Compile] $(CONFIG)/obj/ssl.obj'
+	"$(CC)" -c -Fo$(CONFIG)\obj\ssl.obj -Fd$(CONFIG)\obj\ssl.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) -I$(BIT_PACK_MATRIXSSL_PATH) -I$(BIT_PACK_MATRIXSSL_PATH)\matrixssl -I$(BIT_PACK_NANOSSL_PATH)\src -I$(BIT_PACK_OPENSSL_PATH)\include src\ssl\ssl.c
+
+#
+#   libmprssl
+#
 DEPS_80 = $(DEPS_80) $(CONFIG)\bin\libmpr.lib
-DEPS_80 = $(DEPS_80) $(CONFIG)\bin\libmprssl.lib
-DEPS_80 = $(DEPS_80) $(CONFIG)\bin\runProgram.exe
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testArgv.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testBuf.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testCmd.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testCond.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testEvent.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testFile.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testHash.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testList.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testLock.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testMem.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testMpr.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testPath.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testSocket.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testSprintf.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testThread.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testTime.obj
-DEPS_80 = $(DEPS_80) $(CONFIG)\obj\testUnicode.obj
+DEPS_80 = $(DEPS_80) $(CONFIG)\obj\est.obj
+DEPS_80 = $(DEPS_80) $(CONFIG)\obj\matrixssl.obj
+DEPS_80 = $(DEPS_80) $(CONFIG)\obj\nanossl.obj
+DEPS_80 = $(DEPS_80) $(CONFIG)\obj\openssl.obj
+DEPS_80 = $(DEPS_80) $(CONFIG)\obj\ssl.obj
 
-!IF "$(BIT_PACK_EST)" == "1"
-LIBS_80 = $(LIBS_80) libest.lib
-!ENDIF
-LIBS_80 = $(LIBS_80) libmprssl.lib
-LIBS_80 = $(LIBS_80) libmpr.lib
-
-$(CONFIG)\bin\testMpr.exe: $(DEPS_80)
-	@echo '      [Link] testMpr'
-	"$(LD)" -out:$(CONFIG)\bin\testMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testArgv.obj $(CONFIG)\obj\testBuf.obj $(CONFIG)\obj\testCmd.obj $(CONFIG)\obj\testCond.obj $(CONFIG)\obj\testEvent.obj $(CONFIG)\obj\testFile.obj $(CONFIG)\obj\testHash.obj $(CONFIG)\obj\testList.obj $(CONFIG)\obj\testLock.obj $(CONFIG)\obj\testMem.obj $(CONFIG)\obj\testMpr.obj $(CONFIG)\obj\testPath.obj $(CONFIG)\obj\testSocket.obj $(CONFIG)\obj\testSprintf.obj $(CONFIG)\obj\testThread.obj $(CONFIG)\obj\testTime.obj $(CONFIG)\obj\testUnicode.obj $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
+$(CONFIG)\bin\libmprssl.lib: $(DEPS_80)
+	@echo '      [Link] $(CONFIG)/bin/libmprssl.lib'
+	"lib.exe" -nologo -out:$(CONFIG)\bin\libmprssl.lib $(CONFIG)\obj\est.obj $(CONFIG)\obj\matrixssl.obj $(CONFIG)\obj\nanossl.obj $(CONFIG)\obj\openssl.obj $(CONFIG)\obj\ssl.obj
 
 #
 #   manager.obj
@@ -1243,7 +1168,7 @@ DEPS_81 = $(DEPS_81) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\manager.obj: \
     src\manager.c $(DEPS_81)
-	@echo '   [Compile] src/manager.c'
+	@echo '   [Compile] $(CONFIG)/obj/manager.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\manager.obj -Fd$(CONFIG)\obj\manager.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\manager.c
 
 #
@@ -1255,7 +1180,7 @@ DEPS_82 = $(DEPS_82) $(CONFIG)\obj\manager.obj
 LIBS_82 = $(LIBS_82) libmpr.lib
 
 $(CONFIG)\bin\manager.exe: $(DEPS_82)
-	@echo '      [Link] manager'
+	@echo '      [Link] $(CONFIG)/bin/manager.exe'
 	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
@@ -1266,7 +1191,7 @@ DEPS_83 = $(DEPS_83) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\makerom.obj: \
     src\utils\makerom.c $(DEPS_83)
-	@echo '   [Compile] src/utils/makerom.c'
+	@echo '   [Compile] $(CONFIG)/obj/makerom.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\makerom.obj -Fd$(CONFIG)\obj\makerom.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\makerom.c
 
 #
@@ -1278,7 +1203,7 @@ DEPS_84 = $(DEPS_84) $(CONFIG)\obj\makerom.obj
 LIBS_84 = $(LIBS_84) libmpr.lib
 
 $(CONFIG)\bin\makerom.exe: $(DEPS_84)
-	@echo '      [Link] makerom'
+	@echo '      [Link] $(CONFIG)/bin/makerom.exe'
 	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) 
 
 #
@@ -1289,7 +1214,7 @@ DEPS_85 = $(DEPS_85) $(CONFIG)\inc\mpr.h
 
 $(CONFIG)\obj\charGen.obj: \
     src\utils\charGen.c $(DEPS_85)
-	@echo '   [Compile] src/utils/charGen.c'
+	@echo '   [Compile] $(CONFIG)/obj/charGen.obj'
 	"$(CC)" -c -Fo$(CONFIG)\obj\charGen.obj -Fd$(CONFIG)\obj\charGen.pdb $(CFLAGS) $(DFLAGS) $(IFLAGS) src\utils\charGen.c
 
 #
@@ -1301,7 +1226,7 @@ DEPS_86 = $(DEPS_86) $(CONFIG)\obj\charGen.obj
 LIBS_86 = $(LIBS_86) libmpr.lib
 
 $(CONFIG)\bin\chargen.exe: $(DEPS_86)
-	@echo '      [Link] chargen'
+	@echo '      [Link] $(CONFIG)/bin/chargen.exe'
 	"$(LD)" -out:$(CONFIG)\bin\chargen.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\charGen.obj $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
 
 #

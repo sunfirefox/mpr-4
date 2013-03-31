@@ -40,7 +40,7 @@ Bit.load({
         },
         testMpr: {
             type: 'exe',
-            depends: [ 'libmpr', 'libmprssl', 'runProgram' ],
+            depends: [ 'libmpr', 'runProgram' ],
             sources: [ 'test*.c' ],
         },
         benchmark: {
