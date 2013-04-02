@@ -21,17 +21,17 @@ static void testBasicSprintf(MprTestGroup *gp)
     int     count;
 
     fmt(buf, sizeof(buf), "%d", 12345678);
-    assert(strlen(buf) == 8);
-    assert(strcmp(buf, "12345678") == 0);
+    tassert(strlen(buf) == 8);
+    tassert(strcmp(buf, "12345678") == 0);
 
     fmt(buf, sizeof(buf), "%d", -12345678);
-    assert(strlen(buf) == 9);
-    assert(strcmp(buf, "-12345678") == 0);
+    tassert(strlen(buf) == 9);
+    tassert(strcmp(buf, "-12345678") == 0);
 
     str = sfmt("%d", 12345678);
     count = (int) strlen(str);
-    assert(count == 8);
-    assert(strcmp(str, "12345678") == 0);
+    tassert(count == 8);
+    tassert(strcmp(str, "12345678") == 0);
 }
 
 
@@ -40,22 +40,22 @@ static void testItos(MprTestGroup *gp)
     char    *s;
 
     s = itos(0);
-    assert(strcmp(s, "0") == 0);
+    tassert(strcmp(s, "0") == 0);
 
     s = itos(1);
-    assert(strcmp(s, "1") == 0);
+    tassert(strcmp(s, "1") == 0);
 
     s = itos(-1);
-    assert(strcmp(s, "-1") == 0);
+    tassert(strcmp(s, "-1") == 0);
 
     s = itos(12345678);
-    assert(strcmp(s, "12345678") == 0);
+    tassert(strcmp(s, "12345678") == 0);
 
     s = itos(-12345678);
-    assert(strcmp(s, "-12345678") == 0);
+    tassert(strcmp(s, "-12345678") == 0);
 
     s = itosradix(0x1234, 16);
-    assert(strcmp(s, "1234") == 0);
+    tassert(strcmp(s, "1234") == 0);
 }
 
 
@@ -82,37 +82,37 @@ static void testTypeOptions(MprTestGroup *gp)
     int     count;
 
     fmt(buf, sizeof(buf), "Hello %c World", 'X');
-    assert(strcmp(buf, "Hello X World") == 0);
+    tassert(strcmp(buf, "Hello X World") == 0);
 
     fmt(buf, sizeof(buf), "%d", 12345678);
-    assert(strcmp(buf, "12345678") == 0);
+    tassert(strcmp(buf, "12345678") == 0);
 
     fmt(buf, sizeof(buf), "%3.2f", 1.77);
-    assert(strcmp(buf, "1.77") == 0);
+    tassert(strcmp(buf, "1.77") == 0);
 
     fmt(buf, sizeof(buf), "%i", 12345678);
-    assert(strcmp(buf, "12345678") == 0);
+    tassert(strcmp(buf, "12345678") == 0);
 
     fmt(buf, sizeof(buf), "%s%n", "Hello World", &count);
-    assert(count == 11);
+    tassert(count == 11);
 
     fmt(buf, sizeof(buf), "%o", 077);
-    assert(strcmp(buf, "77") == 0);
+    tassert(strcmp(buf, "77") == 0);
 
     fmt(buf, sizeof(buf), "%p", (void*) 0xdeadbeef);
-    assert(strcmp(buf, "0xdeadbeef") == 0);
+    tassert(strcmp(buf, "0xdeadbeef") == 0);
 
     fmt(buf, sizeof(buf), "%s", "Hello World");
-    assert(strcmp(buf, "Hello World") == 0);
+    tassert(strcmp(buf, "Hello World") == 0);
 
     fmt(buf, sizeof(buf), "%u", 0xffffffff);
-    assert(strcmp(buf, "4294967295") == 0);
+    tassert(strcmp(buf, "4294967295") == 0);
 
     fmt(buf, sizeof(buf), "%x", 0xffffffff);
-    assert(strcmp(buf, "ffffffff") == 0);
+    tassert(strcmp(buf, "ffffffff") == 0);
 
     fmt(buf, sizeof(buf), "%X", (int64) 0xffffffff);
-    assert(strcmp(buf, "FFFFFFFF") == 0);
+    tassert(strcmp(buf, "FFFFFFFF") == 0);
 }
 
 
@@ -121,32 +121,32 @@ static void testModifierOptions(MprTestGroup *gp)
     char    buf[256];
 
     fmt(buf, sizeof(buf), "%-4d", 23);
-    assert(strcmp(buf, "23  ") == 0);
+    tassert(strcmp(buf, "23  ") == 0);
     fmt(buf, sizeof(buf), "%-4d", -23);
-    assert(strcmp(buf, "-23 ") == 0);
+    tassert(strcmp(buf, "-23 ") == 0);
 
     fmt(buf, sizeof(buf), "%+4d", 23);
-    assert(strcmp(buf, " +23") == 0);
+    tassert(strcmp(buf, " +23") == 0);
     fmt(buf, sizeof(buf), "%+4d", -23);
-    assert(strcmp(buf, " -23") == 0);
+    tassert(strcmp(buf, " -23") == 0);
 
     fmt(buf, sizeof(buf), "% 4d", 23);
-    assert(strcmp(buf, "  23") == 0);
+    tassert(strcmp(buf, "  23") == 0);
     fmt(buf, sizeof(buf), "% 4d", -23);
-    assert(strcmp(buf, " -23") == 0);
+    tassert(strcmp(buf, " -23") == 0);
 
     fmt(buf, sizeof(buf), "%-+4d", 23);
-    assert(strcmp(buf, "+23 ") == 0);
+    tassert(strcmp(buf, "+23 ") == 0);
     fmt(buf, sizeof(buf), "%-+4d", -23);
-    assert(strcmp(buf, "-23 ") == 0);
+    tassert(strcmp(buf, "-23 ") == 0);
     fmt(buf, sizeof(buf), "%- 4d", 23);
-    assert(strcmp(buf, " 23 ") == 0);
+    tassert(strcmp(buf, " 23 ") == 0);
 
     fmt(buf, sizeof(buf), "%#6x", 0x23);
-    assert(strcmp(buf, "  0x23") == 0);
+    tassert(strcmp(buf, "  0x23") == 0);
 
     fmt(buf, sizeof(buf), "%,d", 12345678);
-    assert(strcmp(buf, "12,345,678") == 0);
+    tassert(strcmp(buf, "12,345,678") == 0);
 }
 
 
@@ -155,19 +155,19 @@ static void testWidthOptions(MprTestGroup *gp)
     char    buf[256];
 
     fmt(buf, sizeof(buf), "%2d", 1234);
-    assert(strcmp(buf, "1234") == 0);
+    tassert(strcmp(buf, "1234") == 0);
 
     fmt(buf, sizeof(buf), "%8d", 1234);
-    assert(strcmp(buf, "    1234") == 0);
+    tassert(strcmp(buf, "    1234") == 0);
 
     fmt(buf, sizeof(buf), "%-8d", 1234);
-    assert(strcmp(buf, "1234    ") == 0);
+    tassert(strcmp(buf, "1234    ") == 0);
 
     fmt(buf, sizeof(buf), "%*d", 8, 1234);
-    assert(strcmp(buf, "    1234") == 0);
+    tassert(strcmp(buf, "    1234") == 0);
 
     fmt(buf, sizeof(buf), "%*d", -8, 1234);
-    assert(strcmp(buf, "1234    ") == 0);
+    tassert(strcmp(buf, "1234    ") == 0);
 }
 
 
@@ -176,25 +176,25 @@ static void testPrecisionOptions(MprTestGroup *gp)
     char    buf[256];
 
     fmt(buf, sizeof(buf), "%.2d", 1234);
-    assert(strcmp(buf, "1234") == 0);
+    tassert(strcmp(buf, "1234") == 0);
 
     fmt(buf, sizeof(buf), "%.8d", 1234);
-    assert(strcmp(buf, "00001234") == 0);
+    tassert(strcmp(buf, "00001234") == 0);
 
     fmt(buf, sizeof(buf), "%8.6d", 1234);
-    assert(strcmp(buf, "  001234") == 0);
+    tassert(strcmp(buf, "  001234") == 0);
 
     fmt(buf, sizeof(buf), "%6.3d", 12345);
-    assert(strcmp(buf, " 12345") == 0);
+    tassert(strcmp(buf, " 12345") == 0);
 
     fmt(buf, sizeof(buf), "%6.3s", "ABCDEFGHIJ");
-    assert(strcmp(buf, "   ABC") == 0);
+    tassert(strcmp(buf, "   ABC") == 0);
 
     fmt(buf, sizeof(buf), "%6.2f", 12.789);
-    assert(strcmp(buf, " 12.79") == 0);
+    tassert(strcmp(buf, " 12.79") == 0);
 
     fmt(buf, sizeof(buf), "%8.2f", 1234.789);
-    assert(strcmp(buf, " 1234.79") == 0);
+    tassert(strcmp(buf, " 1234.79") == 0);
 }
 
 
@@ -203,17 +203,17 @@ static void testBitOptions(MprTestGroup *gp)
     char    buf[256];
 
     fmt(buf, sizeof(buf), "%hd %hd", (short) 23, (short) 78);
-    assert(strcmp(buf, "23 78") == 0);
+    tassert(strcmp(buf, "23 78") == 0);
 
     fmt(buf, sizeof(buf), "%ld %ld", (long) 12, (long) 89);
-    assert(strcmp(buf, "12 89") == 0);
+    tassert(strcmp(buf, "12 89") == 0);
 
     fmt(buf, sizeof(buf), "%Ld %Ld", (int64) 66, (int64) 41);
-    assert(strcmp(buf, "66 41") == 0);
+    tassert(strcmp(buf, "66 41") == 0);
 
     fmt(buf, sizeof(buf), "%hd %Ld %hd %Ld", 
         (short) 123, (int64) 789, (short) 441, (int64) 558);
-    assert(strcmp(buf, "123 789 441 558") == 0);
+    tassert(strcmp(buf, "123 789 441 558") == 0);
 }
 
 
@@ -222,12 +222,12 @@ static void testSprintf64(MprTestGroup *gp)
     char    buf[256];
 
     fmt(buf, sizeof(buf), "%Ld", INT64(9012345678));
-    assert(strlen(buf) == 10);
-    assert(strcmp(buf, "9012345678") == 0);
+    tassert(strlen(buf) == 10);
+    tassert(strcmp(buf, "9012345678") == 0);
 
     fmt(buf, sizeof(buf), "%Ld", INT64(-9012345678));
-    assert(strlen(buf) == 11);
-    assert(strcmp(buf, "-9012345678") == 0);
+    tassert(strlen(buf) == 11);
+    tassert(strcmp(buf, "-9012345678") == 0);
 }
 
 
@@ -259,7 +259,7 @@ MprTestDef testSprintf = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

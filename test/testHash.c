@@ -19,13 +19,13 @@ static void testCreateTable(MprTestGroup *gp)
     MprHash     *table;
 
     table = mprCreateHash(211, 0);
-    assert(table != 0);
+    tassert(table != 0);
 
     table = mprCreateHash(0, 0);
-    assert(table != 0);
+    tassert(table != 0);
 
     table = mprCreateHash(1, 0);
-    assert(table != 0);
+    tassert(table != 0);
 }
 
 
@@ -34,11 +34,11 @@ static void testIsTableEmpty(MprTestGroup *gp)
     MprHash     *table;
 
     table = mprCreateHash(0, 0);
-    assert(table != 0);
+    tassert(table != 0);
 
-    assert(mprGetHashLength(table) == 0);
-    assert(mprGetFirstKey(table) == 0);
-    assert(mprLookupKey(table, "") == 0);
+    tassert(mprGetHashLength(table) == 0);
+    tassert(mprGetFirstKey(table) == 0);
+    tassert(mprLookupKey(table, "") == 0);
 }
 
 
@@ -50,37 +50,37 @@ static void testInsertAndRemoveHash(MprTestGroup *gp)
     int         rc;
 
     table = mprCreateHash(0, MPR_HASH_STATIC_KEYS | MPR_HASH_STATIC_VALUES);
-    assert(table != 0);
+    tassert(table != 0);
 
     /*
         Single insert
      */
     sp = mprAddKey(table, "Peter", "123 Madison Ave");
-    assert(sp != 0);
+    tassert(sp != 0);
 
     sp = mprGetFirstKey(table);
-    assert(sp != 0);
-    assert(sp->key != 0);
-    assert(strcmp(sp->key, "Peter") == 0);
-    assert(sp->data != 0);
-    assert(strcmp(sp->data, "123 Madison Ave") == 0);
+    tassert(sp != 0);
+    tassert(sp->key != 0);
+    tassert(strcmp(sp->key, "Peter") == 0);
+    tassert(sp->data != 0);
+    tassert(strcmp(sp->data, "123 Madison Ave") == 0);
 
     /*
         Lookup
      */
     str = mprLookupKey(table, "Peter");
-    assert(str != 0);
-    assert(strcmp(str, "123 Madison Ave") == 0);
+    tassert(str != 0);
+    tassert(strcmp(str, "123 Madison Ave") == 0);
 
     rc = mprRemoveKey(table, "Peter");
-    assert(rc == 0);
+    tassert(rc == 0);
 
-    assert(mprGetHashLength(table) == 0);
+    tassert(mprGetHashLength(table) == 0);
     sp = mprGetFirstKey(table);
-    assert(sp == 0);
+    tassert(sp == 0);
 
     str = mprLookupKey(table, "Peter");
-    assert(str == 0);
+    tassert(str == 0);
 }
 
 
@@ -93,7 +93,7 @@ static void testHashScale(MprTestGroup *gp)
     int         i;
 
     table = mprCreateHash(HASH_COUNT, 0);
-    assert(mprGetHashLength(table) == 0);
+    tassert(mprGetHashLength(table) == 0);
 
     /*
         All inserts below will insert allocated strings. We must free before
@@ -103,9 +103,9 @@ static void testHashScale(MprTestGroup *gp)
         fmt(name, sizeof(name), "name.%d", i);
         address = sfmt("%d Park Ave", i);
         sp = mprAddKey(table, name, address);
-        assert(sp != 0);
+        tassert(sp != 0);
     }
-    assert(mprGetHashLength(table) == HASH_COUNT);
+    tassert(mprGetHashLength(table) == HASH_COUNT);
 
     /*
         Check data entered into the hash
@@ -113,9 +113,9 @@ static void testHashScale(MprTestGroup *gp)
     for (i = 0; i < HASH_COUNT; i++) {
         fmt(name, sizeof(name), "name.%d", i);
         str = mprLookupKey(table, name);
-        assert(str != 0);
+        tassert(str != 0);
         address = sfmt("%d Park Ave", i);
-        assert(strcmp(str, address) == 0);
+        tassert(strcmp(str, address) == 0);
     }
 }
 
@@ -139,9 +139,9 @@ static void testIterateHash(MprTestGroup *gp)
         fmt(name, sizeof(name), "Bit longer name.%d", i);
         fmt(address, sizeof(address), "%d Park Ave", i);
         sp = mprAddKey(table, name, sclone(address));
-        assert(sp != 0);
+        tassert(sp != 0);
     }
-    assert(mprGetHashLength(table) == HASH_COUNT);
+    tassert(mprGetHashLength(table) == HASH_COUNT);
 
     /*
         Check data entered into the table
@@ -149,15 +149,15 @@ static void testIterateHash(MprTestGroup *gp)
     sp = mprGetFirstKey(table);
     count = 0;
     while (sp) {
-        assert(sp != 0);
+        tassert(sp != 0);
         where = sp->data;
-        assert(isdigit((int) where[0]) != 0);
+        tassert(isdigit((int) where[0]) != 0);
         i = atoi(where);
         check[i] = 1;
         sp = mprGetNextKey(table, sp);
         count++;
     }
-    assert(count == HASH_COUNT);
+    tassert(count == HASH_COUNT);
 
     count = 0;
     for (i = 0; i < HASH_COUNT; i++) {
@@ -165,7 +165,7 @@ static void testIterateHash(MprTestGroup *gp)
             count++;
         }
     }
-    assert(count == HASH_COUNT);
+    tassert(count == HASH_COUNT);
 }
 
 
@@ -186,7 +186,7 @@ MprTestDef testHash = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

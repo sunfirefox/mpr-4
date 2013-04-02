@@ -16,19 +16,19 @@ static void testTimeBasics(MprTestGroup *gp)
     MprTicks    mark, remaining, elapsed;
 
     now = mprGetTime();
-    assert(now != 0);
+    tassert(now != 0);
     
     mark = mprGetTicks();
-    assert(mark != 0);
+    tassert(mark != 0);
     remaining = mprGetRemainingTicks(mark, 30000);
-    assert(0 <= remaining && remaining <= 30000);
+    tassert(0 <= remaining && remaining <= 30000);
 
     elapsed = mprGetElapsedTicks(mark);
-    assert(0 <= elapsed && elapsed < 30000);
+    tassert(0 <= elapsed && elapsed < 30000);
 
     mprSleep(21);
     now = mprGetTime();
-    assert(mprCompareTime(mark, now) <= 0);
+    tassert(mprCompareTime(mark, now) <= 0);
 }
 
 
@@ -54,7 +54,7 @@ static void testFormatTime(MprTestGroup *gp)
     now = mprGetTime();
     mprDecodeLocalTime(&tm, now);
     str = mprFormatTm(NULL, &tm);
-    assert(str && *str);
+    tassert(str && *str);
 }
 
 
@@ -63,14 +63,14 @@ static void testParseTime(MprTestGroup *gp)
     MprTime     when;
 
     when = 0;
-    assert(mprParseTime(&when, "today", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "tomorrow", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "12:00", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "12:30 pm", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "1/31/99", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "Jan 17 2012", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(mprParseTime(&when, "March 17 2012", MPR_LOCAL_TIMEZONE, NULL) == 0);
-    assert(when != 0);
+    tassert(mprParseTime(&when, "today", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    tassert(mprParseTime(&when, "tomorrow", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    tassert(mprParseTime(&when, "12:00", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    tassert(mprParseTime(&when, "12:30 pm", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    tassert(mprParseTime(&when, "1/31/99", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    tassert(mprParseTime(&when, "Jan 17 2013", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    tassert(mprParseTime(&when, "March 17 2013", MPR_LOCAL_TIMEZONE, NULL) == 0);
+    tassert(when != 0);
 }
 
 
@@ -88,7 +88,7 @@ MprTestDef testTime = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

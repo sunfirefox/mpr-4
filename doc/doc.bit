@@ -1,5 +1,5 @@
 /*
-    doc.bit -- Appweb documentation build file
+    doc.bit -- Documentation build file
  */
 
 Bit.load({
@@ -32,6 +32,5 @@ Bit.load({
                 rmdir(['../doc/api/html', '../doc/api/xml'])
             "
         },
-    
     },
 })

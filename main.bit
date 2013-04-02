@@ -5,6 +5,7 @@
 Bit.load({
     blend: [
         '${BITS}/embedthis.bit',
+        "src/deps/est/est.bit",
         'test/test.bit',
         'doc/doc.bit',
     ],
@@ -18,15 +19,21 @@ Bit.load({
         product: 'mpr',
         title: 'Multithreaded Portable Runtime',
         company: 'Embedthis',
-        version: '4.2.0',
+        version: '4.3.0',
         buildNumber: '0',
-        assert: true,
-        ciphers: "HIGH:MEDIUM",
-        float: true,
-        manager: 'manager',
-        '+optional': [ 'doxygen', 'dsi', 'ejs', 'http', 'man', 'man2html', 'md5', 'matrixssl', 'openssl', 'ssl', 'utest' ],
-        'without-all': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl', 'openssl', 'matrixssl'],
-        'without-own': ['doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'matrixssl'],
+        bit: '0.8.5'
+        prefixes: 'embedthis-prefixes',
+        sync: [ 'bitos', 'est' ],
+        '+requires': [ 'compiler' ],
+        '+discover': [ 'doxygen', 'dsi', 'man', 'man2html', 'md5', 'ssl', 'utest' ],
+        'without-all': [ 'doxygen', 'dsi', 'man', 'man2html', 'pmaker', 'ssl' ],
+
+        mpr: {
+            logging: true,          /* Enable logging of mprLog calls */
+            manager: 'manager',     /* Enable watch-dog manager */
+            threadStack: 0,         /* Use the system default stack size */
+            tracing: true,          /* Enable logging of mprTrace and assert() */
+        },
     },
 
     usage: {
@@ -38,16 +45,17 @@ Bit.load({
             type: 'lib',
             headers: [ 'src/*.h' ],
             sources: [ 'src/*.c' ],
-            exclude: [ /manager.c|ssl|Ssl|\/utils\// ],
+            exclude: [ /manager.c/ ],
         },
 
         libmprssl: {
             type: 'lib',
-            depends: [ 'libmpr', 'openssl', 'matrixssl' ],
-            sources: [ 'src/mprMatrixssl.c', 'src/mprOpenssl.c', 'src/MprSsl.c' ],
+            depends: [ 'libmpr', 'ssl' ],
+            sources: [ 'src/ssl/*.c' ],
         },
 
         manager: {
+            enable: 'bit.settings.mpr.manager',
             type: 'exe',
             rule: 'gui',
             depends: [ 'libmpr' ],
@@ -73,70 +81,60 @@ Bit.load({
         },
 
         packageSource: { },
-
-        packageCombo: {
-            depends: ['build'],
-            action: "
-                /* This is a combo/flat distribution only */
-                let d = bit.dir.pkg.join('${settings.product}-${settings.version}')
-                safeRemove(bit.dir.pkg)
-                install('package/mpr.bit', d.join('src/deps/mpr/mpr.bit'), {hidden: true})
-                install(['src/utils/makerom.c', 'src/manager.c'], d.join('src/deps/mpr'))
-                install(['doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'], d.join('doc/api'))
-                install('doc/man/*.1', d.join('doc/man'))
-                install('src/mpr.h', d.join('src/deps/mpr/mpr.h'))
-                install(['src/mprMem.c', 'src/mpr.c', 'src/*.c'], d.join('src/deps/mpr/mprLib.c'), {
-                    cat: true,
-                    filter: /^#inc.*mpr.*$/mg, 
-                    exclude: /manager|makerom|Ssl|ssl/,
-                    header: '#include \"mpr.h\"',
-                    title: bit.settings.title + ' Library Source',
-                })
-                install(['src/mprMatrixssl.c', 'src/mprOpenSsl.c', 'src/mprSsl.c'], d.join('src/deps/mpr/mprSsl.c'), {
-                    cat: true,
-                    title: bit.settings.title + ' SSL Source',
-                })
-                package(bit.dir.pkg, ['combo', 'flat'])
-            ",
-        },
-
-        gendh: {
-            action: "
-                let cmd = run('openssl dhparam -out dh512.pem -C -2 512', {})
-                Path('dh.new').write(cmd.response)
-                cmd = run('openssl dhparam -out dh1024.pem -C -2 1024', {})
-                Path('dh.new').append(cmd.response)
-            ",
-        },
     },
 
-    scripts: {
-        mustRun: true,
-        onload: "
-            let settings
-            if (bit.settings.tune == 'speed') {
-                blend(bit.customSettings, {
-                    limitString: 4096,
-                    limitPath: 2048,
-                    limitUrl: 4096,
-                    limitShortPath: 1024,
-                    limitBuffer: 8192,
-                    limitLogMsg: 16384,
-                    limitRegion: 1048576,
-                })
+    manifest: {
+        packages: {
+            combo: {
+                inherit:    'embedthis-manifest',
+                prefixes:   [ 'src'],
+                formats:    [ 'tar' ],
+                sets:       [ 'source' ],
+            },
+        },
+        files: [ 
+            {   from:   'package/mpr.bit', 
+                to:     '${src}/src/deps/mpr/mpr.bit',
+                set:    'source',
+            },{
+                from:   'src/mpr.h',
+                to:     '${src}/src/deps/mpr/mpr.h',
+                set:    'source',
+            },{
+                from:   ['src/mem.c', 'src/mpr.c', 'src/*.c'],
+                to:     '${src}/src/deps/mpr/mprLib.c',
+                cat:    true,
+                filter: /^#inc.*mpr.*$/mg, 
+                exclude: /manager|makerom/,
+                header: '#include \"mpr.h\"',
+                title:  '${settings.title} Library Source',
+                set:    'source',
+            },{
+                from:   ['src/ssl/matrixssl.c', 'src/ssl/est.c', 'src/ssl/openssl.c', 'src/ssl/nanossl.c', 'src/ssl/ssl.c'], 
+                to:     '${src}/src/deps/mpr/mprSsl.c',
+                cat:    true,
+                title:  '${settings.title} SSL Source',
+                set:    'source',
+            },{
+                from:   ['src/utils/makerom.c', 'src/manager.c'], 
+                to:     '${src}/src/deps/mpr/',
+                set:    'source',
+            },{
+                from:   ['doc/api/mprBare.html', 'doc/api/mpr*.tags', 'doc/api/mpr.dtags'],
+                to:     '${src}/doc/api/',
+                set:    'source',
+            },{
+                from:   'doc/man/*.1',
+                to:     '${src}/doc/man/',
+                set:    'source',
+            },
+        ],
+	},
 
-            } else {
-                /* Tune for size */
-                blend(bit.customSettings, {
-                    limitString: 1024,
-                    limitPath: 512,
-                    limitUrl: 512,
-                    limitShortPath: 256,
-                    limitBuffer: 4096,
-                    limitLogMsg: 8192,
-                    limitRegion: 131072,
-                })
-            }
-        ",
+    packDefaults: {
+        est: true,
+        matrixssl: false,
+        openssl: false,
+        ssl: true,
     },
 })

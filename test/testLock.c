@@ -53,16 +53,16 @@ static void testCriticalSection(MprTestGroup *gp)
     int     i, size;
 
     mprLock(mutex);
-    assert(mutex != 0);
+    tassert(mutex != 0);
     size = sizeof(critical) / sizeof(MprOsThread);
     for (i = 0; i < size; i++) {
         critical[i] = mprGetCurrentOsThread();
     }
     for (i = 0; i < size; i++) {
-        assert(critical[i] == mprGetCurrentOsThread());
+        tassert(critical[i] == mprGetCurrentOsThread());
     }
     mprUnlock(mutex);
-    assert(mutex != 0);
+    tassert(mutex != 0);
 }
 
 
@@ -78,7 +78,7 @@ MprTestDef testLock = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

@@ -57,15 +57,15 @@ static void testCreateEvent(MprTestGroup *gp)
         Without spawning a thread
      */
     te->event = mprCreateEvent(NULL, "testCreateEvent", 0, eventCallback, (void*) gp, MPR_EVENT_QUICK);
-    assert(te->event != 0);
-    assert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
+    tassert(te->event != 0);
+    tassert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
 
     /*
         Run event callback on a separate thread
      */
     te->event = mprCreateEvent(NULL, "testCreateEvent", 0, eventCallback, (void*) gp, 0);
-    assert(te->event != 0);
-    assert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
+    tassert(te->event != 0);
+    tassert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
     te->event = 0;
 }
 
@@ -77,7 +77,7 @@ static void testCancelEvent(MprTestGroup *gp)
     te = gp->data;
 
     te->event = mprCreateEvent(NULL, "testCancelEvent", 20000, eventCallback, (void*) gp, MPR_EVENT_QUICK);
-    assert(te->event != 0);
+    tassert(te->event != 0);
     mprRemoveEvent(te->event);
     te->event = 0;
 }
@@ -90,10 +90,10 @@ static void testReschedEvent(MprTestGroup *gp)
     te = gp->data;
 
     te->event = mprCreateEvent(NULL, "testReschedEvent", 50000000, eventCallback, (void*) gp, MPR_EVENT_QUICK);
-    assert(te->event != 0);
+    tassert(te->event != 0);
     
     mprRescheduleEvent(te->event, 20);
-    assert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
+    tassert(mprWaitForTestToComplete(gp, MPR_TEST_SLEEP));
     te->event = 0;
 }
 
@@ -111,7 +111,7 @@ MprTestDef testEvent = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

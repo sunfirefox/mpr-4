@@ -132,9 +132,9 @@ static int acceptFn(MprTestGroup *gp, MprEvent *event)
 
     ts = (TestSocket*) gp->data;
     sp = mprAcceptSocket(ts->server);
-    assert(sp != NULL);
+    tassert(sp != NULL);
     if (sp) {
-        assure(sp->fd >= 0);
+        tassert(sp->fd >= 0);
         ts->accepted = sp;
         mprAddSocketHandler(sp, MPR_READABLE, NULL, (MprEventProc) readEvent, (void*) gp, 0);
         mprSignalTestComplete(gp);
@@ -160,7 +160,7 @@ static int readEvent(MprTestGroup *gp, MprEvent *event)
     space = mprGetBufSpace(ts->inBuf);
     if (space < (bufsize / 2)) {
         rc = mprGrowBuf(ts->inBuf, bufsize - space);
-        assert(rc == 0);
+        tassert(rc == 0);
     }
     buf = mprGetBufEnd(ts->inBuf);
     nbytes = mprReadSocket(sp, buf, mprGetBufSpace(ts->inBuf));
@@ -190,7 +190,7 @@ static void testCreateSocket(MprTestGroup *gp)
     MprSocket       *sp;
 
     sp = mprCreateSocket(NULL);
-    assert(sp != 0);
+    tassert(sp != 0);
     mprCloseSocket(sp, 0);
 }
 
@@ -203,9 +203,9 @@ static void testClient(MprTestGroup *gp)
     if (gp->hasInternet) {
         if (gp->service->testDepth > 1 && mprHasSecureSockets(gp)) {
             sp = mprCreateSocket(NULL);
-            assert(sp != 0);
+            tassert(sp != 0);
             rc = mprConnectSocket(sp, "www.google.com", 80, 0);
-            assert(rc >= 0);
+            tassert(rc >= 0);
             mprCloseSocket(sp, 0);
         }
     } else if (warnNoInternet++ == 0) {
@@ -225,20 +225,20 @@ static void testClientServer(MprTestGroup *gp, cchar *host)
     ts = gp->data;
     ts->accepted = 0;
     ts->server = openServer(gp, host);
-    assert(ts->server != NULL);
+    tassert(ts->server != NULL);
     if (ts->server == 0) {
         return;
     }
     ts->client = mprCreateSocket(NULL);
-    assert(ts->client != 0);
-    assert(!ts->accepted);
+    tassert(ts->client != 0);
+    tassert(!ts->accepted);
 
     rc = mprConnectSocket(ts->client, host, ts->port, 0);
-    assert(rc >= 0);
+    tassert(rc >= 0);
 
     mprWaitForTestToComplete(gp, MPR_TEST_SLEEP);
     /*  Set in acceptFn() */
-    assert(ts->accepted != 0);
+    tassert(ts->accepted != 0);
 
     buf = "01234567890123456789012345678901234567890123456789\r\n";
     len = strlen(buf);
@@ -255,7 +255,7 @@ static void testClientServer(MprTestGroup *gp, cchar *host)
         thisBuf = buf;
         for (thisLen = len; thisLen > 0; ) {
             nbytes = mprWriteSocket(ts->client, thisBuf, thisLen);
-            assert(nbytes >= 0);
+            tassert(nbytes >= 0);
             thisLen -= nbytes;
             thisBuf += nbytes;
         }
@@ -271,10 +271,11 @@ static void testClientServer(MprTestGroup *gp, cchar *host)
     } while (mprGetRemainingTicks(mark, MPR_TEST_SLEEP) > 0);
 
     if (mprGetBufLength(ts->inBuf) != (count * len)) {
-        print("i %d count %d, remaining %d, buflen %d, cmp %d", i, count, thisLen, mprGetBufLength(ts->inBuf), count * len);
-        print("ELAPSED %d", mprGetElapsedTicks(mark));
+        mprPrintf("i %d count %d, remaining %d, buflen %d, cmp %d\n", 
+            i, count, thisLen, mprGetBufLength(ts->inBuf), count * len);
+        mprPrintf("ELAPSED %d\n", mprGetElapsedTicks(mark));
     }
-    assert(mprGetBufLength(ts->inBuf) == (count * len));
+    tassert(mprGetBufLength(ts->inBuf) == (count * len));
     mprFlushBuf(ts->inBuf);
 
     mprCloseSocket(ts->server, 0);
@@ -304,10 +305,10 @@ static void testClientSslv4(MprTestGroup *gp)
     if (gp->hasInternet) {
         if (gp->service->testDepth > 1 && mprHasSecureSockets(gp)) {
             sp = mprCreateSocket(NULL);
-            assert(sp != 0);
-            assert(sp->provider != 0);
+            tassert(sp != 0);
+            tassert(sp->provider != 0);
             rc = mprConnectSocket(sp, "www.google.com", 443, 0);
-            assert(rc >= 0);
+            tassert(rc >= 0);
             mprCloseSocket(sp, 0);
         }
     } else if (warnNoInternet++ == 0) {
@@ -334,7 +335,7 @@ MprTestDef testSocket = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

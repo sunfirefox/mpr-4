@@ -6,68 +6,60 @@ The Multithreaded Portable Runtime provides a high performance, multithreaded, c
 Key Directories
 ---------------
 
-* samples         - Sample source code for the MPR.
 * test            - MPR unit tests.
-* UNIX            - UNIX specific code.
-* WIN             - Windows specific code.
+* utils           - Utility programs.
 
 
 Key Files
 ---------
-* Makefile        - MPR Makefile.
-* manager.c       - Source for the Manager (watchdog) program.
-* mpr.h           - Primary MPR header.
-* mprSsl.h
-* mpr.c
-* mprAsync.c
-* mprAtomic.c
-* mprBuf.c           - The buffer class. Used for expandable ring queues.
-* mprCache.c      - Safe embedded routines including safe string handling.
-* mprCmd.c
-* mprCond.c
-* mprCrypt.c
-* mprDisk.c
-* mprDispatcher.c
-* mprEncode.c
-* mprEvent.c 
-* mprFile.c       - Virtual file system class.
-* mprFileSystem.c - 
-* mprHash.c       - The Hash class. Used for general hash indexing.
-* mprKqueue.c     -
-* mprList.c       - List base class. Used extensively by factory objects. 
-* mprLock.c
-* mprLog.c        - MPR logging and debug trace class.
-* mprMem.c
-* mprMime.c
-* mprMixed.c
-* mprModule.c
-* mprPath.c
-* mprPoll.c
-* mprPrintf.c
-* mprRomFile.c
-* mprSelect.c     - Posix select
-* mprSignal
-* mprSocket.c
-* mprString.c
-* mprTest.c
-* mprThread.c
-* mprTime.c
-* mprUnix.c
-* mprVxWorks.c
-* mprWait.c
-* mprWide.c
-* mprWin.c
-* mprWince.c
-* mprXml.c
-
-WIN/UNIX/MACOSX
-daemon.c        - Code to run MPR as a system service / daemon
-os.c            - O/S dependent code
-thread.c        - Thread handling code
+* Makefile      - MPR Makefile.
+* manager.c     - Source for the Manager (watchdog) program.
+* mpr.h         - Primary MPR header.
+* async.c       - Windows async select
+* atomic.c      - Atomic operations
+* buf.c         - The buffer class. Used for expandable ring queues.
+* cache.c       - Safe embedded routines including safe string handling.
+* cmd.c         - Command execution
+* cond.c        - Multithread condition variables
+* crypt.c       - Basic cryptography
+* disk.c        - Disk file support
+* dispatcher.c  - Event dispatchers
+* encode.c      - Encode / decoders
+* event.c       - Eventing
+* file.c        - File handling
+* fs.c          - Virtual file system.
+* hash.c        - The Hash class. Used for general hash indexing.
+* kqueue.c      - Macosx KQueue event queue
+* list.c        - List support.
+* lock.c        - Multithread locking
+* log.c         - MPR logging and debug trace class.
+* mem.c         - Memmory allocator
+* mime.c        - Mime type support
+* mixed.c       - Mixed string / unicode routines
+* module.c      - Module loader
+* mpr.c         - Mpr general code
+* path.c        - File pathname handling
+* poll.c        - Linux poll() support
+* printf.c      - Enhanced printf
+* rom.c         - ROM-based file support
+* select.c      - Posix select event queue
+* signal.c      - Posix signal handling
+* socket.c      - Socket handling
+* string.c      - String handling
+* test.c        - Unit test harness
+* thread.c      - Multithread and thread pool
+* time.c        - Time and date handling
+* unix.c        - Unix specific code
+* vxWorks.c     - Vxworks specific code
+* wait.c        - Socket wait handling
+* wide.c        - Unicode support
+* win.c         - Windows specific code
+* wince.c       - Windows CE specific code
+* xml.c         - XML parser
 
 --------------------------------------------------------------------------------
 
-Copyright (c) 2003-2012 Embedthis Software, LLC. All Rights Reserved.
+Copyright (c) 2003-2013 Embedthis Software, LLC. All Rights Reserved.
 Embedthis and AppWeb are trademarks of Embedthis Software, LLC. Other 
 brands and their products are trademarks of their respective holders.
 

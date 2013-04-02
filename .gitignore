@@ -78,3 +78,8 @@ doc/api/mpr/xml
 projects/*macosx-full.xcodeproj
 *-mine
 *-mine*
+.flags
+/*-*-*/
+/*-*-*.bit
+TODO.md
+*.sublime*

@@ -46,7 +46,7 @@ static void testCreateCmd(MprTestGroup *gp)
     
     tc = gp->data;
     tc->cmd = mprCreateCmd(gp->dispatcher);
-    assert(tc->cmd != 0);
+    tassert(tc->cmd != 0);
     mprDestroyCmd(tc->cmd);
     tc->cmd = 0;
     /* GC cleanup */
@@ -56,23 +56,23 @@ static void testCreateCmd(MprTestGroup *gp)
 static void testRunCmd(MprTestGroup *gp)
 {
     TestCmd     *tc;
-    char        *result, command[MPR_MAX_PATH];
+    char        *result, command[BIT_MAX_PATH];
     int         status, exitStatus;
 
     tc = gp->data;
     tc->cmd = mprCreateCmd(gp->dispatcher);
-    assert(tc->cmd != 0);
+    tassert(tc->cmd != 0);
 
     /*
         runProgram reads from the input, so it requires stdin to be connected
      */
     fmt(command, sizeof(command), "%s 0", tc->program);
     status = mprRunCmd(tc->cmd, command, NULL, &result, NULL, -1, MPR_CMD_IN);
-    assert(result != NULL);
-    assert(status == 0);
+    tassert(result != NULL);
+    tassert(status == 0);
 
     exitStatus = mprGetCmdExitStatus(tc->cmd);
-    assert(exitStatus == 0);
+    tassert(exitStatus == 0);
 
     mprDestroyCmd(tc->cmd);
     tc->cmd = 0;
@@ -88,9 +88,9 @@ static void withDataCallback(MprCmd *cmd, int channel, void *data)
 
     gp = data;
     tc = gp->data;
-    assert(tc != NULL);
+    tassert(tc != NULL);
     buf = tc->buf;
-    assert(buf != NULL);
+    tassert(buf != NULL);
     len = 0;
     
     switch (channel) {
@@ -103,9 +103,9 @@ static void withDataCallback(MprCmd *cmd, int channel, void *data)
     
     case MPR_CMD_STDOUT:
         space = mprGetBufSpace(buf);
-        if (space < (MPR_BUFSIZE / 4)) {
-            if (mprGrowBuf(buf, MPR_BUFSIZE) < 0) {
-                assure(0);
+        if (space < (BIT_MAX_BUFFER / 4)) {
+            if (mprGrowBuf(buf, BIT_MAX_BUFFER) < 0) {
+                tassert(0);
                 mprCloseCmdFd(cmd, channel);
                 return;
             }
@@ -159,15 +159,15 @@ static void testWithData(MprTestGroup *gp)
     ssize       len, rc;
     int         argc, i, status, fd;
 
-    assert(gp != 0);
+    tassert(gp != 0);
     tc = gp->data;
-    assert(tc != NULL);
+    tassert(tc != NULL);
 
     tc->cmd = mprCreateCmd(gp->dispatcher);
-    assert(tc->cmd != 0);
+    tassert(tc->cmd != 0);
 
-    tc->buf = mprCreateBuf(MPR_BUFSIZE, -1);
-    assert(tc->buf != 0);
+    tc->buf = mprCreateBuf(BIT_MAX_BUFFER, -1);
+    tassert(tc->buf != 0);
 
     argc = 0;
     argv[argc++] = tc->program;
@@ -185,54 +185,54 @@ static void testWithData(MprTestGroup *gp)
     
     // mprLog(0, "START");
     rc = mprStartCmd(tc->cmd, argc, (cchar**) argv, (cchar**) env, MPR_CMD_IN | MPR_CMD_OUT | MPR_CMD_ERR);
-    assert(rc == 0);
+    tassert(rc == 0);
 
     /*
         Write data to the child's stdin. We write so little data, this can't block.
      */
     fd = mprGetCmdFd(tc->cmd, MPR_CMD_STDIN);
-    assert(fd > 0);
+    tassert(fd > 0);
 
     for (i = 0; i < 10; i++) {
         fmt(line, sizeof(line), "line %d\n", i);
         len = (int) strlen(line);
         rc = write(fd, line, (wsize) len);
-        assert(rc == len);
+        tassert(rc == len);
         if (rc != len) {
             break;
         }
     }
     mprFinalizeCmd(tc->cmd);
 
-    assert(mprWaitForCmd(tc->cmd, MPR_TEST_SLEEP) == 0);
+    tassert(mprWaitForCmd(tc->cmd, MPR_TEST_SLEEP) == 0);
 
     /*
         Now analyse returned data
      */
     buf = tc->buf;
-    assert(mprGetBufLength(buf) > 0);
+    tassert(mprGetBufLength(buf) > 0);
     if (mprGetBufLength(buf) > 0) {
         data = mprGetBufStart(buf);
         // print("GOT %s", data);
         s = stok(data, "\n\r", &tok);
-        assert(s != 0);
-        assert(match(s, "a b c") == 0);
+        tassert(s != 0);
+        tassert(match(s, "a b c") == 0);
 
         s = stok(0, "\n\r", &tok);
-        assert(s != 0);
-        assert(match(s, "CMD_ENV=xyz") == 0);
+        tassert(s != 0);
+        tassert(match(s, "CMD_ENV=xyz") == 0);
 
         for (i = 0; i < 10; i++) { 
             fmt(line, sizeof(line), "line %d", i);
             s = stok(0, "\n\r", &tok);
-            assert(s != 0);
-            assert(match(s, line) == 0);
+            tassert(s != 0);
+            tassert(match(s, line) == 0);
         }
         s = stok(0, "\n\r", &tok);
-        assert(match(s, "END") == 0);
+        tassert(match(s, "END") == 0);
     }
     status = mprGetCmdExitStatus(tc->cmd);
-    assert(status == 0);
+    tassert(status == 0);
 
     mprDestroyCmd(tc->cmd);
     tc->cmd = 0;
@@ -242,18 +242,18 @@ static void testWithData(MprTestGroup *gp)
 static void testExitCode(MprTestGroup *gp)
 {
     TestCmd     *tc;
-    char        *result, command[MPR_MAX_PATH];
+    char        *result, command[BIT_MAX_PATH];
     int         i, status;
 
     tc = gp->data;
     tc->cmd = mprCreateCmd(gp->dispatcher);
-    assert(tc->cmd != 0);
+    tassert(tc->cmd != 0);
 
     for (i = 0; i < 1; i++) {
         fmt(command, sizeof(command), "%s %d", tc->program, i);
         status = mprRunCmd(tc->cmd, command, NULL, &result, NULL, -1, MPR_CMD_IN);
-        assert(result != NULL);
-        assert(status == i);
+        tassert(result != NULL);
+        tassert(status == i);
         if (status != i) {
             mprLog(0, "Status %d, result %s", status, result);
         }
@@ -269,19 +269,19 @@ static void testExitCode(MprTestGroup *gp)
 static void testNoCapture(MprTestGroup *gp)
 {
     TestCmd     *tc;
-    char        command[MPR_MAX_PATH];
+    char        command[BIT_MAX_PATH];
     int         status;
 
     tc = gp->data;
     tc->cmd = mprCreateCmd(gp->dispatcher);
-    assert(tc->cmd != 0);
+    tassert(tc->cmd != 0);
 
     fmt(command, sizeof(command), "%s 99", tc->program);
     status = mprRunCmd(tc->cmd, command, NULL, NULL, NULL, -1, MPR_CMD_IN);
-    assert(status == 99);
+    tassert(status == 99);
 
     status = mprGetCmdExitStatus(tc->cmd);
-    assert(status == 99);
+    tassert(status == 99);
     mprDestroyCmd(tc->cmd);
     tc->cmd = 0;
 }
@@ -293,24 +293,24 @@ static void testMultiple(MprTestGroup *gp)
 {
     TestCmd     *tc;
     MprCmd      *cmds[CMD_COUNT];
-    char        command[MPR_MAX_PATH];
+    char        command[BIT_MAX_PATH];
     int         status, i;
 
     tc = gp->data;
     for (i = 0; i < CMD_COUNT; i++) {
         cmds[i] = mprCreateCmd(gp->dispatcher);
-        assert(cmds[i] != 0);
+        tassert(cmds[i] != 0);
         mprAddRoot(cmds[i]);
     }
     for (i = 0; i < CMD_COUNT; i++) {
         fmt(command, sizeof(command), "%s 99", tc->program);
         status = mprRunCmd(cmds[i], command, NULL, NULL, NULL, -1, MPR_CMD_IN);
-        assert(status == 99);
+        tassert(status == 99);
         status = mprGetCmdExitStatus(cmds[i]);
-        assert(status == 99);
+        tassert(status == 99);
     }
     for (i = 0; i < CMD_COUNT; i++) {
-        assert(cmds[i] != 0);
+        tassert(cmds[i] != 0);
         mprDestroyCmd(cmds[i]);
         mprRemoveRoot(cmds[i]);
     }
@@ -334,7 +334,7 @@ MprTestDef testCmd = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

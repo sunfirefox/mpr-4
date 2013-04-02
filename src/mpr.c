@@ -25,7 +25,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     srand((uint) time(NULL));
 
     if ((mpr = mprCreateMemService((MprManager) manageMpr, flags)) == 0) {
-        assure(mpr);
+        assert(mpr);
         return 0;
     }
     mpr->start = mprGetTime(); 
@@ -247,9 +247,8 @@ PUBLIC void mprTerminate(int how, int status)
         mprLog(3, "Graceful exit. Waiting for existing requests to complete.");
 
     } else {
-        mprLog(7, "mprTerminate: how %d", how);
+        mprTrace(7, "mprTerminate: how %d", how);
     }
-
     /*
         Invoke terminators, set stopping state and wake up everybody
         Must invoke terminators before setting stopping state. Otherwise, the main app event loop will return from
@@ -308,11 +307,11 @@ PUBLIC int mprStart()
     rc += mprStartModuleService();
     rc += mprStartWorkerService();
     if (rc != 0) {
-        mprUserError("Cannot start MPR services");
+        mprError("Cannot start MPR services");
         return MPR_ERR_CANT_INITIALIZE;
     }
     MPR->state = MPR_STARTED;
-    mprLog(MPR_INFO, "MPR services are ready");
+    mprLog(3, "MPR services are ready");
     return 0;
 }
 
@@ -406,7 +405,7 @@ PUBLIC bool mprServicesAreIdle()
      */
     idle = mprGetListLength(MPR->workerService->busyThreads) == 0 && mprGetListLength(MPR->cmdService->cmds) == 0;
     if (!idle) {
-        mprLog(6, "Not idle: cmds %d, busy threads %d, eventing %d",
+        mprTrace(6, "Not idle: cmds %d, busy threads %d, eventing %d",
             mprGetListLength(MPR->cmdService->cmds), mprGetListLength(MPR->workerService->busyThreads), MPR->eventing);
     }
     return idle;
@@ -490,7 +489,7 @@ PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
     ssize   len;
     int     argc;
 
-    assure(command);
+    assert(command);
 
     /*
         Allocate one vector for argv and the actual args themselves
@@ -501,7 +500,7 @@ PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
         argc++;
     }
     if ((vector = (char*) mprAlloc(((argc + 1) * sizeof(char*)) + len)) == 0) {
-        assure(!MPR_ERR_MEMORY);
+        assert(!MPR_ERR_MEMORY);
         return MPR_ERR_MEMORY;
     }
     args = &vector[(argc + 1) * sizeof(char*)];
@@ -663,8 +662,8 @@ PUBLIC MprDispatcher *mprGetNonBlockDispatcher()
 
 PUBLIC cchar *mprCopyright()
 {
-    return  "Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.\n"
-            "Copyright (c) Michael O'Brien, 1993-2012. All Rights Reserved.";
+    return  "Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.\n"
+            "Copyright (c) Michael O'Brien, 1993-2013. All Rights Reserved.";
 }
 
 
@@ -675,7 +674,7 @@ PUBLIC int mprGetEndian()
 
     test = 1;
     probe = (char*) &test;
-    return (*probe == 1) ? MPR_LITTLE_ENDIAN : MPR_BIG_ENDIAN;
+    return (*probe == 1) ? BIT_LITTLE_ENDIAN : BIT_BIG_ENDIAN;
 }
 
 
@@ -720,7 +719,7 @@ PUBLIC void mprNop(void *ptr) {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 

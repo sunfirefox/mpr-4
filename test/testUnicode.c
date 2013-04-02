@@ -17,17 +17,17 @@ static void testBasicUnicode(MprTestGroup *gp)
     int     count;
 
     fmt(buf, sizeof(buf), "%d", 12345678);
-    assert(strlen(buf) == 8);
-    assert(strcmp(buf, "12345678") == 0);
+    tassert(strlen(buf) == 8);
+    tassert(strcmp(buf, "12345678") == 0);
 
     fmt(buf, sizeof(buf), "%d", -12345678);
-    assert(strlen(buf) == 9);
-    assert(strcmp(buf, "-12345678") == 0);
+    tassert(strlen(buf) == 9);
+    tassert(strcmp(buf, "-12345678") == 0);
 
     str = sfmt("%d", 12345678);
     count = (int) strlen(str);
-    assert(count == 8);
-    assert(strcmp(str, "12345678") == 0);
+    tassert(count == 8);
+    tassert(strcmp(str, "12345678") == 0);
 }
 
 
@@ -43,7 +43,7 @@ MprTestDef testUnicode = {
 /*
     @copy   default
 
-    Copyright (c) Embedthis Software LLC, 2003-2012. All Rights Reserved.
+    Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.
 
     This software is distributed under commercial and open source licenses.
     You may use the Embedthis Open Source license or you may acquire a 
