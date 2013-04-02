@@ -444,6 +444,11 @@ PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
         if (sp->flags & MPR_SOCKET_BUFFERED_WRITE) {
             mask |= MPR_WRITABLE;
         }
+        if (sp->flags & (MPR_SOCKET_BUFFERED_READ | MPR_SOCKET_BUFFERED_WRITE)) {
+            if (sp->handler) {
+                mprRecallWaitHandler(sp->handler);
+            }
+        }
         mprWaitOn(sp->handler, mask);
     }
 }
