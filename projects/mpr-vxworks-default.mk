@@ -1293,9 +1293,6 @@ DEPS_80 += $(CONFIG)/obj/nanossl.o
 DEPS_80 += $(CONFIG)/obj/openssl.o
 DEPS_80 += $(CONFIG)/obj/ssl.o
 
-ifeq ($(BIT_PACK_EST),1)
-    LIBS_80 += -lest
-endif
 ifeq ($(BIT_PACK_MATRIXSSL),1)
     LIBS_80 += -lmatrixssl
     LIBPATHS_80 += -L$(BIT_PACK_MATRIXSSL_PATH)
