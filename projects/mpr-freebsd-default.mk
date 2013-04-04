@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := mpr
-VERSION            := 4.3.0
+VERSION            := 4.3.2
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -50,11 +50,11 @@ BIT_PACK_SSL_PATH         := ssl
 BIT_PACK_UTEST_PATH       := utest
 
 CFLAGS             += -fPIC  -w
-DFLAGS             += -D_REENTRANT -DPIC  $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
+DFLAGS             += -D_REENTRANT -DPIC $(patsubst %,-D%,$(filter BIT_%,$(MAKEFLAGS))) -DBIT_PACK_EST=$(BIT_PACK_EST) -DBIT_PACK_MATRIXSSL=$(BIT_PACK_MATRIXSSL) -DBIT_PACK_OPENSSL=$(BIT_PACK_OPENSSL) -DBIT_PACK_SSL=$(BIT_PACK_SSL) 
 IFLAGS             += -I$(CONFIG)/inc
-LDFLAGS            += '-g'
+LDFLAGS            += 
 LIBPATHS           += -L$(CONFIG)/bin
-LIBS               += -lpthread -lm -ldl
+LIBS               += -ldl -lpthread -lm
 
 DEBUG              := debug
 CFLAGS-debug       := -g
@@ -222,7 +222,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.0-0
+	@echo 4.3.2-0
 
 #
 #   est.h
@@ -887,7 +887,7 @@ LIBS_54 += -lmpr
 
 $(CONFIG)/bin/benchMpr: $(DEPS_54)
 	@echo '      [Link] $(CONFIG)/bin/benchMpr'
-	$(CC) -o $(CONFIG)/bin/benchMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/benchMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/benchMpr.o $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) $(LIBS) 
 
 #
 #   runProgram.o
@@ -907,7 +907,7 @@ DEPS_56 += $(CONFIG)/obj/runProgram.o
 
 $(CONFIG)/bin/runProgram: $(DEPS_56)
 	@echo '      [Link] $(CONFIG)/bin/runProgram'
-	$(CC) -o $(CONFIG)/bin/runProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/runProgram $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/runProgram.o $(LIBS) $(LIBS) 
 
 #
 #   testArgv.o
@@ -1170,7 +1170,7 @@ LIBS_74 += -lmpr
 
 $(CONFIG)/bin/testMpr: $(DEPS_74)
 	@echo '      [Link] $(CONFIG)/bin/testMpr'
-	$(CC) -o $(CONFIG)/bin/testMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/testMpr $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/testArgv.o $(CONFIG)/obj/testBuf.o $(CONFIG)/obj/testCmd.o $(CONFIG)/obj/testCond.o $(CONFIG)/obj/testEvent.o $(CONFIG)/obj/testFile.o $(CONFIG)/obj/testHash.o $(CONFIG)/obj/testList.o $(CONFIG)/obj/testLock.o $(CONFIG)/obj/testMem.o $(CONFIG)/obj/testMpr.o $(CONFIG)/obj/testPath.o $(CONFIG)/obj/testSocket.o $(CONFIG)/obj/testSprintf.o $(CONFIG)/obj/testThread.o $(CONFIG)/obj/testTime.o $(CONFIG)/obj/testUnicode.o $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) $(LIBS) 
 
 #
 #   est.o
@@ -1289,6 +1289,7 @@ DEPS_80 += $(CONFIG)/obj/nanossl.o
 DEPS_80 += $(CONFIG)/obj/openssl.o
 DEPS_80 += $(CONFIG)/obj/ssl.o
 
+LIBS_80 += -lmpr
 ifeq ($(BIT_PACK_EST),1)
     LIBS_80 += -lest
 endif
@@ -1308,7 +1309,6 @@ ifeq ($(BIT_PACK_OPENSSL),1)
     LIBS_80 += -lcrypto
     LIBPATHS_80 += -L$(BIT_PACK_OPENSSL_PATH)
 endif
-LIBS_80 += -lmpr
 
 $(CONFIG)/bin/libmprssl.so: $(DEPS_80)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.so'
@@ -1381,7 +1381,7 @@ LIBS_82 += -lmpr
 
 $(CONFIG)/bin/manager: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/manager'
-	$(CC) -o $(CONFIG)/bin/manager $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/manager $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/manager.o $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) $(LIBS) 
 
 #
 #   makerom.o
@@ -1450,7 +1450,7 @@ LIBS_84 += -lmpr
 
 $(CONFIG)/bin/makerom: $(DEPS_84)
 	@echo '      [Link] $(CONFIG)/bin/makerom'
-	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/makerom $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/makerom.o $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) $(LIBS) 
 
 #
 #   charGen.o
@@ -1519,7 +1519,7 @@ LIBS_86 += -lmpr
 
 $(CONFIG)/bin/chargen: $(DEPS_86)
 	@echo '      [Link] $(CONFIG)/bin/chargen'
-	$(CC) -o $(CONFIG)/bin/chargen $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) -lpthread -lm -ldl $(LDFLAGS) 
+	$(CC) -o $(CONFIG)/bin/chargen $(LDFLAGS) $(LIBPATHS) $(CONFIG)/obj/charGen.o $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) $(LIBS) 
 
 #
 #   stop

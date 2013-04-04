@@ -127,8 +127,8 @@
 		A1CED164A1CEFA80000000A4 /* charGen.c in Sources */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A5 /* charGen.c */; };
 		A1CED164A1CEFA80000000A6 /* libmpr.a for benchMpr */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A7; };
 		A1CED164A1CEFA80000000A8 /* libmpr.a for testMpr */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A7; };
-		A1CED164A1CEFA80000000A9 /* libest.a for libmprssl */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000AA; };
-		A1CED164A1CEFA80000000AB /* libmpr.a for libmprssl */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A7; };
+		A1CED164A1CEFA80000000A9 /* libmpr.a for libmprssl */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A7; };
+		A1CED164A1CEFA80000000AA /* libest.a for libmprssl */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000AB; };
 		A1CED164A1CEFA80000000AC /* libmpr.a for manager */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A7; };
 		A1CED164A1CEFA80000000AD /* libmpr.a for makerom */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A7; };
 		A1CED164A1CEFA80000000AE /* libmpr.a for chargen */ = {isa = PBXBuildFile; fileRef = A1CED164A1CEFA80000000A7; };
@@ -345,7 +345,7 @@
 		A1CED164A1CEFA80000000D5 /* bit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bit.h; path = macosx-x64-static/inc/bit.h; sourceTree = "<group>"; };
 		A1CED164A1CEFA80000000D6 /* est.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = est.h; path = macosx-x64-static/inc/est.h; sourceTree = "<group>"; };
 		A1CED164A1CEFA80000000D7 /* bitos.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitos.h; path = macosx-x64-static/inc/bitos.h; sourceTree = "<group>"; };
-		A1CED164A1CEFA80000000AA /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1CED164A1CEFA80000000AB /* libest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libest.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1CED164A1CEFA800000001B /* benchMpr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = benchMpr.c; path = test/benchMpr.c; sourceTree = "<group>"; };
 		A1CED164A1CEFA80000000D8 /* mpr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mpr.h; path = macosx-x64-static/inc/mpr.h; sourceTree = "<group>"; };
 		A1CED164A1CEFA80000000D9 /* benchMpr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = benchMpr; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -472,8 +472,8 @@
             isa = PBXFrameworksBuildPhase;
             buildActionMask = 2147483647;
             files = (
-				A1CED164A1CEFA80000000A9 /* libest */,
-				A1CED164A1CEFA80000000AB /* libmpr */,				
+				A1CED164A1CEFA80000000A9 /* libmpr */,
+				A1CED164A1CEFA80000000AA /* libest */,				
             );
             runOnlyForDeploymentPostprocessing = 0;
         };
@@ -686,7 +686,7 @@
 		A1CED164A1CEFA80000000F3 /* Products */ = {
             isa = PBXGroup;
             children = (
-				A1CED164A1CEFA80000000AA /* libest */,
+				A1CED164A1CEFA80000000AB /* libest */,
 				A1CED164A1CEFA80000000D9 /* benchMpr */,
 				A1CED164A1CEFA80000000DA /* runProgram */,
 				A1CED164A1CEFA80000000DB /* testMpr */,
@@ -717,7 +717,7 @@
 			);
 			name = libest;
 			productName = mpr;
-			productReference = A1CED164A1CEFA80000000AA /* libest */;
+			productReference = A1CED164A1CEFA80000000AB /* libest */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		A1CED164A1CEFA80000000C9 /* benchMpr */ = {
@@ -1246,7 +1246,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-                CURRENT_PROJECT_VERSION = 4.3.0;
+                CURRENT_PROJECT_VERSION = 4.3.2;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1300,9 +1300,9 @@ fi";
 				OTHER_LDFLAGS = (
 					"-Wl,-rpath,@executable_path/",
 					"-Wl,-rpath,@loader_path/",
+					"-ldl",
 					"-lpthread",
 					"-lm",
-					"-ldl",
 					"$(inherited)"
 				);
 
@@ -1316,7 +1316,7 @@ fi";
                 /* Common Settings */
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
-                CURRENT_PROJECT_VERSION = 4.3.0;
+                CURRENT_PROJECT_VERSION = 4.3.2;
                 DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
                 DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1370,9 +1370,9 @@ fi";
 				OTHER_LDFLAGS = (
 					"-Wl,-rpath,@executable_path/",
 					"-Wl,-rpath,@loader_path/",
+					"-ldl",
 					"-lpthread",
 					"-lm",
-					"-ldl",
 					"$(inherited)"
 				);
 

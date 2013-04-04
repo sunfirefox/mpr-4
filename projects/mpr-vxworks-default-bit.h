@@ -26,10 +26,10 @@
     #define BIT_DISCOVER "doxygen,dsi,man,man2html,md5,ssl,utest"
 #endif
 #ifndef BIT_HAS_DOUBLE_BRACES
-    #define BIT_HAS_DOUBLE_BRACES 1
+    #define BIT_HAS_DOUBLE_BRACES 0
 #endif
 #ifndef BIT_HAS_DYN_LOAD
-    #define BIT_HAS_DYN_LOAD 1
+    #define BIT_HAS_DYN_LOAD 0
 #endif
 #ifndef BIT_HAS_LIB_EDIT
     #define BIT_HAS_LIB_EDIT 0
@@ -41,7 +41,7 @@
     #define BIT_HAS_MMU 1
 #endif
 #ifndef BIT_HAS_MTUNE
-    #define BIT_HAS_MTUNE 1
+    #define BIT_HAS_MTUNE 0
 #endif
 #ifndef BIT_HAS_PAM
     #define BIT_HAS_PAM 0
@@ -86,7 +86,7 @@
     #define BIT_TITLE "Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.3.0"
+    #define BIT_VERSION "4.3.2"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 0
@@ -148,7 +148,7 @@
     #define BIT_VAPP_PREFIX "deploy"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/mpr-4.3.0"
+    #define BIT_SRC_PREFIX "/usr/src/mpr-4.3.2"
 #endif
 
 /* Suffixes */
@@ -187,10 +187,10 @@
     #define BIT_MINOR_VERSION 3
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 0
+    #define BIT_PATCH_VERSION 2
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400030000
+    #define BIT_VNUM 400030002
 #endif
 
 /* Packs */
