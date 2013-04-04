@@ -75,7 +75,7 @@ DFLAGS             = -DBIT_DEBUG -D_REENTRANT -D_MT -DBIT_PACK_EST=$(BIT_PACK_ES
 IFLAGS             = -I$(CONFIG)\inc
 LDFLAGS            = -nologo -nodefaultlib -incremental:no -debug -machine:$(ARCH)
 LIBPATHS           = -libpath:$(CONFIG)\bin
-LIBS               = dl ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
+LIBS               = ws2_32.lib advapi32.lib user32.lib kernel32.lib oldnames.lib msvcrt.lib shell32.lib
 
 BIT_ROOT_PREFIX    = C:
 BIT_BASE_PREFIX    = $(BIT_ROOT_PREFIX)\Program Files
@@ -901,7 +901,7 @@ LIBS_54 = $(LIBS_54) libmpr.lib
 
 $(CONFIG)\bin\benchMpr.exe: $(DEPS_54)
 	@echo '      [Link] $(CONFIG)/bin/benchMpr.exe'
-	"$(LD)" -out:$(CONFIG)\bin\benchMpr.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\benchMpr.obj $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\benchMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\benchMpr.obj $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) 
 
 #
 #   runProgram.obj
@@ -921,7 +921,7 @@ DEPS_56 = $(DEPS_56) $(CONFIG)\obj\runProgram.obj
 
 $(CONFIG)\bin\runProgram.exe: $(DEPS_56)
 	@echo '      [Link] $(CONFIG)/bin/runProgram.exe'
-	"$(LD)" -out:$(CONFIG)\bin\runProgram.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\runProgram.obj $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\runProgram.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\runProgram.obj $(LIBS) 
 
 #
 #   testArgv.obj
@@ -1184,7 +1184,7 @@ LIBS_74 = $(LIBS_74) libmpr.lib
 
 $(CONFIG)\bin\testMpr.exe: $(DEPS_74)
 	@echo '      [Link] $(CONFIG)/bin/testMpr.exe'
-	"$(LD)" -out:$(CONFIG)\bin\testMpr.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testArgv.obj $(CONFIG)\obj\testBuf.obj $(CONFIG)\obj\testCmd.obj $(CONFIG)\obj\testCond.obj $(CONFIG)\obj\testEvent.obj $(CONFIG)\obj\testFile.obj $(CONFIG)\obj\testHash.obj $(CONFIG)\obj\testList.obj $(CONFIG)\obj\testLock.obj $(CONFIG)\obj\testMem.obj $(CONFIG)\obj\testMpr.obj $(CONFIG)\obj\testPath.obj $(CONFIG)\obj\testSocket.obj $(CONFIG)\obj\testSprintf.obj $(CONFIG)\obj\testThread.obj $(CONFIG)\obj\testTime.obj $(CONFIG)\obj\testUnicode.obj $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\testMpr.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\testArgv.obj $(CONFIG)\obj\testBuf.obj $(CONFIG)\obj\testCmd.obj $(CONFIG)\obj\testCond.obj $(CONFIG)\obj\testEvent.obj $(CONFIG)\obj\testFile.obj $(CONFIG)\obj\testHash.obj $(CONFIG)\obj\testList.obj $(CONFIG)\obj\testLock.obj $(CONFIG)\obj\testMem.obj $(CONFIG)\obj\testMpr.obj $(CONFIG)\obj\testPath.obj $(CONFIG)\obj\testSocket.obj $(CONFIG)\obj\testSprintf.obj $(CONFIG)\obj\testThread.obj $(CONFIG)\obj\testTime.obj $(CONFIG)\obj\testUnicode.obj $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) 
 
 #
 #   est.obj
@@ -1374,7 +1374,7 @@ LIBS_82 = $(LIBS_82) libmpr.lib
 
 $(CONFIG)\bin\manager.exe: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/manager.exe'
-	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry: -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
 #   makerom.obj
@@ -1443,7 +1443,7 @@ LIBS_84 = $(LIBS_84) libmpr.lib
 
 $(CONFIG)\bin\makerom.exe: $(DEPS_84)
 	@echo '      [Link] $(CONFIG)/bin/makerom.exe'
-	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\makerom.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\makerom.obj $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) 
 
 #
 #   charGen.obj
@@ -1512,7 +1512,7 @@ LIBS_86 = $(LIBS_86) libmpr.lib
 
 $(CONFIG)\bin\chargen.exe: $(DEPS_86)
 	@echo '      [Link] $(CONFIG)/bin/chargen.exe'
-	"$(LD)" -out:$(CONFIG)\bin\chargen.exe -entry: -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\charGen.obj $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\chargen.exe -entry:mainCRTStartup -subsystem:console $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\charGen.obj $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
 
 #
 #   stop
