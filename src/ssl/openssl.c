@@ -197,6 +197,7 @@ static void manageOpenProvider(MprSocketProvider *provider, int flags)
             }
         }
         mprMark(defaultOpenConfig);
+        mprMark(provider->name);
 
     } else if (flags & MPR_MANAGE_FREE) {
         olocks = 0;

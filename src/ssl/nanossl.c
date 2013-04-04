@@ -139,6 +139,7 @@ PUBLIC int mprCreateNanoSslModule()
 static void manageNanoProvider(MprSocketProvider *provider, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(provider->name);
         mprMark(defaultNanoConfig);
 
     } else if (flags & MPR_MANAGE_FREE) {

@@ -1735,7 +1735,6 @@ PUBLIC int mprLoadSsl()
     }
     if (mprLoadModule(mp) < 0) {
         mprError("Cannot load %s", path);
-        ss->providers = 0;
         return MPR_ERR_CANT_READ;
     }
     return 0;

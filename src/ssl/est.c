@@ -109,6 +109,7 @@ PUBLIC int mprCreateEstModule()
 static void manageEstProvider(MprSocketProvider *provider, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
+        mprMark(provider->name);
         mprMark(defaultEstConfig);
         mprMark(sessions);
 
