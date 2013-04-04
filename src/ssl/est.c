@@ -162,6 +162,7 @@ static void closeEst(MprSocket *sp, bool gracefully)
 
 /*
     Initialize a new server-side connection
+    UNUSED
  */
 static Socket listenEst(MprSocket *sp, cchar *host, int port, int flags)
 {

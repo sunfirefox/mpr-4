@@ -380,6 +380,7 @@ static void closeOss(MprSocket *sp, bool gracefully)
 }
 
 
+//  UNUSED
 static Socket listenOss(MprSocket *sp, cchar *host, int port, int flags)
 {
     assert(sp);
