@@ -1404,7 +1404,7 @@ LIBS_82 = $(LIBS_82) libmpr.lib
 
 $(CONFIG)\bin\manager.exe: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/manager.exe'
-	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:Windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
+	"$(LD)" -out:$(CONFIG)\bin\manager.exe -entry:WinMainCRTStartup -subsystem:windows $(LDFLAGS) $(LIBPATHS) $(CONFIG)\obj\manager.obj $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
 #   makerom.obj
