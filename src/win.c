@@ -168,7 +168,7 @@ PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)
     long        errorType;
     ulong       exists;
     char        buf[BIT_MAX_PATH], logName[BIT_MAX_PATH], *cp, *value;
-	wchar		*lines[9];
+    wchar       *lines[9];
     int         type;
     static int  once = 0;
 

@@ -364,72 +364,72 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
         sp->errorMsg = sclone("Certificate Common name mismatch");
         return PS_FAILURE;
     }
-	/* 
+    /* 
         Validate the 'not before' date 
      */
     mprDecodeUniversalTime(&t, mprGetTime());
-	if ((c = cert->notBefore) != NULL) {
-		if (strlen(c) < 8) {
+    if ((c = cert->notBefore) != NULL) {
+        if (strlen(c) < 8) {
             sp->errorMsg = sclone("Corrupt certificate");
-			return PS_FAILURE;
-		}
-		/* 
+            return PS_FAILURE;
+        }
+        /* 
             UTCTIME, defined in 1982, has just a 2 digit year 
          */
-		if (cert->notBeforeTimeType == ASN_UTCTIME) {
-			y =  2000 + 10 * (c[0] - '0') + (c[1] - '0'); 
+        if (cert->notBeforeTimeType == ASN_UTCTIME) {
+            y =  2000 + 10 * (c[0] - '0') + (c[1] - '0'); 
             c += 2;
-		} else {
-			y = 1000 * (c[0] - '0') + 100 * (c[1] - '0') + 10 * (c[2] - '0') + (c[3] - '0'); 
+        } else {
+            y = 1000 * (c[0] - '0') + 100 * (c[1] - '0') + 10 * (c[2] - '0') + (c[3] - '0'); 
             c += 4;
-		}
-		m = 10 * (c[0] - '0') + (c[1] - '0'); 
+        }
+        m = 10 * (c[0] - '0') + (c[1] - '0'); 
         c += 2;
-		d = 10 * (c[0] - '0') + (c[1] - '0'); 
+        d = 10 * (c[0] - '0') + (c[1] - '0'); 
         y -= 1900;
         m -= 1;
-		if (t.tm_year < y) {
+        if (t.tm_year < y) {
             sp->errorMsg = sclone("Corrupt certificate");
             return PS_FAILURE; 
         }
-		if (t.tm_year == y) {
-			if (t.tm_mon < m || (t.tm_mon == m && t.tm_mday < d)) {
+        if (t.tm_year == y) {
+            if (t.tm_mon < m || (t.tm_mon == m && t.tm_mday < d)) {
                 sp->errorMsg = sclone("Certificate not yet active");
                 return PS_FAILURE;
             }
-		}
-	}
+        }
+    }
 
-	/* 
+    /* 
         Validate the 'not after' date 
      */
-	if ((c = cert->notAfter) != NULL) {
-		if (strlen(c) < 8) {
+    if ((c = cert->notAfter) != NULL) {
+        if (strlen(c) < 8) {
             sp->errorMsg = sclone("Corrupt certificate");
-			return PS_FAILURE;
-		}
-		if (cert->notAfterTimeType == ASN_UTCTIME) {
-			y =  2000 + 10 * (c[0] - '0') + (c[1] - '0'); 
+            return PS_FAILURE;
+        }
+        if (cert->notAfterTimeType == ASN_UTCTIME) {
+            y =  2000 + 10 * (c[0] - '0') + (c[1] - '0'); 
             c += 2;
-		} else {
-			y = 1000 * (c[0] - '0') + 100 * (c[1] - '0') + 10 * (c[2] - '0') + (c[3] - '0'); 
+        } else {
+            y = 1000 * (c[0] - '0') + 100 * (c[1] - '0') + 10 * (c[2] - '0') + (c[3] - '0'); 
             c += 4;
-		}
-		m = 10 * (c[0] - '0') + (c[1] - '0'); 
+        }
+        m = 10 * (c[0] - '0') + (c[1] - '0'); 
         c += 2;
-		d = 10 * (c[0] - '0') + (c[1] - '0'); 
+        d = 10 * (c[0] - '0') + (c[1] - '0'); 
         y -= 1900;
         m -= 1;
-		if (t.tm_year > y) {
+        if (t.tm_year > y) {
             sp->errorMsg = sclone("Corrupt certificate");
             return PS_FAILURE; 
         } else if (t.tm_year == y) {
-			if (t.tm_mon > m || (t.tm_mon == m && t.tm_mday > d)) {
+            if (t.tm_mon > m || (t.tm_mon == m && t.tm_mday > d)) {
                 sp->errorMsg = sclone("Certificate expired");
                 return PS_FAILURE;
             }
-		}
-	}
+        }
+    }
     /*
         Must parse here as MatrixSSL frees this if you have both client and server enabled in the library
      */
@@ -437,7 +437,7 @@ static int verifyCert(ssl_t *ssl, psX509Cert_t *cert, int32 alert)
     parseCert(msp->peerCert, sp->acceptIp ? "SERVER" : "CLIENT", cert);
     mprLog(3, "MatrixSSL: Certificate verified");
     mprLog(4, "MatrixSSL: %s", mprGetBufStart(msp->peerCert));
-	return PS_SUCCESS;
+    return PS_SUCCESS;
 }
 
 
@@ -470,8 +470,8 @@ static ssize blockingWrite(MprSocket *sp, cvoid *buf, ssize len)
 
 
 static int32 handshakeIsComplete(ssl_t *ssl)
-{	
-	return (ssl->hsState == SSL_HS_DONE) ? PS_TRUE : PS_FALSE;
+{   
+    return (ssl->hsState == SSL_HS_DONE) ? PS_TRUE : PS_FALSE;
 }
 
 

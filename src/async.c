@@ -179,15 +179,15 @@ PUBLIC int mprInitWindow()
     MprWaitService  *ws;
     WNDCLASS        wc;
     HWND            hwnd;
-	wchar			*name, *title;
+    wchar           *name, *title;
     int             rc;
 
     ws = MPR->waitService;
     if (ws->hwnd) {
         return 0;
     }
-	name = (wchar*) wide(mprGetAppName());
-	title = (wchar*) wide(mprGetAppTitle());
+    name = (wchar*) wide(mprGetAppName());
+    title = (wchar*) wide(mprGetAppTitle());
     wc.style            = CS_HREDRAW | CS_VREDRAW;
     wc.hbrBackground    = (HBRUSH) (COLOR_WINDOW+1);
     wc.hCursor          = LoadCursor(NULL, IDC_ARROW);

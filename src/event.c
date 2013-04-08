@@ -265,7 +265,7 @@ PUBLIC int mprGetEventCount(MprDispatcher *dispatcher)
     es = dispatcher->service;
 
     lock(es);
-	count = 0;
+    count = 0;
     for (event = dispatcher->eventQ->next; event != dispatcher->eventQ; event = event->next) {
         assert(event->magic == MPR_EVENT_MAGIC);
         count++;

@@ -252,24 +252,24 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
     ssl_free(&est->ctx);
     havege_init(&est->hs);
     ssl_init(&est->ctx);
-	ssl_set_endpoint(&est->ctx, sp->flags & MPR_SOCKET_SERVER ? SSL_IS_SERVER : SSL_IS_CLIENT);
+    ssl_set_endpoint(&est->ctx, sp->flags & MPR_SOCKET_SERVER ? SSL_IS_SERVER : SSL_IS_CLIENT);
     ssl_set_authmode(&est->ctx, verifyMode);
     ssl_set_rng(&est->ctx, havege_rand, &est->hs);
-	ssl_set_dbg(&est->ctx, estTrace, NULL);
-	ssl_set_bio(&est->ctx, net_recv, &sp->fd, net_send, &sp->fd);
+    ssl_set_dbg(&est->ctx, estTrace, NULL);
+    ssl_set_bio(&est->ctx, net_recv, &sp->fd, net_send, &sp->fd);
 
     //  MOB - better if the API took a handle (est)
-	ssl_set_scb(&est->ctx, getSession, setSession);
+    ssl_set_scb(&est->ctx, getSession, setSession);
     ssl_set_ciphers(&est->ctx, cfg->ciphers);
 
-	ssl_set_session(&est->ctx, 1, 0, &est->session);
-	memset(&est->session, 0, sizeof(ssl_session));
+    ssl_set_session(&est->ctx, 1, 0, &est->session);
+    memset(&est->session, 0, sizeof(ssl_session));
 
     ssl_set_ca_chain(&est->ctx, ssl->caFile ? &cfg->ca : NULL, (char*) peerName);
     if (ssl->keyFile && ssl->certFile) {
         ssl_set_own_cert(&est->ctx, &cfg->cert, &cfg->rsa);
     }
-	ssl_set_dh_param(&est->ctx, dhKey, dhG);
+    ssl_set_dh_param(&est->ctx, dhKey, dhG);
     est->started = mprGetTicks();
 
     if (handshakeEst(sp) < 0) {
@@ -509,55 +509,55 @@ static char *getEstState(MprSocket *sp)
 static int getSession(ssl_context *ssl)
 {
     ssl_session     *sp;
-	time_t          t;
+    time_t          t;
     int             next;
 
-	t = time(NULL);
-	if (!ssl->resume) {
-		return 1;
+    t = time(NULL);
+    if (!ssl->resume) {
+        return 1;
     }
     for (ITERATE_ITEMS(sessions, sp, next)) {
         if (ssl->timeout && (t - sp->start) > ssl->timeout) {
             continue;
         }
-		if (ssl->session->cipher != sp->cipher || ssl->session->length != sp->length) {
-			continue;
+        if (ssl->session->cipher != sp->cipher || ssl->session->length != sp->length) {
+            continue;
         }
-		if (memcmp(ssl->session->id, sp->id, sp->length) != 0) {
-			continue;
+        if (memcmp(ssl->session->id, sp->id, sp->length) != 0) {
+            continue;
         }
-		memcpy(ssl->session->master, sp->master, sizeof(ssl->session->master));
+        memcpy(ssl->session->master, sp->master, sizeof(ssl->session->master));
         return 0;
     }
-	return 1;
+    return 1;
 }
 
 
 static int setSession(ssl_context *ssl)
 {
-	time_t          t;
+    time_t          t;
     ssl_session     *sp;
     int             next;
 
-	t = time(NULL);
+    t = time(NULL);
     for (ITERATE_ITEMS(sessions, sp, next)) {
-		if (ssl->timeout != 0 && (t - sp->start) > ssl->timeout) {
+        if (ssl->timeout != 0 && (t - sp->start) > ssl->timeout) {
             /* expired, reuse this slot */
-			break;	
+            break;  
         }
-		if (memcmp(ssl->session->id, sp->id, sp->length) == 0) {
+        if (memcmp(ssl->session->id, sp->id, sp->length) == 0) {
             /* client reconnected */
-			break;	
+            break;  
         }
-	}
-	if (sp == NULL) {
-		if ((sp = mprAlloc(sizeof(ssl_session))) == 0) {
-			return 1;
+    }
+    if (sp == NULL) {
+        if ((sp = mprAlloc(sizeof(ssl_session))) == 0) {
+            return 1;
         }
         mprAddItem(sessions, sp);
-	}
-	memcpy(sp, ssl->session, sizeof(ssl_session));
-	return 0;
+    }
+    memcpy(sp, ssl->session, sizeof(ssl_session));
+    return 0;
 }
 
 
