@@ -294,7 +294,7 @@ DEPS_6 = $(DEPS_6) $(CONFIG)\obj\estLib.obj
 
 $(CONFIG)\bin\libest.dll: $(DEPS_6)
 	@echo '      [Link] $(CONFIG)/bin/libest.dll'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\estLib.obj" $(LIBS) 
+	"$(LD)" -dll -mob -out:$(CONFIG)\bin\libest.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\estLib.obj" $(LIBS) 
 !ENDIF
 
 #
@@ -841,7 +841,7 @@ DEPS_52 = $(DEPS_52) $(CONFIG)\obj\xml.obj
 
 $(CONFIG)\bin\libmpr.dll: $(DEPS_52)
 	@echo '      [Link] $(CONFIG)/bin/libmpr.dll'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\async.obj" "$(CONFIG)\obj\atomic.obj" "$(CONFIG)\obj\buf.obj" "$(CONFIG)\obj\cache.obj" "$(CONFIG)\obj\cmd.obj" "$(CONFIG)\obj\cond.obj" "$(CONFIG)\obj\crypt.obj" "$(CONFIG)\obj\disk.obj" "$(CONFIG)\obj\dispatcher.obj" "$(CONFIG)\obj\encode.obj" "$(CONFIG)\obj\epoll.obj" "$(CONFIG)\obj\event.obj" "$(CONFIG)\obj\file.obj" "$(CONFIG)\obj\fs.obj" "$(CONFIG)\obj\hash.obj" "$(CONFIG)\obj\json.obj" "$(CONFIG)\obj\kqueue.obj" "$(CONFIG)\obj\list.obj" "$(CONFIG)\obj\lock.obj" "$(CONFIG)\obj\log.obj" "$(CONFIG)\obj\mem.obj" "$(CONFIG)\obj\mime.obj" "$(CONFIG)\obj\mixed.obj" "$(CONFIG)\obj\module.obj" "$(CONFIG)\obj\mpr.obj" "$(CONFIG)\obj\path.obj" "$(CONFIG)\obj\poll.obj" "$(CONFIG)\obj\posix.obj" "$(CONFIG)\obj\printf.obj" "$(CONFIG)\obj\rom.obj" "$(CONFIG)\obj\select.obj" "$(CONFIG)\obj\signal.obj" "$(CONFIG)\obj\socket.obj" "$(CONFIG)\obj\string.obj" "$(CONFIG)\obj\test.obj" "$(CONFIG)\obj\thread.obj" "$(CONFIG)\obj\time.obj" "$(CONFIG)\obj\vxworks.obj" "$(CONFIG)\obj\wait.obj" "$(CONFIG)\obj\wide.obj" "$(CONFIG)\obj\win.obj" "$(CONFIG)\obj\wince.obj" "$(CONFIG)\obj\xml.obj" $(LIBS) 
+	"$(LD)" -dll -mob -out:$(CONFIG)\bin\libmpr.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)\obj\async.obj" "$(CONFIG)\obj\atomic.obj" "$(CONFIG)\obj\buf.obj" "$(CONFIG)\obj\cache.obj" "$(CONFIG)\obj\cmd.obj" "$(CONFIG)\obj\cond.obj" "$(CONFIG)\obj\crypt.obj" "$(CONFIG)\obj\disk.obj" "$(CONFIG)\obj\dispatcher.obj" "$(CONFIG)\obj\encode.obj" "$(CONFIG)\obj\epoll.obj" "$(CONFIG)\obj\event.obj" "$(CONFIG)\obj\file.obj" "$(CONFIG)\obj\fs.obj" "$(CONFIG)\obj\hash.obj" "$(CONFIG)\obj\json.obj" "$(CONFIG)\obj\kqueue.obj" "$(CONFIG)\obj\list.obj" "$(CONFIG)\obj\lock.obj" "$(CONFIG)\obj\log.obj" "$(CONFIG)\obj\mem.obj" "$(CONFIG)\obj\mime.obj" "$(CONFIG)\obj\mixed.obj" "$(CONFIG)\obj\module.obj" "$(CONFIG)\obj\mpr.obj" "$(CONFIG)\obj\path.obj" "$(CONFIG)\obj\poll.obj" "$(CONFIG)\obj\posix.obj" "$(CONFIG)\obj\printf.obj" "$(CONFIG)\obj\rom.obj" "$(CONFIG)\obj\select.obj" "$(CONFIG)\obj\signal.obj" "$(CONFIG)\obj\socket.obj" "$(CONFIG)\obj\string.obj" "$(CONFIG)\obj\test.obj" "$(CONFIG)\obj\thread.obj" "$(CONFIG)\obj\time.obj" "$(CONFIG)\obj\vxworks.obj" "$(CONFIG)\obj\wait.obj" "$(CONFIG)\obj\wide.obj" "$(CONFIG)\obj\win.obj" "$(CONFIG)\obj\wince.obj" "$(CONFIG)\obj\xml.obj" $(LIBS) 
 
 #
 #   benchMpr.obj
@@ -1335,7 +1335,7 @@ LIBPATHS_80 = $(LIBPATHS_80) -libpath:$(BIT_PACK_OPENSSL_PATH)
 
 $(CONFIG)\bin\libmprssl.dll: $(DEPS_80)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.dll'
-	"$(LD)" -dll -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS) "" "" "" "$(CONFIG)\obj\est.obj" "$(CONFIG)\obj\matrixssl.obj" "$(CONFIG)\obj\nanossl.obj" "$(CONFIG)\obj\openssl.obj" "$(CONFIG)\obj\ssl.obj" $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
+	"$(LD)" -dll -mob -out:$(CONFIG)\bin\libmprssl.dll -entry:$(ENTRY) $(LDFLAGS) $(LIBPATHS)    "$(CONFIG)\obj\est.obj" "$(CONFIG)\obj\matrixssl.obj" "$(CONFIG)\obj\nanossl.obj" "$(CONFIG)\obj\openssl.obj" "$(CONFIG)\obj\ssl.obj" $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
 
 #
 #   manager.obj
