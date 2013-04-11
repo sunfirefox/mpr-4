@@ -916,6 +916,25 @@ static int growBuf(Format *fmt)
 }
 
 
+PUBLIC ssize print(cchar *fmt, ...) 
+{
+    va_list     ap;
+    char        *buf;
+    ssize       len;
+
+    va_start(ap, fmt);
+    buf = sfmtv(fmt, ap);
+    va_end(ap);
+    if (buf != 0 && MPR->stdOutput) {
+        len = mprWriteFileString(MPR->stdOutput, buf);
+        len += mprWriteFileString(MPR->stdOutput, "\n");
+    } else {
+        len = -1;
+    }
+    return len;
+}
+
+
 /*
     @copy   default
 

@@ -715,7 +715,6 @@ PUBLIC void mprSetExitTimeout(MprTicks timeout)
 PUBLIC void mprNop(void *ptr) {
 }
 
-
 /*
     @copy   default
 

@@ -1077,6 +1077,7 @@ PUBLIC bool mprIsPathAbs(cchar *path)
 }
 
 
+//  MOB - should be mprPathIsDir
 PUBLIC bool mprIsPathDir(cchar *path)
 {
     MprPath     info;
@@ -1085,6 +1086,7 @@ PUBLIC bool mprIsPathDir(cchar *path)
 }
 
 
+//  MOB - should be mprPathIsRel
 PUBLIC bool mprIsPathRel(cchar *path)
 {
     MprFileSystem   *fs;

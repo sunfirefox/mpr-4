@@ -203,12 +203,10 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         msp->cfg = cfg = ssl->config;
 
     } else {
-        if ((ssl->config = mprAllocObj(MatrixConfig, manageMatrixConfig)) == 0) {
+        if ((cfg = mprAllocObj(MatrixConfig, manageMatrixConfig)) == 0) {
             unlock(sp);
             return MPR_ERR_MEMORY;
         }
-        msp->cfg = cfg = ssl->config;
-
         if (matrixSslNewKeys(&cfg->keys) < 0) {
             mprError("MatrixSSL: Cannot create new MatrixSSL keys");
             unlock(sp);
@@ -223,6 +221,7 @@ static int upgradeMss(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             unlock(sp);
             return MPR_ERR_CANT_READ;
         }
+        msp->cfg = ssl->config = cfg;
     }
     unlock(sp);
 

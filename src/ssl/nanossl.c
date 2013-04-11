@@ -233,7 +233,6 @@ static int nanoUpgrade(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             unlock(ssl);
             return MPR_ERR_MEMORY;
         }
-        np->cfg = ssl->config = cfg;
         if (ssl->certFile) {
             certDescriptor tmp;
             if ((rc = MOCANA_readFile((sbyte*) ssl->certFile, &tmp.pCertificate, &tmp.certLength)) < 0) {
@@ -290,6 +289,7 @@ static int nanoUpgrade(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             unlock(ssl);
             return MPR_ERR_CANT_INITIALIZE;
         }
+        np->cfg = ssl->config = cfg;
     }
     unlock(ssl);
 

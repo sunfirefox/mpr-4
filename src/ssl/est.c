@@ -208,7 +208,6 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
             unlock(ssl);
             return MPR_ERR_MEMORY;
         }
-        est->cfg = ssl->config = cfg;
         if (ssl->certFile) {
             /*
                 Load a PEM format certificate file
@@ -242,6 +241,7 @@ static int upgradeEst(MprSocket *sp, MprSsl *ssl, cchar *peerName)
                 return MPR_ERR_CANT_READ;
             }
         }
+        est->cfg = ssl->config = cfg;
         cfg->dhKey = defaultEstConfig->dhKey;
         cfg->ciphers = ssl_create_ciphers(ssl->ciphers);
     }

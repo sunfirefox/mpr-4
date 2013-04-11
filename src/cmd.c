@@ -1543,6 +1543,12 @@ PUBLIC int startProcess(MprCmd *cmd)
         program = mprTrimPathExt(program);
         entryPoint = program;
     }
+#if BIT_CPU_ARCH == MPR_CPU_IX86 || BIT_CPU_ARCH == MPR_CPU_IX64 || BIT_CPU_ARCH == MPR_CPU_SH
+    /*
+        A leading underscore is required on some architectures
+     */
+    entryPoint = sjoin("_", entryPoint, NULL);
+#endif
     if (symFindByName(sysSymTbl, entryPoint, (char**) (void*) &entryFn, &symType) < 0) {
         if ((mp = mprCreateModule(cmd->program, cmd->program, NULL, NULL)) == 0) {
             mprError("start: can't create module");

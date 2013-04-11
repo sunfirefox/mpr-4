@@ -524,6 +524,7 @@ static MprMem *allocMem(ssize required, int flags)
 
     /*
         OPT - could break this locked section up.
+        - Keep a per-thread small heap or
         - Can update bit maps conservatively and lockfree
         - Put locks around freeq unqueue
         - use unlinkBlock or linkBlock only. Do locks internally in these routines
