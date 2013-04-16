@@ -104,6 +104,16 @@ PUBLIC cchar *mprGetPathSeparators(cchar *path)
 }
 
 
+PUBLIC char mprGetPathSeparator(cchar *path)
+{
+    MprFileSystem   *fs;
+
+    assert(path);
+    fs = mprLookupFileSystem(path);
+    return fs->separators[0];
+}
+
+
 PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 {
     MprFileSystem   *fs;
