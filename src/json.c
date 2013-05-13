@@ -9,7 +9,7 @@
 
 /****************************** Forward Declarations **************************/
 
-static MprObj *deserialize(MprJson *jp);
+static MprObj *deserialize(MprJson *jp, MprObj *obj);
 static char advanceToken(MprJson *jp);
 static cchar *findEndKeyword(MprJson *jp, cchar *str);
 static cchar *findQuote(cchar *tok, int quote);
@@ -22,7 +22,7 @@ static int setValue(MprJson *jp, MprObj *obj, int index, cchar *name, cchar *val
 
 /************************************ Code ************************************/
 
-PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data)
+PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *data, MprObj *obj)
 {
     MprJson     jp;
 
@@ -34,7 +34,7 @@ PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *
     jp.tok = str;
     jp.callback = callback;
     jp.data = data;
-    return deserialize(&jp);
+    return deserialize(&jp, obj);
 }
 
 
@@ -43,28 +43,41 @@ PUBLIC MprObj *mprDeserializeCustom(cchar *str, MprJsonCallback callback, void *
  */
 PUBLIC MprObj *mprDeserialize(cchar *str)
 {
+    return mprDeserializeInto(str, NULL);
+}
+
+
+PUBLIC MprObj *mprDeserializeInto(cchar *str, MprObj *obj)
+{
     MprJsonCallback cb;
 
+    if (!str || !(*str == '[' || *str == '{')) {
+        assert(str && (*str == '[' || *str == '{'));
+        return 0;
+    }
     cb.checkState = 0;
     cb.makeObj = makeObj;
     cb.parseError = jsonParseError;
     cb.setValue = setValue;
-    return mprDeserializeCustom(str, cb, 0); 
+    return mprDeserializeCustom(str, cb, NULL, obj); 
 }
 
 
-static MprObj *deserialize(MprJson *jp)
+static MprObj *deserialize(MprJson *jp, MprObj *obj)
 {
     cvoid   *value;
-    MprObj  *obj;
     cchar   *name;
     int     token, rc, index, valueType;
 
     if ((token = advanceToken(jp)) == '[') {
-        obj = jp->callback.makeObj(jp, 1);
+        if (!obj) {
+            obj = jp->callback.makeObj(jp, 1);
+        }
         index = 0;
     } else if (token == '{') {
-        obj = jp->callback.makeObj(jp, 0);
+        if (!obj) {
+            obj = jp->callback.makeObj(jp, 0);
+        }
         index = -1;
     } else {
         return (MprObj*) parseValue(jp);
@@ -130,11 +143,11 @@ static MprObj *deserialize(MprJson *jp)
                     return 0;
                 }
                 if (*jp->tok == '{') {
-                    value = deserialize(jp);
+                    value = deserialize(jp, NULL);
                     valueType = MPR_JSON_OBJ;
 
                 } else if (*jp->tok == '[') {
-                    value = deserialize(jp);
+                    value = deserialize(jp, NULL);
                     valueType = MPR_JSON_ARRAY;
 
                 } else {
@@ -274,25 +287,28 @@ static void quoteValue(MprBuf *buf, cchar *str)
 {
     cchar   *cp;
 
-    mprPutCharToBuf(buf, '\'');
+    mprPutCharToBuf(buf, '"');
     for (cp = str; *cp; cp++) {
         if (*cp == '\'') {
             mprPutCharToBuf(buf, '\\');
         }
         mprPutCharToBuf(buf, *cp);
     }
-    mprPutCharToBuf(buf, '\'');
+    mprPutCharToBuf(buf, '"');
 }
 
 
 /*
     Supports hashes where properties are strings or hashes of strings. N-level nest is supported.
  */
-static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
+static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int flags)
 {
     MprKey  *kp;
     char    numbuf[32];
-    int     i, len;
+    int     i, len, quotes, pretty;
+
+    pretty = flags & MPR_JSON_PRETTY;
+    quotes = flags & MPR_JSON_QUOTES;
 
     if (type == MPR_JSON_ARRAY) {
         mprPutCharToBuf(buf, '[');
@@ -306,11 +322,13 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
                 continue;
             }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-                objToString(buf, (MprObj*) kp->data, kp->type, pretty);
+                objToString(buf, (MprObj*) kp->data, kp->type, flags);
             } else {
                 quoteValue(buf, kp->data);
             }
-            mprPutCharToBuf(buf, ',');
+            if ((i+1) < len) {
+                mprPutCharToBuf(buf, ',');
+            }
             if (pretty) mprPutCharToBuf(buf, '\n');
         }
         mprPutCharToBuf(buf, ']');
@@ -318,17 +336,26 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
     } else if (type == MPR_JSON_OBJ) {
         mprPutCharToBuf(buf, '{');
         if (pretty) mprPutCharToBuf(buf, '\n');
-        for (ITERATE_KEYS(obj, kp)) {
+        for (kp = mprGetFirstKey(obj); kp; ) {
             if (kp->key == 0 || kp->data == 0) continue;
             if (pretty) mprPutStringToBuf(buf, "    ");
+            if (quotes) mprPutCharToBuf(buf, '"');
             mprPutStringToBuf(buf, kp->key);
-            mprPutStringToBuf(buf, ": ");
+            if (quotes) mprPutCharToBuf(buf, '"');
+            if (pretty) {
+                mprPutStringToBuf(buf, ": ");
+            } else {
+                mprPutCharToBuf(buf, ':');
+            }
             if (kp->type == MPR_JSON_ARRAY || kp->type == MPR_JSON_OBJ) {
-                objToString(buf, (MprObj*) kp->data, kp->type, pretty);
+                objToString(buf, (MprObj*) kp->data, kp->type, flags);
             } else {
                 quoteValue(buf, kp->data);
             }
-            mprPutCharToBuf(buf, ',');
+            kp = mprGetNextKey(obj, kp);
+            if (kp) {
+                mprPutCharToBuf(buf, ',');
+            }
             if (pretty) mprPutCharToBuf(buf, '\n');
         }
         mprPutCharToBuf(buf, '}');
@@ -344,13 +371,11 @@ static cchar *objToString(MprBuf *buf, MprObj *obj, int type, int pretty)
 PUBLIC cchar *mprSerialize(MprObj *obj, int flags)
 {
     MprBuf  *buf;
-    int     pretty;
 
-    pretty = (flags & MPR_JSON_PRETTY);
     if ((buf = mprCreateBuf(0, 0)) == 0) {
         return 0;
     }
-    objToString(buf, obj, MPR_JSON_OBJ, pretty);
+    objToString(buf, obj, MPR_JSON_OBJ, flags);
     return mprGetBuf(buf);
 }
 
