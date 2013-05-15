@@ -1750,13 +1750,17 @@ static int loadProviders()
     MprSocketService    *ss;
 
     ss = MPR->socketService;
+    mprGlobalLock();
     if (!ss->providers && mprLoadSsl() < 0) {
+        mprGlobalUnlock();
         return MPR_ERR_CANT_READ;
     }
     if (!ss->providers) {
         mprError("Cannot load SSL provider");
+        mprGlobalUnlock();
         return MPR_ERR_CANT_INITIALIZE;
     }
+    mprGlobalUnlock();
     return 0;
 }
 
