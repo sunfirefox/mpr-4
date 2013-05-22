@@ -818,6 +818,26 @@ recurse:
 }
 
 
+PUBLIC char *mprListToString(MprList *list, cchar *join)
+{
+    MprBuf  *buf;
+    cchar   *s;
+    int     next;
+
+    if (!join) {
+        join = ",";
+    }
+    buf = mprCreateBuf(0, 0);
+    for (ITERATE_ITEMS(list, s, next)) {
+        mprPutStringToBuf(buf, s);
+        mprPutStringToBuf(buf, join);
+    }
+    mprAdjustBufEnd(buf, -1);
+    mprAddNullToBuf(buf);
+    return mprGetBufStart(buf);
+}
+
+
 /*
     @copy   default
 
