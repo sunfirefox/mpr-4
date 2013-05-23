@@ -7,6 +7,7 @@ VERSION            := 4.3.2
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
+CC_ARCH            := $(shell echo $(ARCH) | sed 's/x86/i686/;s/x64/x86_64/')
 OS                 := macosx
 CC                 := clang
 LD                 := link
@@ -258,7 +259,7 @@ DEPS_5 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/estLib.o: \
     src/deps/est/estLib.c $(DEPS_5)
 	@echo '   [Compile] $(CONFIG)/obj/estLib.o'
-	$(CC) -c -o $(CONFIG)/obj/estLib.o $(DFLAGS) "$(IFLAGS)" src/deps/est/estLib.c
+	$(CC) -c -o $(CONFIG)/obj/estLib.o -arch $(CC_ARCH) $(DFLAGS) "$(IFLAGS)" src/deps/est/estLib.c
 
 ifeq ($(BIT_PACK_EST),1)
 #
@@ -302,7 +303,7 @@ DEPS_9 += $(CONFIG)/inc/bitos.h
 $(CONFIG)/obj/async.o: \
     src/async.c $(DEPS_9)
 	@echo '   [Compile] $(CONFIG)/obj/async.o'
-	$(CC) -c -o $(CONFIG)/obj/async.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/async.c
+	$(CC) -c -o $(CONFIG)/obj/async.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/async.c
 
 #
 #   atomic.o
@@ -313,7 +314,7 @@ DEPS_10 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/atomic.o: \
     src/atomic.c $(DEPS_10)
 	@echo '   [Compile] $(CONFIG)/obj/atomic.o'
-	$(CC) -c -o $(CONFIG)/obj/atomic.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/atomic.c
+	$(CC) -c -o $(CONFIG)/obj/atomic.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/atomic.c
 
 #
 #   buf.o
@@ -324,7 +325,7 @@ DEPS_11 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/buf.o: \
     src/buf.c $(DEPS_11)
 	@echo '   [Compile] $(CONFIG)/obj/buf.o'
-	$(CC) -c -o $(CONFIG)/obj/buf.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/buf.c
+	$(CC) -c -o $(CONFIG)/obj/buf.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/buf.c
 
 #
 #   cache.o
@@ -335,7 +336,7 @@ DEPS_12 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/cache.o: \
     src/cache.c $(DEPS_12)
 	@echo '   [Compile] $(CONFIG)/obj/cache.o'
-	$(CC) -c -o $(CONFIG)/obj/cache.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/cache.c
+	$(CC) -c -o $(CONFIG)/obj/cache.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/cache.c
 
 #
 #   cmd.o
@@ -346,7 +347,7 @@ DEPS_13 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/cmd.o: \
     src/cmd.c $(DEPS_13)
 	@echo '   [Compile] $(CONFIG)/obj/cmd.o'
-	$(CC) -c -o $(CONFIG)/obj/cmd.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/cmd.c
+	$(CC) -c -o $(CONFIG)/obj/cmd.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/cmd.c
 
 #
 #   cond.o
@@ -357,7 +358,7 @@ DEPS_14 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/cond.o: \
     src/cond.c $(DEPS_14)
 	@echo '   [Compile] $(CONFIG)/obj/cond.o'
-	$(CC) -c -o $(CONFIG)/obj/cond.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/cond.c
+	$(CC) -c -o $(CONFIG)/obj/cond.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/cond.c
 
 #
 #   crypt.o
@@ -368,7 +369,7 @@ DEPS_15 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/crypt.o: \
     src/crypt.c $(DEPS_15)
 	@echo '   [Compile] $(CONFIG)/obj/crypt.o'
-	$(CC) -c -o $(CONFIG)/obj/crypt.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/crypt.c
+	$(CC) -c -o $(CONFIG)/obj/crypt.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/crypt.c
 
 #
 #   disk.o
@@ -379,7 +380,7 @@ DEPS_16 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/disk.o: \
     src/disk.c $(DEPS_16)
 	@echo '   [Compile] $(CONFIG)/obj/disk.o'
-	$(CC) -c -o $(CONFIG)/obj/disk.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/disk.c
+	$(CC) -c -o $(CONFIG)/obj/disk.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/disk.c
 
 #
 #   dispatcher.o
@@ -390,7 +391,7 @@ DEPS_17 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/dispatcher.o: \
     src/dispatcher.c $(DEPS_17)
 	@echo '   [Compile] $(CONFIG)/obj/dispatcher.o'
-	$(CC) -c -o $(CONFIG)/obj/dispatcher.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/dispatcher.c
+	$(CC) -c -o $(CONFIG)/obj/dispatcher.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/dispatcher.c
 
 #
 #   encode.o
@@ -401,7 +402,7 @@ DEPS_18 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/encode.o: \
     src/encode.c $(DEPS_18)
 	@echo '   [Compile] $(CONFIG)/obj/encode.o'
-	$(CC) -c -o $(CONFIG)/obj/encode.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/encode.c
+	$(CC) -c -o $(CONFIG)/obj/encode.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/encode.c
 
 #
 #   epoll.o
@@ -412,7 +413,7 @@ DEPS_19 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/epoll.o: \
     src/epoll.c $(DEPS_19)
 	@echo '   [Compile] $(CONFIG)/obj/epoll.o'
-	$(CC) -c -o $(CONFIG)/obj/epoll.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/epoll.c
+	$(CC) -c -o $(CONFIG)/obj/epoll.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/epoll.c
 
 #
 #   event.o
@@ -423,7 +424,7 @@ DEPS_20 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/event.o: \
     src/event.c $(DEPS_20)
 	@echo '   [Compile] $(CONFIG)/obj/event.o'
-	$(CC) -c -o $(CONFIG)/obj/event.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/event.c
+	$(CC) -c -o $(CONFIG)/obj/event.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/event.c
 
 #
 #   file.o
@@ -434,7 +435,7 @@ DEPS_21 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/file.o: \
     src/file.c $(DEPS_21)
 	@echo '   [Compile] $(CONFIG)/obj/file.o'
-	$(CC) -c -o $(CONFIG)/obj/file.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/file.c
+	$(CC) -c -o $(CONFIG)/obj/file.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/file.c
 
 #
 #   fs.o
@@ -445,7 +446,7 @@ DEPS_22 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/fs.o: \
     src/fs.c $(DEPS_22)
 	@echo '   [Compile] $(CONFIG)/obj/fs.o'
-	$(CC) -c -o $(CONFIG)/obj/fs.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/fs.c
+	$(CC) -c -o $(CONFIG)/obj/fs.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/fs.c
 
 #
 #   hash.o
@@ -456,7 +457,7 @@ DEPS_23 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/hash.o: \
     src/hash.c $(DEPS_23)
 	@echo '   [Compile] $(CONFIG)/obj/hash.o'
-	$(CC) -c -o $(CONFIG)/obj/hash.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/hash.c
+	$(CC) -c -o $(CONFIG)/obj/hash.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/hash.c
 
 #
 #   json.o
@@ -467,7 +468,7 @@ DEPS_24 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/json.o: \
     src/json.c $(DEPS_24)
 	@echo '   [Compile] $(CONFIG)/obj/json.o'
-	$(CC) -c -o $(CONFIG)/obj/json.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/json.c
+	$(CC) -c -o $(CONFIG)/obj/json.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/json.c
 
 #
 #   kqueue.o
@@ -478,7 +479,7 @@ DEPS_25 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/kqueue.o: \
     src/kqueue.c $(DEPS_25)
 	@echo '   [Compile] $(CONFIG)/obj/kqueue.o'
-	$(CC) -c -o $(CONFIG)/obj/kqueue.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/kqueue.c
+	$(CC) -c -o $(CONFIG)/obj/kqueue.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/kqueue.c
 
 #
 #   list.o
@@ -489,7 +490,7 @@ DEPS_26 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/list.o: \
     src/list.c $(DEPS_26)
 	@echo '   [Compile] $(CONFIG)/obj/list.o'
-	$(CC) -c -o $(CONFIG)/obj/list.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/list.c
+	$(CC) -c -o $(CONFIG)/obj/list.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/list.c
 
 #
 #   lock.o
@@ -500,7 +501,7 @@ DEPS_27 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/lock.o: \
     src/lock.c $(DEPS_27)
 	@echo '   [Compile] $(CONFIG)/obj/lock.o'
-	$(CC) -c -o $(CONFIG)/obj/lock.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/lock.c
+	$(CC) -c -o $(CONFIG)/obj/lock.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/lock.c
 
 #
 #   log.o
@@ -511,7 +512,7 @@ DEPS_28 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/log.o: \
     src/log.c $(DEPS_28)
 	@echo '   [Compile] $(CONFIG)/obj/log.o'
-	$(CC) -c -o $(CONFIG)/obj/log.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/log.c
+	$(CC) -c -o $(CONFIG)/obj/log.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/log.c
 
 #
 #   mem.o
@@ -522,7 +523,7 @@ DEPS_29 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/mem.o: \
     src/mem.c $(DEPS_29)
 	@echo '   [Compile] $(CONFIG)/obj/mem.o'
-	$(CC) -c -o $(CONFIG)/obj/mem.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mem.c
+	$(CC) -c -o $(CONFIG)/obj/mem.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mem.c
 
 #
 #   mime.o
@@ -533,7 +534,7 @@ DEPS_30 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/mime.o: \
     src/mime.c $(DEPS_30)
 	@echo '   [Compile] $(CONFIG)/obj/mime.o'
-	$(CC) -c -o $(CONFIG)/obj/mime.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mime.c
+	$(CC) -c -o $(CONFIG)/obj/mime.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mime.c
 
 #
 #   mixed.o
@@ -544,7 +545,7 @@ DEPS_31 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/mixed.o: \
     src/mixed.c $(DEPS_31)
 	@echo '   [Compile] $(CONFIG)/obj/mixed.o'
-	$(CC) -c -o $(CONFIG)/obj/mixed.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mixed.c
+	$(CC) -c -o $(CONFIG)/obj/mixed.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mixed.c
 
 #
 #   module.o
@@ -555,7 +556,7 @@ DEPS_32 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/module.o: \
     src/module.c $(DEPS_32)
 	@echo '   [Compile] $(CONFIG)/obj/module.o'
-	$(CC) -c -o $(CONFIG)/obj/module.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/module.c
+	$(CC) -c -o $(CONFIG)/obj/module.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/module.c
 
 #
 #   mpr.o
@@ -566,7 +567,7 @@ DEPS_33 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/mpr.o: \
     src/mpr.c $(DEPS_33)
 	@echo '   [Compile] $(CONFIG)/obj/mpr.o'
-	$(CC) -c -o $(CONFIG)/obj/mpr.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mpr.c
+	$(CC) -c -o $(CONFIG)/obj/mpr.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/mpr.c
 
 #
 #   path.o
@@ -577,7 +578,7 @@ DEPS_34 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/path.o: \
     src/path.c $(DEPS_34)
 	@echo '   [Compile] $(CONFIG)/obj/path.o'
-	$(CC) -c -o $(CONFIG)/obj/path.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/path.c
+	$(CC) -c -o $(CONFIG)/obj/path.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/path.c
 
 #
 #   poll.o
@@ -588,7 +589,7 @@ DEPS_35 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/poll.o: \
     src/poll.c $(DEPS_35)
 	@echo '   [Compile] $(CONFIG)/obj/poll.o'
-	$(CC) -c -o $(CONFIG)/obj/poll.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/poll.c
+	$(CC) -c -o $(CONFIG)/obj/poll.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/poll.c
 
 #
 #   posix.o
@@ -599,7 +600,7 @@ DEPS_36 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/posix.o: \
     src/posix.c $(DEPS_36)
 	@echo '   [Compile] $(CONFIG)/obj/posix.o'
-	$(CC) -c -o $(CONFIG)/obj/posix.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/posix.c
+	$(CC) -c -o $(CONFIG)/obj/posix.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/posix.c
 
 #
 #   printf.o
@@ -610,7 +611,7 @@ DEPS_37 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/printf.o: \
     src/printf.c $(DEPS_37)
 	@echo '   [Compile] $(CONFIG)/obj/printf.o'
-	$(CC) -c -o $(CONFIG)/obj/printf.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/printf.c
+	$(CC) -c -o $(CONFIG)/obj/printf.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/printf.c
 
 #
 #   rom.o
@@ -621,7 +622,7 @@ DEPS_38 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/rom.o: \
     src/rom.c $(DEPS_38)
 	@echo '   [Compile] $(CONFIG)/obj/rom.o'
-	$(CC) -c -o $(CONFIG)/obj/rom.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/rom.c
+	$(CC) -c -o $(CONFIG)/obj/rom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/rom.c
 
 #
 #   select.o
@@ -632,7 +633,7 @@ DEPS_39 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/select.o: \
     src/select.c $(DEPS_39)
 	@echo '   [Compile] $(CONFIG)/obj/select.o'
-	$(CC) -c -o $(CONFIG)/obj/select.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/select.c
+	$(CC) -c -o $(CONFIG)/obj/select.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/select.c
 
 #
 #   signal.o
@@ -643,7 +644,7 @@ DEPS_40 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/signal.o: \
     src/signal.c $(DEPS_40)
 	@echo '   [Compile] $(CONFIG)/obj/signal.o'
-	$(CC) -c -o $(CONFIG)/obj/signal.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/signal.c
+	$(CC) -c -o $(CONFIG)/obj/signal.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/signal.c
 
 #
 #   socket.o
@@ -654,7 +655,7 @@ DEPS_41 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/socket.o: \
     src/socket.c $(DEPS_41)
 	@echo '   [Compile] $(CONFIG)/obj/socket.o'
-	$(CC) -c -o $(CONFIG)/obj/socket.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/socket.c
+	$(CC) -c -o $(CONFIG)/obj/socket.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/socket.c
 
 #
 #   string.o
@@ -665,7 +666,7 @@ DEPS_42 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/string.o: \
     src/string.c $(DEPS_42)
 	@echo '   [Compile] $(CONFIG)/obj/string.o'
-	$(CC) -c -o $(CONFIG)/obj/string.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/string.c
+	$(CC) -c -o $(CONFIG)/obj/string.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/string.c
 
 #
 #   test.o
@@ -676,7 +677,7 @@ DEPS_43 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/test.o: \
     src/test.c $(DEPS_43)
 	@echo '   [Compile] $(CONFIG)/obj/test.o'
-	$(CC) -c -o $(CONFIG)/obj/test.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/test.c
+	$(CC) -c -o $(CONFIG)/obj/test.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/test.c
 
 #
 #   thread.o
@@ -687,7 +688,7 @@ DEPS_44 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/thread.o: \
     src/thread.c $(DEPS_44)
 	@echo '   [Compile] $(CONFIG)/obj/thread.o'
-	$(CC) -c -o $(CONFIG)/obj/thread.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/thread.c
+	$(CC) -c -o $(CONFIG)/obj/thread.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/thread.c
 
 #
 #   time.o
@@ -698,7 +699,7 @@ DEPS_45 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/time.o: \
     src/time.c $(DEPS_45)
 	@echo '   [Compile] $(CONFIG)/obj/time.o'
-	$(CC) -c -o $(CONFIG)/obj/time.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/time.c
+	$(CC) -c -o $(CONFIG)/obj/time.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/time.c
 
 #
 #   vxworks.o
@@ -709,7 +710,7 @@ DEPS_46 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/vxworks.o: \
     src/vxworks.c $(DEPS_46)
 	@echo '   [Compile] $(CONFIG)/obj/vxworks.o'
-	$(CC) -c -o $(CONFIG)/obj/vxworks.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/vxworks.c
+	$(CC) -c -o $(CONFIG)/obj/vxworks.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/vxworks.c
 
 #
 #   wait.o
@@ -720,7 +721,7 @@ DEPS_47 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/wait.o: \
     src/wait.c $(DEPS_47)
 	@echo '   [Compile] $(CONFIG)/obj/wait.o'
-	$(CC) -c -o $(CONFIG)/obj/wait.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/wait.c
+	$(CC) -c -o $(CONFIG)/obj/wait.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/wait.c
 
 #
 #   wide.o
@@ -731,7 +732,7 @@ DEPS_48 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/wide.o: \
     src/wide.c $(DEPS_48)
 	@echo '   [Compile] $(CONFIG)/obj/wide.o'
-	$(CC) -c -o $(CONFIG)/obj/wide.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/wide.c
+	$(CC) -c -o $(CONFIG)/obj/wide.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/wide.c
 
 #
 #   win.o
@@ -742,7 +743,7 @@ DEPS_49 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/win.o: \
     src/win.c $(DEPS_49)
 	@echo '   [Compile] $(CONFIG)/obj/win.o'
-	$(CC) -c -o $(CONFIG)/obj/win.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/win.c
+	$(CC) -c -o $(CONFIG)/obj/win.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/win.c
 
 #
 #   wince.o
@@ -753,7 +754,7 @@ DEPS_50 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/wince.o: \
     src/wince.c $(DEPS_50)
 	@echo '   [Compile] $(CONFIG)/obj/wince.o'
-	$(CC) -c -o $(CONFIG)/obj/wince.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/wince.c
+	$(CC) -c -o $(CONFIG)/obj/wince.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/wince.c
 
 #
 #   xml.o
@@ -764,7 +765,7 @@ DEPS_51 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/xml.o: \
     src/xml.c $(DEPS_51)
 	@echo '   [Compile] $(CONFIG)/obj/xml.o'
-	$(CC) -c -o $(CONFIG)/obj/xml.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/xml.c
+	$(CC) -c -o $(CONFIG)/obj/xml.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/xml.c
 
 #
 #   libmpr
@@ -829,7 +830,7 @@ DEPS_53 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/benchMpr.o: \
     test/benchMpr.c $(DEPS_53)
 	@echo '   [Compile] $(CONFIG)/obj/benchMpr.o'
-	$(CC) -c -o $(CONFIG)/obj/benchMpr.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/benchMpr.c
+	$(CC) -c -o $(CONFIG)/obj/benchMpr.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/benchMpr.c
 
 #
 #   benchMpr
@@ -887,7 +888,7 @@ LIBS_54 += -lmpr
 
 $(CONFIG)/bin/benchMpr: $(DEPS_54)
 	@echo '      [Link] $(CONFIG)/bin/benchMpr'
-	$(CC) -o $(CONFIG)/bin/benchMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/benchMpr.o" $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/benchMpr -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/benchMpr.o" $(LIBPATHS_54) $(LIBS_54) $(LIBS_54) $(LIBS) 
 
 #
 #   runProgram.o
@@ -897,7 +898,7 @@ DEPS_55 += $(CONFIG)/inc/bit.h
 $(CONFIG)/obj/runProgram.o: \
     test/runProgram.c $(DEPS_55)
 	@echo '   [Compile] $(CONFIG)/obj/runProgram.o'
-	$(CC) -c -o $(CONFIG)/obj/runProgram.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/runProgram.c
+	$(CC) -c -o $(CONFIG)/obj/runProgram.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/runProgram.c
 
 #
 #   runProgram
@@ -907,7 +908,7 @@ DEPS_56 += $(CONFIG)/obj/runProgram.o
 
 $(CONFIG)/bin/runProgram: $(DEPS_56)
 	@echo '      [Link] $(CONFIG)/bin/runProgram'
-	$(CC) -o $(CONFIG)/bin/runProgram -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/runProgram.o" $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/runProgram -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/runProgram.o" $(LIBS) 
 
 #
 #   testArgv.o
@@ -918,7 +919,7 @@ DEPS_57 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testArgv.o: \
     test/testArgv.c $(DEPS_57)
 	@echo '   [Compile] $(CONFIG)/obj/testArgv.o'
-	$(CC) -c -o $(CONFIG)/obj/testArgv.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testArgv.c
+	$(CC) -c -o $(CONFIG)/obj/testArgv.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testArgv.c
 
 #
 #   testBuf.o
@@ -929,7 +930,7 @@ DEPS_58 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testBuf.o: \
     test/testBuf.c $(DEPS_58)
 	@echo '   [Compile] $(CONFIG)/obj/testBuf.o'
-	$(CC) -c -o $(CONFIG)/obj/testBuf.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testBuf.c
+	$(CC) -c -o $(CONFIG)/obj/testBuf.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testBuf.c
 
 #
 #   testCmd.o
@@ -940,7 +941,7 @@ DEPS_59 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testCmd.o: \
     test/testCmd.c $(DEPS_59)
 	@echo '   [Compile] $(CONFIG)/obj/testCmd.o'
-	$(CC) -c -o $(CONFIG)/obj/testCmd.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testCmd.c
+	$(CC) -c -o $(CONFIG)/obj/testCmd.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testCmd.c
 
 #
 #   testCond.o
@@ -951,7 +952,7 @@ DEPS_60 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testCond.o: \
     test/testCond.c $(DEPS_60)
 	@echo '   [Compile] $(CONFIG)/obj/testCond.o'
-	$(CC) -c -o $(CONFIG)/obj/testCond.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testCond.c
+	$(CC) -c -o $(CONFIG)/obj/testCond.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testCond.c
 
 #
 #   testEvent.o
@@ -962,7 +963,7 @@ DEPS_61 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testEvent.o: \
     test/testEvent.c $(DEPS_61)
 	@echo '   [Compile] $(CONFIG)/obj/testEvent.o'
-	$(CC) -c -o $(CONFIG)/obj/testEvent.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testEvent.c
+	$(CC) -c -o $(CONFIG)/obj/testEvent.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testEvent.c
 
 #
 #   testFile.o
@@ -973,7 +974,7 @@ DEPS_62 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testFile.o: \
     test/testFile.c $(DEPS_62)
 	@echo '   [Compile] $(CONFIG)/obj/testFile.o'
-	$(CC) -c -o $(CONFIG)/obj/testFile.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testFile.c
+	$(CC) -c -o $(CONFIG)/obj/testFile.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testFile.c
 
 #
 #   testHash.o
@@ -984,7 +985,7 @@ DEPS_63 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testHash.o: \
     test/testHash.c $(DEPS_63)
 	@echo '   [Compile] $(CONFIG)/obj/testHash.o'
-	$(CC) -c -o $(CONFIG)/obj/testHash.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testHash.c
+	$(CC) -c -o $(CONFIG)/obj/testHash.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testHash.c
 
 #
 #   testList.o
@@ -995,7 +996,7 @@ DEPS_64 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testList.o: \
     test/testList.c $(DEPS_64)
 	@echo '   [Compile] $(CONFIG)/obj/testList.o'
-	$(CC) -c -o $(CONFIG)/obj/testList.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testList.c
+	$(CC) -c -o $(CONFIG)/obj/testList.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testList.c
 
 #
 #   testLock.o
@@ -1006,7 +1007,7 @@ DEPS_65 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testLock.o: \
     test/testLock.c $(DEPS_65)
 	@echo '   [Compile] $(CONFIG)/obj/testLock.o'
-	$(CC) -c -o $(CONFIG)/obj/testLock.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testLock.c
+	$(CC) -c -o $(CONFIG)/obj/testLock.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testLock.c
 
 #
 #   testMem.o
@@ -1017,7 +1018,7 @@ DEPS_66 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testMem.o: \
     test/testMem.c $(DEPS_66)
 	@echo '   [Compile] $(CONFIG)/obj/testMem.o'
-	$(CC) -c -o $(CONFIG)/obj/testMem.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testMem.c
+	$(CC) -c -o $(CONFIG)/obj/testMem.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testMem.c
 
 #
 #   testMpr.o
@@ -1028,7 +1029,7 @@ DEPS_67 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testMpr.o: \
     test/testMpr.c $(DEPS_67)
 	@echo '   [Compile] $(CONFIG)/obj/testMpr.o'
-	$(CC) -c -o $(CONFIG)/obj/testMpr.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testMpr.c
+	$(CC) -c -o $(CONFIG)/obj/testMpr.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testMpr.c
 
 #
 #   testPath.o
@@ -1039,7 +1040,7 @@ DEPS_68 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testPath.o: \
     test/testPath.c $(DEPS_68)
 	@echo '   [Compile] $(CONFIG)/obj/testPath.o'
-	$(CC) -c -o $(CONFIG)/obj/testPath.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testPath.c
+	$(CC) -c -o $(CONFIG)/obj/testPath.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testPath.c
 
 #
 #   testSocket.o
@@ -1050,7 +1051,7 @@ DEPS_69 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testSocket.o: \
     test/testSocket.c $(DEPS_69)
 	@echo '   [Compile] $(CONFIG)/obj/testSocket.o'
-	$(CC) -c -o $(CONFIG)/obj/testSocket.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testSocket.c
+	$(CC) -c -o $(CONFIG)/obj/testSocket.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testSocket.c
 
 #
 #   testSprintf.o
@@ -1061,7 +1062,7 @@ DEPS_70 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testSprintf.o: \
     test/testSprintf.c $(DEPS_70)
 	@echo '   [Compile] $(CONFIG)/obj/testSprintf.o'
-	$(CC) -c -o $(CONFIG)/obj/testSprintf.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testSprintf.c
+	$(CC) -c -o $(CONFIG)/obj/testSprintf.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testSprintf.c
 
 #
 #   testThread.o
@@ -1072,7 +1073,7 @@ DEPS_71 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testThread.o: \
     test/testThread.c $(DEPS_71)
 	@echo '   [Compile] $(CONFIG)/obj/testThread.o'
-	$(CC) -c -o $(CONFIG)/obj/testThread.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testThread.c
+	$(CC) -c -o $(CONFIG)/obj/testThread.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testThread.c
 
 #
 #   testTime.o
@@ -1083,7 +1084,7 @@ DEPS_72 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testTime.o: \
     test/testTime.c $(DEPS_72)
 	@echo '   [Compile] $(CONFIG)/obj/testTime.o'
-	$(CC) -c -o $(CONFIG)/obj/testTime.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testTime.c
+	$(CC) -c -o $(CONFIG)/obj/testTime.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testTime.c
 
 #
 #   testUnicode.o
@@ -1094,7 +1095,7 @@ DEPS_73 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/testUnicode.o: \
     test/testUnicode.c $(DEPS_73)
 	@echo '   [Compile] $(CONFIG)/obj/testUnicode.o'
-	$(CC) -c -o $(CONFIG)/obj/testUnicode.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testUnicode.c
+	$(CC) -c -o $(CONFIG)/obj/testUnicode.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" test/testUnicode.c
 
 #
 #   testMpr
@@ -1170,7 +1171,7 @@ LIBS_74 += -lmpr
 
 $(CONFIG)/bin/testMpr: $(DEPS_74)
 	@echo '      [Link] $(CONFIG)/bin/testMpr'
-	$(CC) -o $(CONFIG)/bin/testMpr -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testArgv.o" "$(CONFIG)/obj/testBuf.o" "$(CONFIG)/obj/testCmd.o" "$(CONFIG)/obj/testCond.o" "$(CONFIG)/obj/testEvent.o" "$(CONFIG)/obj/testFile.o" "$(CONFIG)/obj/testHash.o" "$(CONFIG)/obj/testList.o" "$(CONFIG)/obj/testLock.o" "$(CONFIG)/obj/testMem.o" "$(CONFIG)/obj/testMpr.o" "$(CONFIG)/obj/testPath.o" "$(CONFIG)/obj/testSocket.o" "$(CONFIG)/obj/testSprintf.o" "$(CONFIG)/obj/testThread.o" "$(CONFIG)/obj/testTime.o" "$(CONFIG)/obj/testUnicode.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/testMpr -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/testArgv.o" "$(CONFIG)/obj/testBuf.o" "$(CONFIG)/obj/testCmd.o" "$(CONFIG)/obj/testCond.o" "$(CONFIG)/obj/testEvent.o" "$(CONFIG)/obj/testFile.o" "$(CONFIG)/obj/testHash.o" "$(CONFIG)/obj/testList.o" "$(CONFIG)/obj/testLock.o" "$(CONFIG)/obj/testMem.o" "$(CONFIG)/obj/testMpr.o" "$(CONFIG)/obj/testPath.o" "$(CONFIG)/obj/testSocket.o" "$(CONFIG)/obj/testSprintf.o" "$(CONFIG)/obj/testThread.o" "$(CONFIG)/obj/testTime.o" "$(CONFIG)/obj/testUnicode.o" $(LIBPATHS_74) $(LIBS_74) $(LIBS_74) $(LIBS) 
 
 #
 #   est.o
@@ -1182,7 +1183,7 @@ DEPS_75 += $(CONFIG)/inc/est.h
 $(CONFIG)/obj/est.o: \
     src/ssl/est.c $(DEPS_75)
 	@echo '   [Compile] $(CONFIG)/obj/est.o'
-	$(CC) -c -o $(CONFIG)/obj/est.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/est.c
+	$(CC) -c -o $(CONFIG)/obj/est.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/est.c
 
 #
 #   matrixssl.o
@@ -1193,7 +1194,7 @@ DEPS_76 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/matrixssl.o: \
     src/ssl/matrixssl.c $(DEPS_76)
 	@echo '   [Compile] $(CONFIG)/obj/matrixssl.o'
-	$(CC) -c -o $(CONFIG)/obj/matrixssl.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/matrixssl.c
+	$(CC) -c -o $(CONFIG)/obj/matrixssl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/matrixssl.c
 
 #
 #   nanossl.o
@@ -1204,7 +1205,7 @@ DEPS_77 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/nanossl.o: \
     src/ssl/nanossl.c $(DEPS_77)
 	@echo '   [Compile] $(CONFIG)/obj/nanossl.o'
-	$(CC) -c -o $(CONFIG)/obj/nanossl.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/nanossl.c
+	$(CC) -c -o $(CONFIG)/obj/nanossl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/nanossl.c
 
 #
 #   openssl.o
@@ -1215,7 +1216,7 @@ DEPS_78 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/openssl.o: \
     src/ssl/openssl.c $(DEPS_78)
 	@echo '   [Compile] $(CONFIG)/obj/openssl.o'
-	$(CC) -c -o $(CONFIG)/obj/openssl.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/openssl.c
+	$(CC) -c -o $(CONFIG)/obj/openssl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/openssl.c
 
 #
 #   ssl.o
@@ -1226,7 +1227,7 @@ DEPS_79 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/ssl.o: \
     src/ssl/ssl.c $(DEPS_79)
 	@echo '   [Compile] $(CONFIG)/obj/ssl.o'
-	$(CC) -c -o $(CONFIG)/obj/ssl.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/ssl.c
+	$(CC) -c -o $(CONFIG)/obj/ssl.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" "-I$(BIT_PACK_MATRIXSSL_PATH)" "-I$(BIT_PACK_MATRIXSSL_PATH)/matrixssl" "-I$(BIT_PACK_NANOSSL_PATH)/src" "-I$(BIT_PACK_OPENSSL_PATH)/include" src/ssl/ssl.c
 
 #
 #   libmprssl
@@ -1302,7 +1303,7 @@ DEPS_81 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/manager.o: \
     src/manager.c $(DEPS_81)
 	@echo '   [Compile] $(CONFIG)/obj/manager.o'
-	$(CC) -c -o $(CONFIG)/obj/manager.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/manager.c
+	$(CC) -c -o $(CONFIG)/obj/manager.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/manager.c
 
 #
 #   manager
@@ -1360,7 +1361,7 @@ LIBS_82 += -lmpr
 
 $(CONFIG)/bin/manager: $(DEPS_82)
 	@echo '      [Link] $(CONFIG)/bin/manager'
-	$(CC) -o $(CONFIG)/bin/manager -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/manager -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/manager.o" $(LIBPATHS_82) $(LIBS_82) $(LIBS_82) $(LIBS) 
 
 #
 #   makerom.o
@@ -1371,7 +1372,7 @@ DEPS_83 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/makerom.o: \
     src/utils/makerom.c $(DEPS_83)
 	@echo '   [Compile] $(CONFIG)/obj/makerom.o'
-	$(CC) -c -o $(CONFIG)/obj/makerom.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/makerom.c
+	$(CC) -c -o $(CONFIG)/obj/makerom.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/makerom.c
 
 #
 #   makerom
@@ -1429,7 +1430,7 @@ LIBS_84 += -lmpr
 
 $(CONFIG)/bin/makerom: $(DEPS_84)
 	@echo '      [Link] $(CONFIG)/bin/makerom'
-	$(CC) -o $(CONFIG)/bin/makerom -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/makerom.o" $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/makerom -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/makerom.o" $(LIBPATHS_84) $(LIBS_84) $(LIBS_84) $(LIBS) 
 
 #
 #   charGen.o
@@ -1440,7 +1441,7 @@ DEPS_85 += $(CONFIG)/inc/mpr.h
 $(CONFIG)/obj/charGen.o: \
     src/utils/charGen.c $(DEPS_85)
 	@echo '   [Compile] $(CONFIG)/obj/charGen.o'
-	$(CC) -c -o $(CONFIG)/obj/charGen.o $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/charGen.c
+	$(CC) -c -o $(CONFIG)/obj/charGen.o -arch $(CC_ARCH) $(CFLAGS) $(DFLAGS) "$(IFLAGS)" src/utils/charGen.c
 
 #
 #   chargen
@@ -1498,7 +1499,7 @@ LIBS_86 += -lmpr
 
 $(CONFIG)/bin/chargen: $(DEPS_86)
 	@echo '      [Link] $(CONFIG)/bin/chargen'
-	$(CC) -o $(CONFIG)/bin/chargen -arch x86_64 $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/charGen.o" $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
+	$(CC) -o $(CONFIG)/bin/chargen -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) "$(CONFIG)/obj/charGen.o" $(LIBPATHS_86) $(LIBS_86) $(LIBS_86) $(LIBS) 
 
 #
 #   stop
