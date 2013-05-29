@@ -182,9 +182,9 @@ struct  MprXml;
 #define MPR_MAX_FILE            256
 
 /**
-    Maximum number of kernel events
+    Maximum number of notifier events
  */
-#define MPR_MAX_KEVENTS         32
+#define MPR_MAX_EVENTS          32
 
 
 /*
@@ -6358,12 +6358,9 @@ typedef struct MprWaitService {
     int             needRecall;             /* A handler needs a recall due to buffered data */
     int             wakeRequested;          /* Wakeup of the wait service has been requested */
 #if MPR_EVENT_EPOLL
-    int             epoll;                  /* Kqueue() return descriptor */
-    struct epoll_event *events;             /* Events triggered */
-    int             eventsMax;              /* Max size of events/interest */
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers */
-    int             handlerMax;             /* Size of the handlers array */
-    int             breakPipe[2];           /* Pipe to wakeup select */
+    int             epoll;                  /* Epoll descriptor */
+    MprList         *handlerMap;            /* Map of fds to handlers */
+    int             breakFd[2];             /* Event or pipe to wakeup */
 #elif MPR_EVENT_KQUEUE
     int             kq;                     /* Kqueue() return descriptor */
     MprList         *handlerMap;            /* Map of fds to handlers */
