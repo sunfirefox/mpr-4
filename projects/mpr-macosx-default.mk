@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := mpr
-VERSION            := 4.3.2
+VERSION            := 4.4.0
 BUILD_NUMBER       := 0
 PROFILE            := default
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -223,7 +223,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.2-0
+	@echo 4.4.0-0
 
 #
 #   est.h
@@ -272,7 +272,7 @@ DEPS_6 += $(CONFIG)/obj/estLib.o
 
 $(CONFIG)/bin/libest.dylib: $(DEPS_6)
 	@echo '      [Link] $(CONFIG)/bin/libest.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.3.2 -current_version 4.3.2 "$(CONFIG)/obj/estLib.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libest.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libest.dylib -compatibility_version 4.4.0 -current_version 4.4.0 "$(CONFIG)/obj/estLib.o" $(LIBS) 
 endif
 
 #
@@ -819,7 +819,7 @@ DEPS_52 += $(CONFIG)/obj/xml.o
 
 $(CONFIG)/bin/libmpr.dylib: $(DEPS_52)
 	@echo '      [Link] $(CONFIG)/bin/libmpr.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 4.3.2 -current_version 4.3.2 "$(CONFIG)/obj/async.o" "$(CONFIG)/obj/atomic.o" "$(CONFIG)/obj/buf.o" "$(CONFIG)/obj/cache.o" "$(CONFIG)/obj/cmd.o" "$(CONFIG)/obj/cond.o" "$(CONFIG)/obj/crypt.o" "$(CONFIG)/obj/disk.o" "$(CONFIG)/obj/dispatcher.o" "$(CONFIG)/obj/encode.o" "$(CONFIG)/obj/epoll.o" "$(CONFIG)/obj/event.o" "$(CONFIG)/obj/file.o" "$(CONFIG)/obj/fs.o" "$(CONFIG)/obj/hash.o" "$(CONFIG)/obj/json.o" "$(CONFIG)/obj/kqueue.o" "$(CONFIG)/obj/list.o" "$(CONFIG)/obj/lock.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/mem.o" "$(CONFIG)/obj/mime.o" "$(CONFIG)/obj/mixed.o" "$(CONFIG)/obj/module.o" "$(CONFIG)/obj/mpr.o" "$(CONFIG)/obj/path.o" "$(CONFIG)/obj/poll.o" "$(CONFIG)/obj/posix.o" "$(CONFIG)/obj/printf.o" "$(CONFIG)/obj/rom.o" "$(CONFIG)/obj/select.o" "$(CONFIG)/obj/signal.o" "$(CONFIG)/obj/socket.o" "$(CONFIG)/obj/string.o" "$(CONFIG)/obj/test.o" "$(CONFIG)/obj/thread.o" "$(CONFIG)/obj/time.o" "$(CONFIG)/obj/vxworks.o" "$(CONFIG)/obj/wait.o" "$(CONFIG)/obj/wide.o" "$(CONFIG)/obj/win.o" "$(CONFIG)/obj/wince.o" "$(CONFIG)/obj/xml.o" $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmpr.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS) -install_name @rpath/libmpr.dylib -compatibility_version 4.4.0 -current_version 4.4.0 "$(CONFIG)/obj/async.o" "$(CONFIG)/obj/atomic.o" "$(CONFIG)/obj/buf.o" "$(CONFIG)/obj/cache.o" "$(CONFIG)/obj/cmd.o" "$(CONFIG)/obj/cond.o" "$(CONFIG)/obj/crypt.o" "$(CONFIG)/obj/disk.o" "$(CONFIG)/obj/dispatcher.o" "$(CONFIG)/obj/encode.o" "$(CONFIG)/obj/epoll.o" "$(CONFIG)/obj/event.o" "$(CONFIG)/obj/file.o" "$(CONFIG)/obj/fs.o" "$(CONFIG)/obj/hash.o" "$(CONFIG)/obj/json.o" "$(CONFIG)/obj/kqueue.o" "$(CONFIG)/obj/list.o" "$(CONFIG)/obj/lock.o" "$(CONFIG)/obj/log.o" "$(CONFIG)/obj/mem.o" "$(CONFIG)/obj/mime.o" "$(CONFIG)/obj/mixed.o" "$(CONFIG)/obj/module.o" "$(CONFIG)/obj/mpr.o" "$(CONFIG)/obj/path.o" "$(CONFIG)/obj/poll.o" "$(CONFIG)/obj/posix.o" "$(CONFIG)/obj/printf.o" "$(CONFIG)/obj/rom.o" "$(CONFIG)/obj/select.o" "$(CONFIG)/obj/signal.o" "$(CONFIG)/obj/socket.o" "$(CONFIG)/obj/string.o" "$(CONFIG)/obj/test.o" "$(CONFIG)/obj/thread.o" "$(CONFIG)/obj/time.o" "$(CONFIG)/obj/vxworks.o" "$(CONFIG)/obj/wait.o" "$(CONFIG)/obj/wide.o" "$(CONFIG)/obj/win.o" "$(CONFIG)/obj/wince.o" "$(CONFIG)/obj/xml.o" $(LIBS) 
 
 #
 #   benchMpr.o
@@ -1313,7 +1313,7 @@ endif
 
 $(CONFIG)/bin/libmprssl.dylib: $(DEPS_80)
 	@echo '      [Link] $(CONFIG)/bin/libmprssl.dylib'
-	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.3.2 -current_version 4.3.2 "$(CONFIG)/obj/est.o" "$(CONFIG)/obj/matrixssl.o" "$(CONFIG)/obj/nanossl.o" "$(CONFIG)/obj/openssl.o" "$(CONFIG)/obj/ssl.o" $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
+	$(CC) -dynamiclib -o $(CONFIG)/bin/libmprssl.dylib -arch $(CC_ARCH) $(LDFLAGS) $(LIBPATHS)    -install_name @rpath/libmprssl.dylib -compatibility_version 4.4.0 -current_version 4.4.0 "$(CONFIG)/obj/est.o" "$(CONFIG)/obj/matrixssl.o" "$(CONFIG)/obj/nanossl.o" "$(CONFIG)/obj/openssl.o" "$(CONFIG)/obj/ssl.o" $(LIBPATHS_80) $(LIBS_80) $(LIBS_80) $(LIBS) 
 
 #
 #   manager.o

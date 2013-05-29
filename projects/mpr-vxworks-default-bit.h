@@ -86,7 +86,7 @@
     #define BIT_TITLE "Multithreaded Portable Runtime"
 #endif
 #ifndef BIT_VERSION
-    #define BIT_VERSION "4.3.2"
+    #define BIT_VERSION "4.4.0"
 #endif
 #ifndef BIT_WARN64TO32
     #define BIT_WARN64TO32 0
@@ -148,7 +148,7 @@
     #define BIT_VAPP_PREFIX "deploy"
 #endif
 #ifndef BIT_SRC_PREFIX
-    #define BIT_SRC_PREFIX "/usr/src/mpr-4.3.2"
+    #define BIT_SRC_PREFIX "/usr/src/mpr-4.4.0"
 #endif
 
 /* Suffixes */
@@ -184,13 +184,13 @@
     #define BIT_MAJOR_VERSION 4
 #endif
 #ifndef BIT_MINOR_VERSION
-    #define BIT_MINOR_VERSION 3
+    #define BIT_MINOR_VERSION 4
 #endif
 #ifndef BIT_PATCH_VERSION
-    #define BIT_PATCH_VERSION 2
+    #define BIT_PATCH_VERSION 0
 #endif
 #ifndef BIT_VNUM
-    #define BIT_VNUM 400030002
+    #define BIT_VNUM 400040000
 #endif
 
 /* Packs */

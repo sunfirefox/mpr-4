@@ -3,7 +3,7 @@
 #
 
 PRODUCT            := mpr
-VERSION            := 4.3.2
+VERSION            := 4.4.0
 BUILD_NUMBER       := 0
 PROFILE            := static
 ARCH               := $(shell uname -m | sed 's/i.86/x86/;s/x86_64/x64/;s/arm.*/arm/;s/mips.*/mips/')
@@ -223,7 +223,7 @@ clobber: clean
 #   version
 #
 version: $(DEPS_1)
-	@echo 4.3.2-0
+	@echo 4.4.0-0
 
 #
 #   est.h
