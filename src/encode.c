@@ -197,7 +197,7 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
     op = result;
     while ((c = (uchar) *cmd++) != 0) {
 #if BIT_WIN_LIKE
-        //  MOB - should use fs->newline
+        //  TODO - should use fs->newline
         if ((c == '\r' || c == '\n') && *cmd != '\0') {
             c = ' ';
             continue;

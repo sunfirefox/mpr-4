@@ -24,8 +24,8 @@ typedef struct CacheItem
 } CacheItem;
 
 #define CACHE_TIMER_PERIOD      (60 * MPR_TICKS_PER_SEC)
-#define CACHE_HASH_SIZE         257
 #define CACHE_LIFESPAN          (86400 * MPR_TICKS_PER_SEC)
+#define CACHE_HASH_SIZE         257
 
 /*********************************** Forwards *********************************/
 
@@ -80,7 +80,7 @@ PUBLIC void *mprDestroyCache(MprCache *cache)
 /*
     Set expires to zero to remove
  */
-PUBLIC int mprExpireCache(MprCache *cache, cchar *key, MprTicks expires)
+PUBLIC int mprExpireCacheItem(MprCache *cache, cchar *key, MprTicks expires)
 {
     CacheItem   *item;
 
@@ -428,6 +428,17 @@ static void manageCacheItem(CacheItem *item, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(item->key);
         mprMark(item->data);
+    }
+}
+
+
+PUBLIC void mprGetCacheStats(MprCache *cache, int *numKeys, ssize *mem)
+{
+    if (numKeys) {
+        *numKeys = mprGetHashLength(cache->store);
+    }
+    if (mem) {
+        *mem = cache->usedMem;
     }
 }
 

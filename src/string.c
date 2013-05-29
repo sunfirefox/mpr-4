@@ -516,7 +516,7 @@ PUBLIC bool snumber(cchar *s)
 } 
 
 
-PUBLIC char *spascal(cchar *str)
+PUBLIC char *stitle(cchar *str)
 {
     char    *ptr;
     ssize   size, len;
@@ -532,6 +532,12 @@ PUBLIC char *spascal(cchar *str)
     }
     ptr[0] = (char) toupper((uchar) ptr[0]);
     return ptr;
+}
+
+
+PUBLIC char *spascal(cchar *str)
+{
+    return stitle(str);
 }
 
 

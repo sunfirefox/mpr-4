@@ -59,8 +59,6 @@ PUBLIC MprEvent *mprCreateEvent(MprDispatcher *dispatcher, cchar *name, MprTicks
 
 static void manageEvent(MprEvent *event, int flags)
 {
-    assert(event->magic == MPR_EVENT_MAGIC);
-
     if (flags & MPR_MANAGE_MARK) {
         /*
             Events in dispatcher queues are marked by the dispatcher managers, not via event->next,prev
@@ -77,7 +75,6 @@ static void manageEvent(MprEvent *event, int flags)
         if (event->next) {
             assert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
             mprRemoveEvent(event);
-            event->magic = 1;
         }
     }
 }
@@ -102,7 +99,6 @@ static void initEvent(MprDispatcher *dispatcher, MprEvent *event, cchar *name, M
     event->dispatcher = dispatcher;
     event->next = event->prev = 0;
     event->flags = flags;
-    event->magic = MPR_EVENT_MAGIC;
 }
 
 
@@ -129,7 +125,6 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
 #endif
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
-    assert(event->magic == MPR_EVENT_MAGIC);
 
     es = dispatcher->service;
 
@@ -183,7 +178,6 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
     MprEventService     *es;
     MprDispatcher       *dispatcher;
 
-    assert(event->magic == MPR_EVENT_MAGIC);
     dispatcher = event->dispatcher;
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
@@ -246,7 +240,6 @@ PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
         if (next->due <= es->now) {
             event = next;
             queueEvent(dispatcher->currentQ, event);
-            assert(event->magic == MPR_EVENT_MAGIC);
         }
     }
     unlock(es);
@@ -267,7 +260,6 @@ PUBLIC int mprGetEventCount(MprDispatcher *dispatcher)
     lock(es);
     count = 0;
     for (event = dispatcher->eventQ->next; event != dispatcher->eventQ; event = event->next) {
-        assert(event->magic == MPR_EVENT_MAGIC);
         count++;
     }
     unlock(es);
@@ -281,7 +273,6 @@ static void initEventQ(MprEvent *q)
 
     q->next = q;
     q->prev = q;
-    q->magic = MPR_EVENT_MAGIC;
 }
 
 
@@ -293,7 +284,6 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
     assert(prior);
     assert(event);
     assert(prior->next);
-    assert(event->magic == MPR_EVENT_MAGIC);
     assert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     if (event->next) {
@@ -312,7 +302,6 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
 PUBLIC void mprDequeueEvent(MprEvent *event)
 {
     assert(event);
-    assert(event->magic == MPR_EVENT_MAGIC);
     assert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     /* If a continuous event is removed, next may already be null */

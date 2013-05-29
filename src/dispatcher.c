@@ -142,7 +142,6 @@ static void mprDestroyDispatcher(MprDispatcher *dispatcher)
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         q = dispatcher->eventQ;
         for (event = q->next; event != q; event = next) {
-            assert(event->magic == MPR_EVENT_MAGIC);
             next = event->next;
             if (event->dispatcher) {
                 mprRemoveEvent(event);
@@ -175,18 +174,16 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
         mprMark(dispatcher->service);
         mprMark(dispatcher->requiredWorker);
 
-        //  MOB - is this lock needed?  Surely all threads are stopped.
+        //  TODO - is this lock needed?  Surely all threads are stopped.
         lock(es);
         q = dispatcher->eventQ;
         for (event = q->next; event != q; event = next) {
             next = event->next;
-            assert(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         q = dispatcher->currentQ;
         for (event = q->next; event != q; event = next) {
             next = event->next;
-            assert(event->magic == MPR_EVENT_MAGIC);
             mprMark(event);
         }
         unlock(es);
@@ -210,7 +207,6 @@ PUBLIC void mprDisableDispatcher(MprDispatcher *dispatcher)
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         q = dispatcher->eventQ;
         for (event = q->next; event != q; event = next) {
-            assert(event->magic == MPR_EVENT_MAGIC);
             next = event->next;
             if (event->dispatcher) {
                 mprRemoveEvent(event);
@@ -524,7 +520,6 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
             return;
         }
         event = dispatcher->eventQ->next;
-        assert(event->magic == MPR_EVENT_MAGIC);
         mustWakeWaitService = mustWakeCond = 0;
         if (event->due > es->now) {
             assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
@@ -579,7 +574,6 @@ static int dispatchEvents(MprDispatcher *dispatcher)
         and neither would a running flag. See mprRemoveEvent().
      */
     for (count = 0; (dispatcher->flags & MPR_DISPATCHER_ENABLED) && (event = mprGetNextEvent(dispatcher)) != 0; count++) {
-        assert(event->magic == MPR_EVENT_MAGIC);
         assert(!(event->flags & MPR_EVENT_RUNNING));
         unlock(es);
 
@@ -707,7 +701,6 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
             assert(!(dp->flags & MPR_DISPATCHER_DESTROYED));
             next = dp->next;
             event = dp->eventQ->next;
-            assert(event->magic == MPR_EVENT_MAGIC);
             if (event->due <= es->now && dp->flags & MPR_DISPATCHER_ENABLED) {
                 queueDispatcher(es->readyQ, dp);
                 break;
@@ -756,7 +749,6 @@ static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
             assert(!(dp->flags & MPR_DISPATCHER_DESTROYED));
             assert(dp->flags & MPR_DISPATCHER_ENABLED);
             event = dp->eventQ->next;
-            assert(event->magic == MPR_EVENT_MAGIC);
             if (event != dp->eventQ) {
                 delay = min(delay, (event->due - es->now));
                 if (delay <= 0) {

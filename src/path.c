@@ -805,6 +805,185 @@ PUBLIC MprList *mprGetPathFiles(cchar *dir, int flags)
 
 
 /*
+    Match a string against a pattern using glob style matching.
+    Pat may contain a fully path of patterns. Only the first portion up to a file separator is used. The remaining portion
+        is returned in nextPartPattern.
+    seps contains the file system separator characters
+
+    Wildcard Patterns:
+    "?"         Matches any single character
+    "*"         Matches zero or more characters of the file or directory
+    "**"/       Matches zero or more directories
+    "**"        Matches zero or more files or directories
+    trailing/   Trailing slash matches only directory
+ */
+static int globMatch(MprFileSystem *fs, cchar *s, cchar *pat, int isDir, int flags, int count, cchar **nextPartPattern)
+{
+    int     match;
+
+    *nextPartPattern = 0;
+    while (*s && *pat && *pat != fs->separators[0] && *pat != fs->separators[1]) {
+        match = (!fs->caseSensitive) ? (*pat == *s) : (tolower((uchar) *pat) == tolower((uchar) *s));
+        if (match || *pat == '?') {
+            ++pat; ++s;
+        } else if (*pat == '*') {
+            if (*++pat == '\0') {
+                /* Terminal star matches files and directories */
+                return 1;
+            }
+            if (*pat == '*') {
+                /* Double star - matches zero or more directories */
+                if (isDir) {
+                    *nextPartPattern = pat - 1;
+                    return 1;
+                }
+                if (pat[1] && (pat[1] == fs->separators[0] || pat[1] == fs->separators[1])) {
+                    /* Double star/ */
+                    if (pat[2] == '\0') {
+                        /* Trailing slash and not a directory */
+                        return 0;
+                    }
+                    pat += 2;
+                } else {
+                    /* Plain double star matches all (alias for ** / *) */
+                    if (pat[1] == '\0') {
+                        *nextPartPattern = pat - 1;
+                        return 1;
+                    }
+                }
+            } else {
+                /* Single star */
+                if (count > 2000) {
+                    mprError("Glob match is too recursive");
+                    return 0;
+                }
+                if (*pat == fs->separators[0] || *pat == fs->separators[1]) {
+                    s = "";
+                    break;
+                }
+                while (*s) {
+                    if (globMatch(fs, s++, pat, isDir, flags, count + 1, nextPartPattern)) {
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+        } else {
+            return 0;
+        }
+    }
+    if (*pat == '*') {
+        ++pat;
+    }
+    if (*s) {
+        return 0;
+    }
+    if (*pat == '\0') {
+        return 1;
+    }
+    if (*pat && (*pat == fs->separators[0] || *pat == fs->separators[1])) {
+        if (*++pat == '\0') {
+            /* Terminal / matches only directories */
+            return isDir;
+        }
+        *nextPartPattern = pat;
+        return 1;
+    }
+    return 0;
+}
+
+
+static MprList *globPath(MprFileSystem *fs, MprList *results, cchar *path, cchar *base, cchar *pattern, cchar *exclude, int flags)
+{
+    MprDirEntry     *dp;
+    MprList         *list;
+    cchar           *filename, *nextPartPattern, *nextPath, *nextPartExclude;
+    int             next, add;
+
+    if ((list = mprGetPathFiles(path, flags | MPR_PATH_RELATIVE)) == 0) {
+        mprTrace(7, "Cannot read directory %s", path);
+        return results;
+    }
+    for (next = 0; (dp = mprGetNextItem(list, &next)) != 0; ) {
+        if (!globMatch(fs, dp->name, pattern, dp->isDir, flags, 0, &nextPartPattern)) {
+            continue;
+        }
+        add = 1;
+        if (nextPartPattern && strcmp(nextPartPattern, "**") != 0 && strcmp(nextPartPattern, "**/") != 0
+                   && strcmp(nextPartPattern, "**/*") != 0) {
+            /* Double star matches zero or more components */
+            add = 0;
+        }
+        filename = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(base, dp->name) : mprJoinPath(path, dp->name);
+        if (add && exclude) {
+            if (globMatch(fs, dp->name, exclude, dp->isDir, flags, 0, &nextPartExclude)) {
+                continue;
+            }
+        }
+        if (!(flags & MPR_PATH_DEPTH_FIRST) && add) {
+            /* Exclude mid-pattern directories and terminal directories if only "files" */
+            mprAddItem(results, filename);
+        }
+        if (dp->isDir && nextPartPattern) {
+            nextPath = (flags & MPR_PATH_RELATIVE) ? mprJoinPath(path, dp->name) : filename;
+            globPath(fs, results, nextPath, filename, nextPartPattern, exclude, flags);
+        }
+        if ((flags & MPR_PATH_DEPTH_FIRST) && add) {
+            mprAddItem(results, filename);
+        }
+    }
+    return results;
+}
+
+
+/*
+    Get the files in a directory and subdirectories
+ */
+PUBLIC MprList *mprGlobPathFiles(cchar *path, cchar *patterns, int flags)
+{
+    MprFileSystem   *fs;
+    MprList         *result;
+    cchar           *base, *exclude;
+    char            *start, *special, *tok, *pattern;
+
+    fs = mprLookupFileSystem(path);
+    result = mprCreateList(0, 0);
+    exclude = NULL;
+    base = "";
+
+    for (pattern = stok(sclone(patterns), ",", &tok); pattern; pattern = stok(0, ",", &tok)) {
+        if (mprIsPathAbs(pattern)) {
+            start = pattern;
+            if ((special = strpbrk(start, "*?")) != 0) {
+                if (special > start) {
+                    for (pattern = special; pattern > start && !strchr(fs->separators, *pattern); pattern--) { }
+                    if (pattern > start) {
+                        *pattern++ = '\0';
+                        path = mprJoinPath(path, start);
+                        base = start;
+                    }
+                }
+            } else {
+                pattern = (char*) mprGetPathBaseRef(start);
+                if (pattern > start) {
+                    pattern[-1] = '\0';
+                    path = mprJoinPath(path, start);
+                    base = start;
+                }
+            }
+        }
+        if (*pattern == '!') {
+            exclude = &pattern[1];
+        }
+        if (!globPath(fs, result, path, base, pattern, exclude, flags)) {
+            return 0;
+        }
+    }
+    return result;
+}
+
+
+/*
     Return the first directory of a pathname
  */
 PUBLIC char *mprGetPathFirstDir(cchar *path)
@@ -1098,7 +1277,6 @@ PUBLIC bool mprIsPathAbs(cchar *path)
 }
 
 
-//  MOB - should be mprPathIsDir
 PUBLIC bool mprIsPathDir(cchar *path)
 {
     MprPath     info;
@@ -1107,7 +1285,6 @@ PUBLIC bool mprIsPathDir(cchar *path)
 }
 
 
-//  MOB - should be mprPathIsRel
 PUBLIC bool mprIsPathRel(cchar *path)
 {
     MprFileSystem   *fs;
@@ -1536,7 +1713,7 @@ PUBLIC int mprSamePath(cchar *path1, cchar *path2)
 
     /*
         Convert to absolute (normalized) paths to compare. 
-        MOB - resolve symlinks.
+        TODO - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);
@@ -1577,7 +1754,7 @@ PUBLIC int mprSamePathCount(cchar *path1, cchar *path2, ssize len)
 
     /*
         Convert to absolute paths to compare. 
-        MOB - resolve symlinks.
+        TODO - resolve symlinks.
      */
     if (!isFullPath(fs, path1)) {
         path1 = mprGetAbsPath(path1);

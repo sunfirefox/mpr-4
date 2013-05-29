@@ -167,6 +167,42 @@ PUBLIC int mprRandom()
 }
 
 
+PUBLIC char *mprGetRandomString(ssize size)
+{
+    MprTicks    now;
+    char        *hex = "0123456789abcdef";
+    char        *bytes, *ascii, *ap, *cp, *bp;
+    ssize       len;
+    int         i, pid;
+
+    len = size / 2;
+    bytes = mprAlloc(size / 2);
+    ascii = mprAlloc(size + 1);
+
+    if (mprGetRandomBytes(bytes, sizeof(bytes), 0) < 0) {
+        mprError("Failed to get random bytes");
+        now = mprGetTime();
+        pid = (int) getpid();
+        cp = (char*) &now;
+        bp = bytes;
+        for (i = 0; i < sizeof(now) && bp < &bytes[len]; i++) {
+            *bp++= *cp++;
+        }
+        cp = (char*) &now;
+        for (i = 0; i < sizeof(pid) && bp < &bytes[len]; i++) {
+            *bp++ = *cp++;
+        }
+    }
+    ap = ascii;
+    for (i = 0; i < len; i++) {
+        *ap++ = hex[((uchar) bytes[i]) >> 4];
+        *ap++ = hex[((uchar) bytes[i]) & 0xf];
+    }
+    *ap = '\0';
+    return ascii;
+}
+
+
 /*
     Decode a null terminated string and returns a null terminated string.
     Stops decoding at the end of string or '='
@@ -1106,7 +1142,7 @@ PUBLIC char *mprCryptPassword(cchar *password, cchar *salt, int rounds)
 
     for (i = 0; i < rounds; i++) {
         limit = len / sizeof(uint);
-        for (j = 0; j < limit; j++) {
+        for (j = 0; j < limit; j += 2) {
             bencrypt(&bf, &text[j], &text[j + 1]);
         }
     }
@@ -1115,6 +1151,7 @@ PUBLIC char *mprCryptPassword(cchar *password, cchar *salt, int rounds)
     memset(text, 0, len);
     return result;
 }
+
 
 PUBLIC char *mprMakeSalt(ssize size)
 {

@@ -112,7 +112,6 @@ PUBLIC int mprCreateNanoSslModule()
     nanoProvider->upgradeSocket = nanoUpgrade;
     nanoProvider->closeSocket = nanoClose;
     nanoProvider->disconnectSocket = nanoDisconnect;
-    nanoProvider->listenSocket = nanoListen;
     nanoProvider->readSocket = nanoRead;
     nanoProvider->writeSocket = nanoWrite;
     mprAddSocketProvider("nanossl", nanoProvider);
@@ -185,18 +184,6 @@ static void nanoClose(MprSocket *sp, bool gracefully)
         np->handle = 0;
     }
     sp->service->standardProvider->closeSocket(sp, gracefully);
-}
-
-
-/*
-    Initialize a new server-side connection
-    UNUSED
- */
-static Socket nanoListen(MprSocket *sp, cchar *host, int port, int flags)
-{
-    assert(sp);
-    assert(port);
-    return sp->service->standardProvider->listenSocket(sp, host, port, flags);
 }
 
 

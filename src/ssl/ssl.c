@@ -105,25 +105,25 @@ PUBLIC int mprSslInit(void *unused, MprModule *module)
     if (mprCreateMatrixSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
-    MPR->socketService->defaultProvider = sclone("matrixssl");
+    MPR->socketService->sslProvider = sclone("matrixssl");
 #endif
 #if BIT_PACK_NANOSSL
     if (mprCreateNanoSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
-    MPR->socketService->defaultProvider = sclone("nanossl");
+    MPR->socketService->sslProvider = sclone("nanossl");
 #endif
 #if BIT_PACK_OPENSSL
     if (mprCreateOpenSslModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
-    MPR->socketService->defaultProvider = sclone("openssl");
+    MPR->socketService->sslProvider = sclone("openssl");
 #endif
 #if BIT_PACK_EST
     if (mprCreateEstModule() < 0) {
         return MPR_ERR_CANT_OPEN;
     }
-    MPR->socketService->defaultProvider = sclone("est");
+    MPR->socketService->sslProvider = sclone("est");
 #endif
     return 0;
 #else

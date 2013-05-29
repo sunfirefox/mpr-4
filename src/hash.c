@@ -150,6 +150,17 @@ PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
 }
 
 
+PUBLIC MprKey *mprAddKeyWithType(MprHash *hash, cvoid *key, cvoid *ptr, int type)
+{
+    MprKey  *kp;
+
+    if ((kp = mprAddKey(hash, key, ptr)) != 0) {
+        kp->type = type;
+    }
+    return kp;
+}
+
+
 PUBLIC MprKey *mprAddKeyFmt(MprHash *hash, cvoid *key, cchar *fmt, ...)
 {
     va_list     ap;

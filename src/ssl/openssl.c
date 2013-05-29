@@ -104,7 +104,6 @@ PUBLIC int mprCreateOpenSslModule()
     openProvider->closeSocket = closeOss;
     openProvider->disconnectSocket = disconnectOss;
     openProvider->flushSocket = flushOss;
-    openProvider->listenSocket = listenOss;
     openProvider->socketState = getOssState;
     openProvider->readSocket = readOss;
     openProvider->writeSocket = writeOss;
@@ -378,15 +377,6 @@ static void closeOss(MprSocket *sp, bool gracefully)
     SSL_free(osp->handle);
     osp->handle = 0;
     sp->service->standardProvider->closeSocket(sp, gracefully);
-}
-
-
-//  UNUSED
-static Socket listenOss(MprSocket *sp, cchar *host, int port, int flags)
-{
-    assert(sp);
-    assert(port);
-    return sp->service->standardProvider->listenSocket(sp, host, port, flags);
 }
 
 

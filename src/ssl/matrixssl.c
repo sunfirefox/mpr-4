@@ -94,7 +94,6 @@ PUBLIC int mprCreateMatrixSslModule()
     provider->closeSocket = closeMss;
     provider->disconnectSocket = disconnectMss;
     provider->flushSocket = flushMss;
-    provider->listenSocket = listenMss;
     provider->readSocket = readMss;
     provider->socketState = getMssState;
     provider->writeSocket = writeMss;
@@ -165,13 +164,6 @@ static void closeMss(MprSocket *sp, bool gracefully)
     sp->service->standardProvider->closeSocket(sp, gracefully);
     mprRemoveItem(sp->service->secureSockets, msp->sock);
     unlock(sp);
-}
-
-
-// UNUSED
-static Socket listenMss(MprSocket *sp, cchar *host, int port, int flags)
-{
-    return sp->service->standardProvider->listenSocket(sp, host, port, flags);
 }
 
 

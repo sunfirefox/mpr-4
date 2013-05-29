@@ -445,6 +445,54 @@ PUBLIC void mprJsonParseError(MprJson *jp, cchar *fmt, ...)
 
 
 /*
+    Currently only works for MprHash implementations
+ */
+PUBLIC cchar *mprQueryJsonString(MprHash *obj, cchar *key)
+{
+    MprKey  *kp;
+    char    *property, *tok;
+
+    for (property = stok(sclone(key), ".", &tok); property; property = stok(0, ".", &tok)) {
+        if ((kp = mprLookupKeyEntry(obj, property)) == 0) {
+            return 0;
+        }
+        if (tok == 0) {
+            return (kp->type == MPR_JSON_STRING) ? kp->data : NULL;
+        }
+        if (kp->type != MPR_JSON_OBJ) {
+            return 0;
+        }
+        obj = (MprHash*) kp->data;
+    }
+    return 0;
+}
+
+
+/*
+    Currently only works for MprHash implementations
+ */
+PUBLIC void *mprQueryJsonValue(MprHash *obj, cchar *key, int type)
+{
+    MprKey  *kp;
+    char    *property, *tok;
+
+    for (property = stok(sclone(key), ".", &tok); property; property = stok(0, ".", &tok)) {
+        if ((kp = mprLookupKeyEntry(obj, property)) == 0) {
+            return 0;
+        }
+        if (tok == 0) {
+            return (void*) ((kp->type == type) ? kp->data : NULL);
+        }
+        if (kp->type != MPR_JSON_OBJ) {
+            return 0;
+        }
+        obj = (MprHash*) kp->data;
+    }
+    return 0;
+}
+
+
+/*
     @copy   default
 
     Copyright (c) Embedthis Software LLC, 2003-2013. All Rights Reserved.

@@ -32,7 +32,6 @@ static void disconnectSocket(MprSocket *sp);
 static ssize flushSocket(MprSocket *sp);
 static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int size, int *port);
 static int ipv6(cchar *ip);
-static Socket listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags);
 static void manageSocket(MprSocket *sp, int flags);
 static void manageSocketService(MprSocketService *ss, int flags);
 static void manageSsl(MprSsl *ssl, int flags);
@@ -99,7 +98,7 @@ static void manageSocketService(MprSocketService *ss, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ss->standardProvider);
         mprMark(ss->providers);
-        mprMark(ss->defaultProvider);
+        mprMark(ss->sslProvider);
         mprMark(ss->mutex);
         mprMark(ss->secureSockets);
     }
@@ -125,7 +124,6 @@ static MprSocketProvider *createStandardProvider(MprSocketService *ss)
     provider->closeSocket = closeSocket;
     provider->disconnectSocket = disconnectSocket;
     provider->flushSocket = flushSocket;
-    provider->listenSocket = listenSocket;
     provider->readSocket = readSocket;
     provider->writeSocket = writeSocket;
     provider->socketState = socketState;
@@ -254,15 +252,6 @@ PUBLIC bool mprHasIPv6()
  */
 PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
 {
-    if (sp->provider == 0) {
-        return MPR_ERR_NOT_INITIALIZED;
-    }
-    return sp->provider->listenSocket(sp, ip, port, flags);
-}
-
-
-static Socket listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
-{
     struct sockaddr     *addr;
     Socklen             addrlen;
     cchar               *sip;
@@ -270,15 +259,15 @@ static Socket listenSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
 
     lock(sp);
     if (ip == 0 || *ip == '\0') {
-        mprTrace(6, "listenSocket: %d, flags %x", port, initialFlags);
+        mprTrace(6, "mprListenOnSocket: %d, flags %x", port, flags);
     } else {
-        mprTrace(6, "listenSocket: %s:%d, flags %x", ip, port, initialFlags);
+        mprTrace(6, "mprListenOnSocket: %s:%d, flags %x", ip, port, flags);
     }
     resetSocket(sp);
 
     sp->ip = sclone(ip);
     sp->port = port;
-    sp->flags = (initialFlags & (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM | MPR_SOCKET_BLOCK |
+    sp->flags = (flags & (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM | MPR_SOCKET_BLOCK |
          MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
     datagram = sp->flags & MPR_SOCKET_DATAGRAM;
 
@@ -432,7 +421,7 @@ PUBLIC void mprHiddenSocketData(MprSocket *sp, ssize len, int dir)
 }
 
 
-//  MOB rename to mprWaitOnSocket
+//  TODO rename to mprWaitOnSocket
 
 PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 {
@@ -1783,7 +1772,7 @@ PUBLIC int mprUpgradeSocket(MprSocket *sp, MprSsl *ssl, cchar *peerName)
         if (loadProviders() < 0) {
             return MPR_ERR_CANT_INITIALIZE;
         }
-        providerName = (ssl->providerName) ? ssl->providerName : ss->defaultProvider;
+        providerName = (ssl->providerName) ? ssl->providerName : ss->sslProvider;
         if ((ssl->provider = mprLookupKey(ss->providers, providerName)) == 0) {
             mprError("Cannot use SSL, missing SSL provider %s", providerName);
             return MPR_ERR_CANT_INITIALIZE;
