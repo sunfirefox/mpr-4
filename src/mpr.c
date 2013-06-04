@@ -325,6 +325,7 @@ PUBLIC int mprStartEventsThread()
     if ((tp = mprCreateThread("events", serviceEventsThread, NULL, 0)) == 0) {
         MPR->hasError = 1;
     } else {
+        MPR->threadService->eventsThread = tp;
         MPR->cond = mprCreateCond();
         mprStartThread(tp);
         mprWaitForCond(MPR->cond, MPR_TIMEOUT_START_TASK);

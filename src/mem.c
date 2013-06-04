@@ -1368,6 +1368,7 @@ void *prealloc(void *ptr, ssize size)
 
 /* 
     WARNING: this does not mark component members
+    MOB - change to cvoid
  */
 PUBLIC void mprHold(void *ptr)
 {
@@ -1383,6 +1384,9 @@ PUBLIC void mprHold(void *ptr)
 }
 
 
+/*
+    MOB - change to cvoid
+ */
 PUBLIC void mprRelease(void *ptr)
 {
     MprMem  *mp;

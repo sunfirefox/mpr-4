@@ -714,9 +714,11 @@ PUBLIC void mprPollWinCmd(MprCmd *cmd, MprTicks timeout)
  */
 PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 {
-    MprTicks    expires, remaining, delay;
+    MprThreadService    *ts;
+    MprTicks            expires, remaining, delay;
 
     assert(cmd);
+    ts = MPR->threadService;
 
     if (timeout < 0) {
         timeout = MAXINT;
@@ -743,7 +745,12 @@ PUBLIC int mprWaitForCmd(MprCmd *cmd, MprTicks timeout)
 #else
         delay = (cmd->eofCount >= cmd->requiredEof) ? 10 : remaining;
 #endif
-        mprWaitForEvent(cmd->dispatcher, delay);
+        if (!ts->eventsThread && mprGetCurrentThread() == ts->mainThread) {
+            mprServiceEvents(10, MPR_SERVICE_ONE_THING);
+            mprWaitForEvent(cmd->dispatcher, 10);
+        } else {
+            mprWaitForEvent(cmd->dispatcher, delay);
+        }
         remaining = (expires - mprGetTicks());
     }
     mprRemoveRoot(cmd);
