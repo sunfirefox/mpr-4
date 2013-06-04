@@ -249,6 +249,8 @@ PUBLIC MprHash *mprCloneHash(MprHash *master)
     MprKey      *kp;
     MprHash     *hash;
 
+    assert(master);
+
     if ((hash = mprCreateHash(master->size, master->flags)) == 0) {
         return 0;
     }
