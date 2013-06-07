@@ -86,7 +86,7 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     wp->flags           = flags;
 
     if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
-        mprError("io: Too many io handlers: %d\n", FD_SETSIZE);
+        mprError("io: Too many io handlers: %d", FD_SETSIZE);
         return 0;
     }
 #if BIT_UNIX_LIKE || VXWORKS

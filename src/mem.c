@@ -1653,7 +1653,7 @@ PUBLIC void mprVerifyMem()
                 }
                 for (i = 0; i < usize; i++) {
                     if (ptr[i] != 0xFE) {
-                        mprError("Free memory block %x has been modified at offset %d (MprBlk %x, seqno %d)\n"
+                        mprError("Free memory block %x has been modified at offset %d (MprBlk %x, seqno %d)"
                                        "Memory was last allocated by %s", GET_PTR(mp), i, mp, mp->seqno, mp->name);
                     }
                 }
@@ -1939,7 +1939,7 @@ PUBLIC void mprCheckBlock(MprMem *mp)
 
     size = GET_SIZE(mp);
     if (mp->magic != MPR_ALLOC_MAGIC || size <= 0) {
-        mprError("Memory corruption in memory block %x (MprBlk %x, seqno %d)\n"
+        mprError("Memory corruption in memory block %x (MprBlk %x, seqno %d)"
             "This most likely happend earlier in the program execution", GET_PTR(mp), mp, mp->seqno);
     }
 }
@@ -1959,7 +1959,7 @@ static void checkFreeMem(MprMem *mp)
         }
         for (i = 0; i < usize; i++) {
             if (ptr[i] != 0xFE) {
-                mprError("Free memory block %x has been modified at offset %d (MprBlk %x, seqno %d)\n"
+                mprError("Free memory block %x has been modified at offset %d (MprBlk %x, seqno %d)"
                     "Memory was last allocated by %s", GET_PTR(mp), i, mp, mp->seqno, mp->name);
                 break;
             }

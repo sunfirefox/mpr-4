@@ -115,7 +115,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
 #if KEEP
             if (rc != 0) {
-                mprError("Epoll del error %d on fd %d\n", errno, fd);
+                mprError("Epoll del error %d on fd %d", errno, fd);
             }
 #endif
         }
@@ -129,7 +129,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (ev.events) {
             rc = epoll_ctl(ws->epoll, EPOLL_CTL_ADD, fd, &ev);
             if (rc != 0) {
-                mprError("Epoll add error %d on fd %d\n", errno, fd);
+                mprError("Epoll add error %d on fd %d", errno, fd);
             }
         }
         if (mask && fd >= ws->handlerMax) {

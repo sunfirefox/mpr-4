@@ -21,7 +21,7 @@
 
 static char     *currentDir;            /* Current working directory */
 static MprList  *files;                 /* List of open files */
-PUBLIC int             errno;                  /* Last error */
+PUBLIC int      errno;                  /* Last error */
 static char     timzeone[2][32];        /* Standard and daylight savings zones */
 
 /*
