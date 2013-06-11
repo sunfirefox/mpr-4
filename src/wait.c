@@ -85,7 +85,7 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     wp->service         = ws;
     wp->flags           = flags;
 
-    if (mprGetListLength(ws->handlers) == FD_SETSIZE) {
+    if (mprGetListLength(ws->handlers) >= FD_SETSIZE) {
         mprError("io: Too many io handlers: %d", FD_SETSIZE);
         return 0;
     }
