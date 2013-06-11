@@ -393,7 +393,7 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
 }
 
 
-static void addCmdHandlers(MprCmd *cmd)
+static int addCmdHandlers(MprCmd *cmd)
 {
     int     stdinFd, stdoutFd, stderrFd;
   
@@ -402,14 +402,21 @@ static void addCmdHandlers(MprCmd *cmd)
     stderrFd = cmd->files[MPR_CMD_STDERR].fd; 
 
     if (stdinFd >= 0 && cmd->handlers[MPR_CMD_STDIN] == 0) {
-        cmd->handlers[MPR_CMD_STDIN] = mprCreateWaitHandler(stdinFd, MPR_WRITABLE, cmd->dispatcher, stdinCallback, cmd, 0);
+        if ((cmd->handlers[MPR_CMD_STDIN] = mprCreateWaitHandler(stdinFd, MPR_WRITABLE, cmd->dispatcher, stdinCallback, cmd, 0)) == 0) {
+            return MPR_ERR_CANT_OPEN;
+        }
     }
     if (stdoutFd >= 0 && cmd->handlers[MPR_CMD_STDOUT] == 0) {
-        cmd->handlers[MPR_CMD_STDOUT] = mprCreateWaitHandler(stdoutFd, MPR_READABLE, cmd->dispatcher, stdoutCallback, cmd,0);
+        if ((cmd->handlers[MPR_CMD_STDOUT] = mprCreateWaitHandler(stdoutFd, MPR_READABLE, cmd->dispatcher, stdoutCallback, cmd,0)) == 0) {
+            return MPR_ERR_CANT_OPEN;
+        }
     }
     if (stderrFd >= 0 && cmd->handlers[MPR_CMD_STDERR] == 0) {
-        cmd->handlers[MPR_CMD_STDERR] = mprCreateWaitHandler(stderrFd, MPR_READABLE, cmd->dispatcher, stderrCallback, cmd,0);
+        if ((cmd->handlers[MPR_CMD_STDERR] = mprCreateWaitHandler(stderrFd, MPR_READABLE, cmd->dispatcher, stderrCallback, cmd,0)) == 0) {
+            return MPR_ERR_CANT_OPEN;
+        }
     }
+    return 0;
 }
 
 
@@ -477,7 +484,10 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
     if (cmd->flags & MPR_CMD_ERR) {
         cmd->requiredEof++;
     }
-    addCmdHandlers(cmd);
+    if (addCmdHandlers(cmd) < 0) {
+        mprError("Cannot open command handlers - insufficient I/O handles");
+        return MPR_ERR_CANT_OPEN;
+    }
     rc = startProcess(cmd);
     cmd->pid2 = cmd->pid;
     sunlock(cmd);
