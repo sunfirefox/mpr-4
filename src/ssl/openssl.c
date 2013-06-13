@@ -526,7 +526,7 @@ static int checkCert(MprSocket *sp)
     ssl = sp->ssl;
     osp = (OpenSocket*) sp->sslSocket;
 
-    mprLog(4, "OpenSSL connected using cipher: \"%s\" from set %s", SSL_get_cipher(osp->handle), ssl->ciphers);
+    mprLog(4, "OpenSSL connected using cipher: \"%s\"", SSL_get_cipher(osp->handle));
     if (ssl->caFile) {
         mprLog(4, "OpenSSL: Using certificates from %s", ssl->caFile);
     } else if (ssl->caPath) {
@@ -584,6 +584,7 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
     ulong           serror;
     int             rc, error, retries, i;
 
+    //  OPT - should not need these locks
     lock(sp);
     osp = (OpenSocket*) sp->sslSocket;
     assert(osp);
@@ -651,10 +652,11 @@ static ssize readOss(MprSocket *sp, void *buf, ssize len)
  */
 static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
 {
-    OpenSocket       *osp;
-    ssize           totalWritten;
-    int             rc;
+    OpenSocket  *osp;
+    ssize       totalWritten;
+    int         rc;
 
+    //  OPT - should not need these locks
     lock(sp);
     osp = (OpenSocket*) sp->sslSocket;
 
@@ -665,33 +667,29 @@ static ssize writeOss(MprSocket *sp, cvoid *buf, ssize len)
     }
     totalWritten = 0;
     ERR_clear_error();
+    rc = 0;
 
     do {
         rc = SSL_write(osp->handle, buf, (int) len);
         mprLog(7, "OpenSSL: written %d, requested len %d", rc, len);
         if (rc <= 0) {
-            rc = SSL_get_error(osp->handle, rc);
-            if (rc == SSL_ERROR_WANT_WRITE) {
-                mprNap(10);
-                continue;
-            } else if (rc == SSL_ERROR_WANT_READ) {
-                //  AUTO-RETRY should stop this
-                assert(0);
-                unlock(sp);
-                return -1;
-            } else {
-                unlock(sp);
-                return -1;
+            if (SSL_get_error(osp->handle, rc) == SSL_ERROR_WANT_WRITE) {
+                break;
             }
+            unlock(sp);
+            return -1;
         }
         totalWritten += rc;
         buf = (void*) ((char*) buf + rc);
         len -= rc;
-        mprLog(7, "OpenSSL: write: len %d, written %d, total %d, error %d", len, rc, totalWritten, 
-            SSL_get_error(osp->handle, rc));
-
+        mprLog(7, "OpenSSL: write: len %d, written %d, total %d, error %d", len, rc, totalWritten, SSL_get_error(osp->handle, rc));
     } while (len > 0);
     unlock(sp);
+
+    if (totalWritten == 0 && rc == SSL_ERROR_WANT_WRITE) {
+        mprSetOsError(EAGAIN);
+        return -1;
+    }
     return totalWritten;
 }
 
@@ -806,6 +804,8 @@ static ulong sslThreadId()
 }
 
 
+//  OPT - should not need these locks
+
 static void sslStaticLock(int mode, int n, const char *file, int line)
 {
     assert(0 <= n && n < numLocks);
@@ -820,6 +820,7 @@ static void sslStaticLock(int mode, int n, const char *file, int line)
 }
 
 
+//  OPT - should not need these locks
 static DynLock *sslCreateDynLock(const char *file, int line)
 {
     DynLock     *dl;

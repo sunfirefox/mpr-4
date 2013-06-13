@@ -432,6 +432,7 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
         }
     }
     totalWritten = 0;
+    rc = 0;
     do {
         rc = ssl_write(&est->ctx, (uchar*) buf, (int) len);
         mprLog(7, "EST: written %d, requested len %d", rc, len);
@@ -453,8 +454,12 @@ static ssize writeEst(MprSocket *sp, cvoid *buf, ssize len)
             mprLog(7, "EST: write: len %d, written %d, total %d", len, rc, totalWritten);
         }
     } while (len > 0);
-
     mprHiddenSocketData(sp, est->ctx.out_left, MPR_WRITABLE);
+
+    if (totalWritten == 0 && rc == EST_ERR_NET_TRY_AGAIN) {                                                          
+        mprSetOsError(EAGAIN);
+        return -1;
+    }
     return totalWritten;
 }
 
