@@ -711,7 +711,7 @@ static void manageKeyValue(MprKeyValue *pair, int flags)
 }
 
 
-PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value)
+PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value, int flags)
 {
     MprKeyValue     *pair;
     
@@ -720,6 +720,7 @@ PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value)
     }
     pair->key = sclone(key);
     pair->value = sclone(value);
+    pair->flags = flags;
     return pair;
 }
 

@@ -481,6 +481,7 @@ PUBLIC int mprParseArgs(char *args, char **argv, int maxArgc)
 }
 
 
+//  TODO - rename stolist and move into string
 /*
     Make an argv array. All args are in a single memory block of which argv points to the start.
     Set MPR_ARGV_ARGS_ONLY if not passing in a program name. 

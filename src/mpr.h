@@ -2100,6 +2100,15 @@ PUBLIC int64 stoiradix(cchar *str, int radix, int *err);
 PUBLIC char *stok(char *str, cchar *delim, char **last);
 
 /**
+   String to list. This parses the string into space separated arguments. Single and double quotes are supported.
+   @param src Source string to parse
+   @return List of arguments
+   @ingroup MprString
+   @stability Prototype
+ */
+PUBLIC struct MprList *stolist(cchar *src);
+
+/**
     Create a substring
     @param str String to examine
     @param offset Starting offset within str for the beginning of the substring
@@ -3546,6 +3555,7 @@ PUBLIC MprList *mprSortList(MprList *list, MprSortProc compare, void *ctx);
 typedef struct MprKeyValue {
     void        *key;               /**< Key string */
     void        *value;             /**< Associated value for the key */
+    int         flags;              /**< General flags word */
 } MprKeyValue;
 
 /**
@@ -3553,11 +3563,12 @@ typedef struct MprKeyValue {
     @description Allocate and initialize a key value pair for use by the MprList or MprHash modules.
     @param key Key string
     @param value Key value string
+    @param flags Flags value
     @returns An initialized MprKeyValue
     @ingroup MprList
     @stability Stable
  */
-PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value);
+PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value, int flags);
 
 /**
     Pop an item

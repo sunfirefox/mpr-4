@@ -842,6 +842,9 @@ PUBLIC char *strim(cchar *str, cchar *set, int where)
     if (str == 0 || set == 0) {
         return 0;
     }
+    if (where == 0) {
+        where = MPR_TRIM_START | MPR_TRIM_END;
+    }
     if (where & MPR_TRIM_START) {
         i = strspn(str, set);
     } else {
@@ -926,6 +929,44 @@ PUBLIC char *stemplate(cchar *str, MprHash *keys)
         result = MPR->emptyString;
     }
     return result;
+}
+
+
+/*
+    String to list. This parses the string into space separated arguments. Single and double quotes are supported.
+ */
+PUBLIC MprList *stolist(cchar *src)
+{
+    MprList     *list;
+    cchar       *start;
+    int         quote;
+
+    list = mprCreateList(0, 0);
+    while (src && *src != '\0') {
+        while (isspace((uchar) *src)) {
+            src++;
+        }
+        if (*src == '\0')  {
+            break;
+        }
+        for (quote = 0, start = src; *src; src++) {
+            if (*src == '\\') {
+                src++;
+            } else if (*src == '"' || *src == '\'') {
+                if (*src == quote) {
+                    quote = 0;
+                    src++;
+                    break;
+                } else if (quote == 0) {
+                    quote = *src;
+                }
+            } else if (isspace((uchar) *src) && !quote) {
+                break;
+            }
+        }
+        mprAddItem(list, snclone(start, src - start));
+    }
+    return list;
 }
 
 

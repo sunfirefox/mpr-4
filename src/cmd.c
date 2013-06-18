@@ -601,6 +601,9 @@ PUBLIC ssize mprWriteCmd(MprCmd *cmd, int channel, char *buf, ssize bufsize)
         return -1;
     }
 #endif
+    if (bufsize <= 0) {
+        bufsize = slen(buf);
+    }
     return write(cmd->files[channel].fd, buf, (wsize) bufsize);
 }
 
