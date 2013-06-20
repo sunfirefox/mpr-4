@@ -1259,7 +1259,7 @@ PUBLIC void mprPrintMem(cchar *msg, int detail);
 /**
     Reallocate a block
     @description Reallocates a block increasing its size. If the specified size is less than the current block size,
-        the call will ignore the request and simply return the existing block. The memory is not zeroed.
+        the call will ignore the request and simply return the existing block. The memory is zeroed.
     @param ptr Memory to reallocate. If NULL, call malloc.
     @param size New size of the required memory block.
     @return Returns a pointer to the allocated block. If memory is not available the memory exhaustion handler 
@@ -7886,7 +7886,7 @@ typedef void (*MprForkCallback)(void *arg);
     @stability Internal
  */
 typedef struct MprCmdService {
-    MprList         *cmds;              /* List of all commands */
+    MprList         *cmds;              /* List of all commands. This is a static list and elements are not retained for GC */
     MprMutex        *mutex;             /* Multithread sync */
 } MprCmdService;
 

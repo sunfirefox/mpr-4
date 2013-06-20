@@ -54,7 +54,7 @@ PUBLIC MprCmdService *mprCreateCmdService()
     if ((cs = (MprCmdService*) mprAllocObj(MprCmd, manageCmdService)) == 0) {
         return 0;
     }
-    cs->cmds = mprCreateList(0, MPR_LIST_STATIC_VALUES);
+    cs->cmds = mprCreateList(0, 0);
     cs->mutex = mprCreateLock();
     return cs;
 }
@@ -144,6 +144,9 @@ static void manageCmd(MprCmd *cmd, int flags)
     } else if (flags & MPR_MANAGE_FREE) {
         mprDestroyCmd(cmd);
         vxCmdManager(cmd);
+        /*
+            Note that "cmds" is a static list and so the cmd may still be in the cmds list.
+         */
         mprRemoveItem(MPR->cmdService->cmds, cmd);
     }
 }
@@ -189,6 +192,17 @@ PUBLIC void mprDestroyCmd(MprCmd *cmd)
         cmd->signal = 0;
     }
     sunlock(cmd);
+    mprRemoveItem(MPR->cmdService->cmds, cmd);
+}
+
+
+static void completeCommand(MprCmd *cmd)
+{
+    /*
+        After removing the command from the cmds list, it can be garbage collected if no other reference is retained
+     */
+    cmd->complete = 1;
+    mprRemoveItem(MPR->cmdService->cmds, cmd);
 }
 
 
@@ -265,7 +279,7 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
                 reapCmd(cmd, 0);
 #endif
                 if (cmd->pid == 0) {
-                    cmd->complete = 1;
+                    completeCommand(cmd);
                 }
             }
         }
@@ -849,7 +863,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
 #endif
     if (cmd->pid == 0) {
         if (cmd->eofCount >= cmd->requiredEof) {
-            cmd->complete = 1;
+            completeCommand(cmd);
         }
         mprTrace(6, "Cmd reaped: status %d, pid %d, eof %d / %d", cmd->status, cmd->pid, cmd->eofCount, cmd->requiredEof);
         if (cmd->callback) {

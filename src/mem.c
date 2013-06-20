@@ -374,7 +374,7 @@ PUBLIC void *mprReallocMem(void *ptr, ssize usize)
     assert(usize > 0);
 
     if (ptr == 0) {
-        return mprAllocMem(usize, 0);
+        return mprAllocZeroed(usize);
     }
     mp = GET_MEM(ptr);
     CHECK(mp);
