@@ -755,6 +755,7 @@ static void shortsort(char *lo, char *hi, ssize width, MprSortProc comp, void *c
     }
 }
 
+
 PUBLIC void mprSort(void *base, ssize num, ssize width, MprSortProc comp, void *ctx) 
 {
     char    *lo, *hi, *mid, *l, *h, *lostk[30], *histk[30];
