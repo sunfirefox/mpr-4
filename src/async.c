@@ -110,6 +110,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         mprResetYield();
         mprTerminate(MPR_EXIT_DEFAULT, -1);
     } else {
+        mprClearWaiting();
         mprResetYield();
         TranslateMessage(&msg);
         DispatchMessage(&msg);

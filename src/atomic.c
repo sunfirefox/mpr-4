@@ -35,7 +35,7 @@ PUBLIC void mprAtomicBarrier()
 
 
 /*
-    Atomic Compare and swap a pointer with a full memory barrier
+    Atomic compare and swap a pointer with a full memory barrier
  */
 PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 {

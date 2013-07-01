@@ -651,11 +651,11 @@ static void closeSocket(MprSocket *sp, bool gracefully)
     }
 
     if (sp->flags & MPR_SOCKET_SERVER) {
-        mprLock(ss->mutex);
+        lock(ss);
         if (--ss->numAccept < 0) {
             ss->numAccept = 0;
         }
-        mprUnlock(ss->mutex);
+        unlock(ss);
     }
     unlock(sp);
 }
@@ -701,14 +701,14 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     /*  
         Limit the number of simultaneous clients
      */
-    mprLock(ss->mutex);
+    lock(ss);
     if (++ss->numAccept >= ss->maxAccept) {
-        mprUnlock(ss->mutex);
+        unlock(ss);
         mprLog(2, "Rejecting connection, too many client connections (%d)", ss->numAccept);
         mprCloseSocket(nsp, 0);
         return 0;
     }
-    mprUnlock(ss->mutex);
+    unlock(ss);
 
 #if !BIT_WIN_LIKE && !VXWORKS
     /* Prevent children inheriting this socket */
@@ -1327,7 +1327,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     assert(addr);
     ss = MPR->socketService;
 
-    mprLock(ss->mutex);
+    lock(ss);
     memset((char*) &hints, '\0', sizeof(hints));
 
     /*
@@ -1352,7 +1352,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
      */
     res = 0;
     if (getaddrinfo(ip, portStr, &hints, &res) != 0) {
-        mprUnlock(ss->mutex);
+        unlock(ss);
         return MPR_ERR_CANT_OPEN;
     }
     /*
@@ -1380,7 +1380,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     *protocol = r->ai_protocol;
 
     freeaddrinfo(res);
-    mprUnlock(ss->mutex);
+    unlock(ss);
     return 0;
 }
 #else
@@ -1409,7 +1409,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     /*
         gethostbyname is not thread safe on some systems
      */
-    mprLock(ss->mutex);
+    lock(ss);
     if (sa->sin_addr.s_addr == INADDR_NONE) {
 #if VXWORKS
         /*
@@ -1417,7 +1417,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
          */
         sa->sin_addr.s_addr = (ulong) hostGetByName((char*) ip);
         if (sa->sin_addr.s_addr < 0) {
-            mprUnlock(ss->mutex);
+            unlock(ss);
             assert(0);
             return 0;
         }
@@ -1427,7 +1427,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
         if (hostent == 0) {
             hostent = gethostbyname2(ip, AF_INET6);
             if (hostent == 0) {
-                mprUnlock(ss->mutex);
+                unlock(ss);
                 return MPR_ERR_CANT_FIND;
             }
         }
@@ -1438,7 +1438,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     *addrlen = sizeof(struct sockaddr_in);
     *family = sa->sin_family;
     *protocol = 0;
-    mprUnlock(ss->mutex);
+    unlock(ss);
     return 0;
 }
 #endif

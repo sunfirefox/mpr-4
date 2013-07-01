@@ -568,17 +568,16 @@ PUBLIC int mprStartWorkerService()
 {
     MprWorkerService    *ws;
 
-    /*
-        Create a timer to trim excess workers
-     */
     ws = MPR->workerService;
     mprSetMinWorkers(ws->minThreads);
+#if UNUSED
     ws->pruneTimer = mprCreateTimerEvent(NULL, "pruneWorkers", MPR_TIMEOUT_PRUNER, pruneWorkers, ws, MPR_EVENT_QUICK);
+#endif
     return 0;
 }
 
 
-PUBLIC void mprWakeWorkers()
+PUBLIC void mprStopWorkers()
 {
     MprWorkerService    *ws;
     MprWorker           *worker;
@@ -588,6 +587,7 @@ PUBLIC void mprWakeWorkers()
     lock(ws);
     if (ws->pruneTimer) {
         mprRemoveEvent(ws->pruneTimer);
+        ws->pruneTimer = 0;
     }
     /*
         Wake up all idle workers. Busy workers take care of themselves. An idle thread will wakeup, exit and be 
@@ -638,7 +638,7 @@ PUBLIC void mprSetMaxWorkers(int n)
     lock(ws);
     ws->maxThreads = n; 
     if (ws->numThreads > ws->maxThreads) {
-        pruneWorkers(ws, 0);
+        pruneWorkers(ws, NULL);
     }
     if (ws->minThreads > ws->maxThreads) {
         ws->minThreads = ws->maxThreads;
@@ -741,7 +741,7 @@ PUBLIC int mprAvailableWorkers()
     spareThreads = wstats.max - wstats.busy - wstats.idle;
     activeWorkers = wstats.busy - wstats.yielded;
     spareCores = MPR->heap->stats.numCpu - activeWorkers;
-    if (spareCores <= 0 /* UNUSED || spareThreads <= 0 */) {
+    if (spareCores <= 0) {
         return 0;
     }
     result = wstats.idle + min(spareThreads, spareCores);
@@ -790,6 +790,9 @@ PUBLIC int mprStartWorker(MprWorkerProc proc, void *data)
         unlock(ws);
         return MPR_ERR_BUSY;
     }
+    if (!ws->pruneTimer && (ws->numThreads < ws->minThreads)) {
+        ws->pruneTimer = mprCreateTimerEvent(NULL, "pruneWorkers", MPR_TIMEOUT_PRUNER, pruneWorkers, ws, MPR_EVENT_QUICK);
+    }
     unlock(ws);
     return 0;
 }
@@ -822,6 +825,10 @@ static void pruneWorkers(MprWorkerService *ws, MprEvent *timer)
     if (pruned) {
         mprLog(4, "Pruned %d workers, pool has %d workers. Limits %d-%d.", 
             pruned, ws->numThreads - pruned, ws->minThreads, ws->maxThreads);
+    }
+    if (timer && (ws->numThreads < ws->minThreads)) {
+        mprRemoveEvent(ws->pruneTimer);
+        ws->pruneTimer = 0;
     }
     unlock(ws);
 }
@@ -933,12 +940,12 @@ static void changeState(MprWorker *worker, int state)
 {
     MprWorkerService    *ws;
     MprList             *lp;
-    int                 wake;
+    int                 wakeIdle, wakeDispatchers;
 
     if (state == worker->state) {
         return;
     }
-    wake = 0;
+    wakeIdle = wakeDispatchers = 0;
     lp = 0;
     ws = worker->workerService;
     lock(ws);
@@ -950,7 +957,7 @@ static void changeState(MprWorker *worker, int state)
 
     case MPR_WORKER_IDLE:
         lp = ws->idleThreads;
-        wake = 1;
+        wakeIdle = 1;
         break;
         
     case MPR_WORKER_PRUNED:
@@ -971,12 +978,12 @@ static void changeState(MprWorker *worker, int state)
 
     case MPR_WORKER_IDLE:
         lp = ws->idleThreads;
-        mprWakePendingDispatchers();
+        wakeDispatchers = 1;
         break;
 
     case MPR_WORKER_PRUNED:
         /* Don't put on a queue and the thread will exit */
-        mprWakePendingDispatchers();
+        wakeDispatchers = 1;
         break;
     }
     worker->state = state;
@@ -989,7 +996,10 @@ static void changeState(MprWorker *worker, int state)
         }
     }
     unlock(ws);
-    if (wake) {
+    if (wakeDispatchers) {
+        mprWakePendingDispatchers();
+    }
+    if (wakeIdle) {
         mprSignalCond(worker->idleCond); 
     }
 }

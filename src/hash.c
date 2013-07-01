@@ -82,13 +82,14 @@ static void manageHashTable(MprHash *hash, int flags)
         lock(hash);
         for (i = 0; i < hash->size; i++) {
             for (sp = (MprKey*) hash->buckets[i]; sp; sp = sp->next) {
-                assert(mprIsValid(sp));
                 mprMark(sp);
                 if (!(hash->flags & MPR_HASH_STATIC_VALUES)) {
+#if BIT_DEBUG
                     if (sp->data && !mprIsValid(sp->data)) {
                         mprLog(0, "Data in key %s is not valid", sp->key);
                     }
                     assert(sp->data == 0 || mprIsValid(sp->data));
+#endif
                     mprMark(sp->data);
                 }
                 if (!(hash->flags & MPR_HASH_STATIC_KEYS)) {

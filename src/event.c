@@ -70,6 +70,7 @@ static void manageEvent(MprEvent *event, int flags)
         if (!(event->flags & MPR_EVENT_STATIC_DATA)) {
             mprMark(event->data);
         }
+        mprMark(event->sock);
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (event->next) {
@@ -120,9 +121,6 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     assert(dispatcher);
     assert(event);
     assert(event->timestamp);
-#if KEEP
-    assert(dispatcher->flags & MPR_DISPATCHER_ENABLED);
-#endif
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 

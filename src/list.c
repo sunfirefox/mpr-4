@@ -58,7 +58,9 @@ static void manageList(MprList *lp, int flags)
         mprMark(lp->items);
         if (!(lp->flags & MPR_LIST_STATIC_VALUES)) {
             for (i = 0; i < lp->length; i++) {
+#if BIT_DEBUG
                 assert(lp->items[i] == 0 || mprIsValid(lp->items[i]));
+#endif
                 mprMark(lp->items[i]);
             }
         }

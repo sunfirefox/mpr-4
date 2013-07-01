@@ -200,7 +200,7 @@ PUBLIC void mprDestroy(int how)
     MPR->exitStrategy &= MPR_EXIT_GRACEFUL;
     MPR->exitStrategy |= MPR_EXIT_IMMEDIATE;
 
-    mprWakeWorkers();
+    mprStopWorkers();
     mprStopCmdService();
     mprStopModuleService();
     mprStopEventService();
@@ -270,7 +270,7 @@ PUBLIC void mprTerminate(int how, int status)
     for (ITERATE_ITEMS(MPR->terminators, terminator, next)) {
         (terminator)(how, status);
     }
-    mprWakeWorkers();
+    mprStopWorkers();
     mprWakeGCService();
     mprWakeDispatchers();
     mprWakeNotifier();

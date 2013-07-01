@@ -221,6 +221,8 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     }
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
     rc = epoll_wait(ws->epoll, ws->events, ws->eventsMax, timeout);
+
+    mprClearWaiting();
     mprResetYield();
 
     if (rc < 0) {

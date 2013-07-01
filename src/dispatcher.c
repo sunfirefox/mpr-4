@@ -244,7 +244,7 @@ PUBLIC void mprEnableDispatcher(MprDispatcher *dispatcher)
     }
     unlock(es);
     if (mustWake) {
-        mprWakeNotifier();
+        mprWakeEventService();
     }
 }
 
@@ -304,15 +304,19 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
             }
         } 
         if (es->eventCount == eventCount) {
+            /*
+                No events serviced
+             */
             lock(es);
             delay = getIdleTicks(es, expires - es->now);
             if (delay > 0) {
-                es->waiting = 1;
-                es->willAwake = es->now + delay;
-                unlock(es);
                 if (mprIsStopping()) {
                     delay = 10;
                 }
+                es->willAwake = es->now + delay;
+                es->waiting = 1;
+                unlock(es);
+
                 mprWaitForIO(MPR->waitService, delay);
             } else {
                 unlock(es);
@@ -328,8 +332,22 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 }
 
 
+PUBLIC void mprClearWaiting()
+{
+    MPR->eventService->waiting = 0;
+}
+
+
+PUBLIC void mprWakeEventService()
+{
+    if (MPR->eventService->waiting) {
+        mprWakeNotifier();
+    }
+}
+
+
 /*
-    Wait for an event to occur and dispatch the event. This is the primary event dispatch routine.
+    Wait for an event to occur and dispatch the event. This is not called by mprServiceEvents.
     Return Return 0 if an event was signalled. Return MPR_ERR_TIMEOUT if no event was seen before the timeout.
     WARNING: this will enable GC while sleeping
  */
@@ -539,7 +557,7 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
         mprSignalDispatcher(dispatcher);
     }
     if (mustWakeWaitService) {
-        mprWakeNotifier();
+        mprWakeEventService();
     }
 }
 
@@ -558,7 +576,7 @@ static int dispatchEvents(MprDispatcher *dispatcher)
 
     es = dispatcher->service;
     /*
-        OPT - mprGetNextEvent locks anyway, so should be able to get away without a lock here
+#### MOB OPT - mprGetNextEvent locks anyway, so should be able to get away without a lock here
      */
     mprTrace(7, "dispatchEvents for %s", dispatcher->name);
     lock(es);
@@ -591,14 +609,18 @@ static int dispatchEvents(MprDispatcher *dispatcher)
             mprQueueEvent(dispatcher, event);
         } else {
             /* Remove from currentQ - GC can then collect */
+//### MOB - need locking inside this routine
             mprDequeueEvent(event);
         }
     }
+    es->eventCount += count;
     unlock(es);
+#if UNUSED && MOB
     if (count && es->waiting) {
         es->eventCount += count;
-        mprWakeNotifier();
+        mprWakeEventService();
     }
+#endif
     return count;
 }
 
@@ -665,7 +687,16 @@ PUBLIC void mprClaimDispatcher(MprDispatcher *dispatcher)
 
 PUBLIC void mprWakePendingDispatchers()
 {
-    mprWakeNotifier();
+    MprEventService *es;
+    int             mustWake;
+
+    es = MPR->eventService;
+    lock(es);
+    mustWake = es->pendingQ->next != es->pendingQ;
+    unlock(es);
+    if (mustWake) {
+        mprWakeEventService();
+    }
 }
 
 
@@ -740,10 +771,10 @@ static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
     } else if (mprIsStopping()) {
         delay = 10;
     } else {
-        delay = MPR_MAX_TIMEOUT;
         /*
             Examine all the dispatchers on the waitQ
          */
+        delay = es->nap ? es->nap : MPR_MAX_TIMEOUT;
         for (dp = waitQ->next; dp != waitQ; dp = dp->next) {
             assert(dp->magic == MPR_DISPATCHER_MAGIC);
             assert(!(dp->flags & MPR_DISPATCHER_DESTROYED));
@@ -757,6 +788,7 @@ static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
             }
         }
         delay = min(delay, timeout);
+        es->nap = 0;
     }
     return delay;
 }

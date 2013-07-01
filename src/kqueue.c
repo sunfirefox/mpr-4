@@ -54,7 +54,6 @@ PUBLIC void mprManageKqueue(MprWaitService *ws, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->events);
         mprMark(ws->interest);
-        mprMark(ws->stableInterest);
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (ws->kq) {
@@ -70,6 +69,9 @@ PUBLIC void mprManageKqueue(MprWaitService *ws, int flags)
 }
 
 
+/*
+    Called locked
+ */
 static int growEvents(MprWaitService *ws)
 {
     ws->interestMax *= 2;
@@ -121,6 +123,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ws->handlerMax = fd + 32;
             if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
                 assert(!MPR_ERR_MEMORY);
+                unlock(ws);
                 return MPR_ERR_MEMORY;
             }
         }
@@ -186,10 +189,15 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timespec ts;
-    int             rc;
+    struct kevent   *interest;
+    int             rc, count;
 
     assert(timeout > 0);
 
+    if (ws->needRecall) {
+        mprDoWaitRecall(ws);
+        return;
+    }
     if (timeout < 0) {
         timeout = MAXINT;
     }
@@ -201,20 +209,20 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     ts.tv_sec = ((int) (timeout / 1000));
     ts.tv_nsec = ((int) ((timeout % 1000) * 1000 * 1000));
 
-    if (ws->needRecall) {
-        mprDoWaitRecall(ws);
-        return;
-    }
     lock(ws);
-    ws->stableInterest = mprMemdup(ws->interest, sizeof(struct kevent) * ws->interestCount);
-    ws->stableInterestCount = ws->interestCount;
+    count = ws->interestCount;
+    interest = alloca(sizeof(struct kevent) * count);
+    memcpy(interest, ws->interest, sizeof(struct kevent) * count);
     /* Preserve the wakeup pipe fd */
     ws->interestCount = 1;
     unlock(ws);
 
     mprTrace(8, "kevent sleep for %d", timeout);
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
-    rc = kevent(ws->kq, ws->stableInterest, ws->stableInterestCount, ws->events, ws->eventsMax, &ts);
+
+    rc = kevent(ws->kq, interest, count, ws->events, ws->eventsMax, &ts);
+
+    mprClearWaiting();
     mprResetYield();
     mprTrace(8, "kevent wakes rc %d", rc);
 
@@ -276,9 +284,15 @@ static void serviceIO(MprWaitService *ws, int count)
         mprTrace(7, "Got I/O event mask %x", wp->presentMask);
         if (wp->presentMask) {
             mprTrace(7, "ServiceIO for wp %p", wp);
-            /* Suppress further events while this event is being serviced. User must re-enable */
-            mprNotifyOn(ws, wp, 0);            
-            mprQueueIOEvent(wp);
+            if (wp->flags & MPR_WAIT_IMMEDIATE) {
+                (wp->proc)(wp, NULL);
+            } else {
+                /* 
+                    Suppress further events while this event is being serviced. User must re-enable 
+                 */
+                mprNotifyOn(ws, wp, 0);            
+                mprQueueIOEvent(wp);
+            }
         }
     }
     unlock(ws);
