@@ -285,7 +285,7 @@ static void serviceIO(MprWaitService *ws, int count)
         if (wp->presentMask) {
             mprTrace(7, "ServiceIO for wp %p", wp);
             if (wp->flags & MPR_WAIT_IMMEDIATE) {
-                (wp->proc)(wp, NULL);
+                (wp->proc)(wp->handlerData, NULL);
             } else {
                 /* 
                     Suppress further events while this event is being serviced. User must re-enable 

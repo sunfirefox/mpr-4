@@ -264,8 +264,13 @@ static void serviceIO(MprWaitService *ws, int maxfd)
         }
         wp->presentMask = mask & wp->desiredMask;
         if (wp->presentMask) {
-            mprNotifyOn(ws, wp, 0);
-            mprQueueIOEvent(wp);
+            mprTrace(7, "ServiceIO for wp %p", wp);
+            if (wp->flags & MPR_WAIT_IMMEDIATE) {
+                (wp->proc)(wp->handlerData, NULL);
+            } else {
+                mprNotifyOn(ws, wp, 0);
+                mprQueueIOEvent(wp);
+            }
         }
     }
     unlock(ws);

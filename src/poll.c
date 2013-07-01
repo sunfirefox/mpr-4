@@ -274,8 +274,13 @@ static void serviceIO(MprWaitService *ws, struct pollfd *fds, int count)
         wp->presentMask = mask & wp->desiredMask;
         fp->revents = 0;
         if (wp->presentMask) {
-            mprNotifyOn(ws, wp, 0);
-            mprQueueIOEvent(wp);
+            mprTrace(7, "ServiceIO for wp %p", wp);
+            if (wp->flags & MPR_WAIT_IMMEDIATE) {
+                (wp->proc)(wp->handlerData, NULL);
+            } else {
+                mprNotifyOn(ws, wp, 0);
+                mprQueueIOEvent(wp);
+            }
         }
     }
     unlock(ws);

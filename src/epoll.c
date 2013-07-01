@@ -270,13 +270,18 @@ static void serviceIO(MprWaitService *ws, int count)
         }
         wp->presentMask = mask & wp->desiredMask;
         if (wp->presentMask) {
-            struct epoll_event  ev;
-            memset(&ev, 0, sizeof(ev));
-            ev.data.fd = fd;
-            wp->desiredMask = 0;
-            ws->handlerMap[wp->fd] = 0;
-            epoll_ctl(ws->epoll, EPOLL_CTL_DEL, wp->fd, &ev);
-            mprQueueIOEvent(wp);
+            mprTrace(7, "ServiceIO for wp %p", wp);
+            if (wp->flags & MPR_WAIT_IMMEDIATE) {
+                (wp->proc)(wp->handlerData, NULL);
+            } else {
+                struct epoll_event  ev;
+                memset(&ev, 0, sizeof(ev));
+                ev.data.fd = fd;
+                wp->desiredMask = 0;
+                ws->handlerMap[wp->fd] = 0;
+                epoll_ctl(ws->epoll, EPOLL_CTL_DEL, wp->fd, &ev);
+                mprQueueIOEvent(wp);
+            }
         }
     }
     unlock(ws);
