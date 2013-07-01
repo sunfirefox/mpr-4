@@ -570,9 +570,6 @@ PUBLIC int mprStartWorkerService()
 
     ws = MPR->workerService;
     mprSetMinWorkers(ws->minThreads);
-#if UNUSED
-    ws->pruneTimer = mprCreateTimerEvent(NULL, "pruneWorkers", MPR_TIMEOUT_PRUNER, pruneWorkers, ws, MPR_EVENT_QUICK);
-#endif
     return 0;
 }
 
