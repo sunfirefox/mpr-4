@@ -406,6 +406,7 @@ PUBLIC void *mprReallocMem(void *ptr, ssize usize)
 }
 
 
+//  MOB - API rename -- memclone
 PUBLIC void *mprMemdupMem(cvoid *ptr, ssize usize)
 {
     char    *newp;
