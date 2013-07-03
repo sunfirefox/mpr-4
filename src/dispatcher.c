@@ -774,7 +774,7 @@ static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
         /*
             Examine all the dispatchers on the waitQ
          */
-        delay = es->nap ? es->nap : MPR_MAX_TIMEOUT;
+        delay = es->delay ? es->delay : MPR_MAX_TIMEOUT;
         for (dp = waitQ->next; dp != waitQ; dp = dp->next) {
             assert(dp->magic == MPR_DISPATCHER_MAGIC);
             assert(!(dp->flags & MPR_DISPATCHER_DESTROYED));
@@ -788,9 +788,15 @@ static MprTicks getIdleTicks(MprEventService *es, MprTicks timeout)
             }
         }
         delay = min(delay, timeout);
-        es->nap = 0;
+        es->delay = 0;
     }
     return delay;
+}
+
+
+PUBLIC void mprSetEventServiceSleep(MprTicks delay)
+{
+    MPR->eventService->delay = delay;
 }
 
 
