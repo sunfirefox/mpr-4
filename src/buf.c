@@ -63,9 +63,18 @@ PUBLIC MprBuf *mprCloneBuf(MprBuf *orig)
 }
 
 
-PUBLIC char *mprGet(MprBuf *bp)
+PUBLIC char *mprCloneBufMem(MprBuf *bp)
 {
-    return (char*) bp->start;
+    char    *result;
+    ssize   len;
+
+    len = mprGetBufLength(bp);
+    if ((result = mprAlloc(len + 1)) == 0) {
+        return 0;
+    }
+    memcpy(result, mprGetBufStart(bp), len);
+    result[len] = 0;
+    return result;
 }
 
 
