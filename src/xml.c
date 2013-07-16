@@ -30,7 +30,7 @@ PUBLIC MprXml *mprXmlOpen(ssize initialSize, ssize maxSize)
     MprXml  *xp;
 
     xp = mprAllocObj(MprXml, manageXml);
-    
+
     xp->inBuf = mprCreateBuf(BIT_MAX_BUFFER, BIT_MAX_BUFFER);
     xp->tokBuf = mprCreateBuf(initialSize, maxSize);
     return xp;
@@ -115,7 +115,7 @@ static int parseNext(MprXml *xp, int state)
     handler = xp->handler;
     tname = aname = 0;
     rc = 0;
-    
+
     /*
         In this parse loop, the state is never assigned EOF or ERR. In such cases we always return EOF or ERR.
      */
@@ -258,7 +258,7 @@ static int parseNext(MprXml *xp, int state)
                     return rc;
                 }
                 return 1;
-    
+ 
             default:
                 xmlError(xp, "Syntax error");
                 return MPR_ERR_BAD_SYNTAX;
@@ -413,7 +413,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
             }
             putLastChar(xp, c);
             return MPR_XMLTOK_LS;
-    
+
         case '=':
             return MPR_XMLTOK_EQ;
 
@@ -428,7 +428,7 @@ static MprXmlToken getXmlToken(MprXml *xp, int state)
                 return MPR_XMLTOK_SLASH_GR;
             }
             return MPR_XMLTOK_ERR;
-        
+
         case '\"':
         case '\'':
             xp->quoteChar = c;

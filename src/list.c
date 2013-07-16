@@ -617,7 +617,7 @@ PUBLIC int mprLookupItem(MprList *lp, cvoid *item)
     int     i;
 
     assert(lp);
-    
+
     lock(lp);
     for (i = 0; i < lp->length; i++) {
         if (lp->items[i] == item) {
@@ -635,7 +635,7 @@ PUBLIC int mprLookupStringItem(MprList *lp, cchar *str)
     int     i;
 
     assert(lp);
-    
+
     lock(lp);
     for (i = 0; i < lp->length; i++) {
         if (smatch(lp->items[i], str)) {
@@ -716,7 +716,7 @@ static void manageKeyValue(MprKeyValue *pair, int flags)
 PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value, int flags)
 {
     MprKeyValue     *pair;
-    
+
     if ((pair = mprAllocObj(MprKeyValue, manageKeyValue)) == 0) {
         return 0;
     }

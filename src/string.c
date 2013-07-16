@@ -362,7 +362,7 @@ PUBLIC ssize slen(cchar *s)
 }
 
 
-/*  
+/*
     Map a string to lower case. Allocates a new string.
  */
 PUBLIC char *slower(cchar *str)
@@ -862,7 +862,7 @@ PUBLIC char *strim(cchar *str, cchar *set, int where)
 }
 
 
-/*  
+/*
     Map a string to upper case
  */
 PUBLIC char *supper(cchar *str)

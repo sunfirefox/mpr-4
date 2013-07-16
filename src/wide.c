@@ -380,7 +380,7 @@ PUBLIC ssize wlen(wchar *s)
 }
 
 
-/*  
+/*
     Map a string to lower case 
  */
 PUBLIC wchar *wlower(wchar *str)
@@ -713,7 +713,7 @@ PUBLIC wchar *wtrim(wchar *str, wchar *set, int where)
 }
 
 
-/*  
+/*
     Map a string to upper case
  */
 PUBLIC char *wupper(wchar *str)

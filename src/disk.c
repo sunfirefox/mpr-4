@@ -58,7 +58,7 @@ static int cygOpen(MprFileSystem *fs, cchar *path, int omode, int perms)
 static MprFile *openFile(MprFileSystem *fs, cchar *path, int omode, int perms)
 {
     MprFile     *file;
-    
+
     assert(path);
 
     if ((file = mprAllocObj(MprFile, manageDiskFile)) == 0) {

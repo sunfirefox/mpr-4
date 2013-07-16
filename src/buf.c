@@ -23,7 +23,7 @@ static void manageBuf(MprBuf *buf, int flags);
 PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
 {
     MprBuf      *bp;
-    
+
     if (initialSize <= 0) {
         initialSize = BIT_MAX_BUFFER;
     }

@@ -48,7 +48,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     fs = mprCreateFileSystem("/");
     mprAddFileSystem(fs);
     mprCreateLogService();
-    
+
     if (argv) {
 #if BIT_WIN_LIKE
         if (argc >= 2 && strstr(argv[1], "--cygroot") != 0) {
@@ -538,7 +538,7 @@ PUBLIC int mprMakeArgv(cchar *command, cchar ***argvp, int flags)
 PUBLIC MprIdleCallback mprSetIdleCallback(MprIdleCallback idleCallback)
 {
     MprIdleCallback old;
-    
+
     old = MPR->idleCallback;
     MPR->idleCallback = idleCallback;
     return old;

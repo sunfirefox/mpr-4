@@ -136,7 +136,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider)
     MprSocketService    *ss;
 
     ss = MPR->socketService;
-    
+
     if (ss->providers == 0 && (ss->providers = mprCreateHash(0, 0)) == 0) {
         return;
     }
@@ -202,7 +202,7 @@ static void manageSocket(MprSocket *sp, int flags)
 }
 
 
-/*  
+/*
     Re-initialize all socket variables so the socket can be reused. This closes the socket and removes all wait handlers.
  */
 static void resetSocket(MprSocket *sp)
@@ -247,7 +247,7 @@ PUBLIC bool mprHasIPv6()
 }
 
 
-/*  
+/*
     Open a server connection
  */
 PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
@@ -442,7 +442,7 @@ PUBLIC void mprEnableSocketEvents(MprSocket *sp, int mask)
 }
 
 
-/*  
+/*
     Open a client socket connection
  */
 PUBLIC int mprConnectSocket(MprSocket *sp, cchar *ip, int port, int flags)
@@ -488,7 +488,7 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
         return MPR_ERR_CANT_OPEN;
     }
 #if !BIT_WIN_LIKE && !VXWORKS
-    /*  
+    /*
         Children should not inherit this fd
      */
     fcntl(sp->fd, F_SETFD, FD_CLOEXEC);
@@ -532,7 +532,7 @@ static int connectSocket(MprSocket *sp, cchar *ip, int port, int initialFlags)
     }
     mprSetSocketBlockingMode(sp, (bool) (sp->flags & MPR_SOCKET_BLOCK));
 
-    /*  
+    /*
         TCP/IP stacks have the no delay option (nagle algorithm) on by default.
      */
     if (sp->flags & MPR_SOCKET_NODELAY) {
@@ -560,7 +560,7 @@ static void disconnectSocket(MprSocket *sp)
     char    buf[BIT_MAX_BUFFER];
     int     i;
 
-    /*  
+    /*
         Defensive lock buster. Use try lock incase an operation is blocked somewhere with a lock asserted. 
         Should never happen.
      */
@@ -608,7 +608,7 @@ PUBLIC void mprCloseSocket(MprSocket *sp, bool gracefully)
 }
 
 
-/*  
+/*
     Standard (non-SSL) close. Permit multiple calls.
  */
 static void closeSocket(MprSocket *sp, bool gracefully)
@@ -698,7 +698,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
     nsp->port = listen->port;
     nsp->flags = ((listen->flags & ~MPR_SOCKET_LISTENER) | MPR_SOCKET_SERVER);
 
-    /*  
+    /*
         Limit the number of simultaneous clients
      */
     lock(ss);
@@ -712,7 +712,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
 
 #if !BIT_WIN_LIKE && !VXWORKS
     /* Prevent children inheriting this socket */
-    fcntl(fd, F_SETFD, FD_CLOEXEC);         
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
 #endif
 
     mprSetSocketBlockingMode(nsp, (nsp->flags & MPR_SOCKET_BLOCK) ? 1: 0);
@@ -744,7 +744,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
 }
 
 
-/*  
+/*
     Read data. Return -1 for EOF and errors. On success, return the number of bytes read.
  */
 PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
@@ -761,7 +761,7 @@ PUBLIC ssize mprReadSocket(MprSocket *sp, void *buf, ssize bufsize)
 }
 
 
-/*  
+/*
     Standard read from a socket (Non SSL)
     Return number of bytes read. Return -1 on errors and EOF.
  */
@@ -820,7 +820,7 @@ again:
 }
 
 
-/*  
+/*
     Write data. Return the number of bytes written or -1 on errors. NOTE: this routine will return with a
     short write if the underlying socket can't accept any more data.
  */
@@ -838,7 +838,7 @@ PUBLIC ssize mprWriteSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 }
 
 
-/*  
+/*
     Standard write to a socket (Non SSL)
     Return count of bytes written. mprGetError will return EAGAIN or EWOULDBLOCK if transport is saturated.
  */
@@ -915,7 +915,7 @@ static ssize writeSocket(MprSocket *sp, cvoid *buf, ssize bufsize)
 }
 
 
-/*  
+/*
     Write a string to the socket
  */
 PUBLIC ssize mprWriteSocketString(MprSocket *sp, cchar *str)
@@ -986,7 +986,7 @@ static ssize localSendfile(MprSocket *sp, MprFile *file, MprOff offset, ssize le
 #endif
 
 
-/*  
+/*
     Write data from a file to a socket. Includes the ability to write header before and after the file data.
     Works even with a null "file" to just output the headers.
  */
@@ -1145,7 +1145,7 @@ PUBLIC bool mprSocketHandshaking(MprSocket *sp)
 }
 
 
-/*  
+/*
     Return true if end of file
  */
 PUBLIC bool mprIsSocketEof(MprSocket *sp)
@@ -1154,7 +1154,7 @@ PUBLIC bool mprIsSocketEof(MprSocket *sp)
 }
 
 
-/*  
+/*
     Set the EOF condition
  */
 PUBLIC void mprSetSocketEof(MprSocket *sp, bool eof)
@@ -1176,7 +1176,7 @@ PUBLIC Socket mprGetSocketFd(MprSocket *sp)
 }
 
 
-/*  
+/*
     Return the blocking mode of the socket
  */
 PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
@@ -1186,7 +1186,7 @@ PUBLIC bool mprGetSocketBlockingMode(MprSocket *sp)
 }
 
 
-/*  
+/*
     Get the socket flags
  */
 PUBLIC int mprGetSocketFlags(MprSocket *sp)
@@ -1195,7 +1195,7 @@ PUBLIC int mprGetSocketFlags(MprSocket *sp)
 }
 
 
-/*  
+/*
     Set whether the socket blocks or not on read/write
  */
 PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on)
@@ -1233,7 +1233,7 @@ PUBLIC int mprSetSocketBlockingMode(MprSocket *sp, bool on)
 }
 
 
-/*  
+/*
     Set the TCP delay behavior (nagle algorithm)
  */
 PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on)
@@ -1265,7 +1265,7 @@ PUBLIC int mprSetSocketNoDelay(MprSocket *sp, bool on)
 }
 
 
-/*  
+/*
     Get the port number
  */
 PUBLIC int mprGetSocketPort(MprSocket *sp)
@@ -1313,7 +1313,7 @@ PUBLIC int mprGetSocketError(MprSocket *sp)
 
 
 #if BIT_HAS_GETADDRINFO
-/*  
+/*
     Get a socket address from a host/port combination. If a host provides both IPv4 and IPv6 addresses, 
     prefer the IPv4 address.
  */
@@ -1347,7 +1347,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
     }
     portStr = itos(port);
 
-    /*  
+    /*
         Try to sleuth the address to avoid duplicate address lookups. Then try IPv4 first then IPv6.
      */
     res = 0;
@@ -1444,7 +1444,7 @@ PUBLIC int mprGetSocketInfo(cchar *ip, int port, int *family, int *protocol, str
 #endif
 
 
-/*  
+/*
     Return a numerical IP address and port for the given socket info
  */
 static int getSocketIpAddr(struct sockaddr *addr, int addrlen, char *ip, int ipLen, int *port)
@@ -1513,7 +1513,7 @@ static int ipv6(cchar *ip)
 }
 
 
-/*  
+/*
     Parse address and return the IP address and port components. Handles ipv4 and ipv6 addresses. 
     If the IP portion is absent, *pip is set to null. If the port portion is absent, port is set to the defaultPort.
     If a ":*" port specifier is used, *pport is set to -1;
@@ -1546,7 +1546,7 @@ PUBLIC int mprParseSocketAddress(cchar *address, char **pip, int *pport, int *ps
         ip = sclone(&cp[3]);
     }
     if (ipv6(ip)) {
-        /*  
+        /*
             IPv6. If port is present, it will follow a closing bracket ']'
          */
         if ((cp = strchr(ip, ']')) != 0) {
@@ -1578,7 +1578,7 @@ PUBLIC int mprParseSocketAddress(cchar *address, char **pip, int *pport, int *ps
         }
 
     } else {
-        /*  
+        /*
             ipv4 
          */
         if ((cp = strchr(ip, ':')) != 0) {

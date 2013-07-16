@@ -845,7 +845,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
                 /* Skip the 'E' */
                 cp++;
                 goto again;
-            
+
             case 'F':
                 strcpy(dp, "Y-%m-%d");
                 dp += 7;
@@ -890,7 +890,7 @@ PUBLIC char *mprFormatTm(cchar *format, struct tm *tp)
                 /* Skip the 'O' */
                 cp++;
                 goto again;
-            
+
             case 'P':
                 dp--;
                 strcpy(dp, (tp->tm_hour > 11) ? "pm" : "am");
@@ -1554,7 +1554,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
                     /* 
                         dd/mm/yy 
                         Cannot detect 01/02/03  This will be evaluated as Jan 2 2003 below.
-                     */  
+                     */
                     tm.tm_mday = value1;
                     tm.tm_mon = value2;
                     tm.tm_year = value3;
@@ -1581,7 +1581,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
         } else {
             tm.tm_year += 1900;
         }
-    }    
+    }
     if (tm.tm_year >= 1900) {
         tm.tm_year -= 1900;
     }

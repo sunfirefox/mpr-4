@@ -653,7 +653,7 @@ struct tm *gmtime_r(const time_t *when, struct tm *tp)
 {
     FILETIME    f;
     SYSTEMTIME  s;
-    
+
     timeToFileTime(*when, &f);
     FileTimeToSystemTime(&f, &s);
 
@@ -693,7 +693,7 @@ struct tm *localtime_r(const time_t *when, struct tm *tp)
 
     timeToFileTime(*when - bias, &f);
     FileTimeToSystemTime(&f, &s);
-    
+
     tp->tm_year   = s.wYear - 1900;
     tp->tm_mon    = s.wMonth- 1;
     tp->tm_wday   = s.wDayOfWeek;
@@ -724,7 +724,7 @@ PUBLIC time_t mktime(struct tm *tp)
         bias += tz.DaylightBias;
     }
     bias *= 60;
-    
+
     s.wYear = tp->tm_year + 1900;
     s.wMonth = tp->tm_mon + 1;
     s.wDayOfWeek = tp->tm_wday;
@@ -798,7 +798,7 @@ PUBLIC HANDLE FindFirstFileA(LPCSTR path, WIN32_FIND_DATAA *data)
 
     wpath = mprToUni(MPR, path);
     h = FindFirstFileW(wpath, &wdata);
-    
+
     file = mprToMulti(MPR, wdata.cFileName);
     strcpy(data->cFileName, file);
     return h;

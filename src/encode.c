@@ -31,7 +31,7 @@ static uchar charMatch[256] = {
     0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c,0x3c 
 };
 
-/*  
+/*
     Max size of the port specification in a URL
  */
 #define MAX_PORT_LEN 8
@@ -39,7 +39,7 @@ static uchar charMatch[256] = {
 #define MIME_HASH_SIZE 67
 
 /************************************ Code ************************************/
-/*  
+/*
     Uri encode by encoding special characters with hex equivalents. Return an allocated string.
  */
 PUBLIC char *mprUriEncode(cchar *inbuf, int map)
@@ -83,7 +83,7 @@ PUBLIC char *mprUriEncode(cchar *inbuf, int map)
 }
 
 
-/*  
+/*
     Decode a string using URL encoding. Return an allocated string.
  */
 PUBLIC char *mprUriDecode(cchar *inbuf)
@@ -127,7 +127,7 @@ PUBLIC char *mprUriDecode(cchar *inbuf)
 }
 
 
-/*  
+/*
     Decode a string using URL encoding. This decodes in situ.
  */
 PUBLIC char *mprUriDecodeInSitu(char *inbuf)
@@ -167,7 +167,7 @@ PUBLIC char *mprUriDecodeInSitu(char *inbuf)
 }
 
 
-/*  
+/*
     Escape a shell command. Not really Http, but useful anyway for CGI
  */
 PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
@@ -214,7 +214,7 @@ PUBLIC char *mprEscapeCmd(cchar *cmd, int escChar)
 }
 
 
-/*  
+/*
     Escape HTML to escape defined characters (prevent cross-site scripting)
  */
 PUBLIC char *mprEscapeHtml(cchar *html)
@@ -235,7 +235,7 @@ PUBLIC char *mprEscapeHtml(cchar *html)
         return 0;
     }
 
-    /*  
+    /*
         Leave room for the biggest expansion
      */
     op = result;

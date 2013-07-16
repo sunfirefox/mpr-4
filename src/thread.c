@@ -956,7 +956,7 @@ static void changeState(MprWorker *worker, int state)
         lp = ws->idleThreads;
         wakeIdle = 1;
         break;
-        
+
     case MPR_WORKER_PRUNED:
         break;
     }

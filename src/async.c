@@ -18,7 +18,7 @@ static LRESULT msgProc(HWND hwnd, UINT msg, UINT wp, LPARAM lp);
 /************************************ Code ************************************/
 
 PUBLIC int mprCreateNotifierService(MprWaitService *ws)
-{   
+{
     ws->socketMessage = MPR_SOCKET_MESSAGE;
     return 0;
 }
@@ -163,7 +163,7 @@ PUBLIC void mprServiceWinIO(MprWaitService *ws, int sockFd, int winMask)
 PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
-   
+
     ws = MPR->waitService;
     if (!ws->wakeRequested && ws->hwnd) {
         ws->wakeRequested = 1;

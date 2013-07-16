@@ -31,7 +31,7 @@ static MprFile *openFile(MprFileSystem *fileSystem, cchar *path, int flags, int 
 {
     MprRomFileSystem    *rfs;
     MprFile             *file;
-    
+
     assert(path && *path);
 
     rfs = (MprRomFileSystem*) fileSystem;

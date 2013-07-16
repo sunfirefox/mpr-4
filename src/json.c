@@ -113,7 +113,7 @@ static MprObj *deserialize(MprJson *jp, MprObj *obj)
             }
             jp->tok++;
             return obj;
-            
+
         default:
             /*
                 Value: String, "{" or "]"

@@ -263,6 +263,7 @@ static void serviceIO(MprWaitService *ws, int count)
                 mprNotifyOn(ws, wp, mask);
                 mprTrace(7, "kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
 
+//  EINVAL
             } else if (err == EBADF) {
                 /* File descriptor was closed */
                 mask = wp->desiredMask;
@@ -290,7 +291,7 @@ static void serviceIO(MprWaitService *ws, int count)
                 /* 
                     Suppress further events while this event is being serviced. User must re-enable 
                  */
-                mprNotifyOn(ws, wp, 0);            
+                mprNotifyOn(ws, wp, 0);
                 mprQueueIOEvent(wp);
             }
         }
