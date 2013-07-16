@@ -39,7 +39,7 @@ PUBLIC MprCond *mprCreateCond()
 static void manageCond(MprCond *cp, int flags)
 {
     assert(cp);
-    
+
     if (flags & MPR_MANAGE_MARK) {
         mprMark(cp->mutex);
 
@@ -130,7 +130,7 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
                 rc = MPR_ERR;
             }
         }
-        
+
 #elif BIT_UNIX_LIKE
         /*
             NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 

@@ -141,7 +141,7 @@ PUBLIC void mprNap(MprTicks timeout)
     int             rc;
 
     assert(timeout >= 0);
-    
+
     mark = mprGetTicks();
     remaining = timeout;
     do {

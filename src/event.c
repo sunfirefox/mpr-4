@@ -137,7 +137,7 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     }
     assert(prior->next);
     assert(prior->prev);
-    
+
     queueEvent(prior, event);
     event->dispatcher = dispatcher;
     es->eventCount++;

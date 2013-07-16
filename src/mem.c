@@ -104,14 +104,14 @@ static int stopSeqno = -1;
 
 #else /* Release mode */
 #define BREAKPOINT(mp)
-#define CHECK(mp)           
-#define CHECK_PTR(mp)           
-#define SCRIBBLE(mp)           
+#define CHECK(mp)
+#define CHECK_PTR(mp)
+#define SCRIBBLE(mp)
 #define SCRIBBLE_RANGE(ptr, size)
-#define CHECK_FREE_MEMORY(mp)           
+#define CHECK_FREE_MEMORY(mp)
 #define SET_NAME(mp, value)
 #define SET_MAGIC(mp)
-#define SET_SEQ(mp)           
+#define SET_SEQ(mp)
 #define VALID_BLK(mp)           1
 #endif
 
@@ -345,7 +345,7 @@ PUBLIC void *mprAllocMem(ssize usize, int flags)
     size = usize + sizeof(MprMem) + (padWords * sizeof(void*));
     size = max(size, usize + (ssize) sizeof(MprFreeMem));
     size = MPR_ALLOC_ALIGN(size);
-    
+
     if ((mp = allocMem(size, flags)) == NULL) {
         return NULL;
     }
@@ -481,7 +481,7 @@ static int initFree()
     ssize       bit, size, groupBits, bucketBits;
     int         index, group, bucket;
 #endif
-    
+
     heap->freeEnd = &heap->freeq[MPR_ALLOC_NUM_GROUPS * MPR_ALLOC_NUM_BUCKETS];
     for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
 #if BIT_MEMORY_STATS
@@ -512,7 +512,7 @@ static MprMem *allocMem(ssize required, int flags)
     ssize       size, maxBlock;
     ulong       groupMap, bucketMap;
     int         bucket, baseGroup, group, index, miss;
-    
+
 #if BIT_MEMORY_STACK
     monitorStack();
 #endif
@@ -533,7 +533,7 @@ static MprMem *allocMem(ssize required, int flags)
         - Long term use lockfree
      */
     lockHeap();
-    
+
     /* Mask groups lower than the base group */
     miss = 0;
     groupMap = heap->groupMap & ~((((ssize) 1) << baseGroup) - 1);
@@ -696,7 +696,7 @@ static MprMem *freeBlock(MprMem *mp)
     size = GET_SIZE(mp);
     prev = NULL;
     lockHeap();
-    
+
     /*
         Coalesce with next if it is free
      */
@@ -768,10 +768,10 @@ static MprMem *freeBlock(MprMem *mp)
 
 
 static int getQueueIndex(ssize size, int roundup)
-{   
+{
     ssize       usize;
     int         asize, aligned, bucket, group, index, msb;
-    
+
     assert(MPR_ALLOC_ALIGN(size) == size);
 
     /*
@@ -792,7 +792,7 @@ static int getQueueIndex(ssize size, int roundup)
 
     index = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
     assert(index < (heap->freeEnd - heap->freeq));
-    
+
 #if BIT_MEMORY_STATS
     assert(heap->freeq[index].info.stats.minSize <= (int) usize && 
         (int) usize < heap->freeq[index + 1].info.stats.minSize);
@@ -835,7 +835,7 @@ static void linkBlock(MprMem *mp)
     size = GET_SIZE(mp);
     SET_FIELD2(mp, size, heap->eternal, UNMARKED, 1);
     SET_HAS_MANAGER(mp, 0);
-    
+
     /*
         Set free space bitmap
      */
@@ -898,10 +898,10 @@ static void unlinkBlock(MprFreeMem *fp)
 
 #if BIT_MEMORY_STATS
 static MprFreeMem *getQueue(ssize size)
-{   
+{
     MprFreeMem  *freeq;
     int         index;
-    
+
     index = getQueueIndex(size, 0);
     freeq = &heap->freeq[index];
     return freeq;
@@ -1153,7 +1153,7 @@ static void sweep()
     MprRegion   *region, *nextRegion, *prior;
     MprMem      *mp, *next;
     MprManager  mgr;
-    
+
     if (!heap->enabled) {
         mprTrace(7, "DEBUG: sweep: Abort sweep - GC disabled");
         return;
@@ -1627,7 +1627,7 @@ PUBLIC void mprVerifyMem()
     MprMem      *mp;
     MprFreeMem  *freeq, *fp;
     int         i;
-    
+
     if (!heap->verify) {
         return;
     }
@@ -2088,7 +2088,7 @@ static void allocException(int cause, ssize size)
     mprError("%s: Memory used %,d, redline %,d, limit %,d.", MPR->name, (int) used, (int) heap->stats.redLine,
         (int) heap->stats.maxMemory);
     mprError("%s: Consider increasing memory limit.", MPR->name);
-    
+
     if (heap->notifier) {
         (heap->notifier)(cause, heap->allocPolicy,  size, used);
     }

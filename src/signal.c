@@ -171,7 +171,7 @@ PUBLIC void mprServiceSignals()
 static void signalEvent(MprSignal *sp, MprEvent *event)
 {
     MprSignal   *np;
-    
+
     assert(sp);
     assert(event);
 

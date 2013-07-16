@@ -1074,7 +1074,7 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
     int             originSegments, i, commonSegments, sep;
 
     fs = mprLookupFileSystem(destArg);
-    
+
     if (destArg == 0 || *destArg == '\0') {
         return sclone(".");
     }
@@ -1084,7 +1084,7 @@ PUBLIC char *mprGetRelPath(cchar *destArg, cchar *originArg)
         return dest;
     }
     sep = (dp = firstSep(fs, dest)) ? *dp : defaultSep(fs);
-    
+
     if (originArg == 0 || *originArg == '\0') {
         /*
             Get the working directory. Ensure it is null terminated and leave room to append a trailing separators

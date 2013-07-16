@@ -84,7 +84,7 @@ PUBLIC MprCmd *mprCreateCmd(MprDispatcher *dispatcher)
     MprCmd          *cmd;
     MprCmdFile      *files;
     int             i;
-    
+
     if ((cmd = mprAllocObj(MprCmd, manageCmd)) == 0) {
         return 0;
     }
@@ -799,7 +799,7 @@ static void reapCmd(MprCmd *cmd, MprSignal *sp)
     int     status, rc;
 
     mprTrace(6, "reapCmd CHECK pid %d, eof %d, required %d", cmd->pid, cmd->eofCount, cmd->requiredEof);
-    
+
     status = 0;
     if (cmd->pid == 0) {
         return;
@@ -1196,7 +1196,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
     }
     cmd->command = mprAlloc(len + 1);
     cmd->command[len] = '\0';
-    
+
     /*
         Add quotes around all args that have spaces and backquote [", ', \\]
         Example:    ["showColors", "red", "light blue", "Cannot \"render\""]

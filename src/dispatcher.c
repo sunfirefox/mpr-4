@@ -187,7 +187,7 @@ static void manageDispatcher(MprDispatcher *dispatcher, int flags)
             mprMark(event);
         }
         unlock(es);
-        
+
     } else if (flags & MPR_MANAGE_FREE) {
         mprDestroyDispatcher(dispatcher);
     }
@@ -404,7 +404,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
         dispatcher->flags |= MPR_DISPATCHER_WAITING;
         assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         unlock(es);
-        
+   
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
@@ -828,7 +828,7 @@ static void initDispatcher(MprDispatcher *dispatcher)
 {
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assert(!(dispatcher->flags == MPR_DISPATCHER_DESTROYED));
-           
+
     dispatcher->next = dispatcher;
     dispatcher->prev = dispatcher;
     dispatcher->parent = dispatcher;
@@ -864,7 +864,7 @@ static void dequeueDispatcher(MprDispatcher *dispatcher)
 
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
-           
+
     if (dispatcher->next) {
         dispatcher->next->prev = dispatcher->prev;
         dispatcher->prev->next = dispatcher->next;

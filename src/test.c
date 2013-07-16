@@ -797,7 +797,7 @@ static void runTestProc(MprTestGroup *gp, MprTestCase *test)
     } else {
         (test->proc)(gp);
         mprYield(0);
-    
+
         mprLock(sp->mutex);
         if (gp->success) {
             ++sp->totalTestCount;
@@ -890,7 +890,7 @@ PUBLIC bool mprWaitForTestToComplete(MprTestGroup *gp, MprTicks timeout)
 {
     MprTicks    expires, remaining;
     int         rc;
-    
+
     assert(gp->dispatcher);
     assert(timeout >= 0);
 

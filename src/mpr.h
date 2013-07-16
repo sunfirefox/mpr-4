@@ -200,7 +200,7 @@ struct  MprXml;
     Garbage collector tuning
  */
 #define MPR_MIN_TIME_FOR_GC     2       /**< Wait till 2 milliseconds of idle time possible */
-    
+
 /************************************ Error Codes *****************************/
 
 /* Prevent collisions with 3rd party software */
@@ -831,7 +831,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     To mark a block as active, #mprMarkBlock must be called for each garbage collection cycle. When allocating non-temporal
     memroy blocks, a manager callback can be specified via #mprAllocObj. This manager routine will be called by the 
     collector so that dependant memory blocks can be marked as active.
-    
+
     The collector performs the marking phase by invoking the manager routines for a set of root blocks. A block can be 
     added to the set of roots by calling #mprAddRoot. Each root's manager routine will mark other blocks which will cause
     their manager routines to run and so on, until all active blocks have been marked. Non-marked blocks can then safely
@@ -922,7 +922,7 @@ typedef struct MprMem {
     #define MPR_VERIFY_MEM()        if (MPR->heap->verify) { mprVerifyMem(); } else
 #else
     #define MPR_CHECK_BLOCK(bp) 
-    #define MPR_VERIFY_MEM()        
+    #define MPR_VERIFY_MEM()
 #endif
 
 /*
@@ -3948,7 +3948,7 @@ typedef struct MprHash {
     int             size;               /**< Size of the buckets array */
     int             length;             /**< Number of symbols in the table */
     MprKey          **buckets;          /**< Hash collision bucket table */
-    MprHashProc     fn;                 /**< Hash function */             
+    MprHashProc     fn;                 /**< Hash function */
     MprMutex        *mutex;             /**< GC marker sync */
 } MprHash;
 
@@ -6676,7 +6676,7 @@ typedef int (*MprSocketPrebind)(struct MprSocket *sock);
 typedef struct MprSocketService {
     MprSocketProvider *standardProvider;        /**< Socket provider for non-SSL connections */
     char            *sslProvider;               /**< Default secure provider for SSL connections */
-    MprHash         *providers;                 /**< Secure socket providers */         
+    MprHash         *providers;                 /**< Secure socket providers */
     MprSocketPrebind prebind;                   /**< Prebind callback */
     MprList         *secureSockets;             /**< List of secured (matrixssl) sockets */
     MprMutex        *mutex;                     /**< Multithread locking */
@@ -8022,8 +8022,8 @@ typedef struct MprCmd {
 #if BIT_WIN_LIKE
     HANDLE          thread;             /**< Handle of the primary thread for the created process */
     HANDLE          process;            /**< Process handle for the created process */
-    char            *command;           /**< Windows command line */          
-    char            *arg0;              /**< Windows sanitized argv[0] */          
+    char            *command;           /**< Windows command line */
+    char            *arg0;              /**< Windows sanitized argv[0] */
 #endif
 
 #if VXWORKS

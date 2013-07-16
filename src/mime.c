@@ -160,7 +160,7 @@ PUBLIC int mprSetMimeProgram(MprHash *table, cchar *mimeType, cchar *program)
 {
     MprKey      *kp;
     MprMime     *mt;
-    
+
     kp = 0;
     mt = 0;
     while ((kp = mprGetNextKey(table, kp)) != 0) {

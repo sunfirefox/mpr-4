@@ -136,7 +136,7 @@ PUBLIC void mprAddSocketProvider(cchar *name, MprSocketProvider *provider)
     MprSocketService    *ss;
 
     ss = MPR->socketService;
-    
+
     if (ss->providers == 0 && (ss->providers = mprCreateHash(0, 0)) == 0) {
         return;
     }
@@ -712,7 +712,7 @@ PUBLIC MprSocket *mprAcceptSocket(MprSocket *listen)
 
 #if !BIT_WIN_LIKE && !VXWORKS
     /* Prevent children inheriting this socket */
-    fcntl(fd, F_SETFD, FD_CLOEXEC);         
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
 #endif
 
     mprSetSocketBlockingMode(nsp, (nsp->flags & MPR_SOCKET_BLOCK) ? 1: 0);

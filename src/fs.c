@@ -67,7 +67,7 @@ PUBLIC MprFileSystem *mprCreateFileSystem(cchar *path)
 PUBLIC void mprAddFileSystem(MprFileSystem *fs)
 {
     assert(fs);
-    
+
     /* NOTE: this does not currently add a file system. It merely replaces the existing file system. */
     MPR->fileSystem = fs;
 }
@@ -120,7 +120,7 @@ PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 
     assert(path);
     assert(separators);
-    
+
     fs = mprLookupFileSystem(path);
     fs->separators = sclone(separators);
 }
@@ -129,10 +129,10 @@ PUBLIC void mprSetPathSeparators(cchar *path, cchar *separators)
 PUBLIC void mprSetPathNewline(cchar *path, cchar *newline)
 {
     MprFileSystem   *fs;
-    
+
     assert(path);
     assert(newline);
-    
+
     fs = mprLookupFileSystem(path);
     fs->newline = sclone(newline);
 }
