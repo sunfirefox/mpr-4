@@ -162,7 +162,7 @@ PUBLIC void mprSleep(MprTicks timeout)
 }
 
 
-/*  
+/*
     Write a message in the O/S native log (syslog in the case of linux)
  */
 PUBLIC void mprWriteToOsLog(cchar *message, int flags, int level)

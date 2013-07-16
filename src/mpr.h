@@ -1456,7 +1456,7 @@ PUBLIC void *mprAlloc(ssize size);
     Allocate an object of a given type.
     @description Allocates a zeroed block of memory large enough to hold an instance of the specified type with a 
         manager callback. This call associates a manager function with an object that will be invoked when the 
-        object is freed or the garbage collector needs the object to mark internal properties as being used.  
+        object is freed or the garbage collector needs the object to mark internal properties as being used.
         This call is implemented as a macro.
     @param type Type of the object to allocate
     @param manager Manager function to invoke when the allocation is managed.
@@ -3103,7 +3103,7 @@ PUBLIC uint64 mprGetHiResTicks();
     Return the time remaining until a timeout has elapsed
     @param mark Starting time stamp 
     @param timeout Time in milliseconds
-    @return Time in milliseconds until the timeout elapses  
+    @return Time in milliseconds until the timeout elapses
     @ingroup MprTime
     @stability Stable
  */
@@ -3388,7 +3388,7 @@ PUBLIC void *mprGetPrevItem(MprList *list, int *lastIndex);
     @param list Reference to the MprList struct.
     @param flags Control flags. Possible values are: MPR_LIST_STATIC_VALUES to indicate list items are static
         and should not be marked for GC.  MPR_LIST_STABLE to create an optimized list for private use that is not
-        thread-safe.  
+        thread-safe.
     @ingroup MprList
     @stability Stable.
  */
@@ -7745,7 +7745,7 @@ PUBLIC char *mprMakePassword(cchar *password, int saltLength, int rounds);
 PUBLIC bool mprCheckPassword(cchar *plainTextPassword, cchar *passwordHash);
 
 /********************************* Encoding ***********************************/
-/*  
+/*
     Character encoding masks
  */
 #define MPR_ENCODE_HTML             0x1

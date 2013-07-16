@@ -9,7 +9,7 @@
 #include    "mpr.h"
 
 /*********************************** Code *************************************/
-/*  
+/*
     Inbuilt mime type support
  */
 static char *standardMimeTypes[] = {

@@ -459,7 +459,7 @@ static bool process(cchar *operation, bool quiet)
             rc = run("/bin/launchctl unload -w /Library/LaunchDaemons/com.%s.%s.plist", slower(BIT_COMPANY), name);
 
         } else if (update) {
-            /*  
+            /*
                 Not supported on older versions
                 rc = run("/usr/sbin/update-rc.d %s disable", name);
              */

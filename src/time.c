@@ -1554,7 +1554,7 @@ PUBLIC int mprParseTime(MprTime *time, cchar *dateString, int zoneFlags, struct 
                     /* 
                         dd/mm/yy 
                         Cannot detect 01/02/03  This will be evaluated as Jan 2 2003 below.
-                     */  
+                     */
                     tm.tm_mday = value1;
                     tm.tm_mon = value2;
                     tm.tm_year = value3;

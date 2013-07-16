@@ -404,7 +404,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
         dispatcher->flags |= MPR_DISPATCHER_WAITING;
         assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
         unlock(es);
-   
+
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
         mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
         assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
@@ -515,7 +515,7 @@ PUBLIC void mprScheduleDispatcher(MprDispatcher *dispatcher)
     MprEventService     *es;
     MprEvent            *event;
     int                 mustWakeWaitService, mustWakeCond;
-   
+
     assert(dispatcher);
     assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));

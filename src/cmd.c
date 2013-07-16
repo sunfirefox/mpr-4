@@ -410,7 +410,7 @@ PUBLIC int mprRunCmdV(MprCmd *cmd, int argc, cchar **argv, cchar **envp, char **
 static int addCmdHandlers(MprCmd *cmd)
 {
     int     stdinFd, stdoutFd, stderrFd;
-  
+
     stdinFd = cmd->files[MPR_CMD_STDIN].fd; 
     stdoutFd = cmd->files[MPR_CMD_STDOUT].fd; 
     stderrFd = cmd->files[MPR_CMD_STDERR].fd; 
@@ -1148,7 +1148,7 @@ static int sanitizeArgs(MprCmd *cmd, int argc, cchar **argv, cchar **env, int fl
         WARNING: If starting a program compiled with Cygwin, there is a bug in Cygwin's parsing of the command
         string where embedded quotes are parsed incorrectly by the Cygwin CRT runtime. If an arg starts with a 
         drive spec, embedded backquoted quotes will be stripped and the backquote will be passed in. Windows CRT 
-        handles this correctly.  For example:  
+        handles this correctly.  For example:
             ./args "c:/path \"a b\"
             Cygwin will parse as  argv[1] == c:/path \a \b
             Windows will parse as argv[1] == c:/path "a b"

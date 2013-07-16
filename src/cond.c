@@ -134,7 +134,7 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
 #elif BIT_UNIX_LIKE
         /*
             NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
-            atomically unlock the mutex before sleeping and will relock on awakening.  
+            atomically unlock the mutex before sleeping and will relock on awakening.
          */
         if (!cp->triggered) {
             if (now) {
