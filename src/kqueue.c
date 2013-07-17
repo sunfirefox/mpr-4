@@ -21,11 +21,11 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count);
 
 PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
-    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
-        return MPR_ERR_CANT_INITIALIZE;
-    }
     if ((ws->kq = kqueue()) < 0) {
         mprError("Call to kqueue() failed");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     return 0;
@@ -81,6 +81,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             wp->event = 0;
         }
         if (kevent(ws->kq, interest, (int) (kp - interest), NULL, 0, NULL) < 0) {
+            /* Should never happen */
             mprError("Cannot issue notifier wakeup event");
         }
     }
@@ -110,25 +111,26 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     if (mask & MPR_WRITABLE) {
         EV_SET(&interest[interestCount++], fd, EVFILT_WRITE, EV_ADD, 0, 0, 0);
     }
-    kq = kqueue();
+    if ((kq = kqueue()) < 0) {
+        mprError("Kqueue returned %d, errno %d", kq, errno);
+        return MPR_ERR_CANT_OPEN;
+    }
     ts.tv_sec = ((int) (timeout / 1000));
     ts.tv_nsec = ((int) (timeout % 1000)) * 1000 * 1000;
 
     result = 0;
-    rc = kevent(kq, interest, interestCount, events, 1, &ts);
-    close(kq);
-    if (rc < 0) {
-        mprTrace(7, "Kevent returned %d, errno %d", rc, errno);
+    if ((rc = kevent(kq, interest, interestCount, events, 1, &ts)) < 0) {
+        mprError("Kevent returned %d, errno %d", rc, errno);
+
     } else if (rc > 0) {
-        if (rc > 0) {
-            if (events[0].filter & EVFILT_READ) {
-                result |= MPR_READABLE;
-            }
-            if (events[0].filter == EVFILT_WRITE) {
-                result |= MPR_WRITABLE;
-            }
+        if (events[0].filter & EVFILT_READ) {
+            result |= MPR_READABLE;
+        }
+        if (events[0].filter == EVFILT_WRITE) {
+            result |= MPR_WRITABLE;
         }
     }
+    close(kq);
     return result;
 }
 
@@ -191,7 +193,7 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
             continue;
         }
         if (fd < 0 || (wp = mprGetItem(ws->handlerMap, fd)) == 0) {
-            mprTrace(0, "WARNING: fd not in handler map. fd %d", fd);
+            mprError("WARNING: fd not in handler map. fd %d", fd);
             continue;
         }
         mask = 0;
@@ -205,13 +207,13 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
                 mprNotifyOn(ws, wp, 0);
                 wp->desiredMask = 0;
                 mprNotifyOn(ws, wp, prior);
-                mprTrace(0, "WARNING: kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
+                mprError("kqueue: file descriptor may have been closed and reopened, fd %d", wp->fd);
                 continue;
 
             } else if (err == EBADF || err == EINVAL) {
                 /* File descriptor was closed */
                 mprNotifyOn(ws, wp, 0);
-                mprTrace(0, "WARNING: kqueue: invalid file descriptor %d, fd %d", wp->fd);
+                mprError("kqueue: invalid file descriptor %d, fd %d", wp->fd);
                 mask |= MPR_READABLE;
             }
         }
@@ -222,9 +224,8 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
             mask |= MPR_WRITABLE;
         }
         wp->presentMask = mask & wp->desiredMask;
-        mprTrace(7, "Got I/O event mask %x", wp->presentMask);
+
         if (wp->presentMask) {
-            mprTrace(7, "ServiceIO for wp %p", wp);
             if (wp->flags & MPR_WAIT_IMMEDIATE) {
                 (wp->proc)(wp->handlerData, NULL);
             } else {
