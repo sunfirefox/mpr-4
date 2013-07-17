@@ -271,9 +271,6 @@ PUBLIC void mprTerminate(int how, int status)
         (terminator)(how, status);
     }
     mprStopWorkers();
-#if UNUSED
-    mprWakeGCService();
-#endif
     mprWakeDispatchers();
     mprWakeNotifier();
 }

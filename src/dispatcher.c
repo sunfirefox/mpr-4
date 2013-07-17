@@ -694,6 +694,7 @@ PUBLIC void mprWakePendingDispatchers()
     lock(es);
     mustWake = es->pendingQ->next != es->pendingQ;
     unlock(es);
+
     if (mustWake) {
         mprWakeEventService();
     }
