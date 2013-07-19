@@ -34,6 +34,13 @@
     <class kind="struct">MprWorkerStats</class>
     <member kind="define">
       <type>#define</type>
+      <name>BIT_MAX_EVENTS</name>
+      <anchorfile>mpr_8h.html</anchorfile>
+      <anchor>a7349c55cdfc3b7f43649a5d18afba3bb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>BIT_MPR_LOGGING</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>acdd6dbd60b7b6fd7c8b1aa0c67aee862</anchor>
@@ -877,13 +884,6 @@
       <name>MPR_MAX_GEN</name>
       <anchorfile>mpr_8h.html</anchorfile>
       <anchor>a2d75c304c2b727f4225d589dd1d3ae6b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MPR_MAX_KEVENTS</name>
-      <anchorfile>mpr_8h.html</anchorfile>
-      <anchor>a977789cbac50181dbae4c7fe7334c853</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">

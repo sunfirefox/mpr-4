@@ -194,9 +194,6 @@ struct  MprXml;
     #define MPR_EVENT_SELECT    1
 #endif
 
-#undef MPR_EVENT_EPOLL
-#define MPR_EVENT_SELECT 1
-
 /**
     Maximum number of notifier events
  */
