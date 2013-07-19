@@ -181,12 +181,6 @@ struct  MprXml;
  */
 #define MPR_MAX_FILE            256
 
-/**
-    Maximum number of notifier events
- */
-#define MPR_MAX_EVENTS          32
-
-
 /*
     Event notification mechanism
  */
@@ -194,12 +188,20 @@ struct  MprXml;
     #define MPR_EVENT_KQUEUE    1
 #elif LINUX || BIT_BSD_LIKE
     #define MPR_EVENT_EPOLL     1
-#elif VXWORKS || WINCE || CYGWIN
-    #define MPR_EVENT_SELECT    1
 #elif WINDOWS
     #define MPR_EVENT_ASYNC     1
 #else
-    #define MPR_EVENT_POLL      1
+    #define MPR_EVENT_SELECT    1
+#endif
+
+#undef MPR_EVENT_EPOLL
+#define MPR_EVENT_SELECT 1
+
+/**
+    Maximum number of notifier events
+ */
+#ifndef BIT_MAX_EVENTS
+#define BIT_MAX_EVENTS          32
 #endif
 
 /*
@@ -6338,36 +6340,21 @@ typedef struct MprWaitService {
     MprList         *handlers;              /* List of handlers */
     int             needRecall;             /* A handler needs a recall due to buffered data */
     int             wakeRequested;          /* Wakeup of the wait service has been requested */
-#if MPR_EVENT_EPOLL
-    int             epoll;                  /* Epoll descriptor */
     MprList         *handlerMap;            /* Map of fds to handlers */
-    int             breakFd[2];             /* Event or pipe to wakeup */
-#elif MPR_EVENT_KQUEUE
-    int             kq;                     /* Kqueue() return descriptor */
-    MprList         *handlerMap;            /* Map of fds to handlers */
-#elif MPR_EVENT_POLL
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers (indexed by fd) */
-    int             handlerMax;             /* Size of the handlers array */
-    struct pollfd   *fds;                   /* Master set of file descriptors to poll */
-    struct pollfd   *pollFds;               /* Set of descriptors used in poll() */
-    int             fdsCount;               /* Last used entry in the fds array */
-    int             fdMax;                  /* Size of the fds array */
-    int             breakPipe[2];           /* Pipe to wakeup select */
-#elif MPR_EVENT_ASYNC
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers */
-    int             handlerMax;             /* Size of the handlers array */
+#if MPR_EVENT_ASYNC
     int             nfd;                    /* Last used entry in the handlerMap array */
     int             fdmax;                  /* Size of the fds array */
     HWND            hwnd;                   /* Window handle */
     int             socketMessage;          /* Message id for socket events */
     MprMsgCallback  msgCallback;            /* Message handler callback */
+#elif MPR_EVENT_EPOLL
+    int             epoll;                  /* Epoll descriptor */
+    int             breakFd[2];             /* Event or pipe to wakeup */
+#elif MPR_EVENT_KQUEUE
+    int             kq;                     /* Kqueue() return descriptor */
 #elif MPR_EVENT_SELECT
-    struct MprWaitHandler **handlerMap;     /* Map of fds to handlers */
-    int             handlerMax;             /* Size of the handlers array */
     fd_set          readMask;               /* Current read events mask */
     fd_set          writeMask;              /* Current write events mask */
-    fd_set          stableReadMask;         /* Read events mask used for select() */
-    fd_set          stableWriteMask;        /* Write events mask used for select() */
     int             highestFd;              /* Highest socket in masks + 1 */
     int             breakSock;              /* Socket to wakeup select */
     struct sockaddr_in breakAddress;        /* Address of wakeup socket */
@@ -6392,9 +6379,6 @@ PUBLIC int  mprInitWindow();
 #endif
 #if MPR_EVENT_EPOLL
     PUBLIC void mprManageEpoll(MprWaitService *ws, int flags);
-#endif
-#if MPR_EVENT_POLL
-    PUBLIC void mprManagePoll(MprWaitService *ws, int flags);
 #endif
 #if MPR_EVENT_SELECT
     PUBLIC void mprManageSelect(MprWaitService *ws, int flags);

@@ -13,7 +13,7 @@
 #if MPR_EVENT_SELECT
 /********************************** Forwards **********************************/
 
-static void serviceIO(MprWaitService *ws, int maxfd);
+static void serviceIO(MprWaitService *ws, fd_set *readMask, fd_set *writeMask, int maxfd);
 static void readPipe(MprWaitService *ws);
 
 /************************************ Code ************************************/
@@ -23,8 +23,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     int     rc, retries, breakPort, breakSock, maxTries;
 
     ws->highestFd = 0;
-    ws->handlerMax = MPR_FD_MIN;
-    if ((ws->handlerMap = mprAllocZeroed(sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
+    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     FD_ZERO(&ws->readMask);
@@ -66,7 +65,6 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         }
         breakPort++;
     }
-
     if (breakSock < 0 || rc < 0) {
         mprWarn("Cannot bind any port to use for select. Tried %d-%d\n", breakPort, breakPort - maxTries);
         return MPR_ERR_CANT_OPEN;
@@ -80,22 +78,15 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 
 PUBLIC void mprManageSelect(MprWaitService *ws, int flags)
 {
-    if (flags & MPR_MANAGE_FREE) {
+    if (flags & MPR_MANAGE_MARK) {
+        mprMark(ws->handlerMap);
+
+    } else if (flags & MPR_MANAGE_FREE) {
         if (ws->breakSock >= 0) {
             close(ws->breakSock);
+            ws->breakSock = 0;
         }
     }
-}
-
-
-static int growFds(MprWaitService *ws, int fd)
-{
-    ws->handlerMax = max(ws->handlerMax * 2, fd);
-    if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-        assert(!MPR_ERR_MEMORY);
-        return MPR_ERR_MEMORY;
-    }
-    return 0;
 }
 
 
@@ -122,15 +113,6 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         if (mask & MPR_WRITABLE) {
             FD_SET(fd, &ws->writeMask);
         }
-        if (mask) {
-            if (fd >= ws->handlerMax && growFds(ws, fd) < 0) {
-                unlock(ws);
-                assert(!MPR_ERR_MEMORY);
-                return MPR_ERR_MEMORY;
-            }
-        }
-        assert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
-        ws->handlerMap[fd] = (mask) ? wp : 0;
         wp->desiredMask = mask;
         ws->highestFd = max(fd, ws->highestFd);
         if (mask == 0 && fd == ws->highestFd) {
@@ -146,6 +128,8 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             wp->event = 0;
         }
     }
+    mprSetItem(ws->handlerMap, fd, wp);
+    mprWakeNotifier();
     unlock(ws);
     return 0;
 }
@@ -157,15 +141,13 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
  */
 PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 {
-    MprWaitService  *ws;
     struct timeval  tval;
     fd_set          readMask, writeMask;
-    int             rc;
+    int             rc, result;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
     }
-    ws = MPR->waitService;
     tval.tv_sec = (int) (timeout / 1000);
     tval.tv_usec = (int) ((timeout % 1000) * 1000);
 
@@ -177,19 +159,19 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     if (mask & MPR_WRITABLE) {
         FD_SET(fd, &writeMask);
     }
-    mask = 0;
-    rc = select(fd + 1, &readMask, &writeMask, NULL, &tval);
-    if (rc < 0) {
-        mprTrace(2, "Select returned %d, errno %d", rc, mprGetOsError());
+    result = 0;
+    if ((rc = select(fd + 1, &readMask, &writeMask, NULL, &tval)) < 0) {
+        mprError("Select returned %d, errno %d", rc, mprGetOsError());
+
     } else if (rc > 0) {
         if (FD_ISSET(fd, &readMask)) {
-            mask |= MPR_READABLE;
+            result |= MPR_READABLE;
         }
         if (FD_ISSET(fd, &writeMask)) {
-            mask |= MPR_WRITABLE;
+            result |= MPR_WRITABLE;
         }
     }
-    return mask;
+    return result;
 }
 
 
@@ -199,6 +181,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timeval  tval;
+    fd_set          readMask, writeMask;
     int             rc, maxfd;
 
     if (timeout < 0 || timeout > MAXINT) {
@@ -210,7 +193,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     }
 #endif
 #if VXWORKS
-    /* Minimize VxWorks task starvation */
+    /* Minimize worst-case VxWorks task starvation */
     timeout = max(timeout, 50);
 #endif
     tval.tv_sec = (int) (timeout / 1000);
@@ -221,25 +204,25 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         return;
     }
     lock(ws);
-    ws->stableReadMask = ws->readMask;
-    ws->stableWriteMask = ws->writeMask;
+    readMask = ws->readMask;
+    writeMask = ws->writeMask;
     maxfd = ws->highestFd + 1;
     unlock(ws);
 
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
-    rc = select(maxfd, &ws->stableReadMask, &ws->stableWriteMask, NULL, &tval);
+    rc = select(maxfd, &readMask, &writeMask, NULL, &tval);
 
     mprClearWaiting();
     mprResetYield();
 
     if (rc > 0) {
-        serviceIO(ws, maxfd);
+        serviceIO(ws, &readMask, &writeMask, maxfd);
     }
     ws->wakeRequested = 0;
 }
 
 
-static void serviceIO(MprWaitService *ws, int maxfd)
+static void serviceIO(MprWaitService *ws, fd_set *readMask, fd_set *writeMask, int maxfd)
 {
     MprWaitHandler      *wp;
     int                 fd, mask;
@@ -247,29 +230,29 @@ static void serviceIO(MprWaitService *ws, int maxfd)
     lock(ws);
     for (fd = 0; fd < maxfd; fd++) {
         mask = 0;
-        if (FD_ISSET(fd, &ws->stableReadMask)) {
+        if (FD_ISSET(fd, readMask)) {
             mask |= MPR_READABLE;
         }
-        if (FD_ISSET(fd, &ws->stableWriteMask)) {
+        if (FD_ISSET(fd, writeMask)) {
             mask |= MPR_WRITABLE;
         }
-        if (mask == 0) {
-            continue;
-        }
-        if ((wp = ws->handlerMap[fd]) == 0) {
+        if (mask) {
             if (fd == ws->breakSock) {
                 readPipe(ws);
+                continue;
             }
-            continue;
-        }
-        wp->presentMask = mask & wp->desiredMask;
-        if (wp->presentMask) {
-            mprTrace(7, "ServiceIO for wp %p", wp);
-            if (wp->flags & MPR_WAIT_IMMEDIATE) {
-                (wp->proc)(wp->handlerData, NULL);
-            } else {
-                mprNotifyOn(ws, wp, 0);
-                mprQueueIOEvent(wp);
+            if (fd < 0 || (wp = mprGetItem(ws->handlerMap, fd)) == 0) {
+                mprError("WARNING: fd not in handler map. fd %d", fd);
+                continue;
+            }
+            wp->presentMask = mask & wp->desiredMask;
+            if (wp->presentMask) {
+                if (wp->flags & MPR_WAIT_IMMEDIATE) {
+                    (wp->proc)(wp->handlerData, NULL);
+                } else {
+                    mprNotifyOn(ws, wp, 0);
+                    mprQueueIOEvent(wp);
+                }
             }
         }
     }

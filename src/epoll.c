@@ -12,12 +12,6 @@
 #include    "mpr.h"
 
 #if MPR_EVENT_EPOLL
-/********************************** Defines ***********************************/
-
-#ifndef BIT_MAX_EPOLL
-    #define BIT_MAX_EPOLL  32
-#endif
-
 /********************************** Forwards **********************************/
 
 static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count);
@@ -31,13 +25,13 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if ((ws->epoll = epoll_create(BIT_MAX_EPOLL)) < 0) {
+    if ((ws->epoll = epoll_create(BIT_MAX_EVENTS)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
 
-#if LINUX && EFD_NONBLOCK
-    if ((ws->breakFd[MPR_READ_PIPE] = eventfd(0, EFD_NONBLOCK)) < 0) {
+#if defined(EFD_NONBLOCK)
+    if ((ws->breakFd[MPR_READ_PIPE] = eventfd(0, 0)) < 0) {
         mprError("Cannot open breakout event");
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -146,7 +140,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     memset(&ev, 0, sizeof(ev));
     memset(events, 0, sizeof(events));
     ev.data.fd = fd;
-    if ((epfd = epoll_create(BIT_MAX_EPOLL)) < 0) {
+    if ((epfd = epoll_create(BIT_MAX_EVENTS)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
@@ -160,11 +154,13 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
     if (ev.events) {
         epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
     }
-    result = 0;
     rc = epoll_wait(epfd, events, sizeof(events) / sizeof(struct epoll_event), timeout);
     close(epfd);
+
+    result = 0;
     if (rc < 0) {
         mprTrace(2, "Epoll returned %d, errno %d", rc, errno);
+
     } else if (rc > 0) {
         if (rc > 0) {
             if ((events[0].events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (mask & MPR_READABLE)) {
@@ -184,8 +180,8 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
  */
 PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
-    struct epoll_event  events[MPR_MAX_EVENTS];
-    int                 rc;
+    struct epoll_event  events[BIT_MAX_EVENTS];
+    int                 nevents;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -200,17 +196,17 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         return;
     }
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
-    rc = epoll_wait(ws->epoll, events, MPR_MAX_EVENTS, timeout);
 
+    if ((nevents = epoll_wait(ws->epoll, events, sizeof(events) / sizeof(struct epoll_event), timeout)) < 0) {
+        if (errno != EINTR) {
+            mprTrace(7, "epoll returned %d, errno %d", nevents, mprGetOsError());
+        }
+    }
     mprClearWaiting();
     mprResetYield();
 
-    if (rc < 0) {
-        if (errno != EINTR) {
-            mprTrace(7, "epoll returned %d, errno %d", mprGetOsError());
-        }
-    } else if (rc > 0) {
-        serviceIO(ws, events, rc);
+    if (nevents > 0) {
+        serviceIO(ws, events, nevents);
     }
     ws->wakeRequested = 0;
 }
@@ -228,7 +224,6 @@ static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count)
         fd = ev->data.fd;
         if (fd == ws->breakFd[MPR_READ_PIPE]) {
             char buf[16];
-printf("GOT BREAK BYTE\n");
             if (read(fd, buf, sizeof(buf)) < 0) {}
             continue;
         }
@@ -244,6 +239,7 @@ printf("GOT BREAK BYTE\n");
             mask |= MPR_WRITABLE;
         }
         wp->presentMask = mask & wp->desiredMask;
+
         if (wp->presentMask) {
             if (wp->flags & MPR_WAIT_IMMEDIATE) {
                 (wp->proc)(wp->handlerData, NULL);
@@ -273,14 +269,16 @@ PUBLIC void mprWakeNotifier()
         /*
             This code works for both eventfds and for pipes. We must write a value of 0x1 for eventfds.
          */
-        int c = 1;
-#if LINUX && EFD_NONBLOCK
-printf("WRITE BREAK BYTE\n");
-        if (write(ws->breakFd[MPR_READ_PIPE], (char*) &c, 1) < 0) {};
-#else
-        if (write(ws->breakFd[MPR_WRITE_PIPE], (char*) &c, 1) < 0) {};
-#endif
         ws->wakeRequested = 1;
+#if defined(EFD_NONBLOCK)
+        uint64 c = 1;
+        if (write(ws->breakFd[MPR_READ_PIPE], &c, sizeof(c)) != sizeof(c)) {
+            mprError("Cannot write to break port %d\n", errno);
+        }
+#else
+        int c = 1;
+        if (write(ws->breakFd[MPR_WRITE_PIPE], &c, 1) < 0) {}
+#endif
     }
 }
 

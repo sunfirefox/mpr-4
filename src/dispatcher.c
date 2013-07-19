@@ -164,10 +164,7 @@ PUBLIC void mprDestroyDispatcher(MprDispatcher *dispatcher)
 
 static void manageDispatcher(MprDispatcher *dispatcher, int flags)
 {
-    MprEventService     *es;
-    MprEvent            *q, *event, *next;
-
-    es = dispatcher->service;
+    MprEvent        *q, *event, *next;
 
     if (flags & MPR_MANAGE_MARK) {
         mprMark(dispatcher->name);
@@ -502,13 +499,10 @@ static int dispatchEvents(MprDispatcher *dispatcher)
             /* Remove from currentQ - GC can then collect */
             mprDequeueEvent(event);
         }
+        es->eventCount++;
         unlock(es);
     }
     dispatcher->owner = priorOwner;
-
-    lock(es);
-    es->eventCount += count;
-    unlock(es);
     return count;
 }
 

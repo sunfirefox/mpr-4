@@ -57,9 +57,6 @@ static void manageWaitService(MprWaitService *ws, int flags)
 #if MPR_EVENT_EPOLL
     mprManageEpoll(ws, flags);
 #endif
-#if MPR_EVENT_POLL
-    mprManagePoll(ws, flags);
-#endif
 #if MPR_EVENT_SELECT
     mprManageSelect(ws, flags);
 #endif

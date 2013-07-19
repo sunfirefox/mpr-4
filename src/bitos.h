@@ -416,6 +416,7 @@
     #if !__UCLIBC__
         #include    <sys/sendfile.h>
     #endif
+    #include    <sys/eventfd.h>
 #endif
 #if MACOSX
     #include    <stdbool.h>
