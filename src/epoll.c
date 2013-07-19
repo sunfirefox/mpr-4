@@ -20,8 +20,7 @@
 
 /********************************** Forwards **********************************/
 
-static int growEvents(MprWaitService *ws);
-static void serviceIO(MprWaitService *ws, int count);
+static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count);
 
 /************************************ Code ************************************/
 
@@ -29,32 +28,35 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
-    ws->eventsMax = BIT_MAX_EPOLL;
-    ws->handlerMax = MPR_FD_MIN;
-    ws->events = mprAllocZeroed(sizeof(struct epoll_event) * ws->eventsMax);
-    ws->handlerMap = mprAllocZeroed(sizeof(MprWaitHandler*) * ws->handlerMax);
-    if (ws->events == 0 || ws->handlerMap == 0) {
+    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     if ((ws->epoll = epoll_create(BIT_MAX_EPOLL)) < 0) {
         mprError("Call to epoll() failed");
         return MPR_ERR_CANT_INITIALIZE;
     }
+
+#if LINUX && EFD_NONBLOCK
+    if ((ws->breakFd[MPR_READ_PIPE] = eventfd(0, EFD_NONBLOCK)) < 0) {
+        mprError("Cannot open breakout event");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+#else
     /*
         Initialize the "wakeup" pipe. This is used to wakeup the service thread if other threads need 
      *  to wait for I/O.
      */
-    if (pipe(ws->breakPipe) < 0) {
+    if (pipe(ws->breakFd) < 0) {
         mprError("Cannot open breakout pipe");
         return MPR_ERR_CANT_INITIALIZE;
     }
-    fcntl(ws->breakPipe[0], F_SETFL, fcntl(ws->breakPipe[0], F_GETFL) | O_NONBLOCK);
-    fcntl(ws->breakPipe[1], F_SETFL, fcntl(ws->breakPipe[1], F_GETFL) | O_NONBLOCK);
-
+    fcntl(ws->breakFd[0], F_SETFL, fcntl(ws->breakFd[0], F_GETFL) | O_NONBLOCK);
+    fcntl(ws->breakFd[1], F_SETFL, fcntl(ws->breakFd[1], F_GETFL) | O_NONBLOCK);
+#endif
     memset(&ev, 0, sizeof(ev));
     ev.events = EPOLLIN | EPOLLERR | EPOLLHUP;
-    ev.data.fd = ws->breakPipe[MPR_READ_PIPE];
-    epoll_ctl(ws->epoll, EPOLL_CTL_ADD, ws->breakPipe[MPR_READ_PIPE], &ev);
+    ev.data.fd = ws->breakFd[MPR_READ_PIPE];
+    epoll_ctl(ws->epoll, EPOLL_CTL_ADD, ws->breakFd[MPR_READ_PIPE], &ev);
     return 0;
 }
 
@@ -62,31 +64,20 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 PUBLIC void mprManageEpoll(MprWaitService *ws, int flags)
 {
     if (flags & MPR_MANAGE_MARK) {
-        mprMark(ws->events);
+        mprMark(ws->handlerMap);
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (ws->epoll) {
             close(ws->epoll);
             ws->epoll = 0;
         }
-        if (ws->breakPipe[0] >= 0) {
-            close(ws->breakPipe[0]);
+        if (ws->breakFd[0] >= 0) {
+            close(ws->breakFd[0]);
         }
-        if (ws->breakPipe[1] >= 0) {
-            close(ws->breakPipe[1]);
+        if (ws->breakFd[1] >= 0) {
+            close(ws->breakFd[1]);
         }
     }
-}
-
-
-static int growEvents(MprWaitService *ws)
-{
-    ws->eventsMax *= 2;
-    if ((ws->events = mprRealloc(ws->events, sizeof(struct epoll_event) * ws->eventsMax)) == 0) {
-        assert(!MPR_ERR_MEMORY);
-        return MPR_ERR_MEMORY;
-    }
-    return 0;
 }
 
 
@@ -112,12 +103,9 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ev.events |= EPOLLHUP;
         }
         if (ev.events) {
-            rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev);
-#if KEEP
-            if (rc != 0) {
+            if ((rc = epoll_ctl(ws->epoll, EPOLL_CTL_DEL, fd, &ev)) != 0) {
                 mprError("Epoll del error %d on fd %d", errno, fd);
             }
-#endif
         }
         ev.events = 0;
         if (mask & MPR_READABLE) {
@@ -127,26 +115,17 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             ev.events |= EPOLLOUT | EPOLLHUP;
         }
         if (ev.events) {
-            rc = epoll_ctl(ws->epoll, EPOLL_CTL_ADD, fd, &ev);
-            if (rc != 0) {
+            if ((rc = epoll_ctl(ws->epoll, EPOLL_CTL_ADD, fd, &ev)) != 0) {
                 mprError("Epoll add error %d on fd %d", errno, fd);
             }
         }
-        if (mask && fd >= ws->handlerMax) {
-            ws->handlerMax = fd + 32;
-            if ((ws->handlerMap = mprRealloc(ws->handlerMap, sizeof(MprWaitHandler*) * ws->handlerMax)) == 0) {
-                assert(!MPR_ERR_MEMORY);
-                return MPR_ERR_MEMORY;
-            }
-        }
-        assert(ws->handlerMap[fd] == 0 || ws->handlerMap[fd] == wp);
         wp->desiredMask = mask;
         if (wp->event) {
             mprRemoveEvent(wp->event);
             wp->event = 0;
         }
     }
-    ws->handlerMap[fd] = (mask) ? wp : 0;
+    mprSetItem(ws->handlerMap, fd, wp);
     unlock(ws);
     return 0;
 }
@@ -205,7 +184,8 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
  */
 PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
-    int     rc;
+    struct epoll_event  events[MPR_MAX_EVENTS];
+    int                 rc;
 
     if (timeout < 0 || timeout > MAXINT) {
         timeout = MAXINT;
@@ -220,7 +200,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         return;
     }
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
-    rc = epoll_wait(ws->epoll, ws->events, ws->eventsMax, timeout);
+    rc = epoll_wait(ws->epoll, events, MPR_MAX_EVENTS, timeout);
 
     mprClearWaiting();
     mprResetYield();
@@ -230,16 +210,13 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
             mprTrace(7, "epoll returned %d, errno %d", mprGetOsError());
         }
     } else if (rc > 0) {
-        serviceIO(ws, rc);
-        if (rc == ws->eventsMax) {
-            growEvents(ws);
-        }
+        serviceIO(ws, events, rc);
     }
     ws->wakeRequested = 0;
 }
 
 
-static void serviceIO(MprWaitService *ws, int count)
+static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count)
 {
     MprWaitHandler      *wp;
     struct epoll_event  *ev;
@@ -247,14 +224,16 @@ static void serviceIO(MprWaitService *ws, int count)
 
     lock(ws);
     for (i = 0; i < count; i++) {
-        ev = &ws->events[i];
+        ev = &events[i];
         fd = ev->data.fd;
-        assert(fd < ws->handlerMax);
-        if ((wp = ws->handlerMap[fd]) == 0) {
-            char    buf[128];
-            if ((ev->events & (EPOLLIN | EPOLLERR | EPOLLHUP)) && (fd == ws->breakPipe[MPR_READ_PIPE])) {
-                if (read(fd, buf, sizeof(buf)) < 0) {}
-            }
+        if (fd == ws->breakFd[MPR_READ_PIPE]) {
+            char buf[16];
+printf("GOT BREAK BYTE\n");
+            if (read(fd, buf, sizeof(buf)) < 0) {}
+            continue;
+        }
+        if (fd < 0 || (wp = mprGetItem(ws->handlerMap, fd)) == 0) {
+            mprError("WARNING: fd not in handler map. fd %d", fd);
             continue;
         }
         mask = 0;
@@ -264,22 +243,15 @@ static void serviceIO(MprWaitService *ws, int count)
         if (ev->events & (EPOLLOUT | EPOLLHUP)) {
             mask |= MPR_WRITABLE;
         }
-        if (mask == 0) {
-            assert(mask);
-            continue;
-        }
         wp->presentMask = mask & wp->desiredMask;
         if (wp->presentMask) {
-            mprTrace(7, "ServiceIO for wp %p", wp);
             if (wp->flags & MPR_WAIT_IMMEDIATE) {
                 (wp->proc)(wp->handlerData, NULL);
             } else {
-                struct epoll_event  ev;
-                memset(&ev, 0, sizeof(ev));
-                ev.data.fd = fd;
-                wp->desiredMask = 0;
-                ws->handlerMap[wp->fd] = 0;
-                epoll_ctl(ws->epoll, EPOLL_CTL_DEL, wp->fd, &ev);
+                /*
+                    Suppress further events while this event is being serviced. User must re-enable.
+                 */
+                mprNotifyOn(ws, wp, 0);
                 mprQueueIOEvent(wp);
             }
         }
@@ -295,13 +267,20 @@ static void serviceIO(MprWaitService *ws, int count)
 PUBLIC void mprWakeNotifier()
 {
     MprWaitService  *ws;
-    int             c;
 
     ws = MPR->waitService;
     if (!ws->wakeRequested) {
+        /*
+            This code works for both eventfds and for pipes. We must write a value of 0x1 for eventfds.
+         */
+        int c = 1;
+#if LINUX && EFD_NONBLOCK
+printf("WRITE BREAK BYTE\n");
+        if (write(ws->breakFd[MPR_READ_PIPE], (char*) &c, 1) < 0) {};
+#else
+        if (write(ws->breakFd[MPR_WRITE_PIPE], (char*) &c, 1) < 0) {};
+#endif
         ws->wakeRequested = 1;
-        c = 0;
-        if (write(ws->breakPipe[MPR_WRITE_PIPE], (char*) &c, 1) < 0) {};
     }
 }
 

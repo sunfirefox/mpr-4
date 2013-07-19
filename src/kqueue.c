@@ -157,7 +157,7 @@ PUBLIC int mprWaitForSingleIO(int fd, int mask, MprTicks timeout)
 PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 {
     struct timespec ts;
-    struct kevent   events[MPR_MAX_KEVENTS];
+    struct kevent   events[MPR_MAX_EVENTS];
     int             rc;
 
     assert(timeout > 0);
@@ -180,13 +180,15 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     mprTrace(8, "kevent sleep for %d", timeout);
     mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
 
-    rc = kevent(ws->kq, NULL, 0, events, MPR_MAX_KEVENTS, &ts);
+    rc = kevent(ws->kq, NULL, 0, events, MPR_MAX_EVENTS, &ts);
 
     mprClearWaiting();
     mprResetYield();
 
     if (rc < 0) {
-        mprTrace(7, "Kevent returned %d, errno %d", rc, mprGetOsError());
+        if (errno != EINTR) {
+            mprTrace(7, "Kevent returned %d, errno %d", rc, mprGetOsError());
+        }
     } else if (rc > 0) {
         serviceIO(ws, events, rc);
     }
