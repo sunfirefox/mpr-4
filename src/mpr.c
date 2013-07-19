@@ -97,8 +97,10 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->waitService = mprCreateWaitService();
     mpr->socketService = mprCreateSocketService();
 
-    mpr->dispatcher = mprCreateDispatcher("main", MPR_DISPATCHER_ENABLED);
-    mpr->nonBlock = mprCreateDispatcher("nonblock", MPR_DISPATCHER_ENABLED);
+    mpr->dispatcher = mprCreateDispatcher("main");
+    mpr->nonBlock = mprCreateDispatcher("nonblock");
+    mprSetDispatcherImmediate(mpr->nonBlock);
+
     mpr->pathEnv = sclone(getenv("PATH"));
 
     if (flags & MPR_USER_EVENTS_THREAD) {
@@ -272,7 +274,7 @@ PUBLIC void mprTerminate(int how, int status)
     }
     mprStopWorkers();
     mprWakeDispatchers();
-    mprWakeNotifier();
+    mprWakeEventService();
 }
 
 

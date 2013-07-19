@@ -405,6 +405,14 @@ PUBLIC void mprRemoveSocketHandler(MprSocket *sp)
 }
 
 
+PUBLIC void mprSetSocketDispatcher(MprSocket *sp, MprDispatcher *dispatcher)
+{
+    if (sp->handler) {
+        sp->handler->dispatcher = dispatcher;
+    }
+}
+
+
 PUBLIC void mprHiddenSocketData(MprSocket *sp, ssize len, int dir)
 {
     lock(sp);

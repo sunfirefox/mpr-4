@@ -21,8 +21,15 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count);
 
 PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
+    struct kevent   ev;
+
     if ((ws->kq = kqueue()) < 0) {
         mprError("Call to kqueue() failed");
+        return MPR_ERR_CANT_INITIALIZE;
+    }
+    EV_SET(&ev, 0, EVFILT_USER, EV_ADD | EV_CLEAR, 0, 0, NULL);
+    if (kevent(ws->kq, &ev, 1, NULL, 0, NULL) < 0) {
+        mprError("Cannot issue notifier wakeup event, errno %d", errno);
         return MPR_ERR_CANT_INITIALIZE;
     }
     if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
@@ -81,8 +88,17 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             wp->event = 0;
         }
         if (kevent(ws->kq, interest, (int) (kp - interest), NULL, 0, NULL) < 0) {
-            /* Should never happen */
-            mprError("Cannot issue notifier wakeup event");
+            /*
+                Reissue and get results. Test for broken pipe case.
+             */
+            if (mask) {
+                int rc = kevent(ws->kq, interest, 1, interest, 1, NULL);
+                if (rc == 1 && interest[0].flags & EV_ERROR && interest[0].data == EPIPE) {
+                    /* Broken PIPE - just ignore */
+                } else {
+                    mprError("Cannot issue notifier wakeup event, errno %d", errno);
+                }
+            }
         }
     }
     mprSetItem(ws->handlerMap, fd, wp);
@@ -168,7 +184,6 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
 
     mprClearWaiting();
     mprResetYield();
-    mprTrace(8, "kevent wakes rc %d", rc);
 
     if (rc < 0) {
         mprTrace(7, "Kevent returned %d, errno %d", rc, mprGetOsError());
@@ -253,9 +268,9 @@ PUBLIC void mprWakeNotifier()
     ws = MPR->waitService;
     if (!ws->wakeRequested) {
         ws->wakeRequested = 1;
-        EV_SET(&ev, 0, EVFILT_USER, EV_ADD | EV_CLEAR, NOTE_TRIGGER, 0, 0);
+        EV_SET(&ev, 0, EVFILT_USER, 0, NOTE_TRIGGER, 0, NULL);
         if (kevent(ws->kq, &ev, 1, NULL, 0, NULL) < 0) {
-            mprError("Cannot issue notifier wakeup event");
+            mprError("Cannot issue notifier wakeup event, errno %d", errno);
         }
     }
 }

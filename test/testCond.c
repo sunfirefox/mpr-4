@@ -71,6 +71,7 @@ MprTestDef testCond = {
     "cond", 0, initCond, 0,
     {
         MPR_TEST(0, testCriticalSection),
+        MPR_TEST(0, testCriticalSection),
         MPR_TEST(0, 0),
     },
 };

@@ -538,7 +538,7 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
         gp->dispatcher = parent->dispatcher;
     } else {
         fmt(name, sizeof(name), "Test-%d", counter++);
-        gp->dispatcher = mprCreateDispatcher(name, 1);
+        gp->dispatcher = mprCreateDispatcher(name);
     }
 
     gp->failures = mprCreateList(0, 0);

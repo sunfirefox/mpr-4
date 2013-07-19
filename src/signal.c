@@ -104,7 +104,7 @@ static void unhookSignal(int signo)
 
 /*
     Actual signal handler - must be async-safe. Do very, very little here. Just set a global flag and wakeup the wait
-    service (mprWakeNotifier is async-safe). WARNING: Don't put memory allocation, logging or printf here.
+    service (mprWakeEventService is async-safe). WARNING: Don't put memory allocation, logging or printf here.
 
     NOTES: The problems here are several fold. The signalHandler may be invoked re-entrantly for different threads for
     the same signal (SIGCHLD). Masked signals are blocked by a single bit and so siginfo will only store one such instance, 
@@ -132,7 +132,7 @@ static void signalHandler(int signo, siginfo_t *info, void *arg)
     ip->triggered = 1;
     ssp->hasSignals = 1;
     saveErrno = errno;
-    mprWakeNotifier();
+    mprWakeEventService();
     errno = saveErrno;
 }
 
@@ -148,17 +148,19 @@ PUBLIC void mprServiceSignals()
     int                 signo;
 
     ssp = MPR->signalService;
-    ssp->hasSignals = 0;
-    for (ip = ssp->info; ip < &ssp->info[MPR_MAX_SIGNALS]; ip++) {
-        if (ip->triggered) {
-            ip->triggered = 0;
-            /*
-                Create an event for the head of the signal handler chain for this signal
-                Copy info from Thread.sigInfo to MprSignal structure.
-             */
-            signo = (int) (ip - ssp->info);
-            if ((sp = ssp->signals[signo]) != 0) {
-                mprCreateEvent(sp->dispatcher, "signalEvent", 0, signalEvent, sp, 0);
+    if (ssp->hasSignals) {
+        ssp->hasSignals = 0;
+        for (ip = ssp->info; ip < &ssp->info[MPR_MAX_SIGNALS]; ip++) {
+            if (ip->triggered) {
+                ip->triggered = 0;
+                /*
+                    Create an event for the head of the signal handler chain for this signal
+                    Copy info from Thread.sigInfo to MprSignal structure.
+                 */
+                signo = (int) (ip - ssp->info);
+                if ((sp = ssp->signals[signo]) != 0) {
+                    mprCreateEvent(sp->dispatcher, "signalEvent", 0, signalEvent, sp, 0);
+                }
             }
         }
     }

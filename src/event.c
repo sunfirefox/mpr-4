@@ -63,7 +63,6 @@ static void manageEvent(MprEvent *event, int flags)
         /*
             Events in dispatcher queues are marked by the dispatcher managers, not via event->next,prev
          */
-        assert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
         mprMark(event->name);
         mprMark(event->dispatcher);
         mprMark(event->handler);
@@ -74,7 +73,6 @@ static void manageEvent(MprEvent *event, int flags)
 
     } else if (flags & MPR_MANAGE_FREE) {
         if (event->next) {
-            assert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
             mprRemoveEvent(event);
         }
     }
@@ -121,8 +119,6 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     assert(dispatcher);
     assert(event);
     assert(event->timestamp);
-    assert(!(dispatcher->flags & MPR_DISPATCHER_DESTROYED));
-    assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     es = dispatcher->service;
 
@@ -141,9 +137,7 @@ PUBLIC void mprQueueEvent(MprDispatcher *dispatcher, MprEvent *event)
     queueEvent(prior, event);
     event->dispatcher = dispatcher;
     es->eventCount++;
-    if (dispatcher->flags & MPR_DISPATCHER_ENABLED) {
-        mprScheduleDispatcher(dispatcher);
-    }
+    mprScheduleDispatcher(dispatcher);
     unlock(es);
 }
 
@@ -162,8 +156,7 @@ PUBLIC void mprRemoveEvent(MprEvent *event)
         }
         event->dispatcher = 0;
         event->flags &= ~MPR_EVENT_CONTINUOUS;
-        if (dispatcher->flags & MPR_DISPATCHER_ENABLED && 
-                event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
+        if (event->due == es->willAwake && dispatcher->eventQ->next != dispatcher->eventQ) {
             mprScheduleDispatcher(dispatcher);
         }
         unlock(es);
@@ -177,7 +170,6 @@ PUBLIC void mprRescheduleEvent(MprEvent *event, MprTicks period)
     MprDispatcher       *dispatcher;
 
     dispatcher = event->dispatcher;
-    assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     es = dispatcher->service;
 
@@ -229,13 +221,15 @@ PUBLIC MprEvent *mprGetNextEvent(MprDispatcher *dispatcher)
     MprEventService     *es;
     MprEvent            *event, *next;
 
-    assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
     es = dispatcher->service;
     event = 0;
     lock(es);
     next = dispatcher->eventQ->next;
     if (next != dispatcher->eventQ) {
         if (next->due <= es->now) {
+            /*
+                Hold event while executing in the current queue
+             */
             event = next;
             queueEvent(dispatcher->currentQ, event);
         }
@@ -250,8 +244,6 @@ PUBLIC int mprGetEventCount(MprDispatcher *dispatcher)
     MprEventService     *es;
     MprEvent            *event;
     int                 count;
-
-    assert(dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     es = dispatcher->service;
 
@@ -282,7 +274,6 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
     assert(prior);
     assert(event);
     assert(prior->next);
-    assert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     if (event->next) {
         mprDequeueEvent(event);
@@ -300,7 +291,6 @@ static void queueEvent(MprEvent *prior, MprEvent *event)
 PUBLIC void mprDequeueEvent(MprEvent *event)
 {
     assert(event);
-    assert(event->dispatcher == 0 || event->dispatcher->magic == MPR_DISPATCHER_MAGIC);
 
     /* If a continuous event is removed, next may already be null */
     if (event->next) {

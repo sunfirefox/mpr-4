@@ -42,9 +42,6 @@ PUBLIC MprWaitService *mprCreateWaitService()
 
 static void manageWaitService(MprWaitService *ws, int flags)
 {
-    //  TODO - this lock should not be needed as all threads must be stopped
-    //  MOB - check all manage routines
-    lock(ws);
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ws->handlers);
         mprMark(ws->handlerMap);
@@ -66,7 +63,6 @@ static void manageWaitService(MprWaitService *ws, int flags)
 #if MPR_EVENT_SELECT
     mprManageSelect(ws, flags);
 #endif
-    unlock(ws);
 }
 
 
@@ -97,15 +93,10 @@ static MprWaitHandler *initWaitHandler(MprWaitHandler *wp, int fd, int mask, Mpr
     }
 #endif
     if (mask) {
-        //  MOB - is lock needed. list has own lock
-        lock(ws);
         if (mprAddItem(ws->handlers, wp) < 0) {
-            unlock(ws);
             return 0;
         }
         mprNotifyOn(ws, wp, mask);
-        unlock(ws);
-        mprWakeEventService();
     }
     return wp;
 }
@@ -168,9 +159,6 @@ PUBLIC void mprRemoveWaitHandler(MprWaitHandler *wp)
         }
     }
     unlock(ws);
-#if UNUSED && MOB
-    mprWakeEventService();
-#endif
 }
 
 
@@ -179,12 +167,8 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
     MprDispatcher   *dispatcher;
     MprEvent        *event;
 
-#if UNUSED && MOB
-    //  MOB - why lock wp->service?
-    lock(wp->service);
-#endif
     if (wp->flags & MPR_WAIT_NEW_DISPATCHER) {
-        dispatcher = mprCreateDispatcher("IO", MPR_DISPATCHER_ENABLED | MPR_DISPATCHER_AUTO_CREATE);
+        dispatcher = mprCreateDispatcher("IO");
     } else if (wp->dispatcher) {
         dispatcher = wp->dispatcher;
     } else {
@@ -195,17 +179,16 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
     event->handler = wp;
     wp->event = event;
     mprQueueEvent(dispatcher, event);
-#if UNUSED && MOB
-    unlock(wp->service);
-#endif
 }
 
 
+//  MOB - why use this rather than calling directly?
 static void ioEvent(void *data, MprEvent *event)
 {
     assert(event);
     assert(event->handler);
 
+    //  MOB - why do we zero here?
     event->handler->event = 0;
     event->handler->proc(data, event);
 }
@@ -213,14 +196,12 @@ static void ioEvent(void *data, MprEvent *event)
 
 PUBLIC void mprWaitOn(MprWaitHandler *wp, int mask)
 {
-    //  MOB - can this be moved inside the if?
     lock(wp->service);
     if (mask != wp->desiredMask) {
         if (wp->flags & MPR_WAIT_RECALL_HANDLER) {
             wp->service->needRecall = 1;
         }
         mprNotifyOn(wp->service, wp, mask);
-        mprWakeEventService();
     }
     unlock(wp->service);
 }
@@ -236,14 +217,12 @@ PUBLIC void mprRecallWaitHandlerByFd(Socket fd)
     int             index;
 
     ws = MPR->waitService;
-
-    //  MOB - is this lock needed
     lock(ws);
     for (index = 0; (wp = (MprWaitHandler*) mprGetNextItem(ws->handlers, &index)) != 0; ) {
         if (wp->fd == fd) {
             wp->flags |= MPR_WAIT_RECALL_HANDLER;
             ws->needRecall = 1;
-            mprWakeNotifier();
+            mprWakeEventService();
             break;
         }
     }
@@ -260,7 +239,7 @@ PUBLIC void mprRecallWaitHandler(MprWaitHandler *wp)
         lock(ws);
         wp->flags |= MPR_WAIT_RECALL_HANDLER;
         ws->needRecall = 1;
-        mprWakeNotifier();
+        mprWakeEventService();
         unlock(ws);
     }
 }

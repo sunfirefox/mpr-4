@@ -267,6 +267,8 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
         cmd->handlers[channel] = 0;
     }
     if (cmd->files[channel].fd != -1) {
+        mprTrace(7, "Close fd %d, channel %d eof %d/%d, pid %d", cmd->files[channel].fd, channel, cmd->eofCount, 
+            cmd->requiredEof, cmd->pid);
         close(cmd->files[channel].fd);
         cmd->files[channel].fd = -1;
 #if BIT_WIN_LIKE
@@ -283,7 +285,6 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
                 }
             }
         }
-        mprTrace(6, "Close channel %d eof %d/%d, pid %d", channel, cmd->eofCount, cmd->requiredEof, cmd->pid);
     }
 }
 
@@ -503,7 +504,7 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
         return MPR_ERR_CANT_OPEN;
     }
     rc = startProcess(cmd);
-    cmd->pid2 = cmd->pid;
+    cmd->originalPid = cmd->pid;
     sunlock(cmd);
     return rc;
 }
