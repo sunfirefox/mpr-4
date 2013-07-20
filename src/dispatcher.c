@@ -513,8 +513,10 @@ static int dispatchEvents(MprDispatcher *dispatcher)
 static void dispatchEventsWorker(MprDispatcher *dispatcher)
 {
     dispatchEvents(dispatcher);
-    dequeueDispatcher(dispatcher);
-    mprScheduleDispatcher(dispatcher);
+    if (!(dispatcher->flags == MPR_DISPATCHER_DESTROYED)) {
+        dequeueDispatcher(dispatcher);
+        mprScheduleDispatcher(dispatcher);
+    }
 }
 
 
