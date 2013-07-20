@@ -22,6 +22,7 @@ PUBLIC void mprAtomicBarrier()
         __sync_synchronize();
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
         asm volatile ("mfence" : : : "memory");
+
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_PPC)
         asm volatile ("sync" : : : "memory");
     #else

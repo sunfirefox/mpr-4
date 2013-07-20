@@ -179,6 +179,7 @@ static void marker(void *unused, MprThread *tp);
 static void markRoots();
 static void nextGen();
 static int pauseThreads();
+static MprMem *resizeBlock(MprMem *mp, ssize required, int group, int bucket);
 static void sweep();
 static void resumeThreads();
 static void triggerGC(int flags);
@@ -395,7 +396,6 @@ PUBLIC void *mprReallocMem(void *ptr, ssize usize)
         SET_MANAGER(newb, GET_MANAGER(mp));
     }
     if (GET_GEN(mp) == heap->eternal) {
-        /* Lock-free update */
         SET_FIELD2(newb, GET_SIZE(newb), heap->eternal, UNMARKED, 0);
     }
     oldSize = GET_SIZE(mp);
@@ -507,9 +507,8 @@ static int initFree()
 
 static MprMem *allocMem(ssize required, int flags)
 {
-    MprFreeMem  *freeq, *fp;
-    MprMem      *mp, *after, *spare;
-    ssize       size, maxBlock;
+    MprFreeMem  *freeq;
+    MprMem      *mp;
     ulong       groupMap, bucketMap;
     int         bucket, baseGroup, group, index, miss;
 
@@ -542,46 +541,31 @@ static MprMem *allocMem(ssize required, int flags)
                 freeq = &heap->freeq[index];
 
                 if (freeq->next != freeq) {
-                    fp = freeq->next;
-                    mp = (MprMem*) fp;
-                    assert(IS_FREE(mp));
-                    unlinkBlock(fp);
+                    mp = (MprMem*) freeq->next;
+                    unlinkBlock((MprFreeMem*) mp);
 
                     assert(GET_GEN(mp) == heap->eternal);
                     SET_GEN(mp, heap->active);
 
+//  MOB - locked. No point?
                     mprAtomicBarrier();
                     if (flags & MPR_ALLOC_MANAGER) {
                         SET_MANAGER(mp, dummyManager);
                         SET_HAS_MANAGER(mp, 1);
                     }
                     INC(reuse);
-                    CHECK(mp);
-                    CHECK_FREE_MEMORY(mp);
-                    if (GET_SIZE(mp) >= (ssize) (required + MPR_ALLOC_MIN_SPLIT)) {
-                        maxBlock = (((ssize) 1 ) << group | (((ssize) bucket) << (max(0, group - 1)))) << MPR_ALIGN_SHIFT;
-                        maxBlock += sizeof(MprMem);
 
-                        size = GET_SIZE(mp);
-                        if (size > maxBlock) {
-                            spare = (MprMem*) ((char*) mp + required);
-                            INIT_BLK(spare, size - required, 0, IS_LAST(mp), mp);
-                            if ((after = GET_NEXT(spare)) != NULL) {
-                                SET_PRIOR(after, spare);
-                            }
-                            SET_SIZE(mp, required);
-                            mprAtomicBarrier();
-                            SET_LAST(mp, 0);
-                            mprAtomicBarrier();
-                            INC(splits);
-                            linkBlock(spare);
-                        }
+                    if (GET_SIZE(mp) >= (ssize) (required + MPR_ALLOC_MIN_SPLIT)) {
+                        mp = resizeBlock(mp, required, group, bucket);
                     }
-                    /* Tested empirically to trigger GC when we are searching too much for an allocation */
+                    unlockHeap();
+
+                    /* 
+                        Tested empirically to trigger GC when we are searching too much for an allocation 
+                     */
                     if (miss > 9) {
                         triggerGC(MPR_GC_FORCE);
                     }
-                    unlockHeap();
                     return mp;
                 }
                 bucketMap &= ~(((ssize) 1) << bucket);
@@ -600,6 +584,35 @@ static MprMem *allocMem(ssize required, int flags)
     triggerGC(MPR_GC_FORCE);
 
     return growHeap(required, flags);
+}
+
+
+static MprMem *resizeBlock(MprMem *mp, ssize required, int group, int bucket)
+{
+    MprMem      *after, *spare;
+    ssize       size, maxBlock;
+
+    CHECK(mp);
+    CHECK_FREE_MEMORY(mp);
+
+    maxBlock = (((ssize) 1 ) << group | (((ssize) bucket) << (max(0, group - 1)))) << MPR_ALIGN_SHIFT;
+    maxBlock += sizeof(MprMem);
+    size = GET_SIZE(mp);
+    if (size > maxBlock) {
+        spare = (MprMem*) ((char*) mp + required);
+        INIT_BLK(spare, size - required, 0, IS_LAST(mp), mp);
+        if ((after = GET_NEXT(spare)) != NULL) {
+            SET_PRIOR(after, spare);
+        }
+        SET_SIZE(mp, required);
+//  MOB - locked. No point?
+        mprAtomicBarrier();
+        SET_LAST(mp, 0);
+        mprAtomicBarrier();
+        INC(splits);
+        linkBlock(spare);
+    }
+    return mp;
 }
 
 
@@ -876,10 +889,11 @@ static void unlinkBlock(MprFreeMem *fp)
 #endif
 
     mp = (MprMem*) fp;
+    assert(IS_FREE(mp));
     size = GET_SIZE(mp);
     heap->stats.bytesFree -= size;
-    assert(IS_FREE(mp));
     SET_FREE(mp, 0);
+//  MOB - locked. No point?
     mprAtomicBarrier();
 #if BIT_MEMORY_STATS
 {
@@ -1032,9 +1046,6 @@ static void triggerGC(int flags)
 {
     if (!heap->gcRequested && ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota))) {
         heap->gcRequested = 1;
-#if !PARALLEL_GC
-        heap->mustYield = 1;
-#endif
         if (heap->flags & MPR_MARK_THREAD) {
             mprSignalCond(heap->markerCond);
         }
@@ -1051,9 +1062,6 @@ PUBLIC void mprRequestGC(int flags)
     count = (flags & MPR_GC_COMPLETE) ? 3 : 1;
     for (i = 0; i < count; i++) {
         if ((flags & MPR_GC_FORCE) || (heap->newCount > heap->newQuota)) {
-#if PARALLEL_GC
-            heap->mustYield = 1;
-#endif
             triggerGC(MPR_GC_FORCE);
         }
         if (!(flags & MPR_GC_NO_YIELD)) {
@@ -1077,17 +1085,6 @@ static void resumeThreads()
             (int) heap->stats.freed, (int) heap->stats.bytesFree, (int) heap->priorFree, heap->priorNewCount, heap->newQuota,
             heap->stats.sweepVisited - heap->stats.swept, (int) heap->stats.bytesAllocated);
 #endif
-#if PARALLEL_GC
-    heap->mustYield = 1;
-    if (heap->notifier) {
-        (heap->notifier)(MPR_MEM_ATTENTION, 0);
-    }
-    if (pauseThreads()) {
-        nextGen();
-    } else {
-        mprTrace(7, "DEBUG: Pause for GC sync timed out");
-    }
-#endif
     heap->mustYield = 0;
     mprResumeThreads();
 }
@@ -1104,11 +1101,6 @@ static void mark()
         When !parallel, we swap the active/dead markers first and mark all blocks. After marking and synchronization, 
         existing alive blocks will always be marked active.
      */
-#if PARALLEL_GC
-    if (heap->newCount > heap->earlyYieldQuota) {
-        heap->mustYield = 1;
-    }
-#else
     heap->mustYield = 1;
     if (!pauseThreads()) {
         mprTrace(7, "DEBUG: GC synchronization timed out, some threads did not yield.");
@@ -1118,7 +1110,6 @@ static void mark()
         return;
     }
     nextGen();
-#endif
     heap->priorNewCount = heap->newCount;
     heap->priorFree = heap->stats.bytesFree;
     heap->newCount = 0;
@@ -1288,14 +1279,6 @@ PUBLIC void mprMarkBlock(cvoid *ptr)
         return;
     }
     assert(!IS_FREE(mp));
-#if PARALLEL_GC
-    assert(GET_MARK(mp) != heap->dead);
-    assert(GET_GEN(mp) != heap->dead);
-    if (GET_MARK(mp) == heap->dead || IS_FREE(mp)) {
-        assert(0);
-        return;
-    }
-#endif
 #endif
     CHECK(mp);
     INC(markVisited);
@@ -1308,7 +1291,6 @@ PUBLIC void mprMarkBlock(cvoid *ptr)
         if (gen != heap->eternal) {
             gen = heap->active;
         }
-        /* Lock-free update */
         SET_FIELD2(mp, GET_SIZE(mp), gen, heap->active, 0);
         if (HAS_MANAGER(mp)) {
 #if BIT_DEBUG
@@ -1373,7 +1355,6 @@ PUBLIC void mprHold(void *ptr)
     if (ptr) {
         mp = GET_MEM(ptr);
         if (VALID_BLK(mp)) {
-            /* Lock-free update of mp->gen */
             SET_FIELD2(mp, GET_SIZE(mp), heap->eternal, UNMARKED, 0);
         }
     }
@@ -1391,7 +1372,6 @@ PUBLIC void mprRelease(void *ptr)
         mp = GET_MEM(ptr);
         if (VALID_BLK(mp)) {
             assert(!IS_FREE(mp));
-            /* Lock-free update of mp->gen */
             SET_FIELD2(mp, GET_SIZE(mp), heap->active, UNMARKED, 0);
         }
     }
@@ -1405,6 +1385,7 @@ PUBLIC int mprCreateEventOutside(MprDispatcher *dispatcher, void *proc, void *da
 {
     MprEvent    *event;
 
+    //MOB RACE?
     heap->pauseGC++;
     mprAtomicBarrier();
     while (heap->mustYield) {
@@ -1705,12 +1686,7 @@ static void initGen()
 {
     heap->eternal = MPR_GEN_ETERNAL;
     heap->active = heap->eternal - 1;
-#if PARALLEL_GC
-    heap->stale = heap->active - 1;
-    heap->dead = heap->stale - 1;
-#else
     heap->dead = heap->active - 1;
-#endif
 }
 
 
@@ -1718,20 +1694,10 @@ static void nextGen()
 {
     int     active;
 
-#if PARALLEL_GC
-    active = (heap->active + 1) % MPR_MAX_GEN;
-    heap->active = active;
-    heap->stale = (active - 1 + MPR_MAX_GEN) % MPR_MAX_GEN;
-    heap->dead = (active - 2 + MPR_MAX_GEN) % MPR_MAX_GEN;
-    mprTrace(7, "GC: Iteration %d, active %d, stale %d, dead %d, eternal %d",
-        heap->iteration, heap->active, heap->stale, heap->dead, heap->eternal);
-#else
     active = heap->active;
     heap->active = heap->dead;
     heap->dead = active;
-    mprTrace(7, "GC: Iteration %d, active %d, dead %d, eternal %d",
-        heap->iteration, heap->active, heap->dead, heap->eternal);
-#endif
+    mprTrace(7, "GC: Iteration %d, active %d, dead %d, eternal %d", heap->iteration, heap->active, heap->dead, heap->eternal);
     heap->iteration++;
 }
 
@@ -1873,9 +1839,6 @@ static void printGCStats()
 
     printf("\nGC Stats\n");
     printf("  Eternal generation has %9d blocks, %12d bytes\n", counts[heap->eternal], (int) bytes[heap->eternal]);
-#if PARALLEL_GC
-    printf("  Stale generation has   %9d blocks, %12d bytes\n", counts[heap->stale], (int) bytes[heap->stale]);
-#endif
     printf("  Active generation has  %9d blocks, %12d bytes\n", counts[heap->active], (int) bytes[heap->active]);
     printf("  Dead generation has    %9d blocks, %12d bytes\n", counts[heap->dead], (int) bytes[heap->dead]);
     printf("  Free generation has    %9d blocks, %12d bytes\n", counts[free], (int) bytes[free]);
