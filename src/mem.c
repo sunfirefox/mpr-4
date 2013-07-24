@@ -252,9 +252,6 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
         SCRIBBLE(spare);
         linkBlock(spare);
     }
-#if (TEST && KEEP)
-    mprAlloc(9);
-#endif
     heap->markerCond = mprCreateCond();
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
@@ -706,11 +703,6 @@ static int getQueueIndex(size_t size, int roundup)
      */
     usize = (size - sizeof(MprMem));
     asize = (usize >> MPR_ALIGN_SHIFT);
-#if UNUSED
-    if ((size_t) asize >= (1 << (MPR_SIZE_BITS + 1))) {
-        return -1;
-    }
-#endif
     /* 
         Find the last (most) significant bit in the block size
      */
@@ -721,9 +713,7 @@ static int getQueueIndex(size_t size, int roundup)
 
     assert(index < (heap->freeEnd - heap->freeq));
     assert(bucket < MPR_ALLOC_NUM_BUCKETS);
-#if BIT_MEMORY_STATS && BIT_MEMORY_DEBUG && UNUSED && KEEP
-    assert(heap->freeq[index].info.stats.minSize <= (uint) usize && (uint) usize < heap->freeq[index + 1].info.stats.minSize);
-#endif
+
     if (roundup) {
         /*
             Good-fit strategy: check if the requested size is the smallest possible size in a queue. If not the smallest,
@@ -770,7 +760,6 @@ static void linkBlock(MprMem *mp)
     fp->prev = (MprFreeMem*) freeq;
     freeq->next->prev = fp;
     freeq->next = fp;
-    assert(fp->prev);
     mprSpinUnlock(&freeq->spin);
 
     /*
@@ -793,7 +782,6 @@ static void linkBlock(MprMem *mp)
 #if BIT_MEMORY_STATS
     mprAtomicAdd((int*) &freeq->info.stats.count, 1);
 #endif
-    assert(fp->prev);
 }
 
 
@@ -814,10 +802,8 @@ static void unlinkBlock(MprMem *mp)
 #if BIT_MEMORY_DEBUG
     fp->next = fp->prev = NULL;
 #endif
-    assert(mp->claimed);
     size = GET_SIZE(mp);
     mprAtomicAdd64((int64*) &heap->stats.bytesFree, (int) -size);
-    assert(mp->claimed);
 #if BIT_MEMORY_STATS
 {
     int index = getQueueIndex(size, 0);
@@ -1160,7 +1146,6 @@ static void sweep()
                         break;
                     }
                 }
-                assert(mp->claimed);
                 freeBlock(mp);
                 assert(mp->claimed);
                 CHECK(mp);
