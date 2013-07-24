@@ -22,7 +22,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
 {
     struct epoll_event  ev;
 
-    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
+    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, 0)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     if ((ws->epoll = epoll_create(BIT_MAX_EVENTS)) < 0) {
@@ -118,8 +118,8 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             mprRemoveEvent(wp->event);
             wp->event = 0;
         }
+        mprSetItem(ws->handlerMap, fd, mask ? wp : 0);
     }
-    mprSetItem(ws->handlerMap, fd, wp);
     unlock(ws);
     return 0;
 }

@@ -71,6 +71,7 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
             return expected == prev;
         }
     #else
+        //  MOB - can do better than this
         mprGlobalLock();
         if (*addr == expected) {
             *addr = (void*) value;
@@ -94,6 +95,12 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
         InterlockedExchangeAdd(ptr, value);
     #elif VXWORKS && _VX_ATOMIC_INIT
         vxAtomicAdd(ptr, value);
+
+//  MOB - need this enabled
+//  MOB - need GCC versions
+
+    //  MOB - what about arm
+    //  MOB - complete this
     #elif (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64) && FUTURE
         asm volatile ("lock; xaddl %0,%1"
             : "=r" (value), "=m" (*ptr)
@@ -116,12 +123,16 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
     OSAtomicAdd64(value, ptr);
 #elif BIT_WIN_LIKE && BIT_64
     InterlockedExchangeAdd64(ptr, value);
+
+    //  MOB - complete this
+    //  MOB - what about vxworks
 #elif BIT_UNIX_LIKE && FUTURE
     asm volatile ("lock; xaddl %0,%1"
         : "=r" (value), "=m" (*ptr)
         : "0" (value), "m" (*ptr)
         : "memory", "cc");
 #else
+    //  MOB - need better than this
     mprGlobalLock();
     *ptr += value;
     mprGlobalUnlock();

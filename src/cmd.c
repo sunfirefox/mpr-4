@@ -263,12 +263,11 @@ PUBLIC void mprCloseCmdFd(MprCmd *cmd, int channel)
     assert(0 <= channel && channel <= MPR_CMD_MAX_PIPE);
 
     if (cmd->handlers[channel]) {
+        assert(cmd->handlers[channel]->fd >= 0);
         mprRemoveWaitHandler(cmd->handlers[channel]);
         cmd->handlers[channel] = 0;
     }
     if (cmd->files[channel].fd != -1) {
-        mprTrace(7, "Close fd %d, channel %d eof %d/%d, pid %d", cmd->files[channel].fd, channel, cmd->eofCount, 
-            cmd->requiredEof, cmd->pid);
         close(cmd->files[channel].fd);
         cmd->files[channel].fd = -1;
 #if BIT_WIN_LIKE

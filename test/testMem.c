@@ -36,6 +36,7 @@ static void testBasicAlloc(MprTestGroup *gp)
     cp = sclone(NULL);
     tassert(cp != 0);
     tassert(cp[0] == '\0');
+
 }
 
 static int when = 0;

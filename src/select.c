@@ -23,7 +23,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
     int     rc, retries, breakPort, breakSock, maxTries;
 
     ws->highestFd = 0;
-    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
+    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, 0)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     FD_ZERO(&ws->readMask);
@@ -127,8 +127,8 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
             mprRemoveEvent(wp->event);
             wp->event = 0;
         }
+        mprSetItem(ws->handlerMap, fd, mask ? wp : 0);
     }
-    mprSetItem(ws->handlerMap, fd, wp);
     mprWakeNotifier();
     unlock(ws);
     return 0;

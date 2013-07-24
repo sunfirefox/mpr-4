@@ -32,7 +32,7 @@ PUBLIC int mprCreateNotifierService(MprWaitService *ws)
         mprError("Cannot issue notifier wakeup event, errno %d", errno);
         return MPR_ERR_CANT_INITIALIZE;
     }
-    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, MPR_LIST_STATIC_VALUES)) == 0) {
+    if ((ws->handlerMap = mprCreateList(MPR_FD_MIN, 0)) == 0) {
         return MPR_ERR_CANT_INITIALIZE;
     }
     return 0;
@@ -100,8 +100,8 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
                 }
             }
         }
+        mprSetItem(ws->handlerMap, fd, mask ? wp : 0);
     }
-    mprSetItem(ws->handlerMap, fd, wp);
     unlock(ws);
     return 0;
 }
@@ -211,6 +211,7 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
             mprError("WARNING: fd not in handler map. fd %d", fd);
             continue;
         }
+        assert(mprIsValid(wp));
         mask = 0;
         if (kev->flags & EV_ERROR) {
             err = (int) kev->data;
@@ -238,6 +239,7 @@ static void serviceIO(MprWaitService *ws, struct kevent *events, int count)
         if (kev->filter == EVFILT_WRITE) {
             mask |= MPR_WRITABLE;
         }
+        assert(mprIsValid(wp));
         wp->presentMask = mask & wp->desiredMask;
 
         if (wp->presentMask) {
