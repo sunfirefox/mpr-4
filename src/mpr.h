@@ -783,39 +783,39 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 /*
     Allocator Tunables
  */
-#ifndef BIT_ALLOC_INLINE
-    #define BIT_ALLOC_INLINE        1                   /* Use inline mprMark() */
+#ifndef BIT_MPR_ALLOC_INLINE
+    #define BIT_MPR_ALLOC_INLINE    1                   /* Use inline mprMark() */
 #endif
-#ifndef BIT_ALLOC_LEVEL
-    #define BIT_ALLOC_LEVEL         7                   /* Emit mark/sweek elapsed time at this level */
+#ifndef BIT_MPR_ALLOC_LEVEL
+    #define BIT_MPR_ALLOC_LEVEL     7                   /* Emit mark/sweek elapsed time at this level */
 #endif
-#ifndef BIT_ALLOC_PARALLEL
-    #define BIT_ALLOC_PARALLEL      1                   /* Run sweeper in parallel with user threads */
+#ifndef BIT_MPR_ALLOC_PARALLEL
+    #define BIT_MPR_ALLOC_PARALLEL  1                   /* Run sweeper in parallel with user threads */
 #endif
 #if BIT_HAS_MMU
-    #define BIT_ALLOC_VIRTUAL       1                   /* Use virtual memory allocations */
+    #define BIT_MPR_ALLOC_VIRTUAL   1                   /* Use virtual memory allocations */
 #else
-    #define BIT_ALLOC_VIRTUAL       0                   /* Use malloc() for region allocations */
+    #define BIT_MPR_ALLOC_VIRTUAL   0                   /* Use malloc() for region allocations */
 #endif
 
-#ifndef BIT_ALLOC_ALIGN
+#ifndef BIT_MPR_ALLOC_ALIGN
     /*
         Allocated block alignment expressed as a bit shift. The default alignment is set so that allocated memory can be used
         for any data type.  Default to 8 bytes for 32-bit and 16 bytes for 64-bit. If you are not using doubles, SSE or other
         such types on a 32-bit system, you may be able to run with 4 byte alignment (2).
      */
     #if !BIT_64 && !(BIT_CPU_ARCH == BIT_CPU_MIPS)
-        #define BIT_ALLOC_ALIGN     3                   /* 8 byte alignment */
+        #define BIT_MPR_ALLOC_ALIGN 3                   /* 8 byte alignment */
     #else
-        #define BIT_ALLOC_ALIGN     4                   /* 16 byte alignment */
+        #define BIT_MPR_ALLOC_ALIGN 4                   /* 16 byte alignment */
     #endif
 #endif
 
 /*
-    The allocator by default is limited to allocations of 1GB. Define BIT_ALLOC_BIG on 64-bit systems to get the full 
+    The allocator by default is limited to allocations of 1GB. Define BIT_MPR_ALLOC_BIG on 64-bit systems to get the full 
     address space.
  */
-#if (BIT_ALLOC_BIG) && BIT_64
+#if (BIT_MPR_ALLOC_BIG) && BIT_64
     #define MPR_SIZE_BITS           61                  /* Memory size bits. Values are multiples of the ALIGN_SHIFT. */
     typedef uint64 blksize;
 #else
@@ -832,7 +832,7 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     \n\n
     The allocator uses a garbage collector for freeing unused memory. The collector is a cooperative, non-compacting, 
     parallel collector.  The allocator is optimized for frequent allocations of small blocks (< 4K) and uses a scheme 
-    of free queues for fast allocation. Allocations are aligned as specified by BIT_ALLOC_ALIGN. This is typically
+    of free queues for fast allocation. Allocations are aligned as specified by BIT_MPR_ALLOC_ALIGN. This is typically
     16 byte aligned for 64-bit systems and 8 byte aligned for 32-bit systems. The allocator will return unused memory 
     back to the O/S to minimize application memory footprint. 
     \n\n
@@ -921,8 +921,8 @@ typedef struct MprFreeQueue {
     MprSpin             spin;
 } MprFreeQueue;
 
-#define MPR_ALIGN                   (1 << BIT_ALLOC_ALIGN)
-#define MPR_ALIGN_SHIFT             BIT_ALLOC_ALIGN
+#define MPR_ALIGN                   (1 << BIT_MPR_ALLOC_ALIGN)
+#define MPR_ALIGN_SHIFT             BIT_MPR_ALLOC_ALIGN
 #define MPR_ALLOC_MIN               sizeof(MprFreeMem)
 #define MPR_ALLOC_MIN_SPLIT         (32 + sizeof(MprMem))
 #define MPR_ALLOC_ALIGN(x)          (((x) + MPR_ALIGN - 1) & ~(MPR_ALIGN - 1))
@@ -1634,7 +1634,7 @@ PUBLIC void mprRemoveRoot(cvoid *ptr);
     PUBLIC void mprMark(void *ptr);
     @ingroup MprMem
 
-#elif BIT_ALLOC_INLINE
+#elif BIT_MPR_ALLOC_INLINE
     #define mprMark(ptr) \
         if (ptr) { \
             MprMem *_mp = MPR_GET_MEM((ptr)); \
@@ -3364,6 +3364,7 @@ PUBLIC MprList *mprCreateList(int size, int flags);
  */
 PUBLIC void *mprGetFirstItem(MprList *list);
 
+#if DOXYGEN || 1
 /**
     Get an list item.
     @description Get an list item specified by its index.
@@ -3373,6 +3374,9 @@ PUBLIC void *mprGetFirstItem(MprList *list);
     @stability Stable.
  */
 PUBLIC void *mprGetItem(MprList *list, int index);
+#else
+    #define mprGetItem(lp, index) (index < 0 || index >= lp->length) ? 0 : lp->items[index];
+#endif
 
 /**
     Get the last item in the list.

@@ -271,11 +271,13 @@ PUBLIC void mprDestroyMemService()
         return;
     }
     heap->destroying = 1;
-    for (region = heap->regions; region; region = region->next) {
-        for (mp = region->start; mp; mp = GET_NEXT(mp)) {
-            if (unlikely(mp->hasManager)) {
-                (GET_MANAGER(mp))(GET_PTR(mp), MPR_MANAGE_FREE);
-                mp->hasManager = 0;
+    if (!heap->marker) {
+        for (region = heap->regions; region; region = region->next) {
+            for (mp = region->start; mp; mp = GET_NEXT(mp)) {
+                if (unlikely(mp->hasManager)) {
+                    (GET_MANAGER(mp))(GET_PTR(mp), MPR_MANAGE_FREE);
+                    mp->hasManager = 0;
+                }
             }
         }
     }
@@ -621,6 +623,7 @@ static bool joinBlock(MprMem *mp, MprMem *next)
             ATOMIC_INC(tryFails);
             return 0;
         }
+        //  MOB - if not claiming, then the block may have already been removed from this queue
         unlinkBlock(next);
         ATOMIC_INC(trys);
         mprSpinUnlock(&heap->freeq[index].spin);
@@ -911,7 +914,7 @@ static void *vmalloc(size_t size, int mode)
 {
     void    *ptr;
 
-#if BIT_ALLOC_VIRTUAL
+#if BIT_MPR_ALLOC_VIRTUAL
     #if BIT_UNIX_LIKE
         if ((ptr = mmap(0, size, mode, MAP_PRIVATE | MAP_ANON, -1, 0)) == (void*) -1) {
             return 0;
@@ -934,7 +937,7 @@ static void *vmalloc(size_t size, int mode)
 
 static void vmfree(void *ptr, size_t size)
 {
-#if BIT_ALLOC_VIRTUAL
+#if BIT_MPR_ALLOC_VIRTUAL
     #if BIT_UNIX_LIKE
         if (munmap(ptr, size) != 0) {
             assert(0);
@@ -973,8 +976,12 @@ PUBLIC void mprStartGCService()
 
 PUBLIC void mprStopGCService()
 {
+    int     i;
+
     mprWakeGCService();
-    mprNap(1);
+    for (i = 0; heap->marker && i < MPR_TIMEOUT_STOP; i++) {
+        mprNap(1);
+    }
 }
 
 
@@ -1041,9 +1048,9 @@ static void mark()
     heap->mustYield = 1;
     if (!pauseThreads()) {
         if (once++ == 0) {
-            mprError("GC synchronization timed out, some threads did not yield.");
-            mprError("This is most often caused by a thread doing a long running operation and not first calling mprYield.");
-            mprError("If debugging, run the process with -D to enable debug mode.");
+            mprTrace(7, "GC synchronization timed out, some threads did not yield.");
+            mprTrace(7, "This is most often caused by a thread doing a long running operation and not first calling mprYield.");
+            mprTrace(7, "If debugging, run the process with -D to enable debug mode.");
         }
         return;
     }
@@ -1055,19 +1062,19 @@ static void mark()
     heap->gcRequested = 0;
 
     heap->mark = !heap->mark;
-    MPR_MEASURE(BIT_ALLOC_LEVEL, "GC", "mark", markRoots());
+    MPR_MEASURE(BIT_MPR_ALLOC_LEVEL, "GC", "mark", markRoots());
     heap->marking = 0;
     mprAtomicBarrier();
 
-#if BIT_ALLOC_PARALLEL
+#if BIT_MPR_ALLOC_PARALLEL
     resumeThreads();
 #endif
 
     heap->sweeping = 1;
-    MPR_MEASURE(BIT_ALLOC_LEVEL, "GC", "sweep", sweep());
+    MPR_MEASURE(BIT_MPR_ALLOC_LEVEL, "GC", "sweep", sweep());
     heap->sweeping = 0;
 
-#if !BIT_ALLOC_PARALLEL
+#if !BIT_MPR_ALLOC_PARALLEL
     resumeThreads();
 #endif
 }
@@ -1103,6 +1110,7 @@ static void sweep()
                 mgr = GET_MANAGER(mp);
                 if (mgr) {
                     (mgr)(GET_PTR(mp), MPR_MANAGE_FREE);
+                    mp->hasManager = 0;
                 }
             }
         }
@@ -1351,6 +1359,7 @@ static void marker(void *unused, MprThread *tp)
         mark();
     }
     heap->mustYield = 0;
+    heap->marker = 0;
 }
 
 
@@ -2221,6 +2230,9 @@ static inline bool claim(MprMem *mp)
         ATOMIC_INC(claimFails);
         return 0;
     }
+
+    //MOB - race here - other thread can claim
+
     claimed = (size_t) prior | claimBit;
     if (cas((size_t*) mp, prior, claimed)) {
         assert(mp->claimed);
@@ -2257,6 +2269,7 @@ static inline void setPrior(MprMem *mp, MprMem *prior)
         newValue = *(size_t*) &m;
     } while (!cas((size_t*) mp, oldValue, newValue));
 }
+
 
 static inline int cas(size_t *target, size_t expected, size_t value)
 {

@@ -86,15 +86,12 @@ PUBLIC MprThread *mprGetCurrentThread()
 
     ts = MPR->threadService;
     id = mprGetCurrentOsThread();
-    lock(ts->threads);
     for (i = 0; i < ts->threads->length; i++) {
         tp = mprGetItem(ts->threads, i);
         if (tp->osThread == id) {
-            unlock(ts->threads);
             return tp;
         }
     }
-    unlock(ts->threads);
     return 0;
 }
 
@@ -295,6 +292,8 @@ PUBLIC int mprStartThread(MprThread *tp)
 
 PUBLIC MprOsThread mprGetCurrentOsThread()
 {
+    //  MOB - LINUX gettid
+    //  MOB - MACOSX thread_selfid (64 bits)
 #if BIT_UNIX_LIKE
     return (MprOsThread) pthread_self();
 #elif BIT_WIN_LIKE
