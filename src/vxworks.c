@@ -133,7 +133,7 @@ PUBLIC void mprNap(MprTicks milliseconds)
 
 PUBLIC void mprSleep(MprTicks timeout)
 {
-    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
+    mprYield(MPR_YIELD_STICKY);
     mprNap(timeout);
     mprResetYield();
 }

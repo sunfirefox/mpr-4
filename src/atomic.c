@@ -117,7 +117,7 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
 /*
     On some platforms, this operation is only atomic with respect to other calls to mprAtomicAdd64
  */
-PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int value)
+PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
 {
 #if MACOSX
     OSAtomicAdd64(value, ptr);

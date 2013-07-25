@@ -315,7 +315,7 @@ PUBLIC int mprWaitForEvent(MprDispatcher *dispatcher, MprTicks timeout)
         dispatcher->flags |= MPR_DISPATCHER_WAITING;
         unlock(es);
 
-        mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
+        mprYield(MPR_YIELD_STICKY);
 
         nevents = mprWaitForCond(dispatcher->cond, delay);
         mprResetYield();

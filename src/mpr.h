@@ -752,7 +752,7 @@ PUBLIC void mprAtomicAdd(volatile int *target, int value);
     @ingroup MprSynch
     @stability Evolving.
  */
-PUBLIC void mprAtomicAdd64(volatile int64 *target, int value);
+PUBLIC void mprAtomicAdd64(volatile int64 *target, int64 value);
 
 /**
     Exchange the target and a value
@@ -797,6 +797,16 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 #else
     #define BIT_MPR_ALLOC_VIRTUAL   0                   /* Use malloc() for region allocations */
 #endif
+#ifndef BIT_MPR_ALLOC_GC_QUOTA
+    #define BIT_MPR_ALLOC_GC_QUOTA  4096                /* Number of allocations before a GC is worthwhile */
+#endif
+#ifndef BIT_MPR_ALLOC_SCAN
+    #define BIT_MPR_ALLOC_SCAN 9                        /* Number of queues to scan for a block before triggering a GC */
+#endif
+//  MOB Above 128K will never hit the freeq
+#ifndef BIT_MPR_ALLOC_MAX_REGION
+    #define BIT_MPR_ALLOC_MAX_REGION (128 * 1024)       /* Memory allocation chunk size */
+#endif
 
 #ifndef BIT_MPR_ALLOC_ALIGN
     /*
@@ -812,15 +822,13 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
 #endif
 
 /*
-    The allocator by default is limited to allocations of 1GB. Define BIT_MPR_ALLOC_BIG on 64-bit systems to get the full 
+    The allocator by default is limited to allocations of 32 bits. Define BIT_MPR_ALLOC_BIG on 64-bit systems to get the full 
     address space.
  */
 #if (BIT_MPR_ALLOC_BIG) && BIT_64
-    #define MPR_SIZE_BITS           61                  /* Memory size bits. Values are multiples of the ALIGN_SHIFT. */
-    typedef uint64 blksize;
+    typedef uint64 MprMemSize;
 #else
-    #define MPR_SIZE_BITS           29                  /* Memory size bits. Values are multiples of the ALIGN_SHIFT. */
-    typedef uint blksize;
+    typedef uint MprMemSize;
 #endif
 
 /**
@@ -863,39 +871,26 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
         mprSetName mprVerifyMem mprVirtAlloc mprVirtFree 
  */
 typedef struct MprMem {
-    /*
-        Caution: updating a bit field is not atomic. Must either use CAS routines or must have claimed the block 
-        for exclusive access.  Stability legend:
-            S - Stable if inuse while a user thread is active and not yielded.
-            U - Unstable. Can be modified by sweeper or user thread.
-
-        This word is unstable.
-     */
-    uint    claimed: 1;                     /* Set when block is claimed for modification (U) */
-    uint    eternal: 1;                     /* Immune from GC (U) */
-    uint    last: 1;                        /* Block is last block in region (S) */
-    blksize priorSize: MPR_SIZE_BITS;       /* Size in words (U) */
-
-    /*
-        This word is stable.
-     */
-    uint    inuse: 1;                       /* Block currently in-use, not free (S) */
-    uint    mark: 1;                        /* GC mark indicator. Toggled for each GC pass by mark() when thread yielded. (S) */
-    uint    hasManager: 1;                  /* Has manager function. Set at block init. (S) */
-    blksize size: MPR_SIZE_BITS;            /* Size in words (S) */
+    MprMemSize  size;                   /**< Size in bytes */
+    uchar       qindex;                 /**< Freeq index */
+    uchar       eternal;                /**< Immune from GC */
+    uint        free: 1;                /**< Block not in use */
+    uint        first: 1;               /**< Block is first block in region */
+    uint        hasManager: 1;          /**< Has manager function. Set at block init. */
+    uint        mark: 1;                /**< GC mark indicator. Toggled for each GC pass by mark() when thread yielded. */
 
 #if BIT_MEMORY_DEBUG
-    uint    magic;                          /* Unique signature */
-    uint    seqno;                          /* Allocation sequence number */
-    cchar   *name;                          /* Debug name */
+    ushort      magic;                  /**< Unique signature */
+    ushort      seqno;                  /**< Allocation sequence number */
+    cchar       *name;                  /**< Debug name */
 #endif
 } MprMem;
 
 
 /**
     Block structure when on a free list. This overlays MprMem and replaces sibling and children with forw/back
-    The implies a minimum memory block size of 8 bytes in 32 bits and 16 bytes in 64 bits.
-    @ingroup MemMem
+    The implies a minimum memory block size of 16 bytes.
+    @ingroup MprMem
     @stability Internal.
  */
 typedef struct MprFreeMem {
@@ -912,6 +907,8 @@ typedef struct MprFreeQueue {
     union {
         MprMem          blk;
         struct {
+            //  MOB - BIG 64. Should be MprMemSize
+            //  MOB - need to move minSize out of here
             uint        minSize;        /**< Min size of block in queue */
             uint        count;          /**< Number of blocks on the queue */
         } stats;
@@ -919,6 +916,11 @@ typedef struct MprFreeQueue {
     struct MprFreeMem   *prev;          /**< Previous free block */
     struct MprFreeMem   *next;          /**< Next free block */
     MprSpin             spin;
+#if XX
+    MprMemSize          minSize;        /**< Min size of block in queue */
+    uint                used;           /**< Number of uses of blocks from this queue */
+    uint                count;          /**< Number of blocks on the queue */
+#endif
 } MprFreeQueue;
 
 #define MPR_ALIGN                   (1 << BIT_MPR_ALLOC_ALIGN)
@@ -926,7 +928,7 @@ typedef struct MprFreeQueue {
 #define MPR_ALLOC_MIN               sizeof(MprFreeMem)
 #define MPR_ALLOC_MIN_SPLIT         (32 + sizeof(MprMem))
 #define MPR_ALLOC_ALIGN(x)          (((x) + MPR_ALIGN - 1) & ~(MPR_ALIGN - 1))
-#define MPR_ALLOC_MAGIC             0xe814ecab
+#define MPR_ALLOC_MAGIC             0xe813
 #define MPR_PAGE_ALIGN(x, psize)    ((((ssize) (x)) + ((ssize) (psize)) - 1) & ~(((ssize) (psize)) - 1))
 #define MPR_PAGE_ALIGNED(x, psize)  ((((ssize) (x)) % ((ssize) (psize))) == 0)
 
@@ -942,24 +944,24 @@ typedef struct MprFreeQueue {
     | 0 | 0 | 1 | 1 | 1 | 1 | 1 | ..... |
     +-----------------------------------+
 
-    We create 25 groups and 16 buckets. This provides a few more queues than required as the maximum size block
-    that will be put on a free queue is MPR_SIZE_BITS (29). Blocks larger than this have their own dedicated region
-    and will never be put on a freeq.
+    We create 25 groups and 16 buckets. This provides a few more queues than required.
  */
 #define MPR_ALLOC_BUCKET_SHIFT      4
-#define MPR_ALLOC_BITS_PER_GROUP    (sizeof(blksize) * 8)
+#define MPR_ALLOC_BITS_PER_GROUP    (sizeof(MprMemSize) * 8)
 #define MPR_ALLOC_NUM_GROUPS        (MPR_ALLOC_BITS_PER_GROUP - MPR_ALLOC_BUCKET_SHIFT - 2)
 #define MPR_ALLOC_NUM_BUCKETS       (1 << MPR_ALLOC_BUCKET_SHIFT)
 #define MPR_GET_PTR(bp)             ((void*) (((char*) (bp)) + sizeof(MprMem)))
 #define MPR_GET_MEM(ptr)            ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
-#define MPR_GET_MEM_SIZE(mp)        (((MprMem*) mp)->size << MPR_ALIGN_SHIFT)
+#if UNUSED
+#define MPR_GET_MEM_SIZE(mp)        (mp->size << MPR_ALIGN_SHIFT)
+#endif
 
 /*
     Manager callback is stored in the padding region at the end of the user memory in the block.
  */
 #define MPR_MANAGER_SIZE            1
 #define MPR_MANAGER_OFFSET          1
-#define MPR_MEM_PAD_PTR(mp, offset) ((void*) (((char*) mp) + MPR_GET_MEM_SIZE(mp) - ((offset) * sizeof(void*))))
+#define MPR_MEM_PAD_PTR(mp, offset) ((void*) (((char*) mp) + mp->size - ((offset) * sizeof(void*))))
 #define GET_MANAGER(mp)             ((MprManager) (*(void**) ((MPR_MEM_PAD_PTR(mp, MPR_MANAGER_OFFSET)))))
 #define SET_MANAGER(mp, fn)         if (1) { \
                                         *((MprManager*) MPR_MEM_PAD_PTR(mp, MPR_MANAGER_OFFSET)) = fn ; \
@@ -1046,7 +1048,7 @@ typedef struct MprLocationStats {
 
 /**
     Memory allocator statistics
-    @ingroup MemMem
+    @ingroup MprMem
     @stability Internal.
   */
 typedef struct MprMemStats {
@@ -1055,8 +1057,8 @@ typedef struct MprMemStats {
     uint            numCpu;                 /**< Number of CPUs */
     uint            pageSize;               /**< System page size */
     uint64          errors;                 /**< Allocation errors */
-    uint64          bytesAllocated;         /**< Bytes currently allocated */
-    uint64          bytesFree;              /**< Bytes currently free */
+    uint64          bytesAllocated;         /**< Bytes currently allocated. Includes active and free. */
+    uint64          bytesFree;              /**< Bytes currently free and retained in the heap queues */
     uint64          redLine;                /**< Warn if allocation exceeds this level */
     uint64          maxMemory;              /**< Max memory that can be allocated */
     uint64          rss;                    /**< OS calculated resident stack size in bytes */
@@ -1078,9 +1080,6 @@ typedef struct MprMemStats {
     uint64          swept;                  /**< Number of blocks swept */
     uint64          unpins;                 /**< Count of times a block was unpinned and released back to the O/S */
 
-    uint64          claims;
-    uint64          claimFails;
-
     uint64          trys;
     uint64          tryFails;
 
@@ -1091,12 +1090,13 @@ typedef struct MprMemStats {
 
 /**
     Memmory regions allocated from the O/S
-    @ingroup MemMem
+    @ingroup MprMem
     @stability Internal.
  */
 typedef struct MprRegion {
     struct MprRegion *next;                 /**< Next region */
     MprMem           *start;                /**< Start of region data */
+    MprMem           *end;                  /**< End of region data */
     MprSpin          lock;                  /**< Region multithread lock */
     size_t           size;                  /**< Size of region including region header */
     int              freeable;              /**< Set to true when completely unused */
@@ -1105,7 +1105,7 @@ typedef struct MprRegion {
 
 /**
     Memory allocator heap
-    @ingroup MemMem
+    @ingroup MprMem
     @stability Internal.
  */
 typedef struct MprHeap {
@@ -1118,10 +1118,9 @@ typedef struct MprHeap {
     MprMemNotifier   notifier;              /**< Memory allocation failure callback */
     MprSpin          heapLock;              /**< Heap allocation lock */
     MprSpin          rootLock;              /**< Root locking */
-    MprCond          *markerCond;           /**< Marker sleep cond var */
+    MprCond          *sweeperCond;          /**< Sweeper sleep cond var */
     MprRegion        *regions;              /**< List of memory regions */
-    struct MprThread *marker;               /**< Marker thread */
-    struct MprThread *sweeper;              /**< Optional sweeper thread */
+    struct MprThread *sweeper;              /**< Sweeper thread */
     int              mark;                  /**< Mark version */
     int              allocPolicy;           /**< Memory allocation depletion policy */
     int              chunkSize;             /**< O/S memory allocation chunk size */
@@ -1141,6 +1140,7 @@ typedef struct MprHeap {
     int              pauseGC;               /**< Pause GC (short) */
     int              pageSize;              /**< System page size */
     int              priorWeightedCount;    /**< Prior weighted count after last sweep */
+    int              printStats;            /**< Print diagnostic heap statistics */
     uint64           priorFree;             /**< Last sweep free memory */
     int              rootIndex;             /**< Marker root scan index */
     int              scribble;              /**< Scribble over freed memory (slow) */
@@ -1482,8 +1482,7 @@ PUBLIC void *prealloc(void *ptr, size_t size);
 #define mprRealloc(ptr, size) mprSetAllocName(mprReallocMem(ptr, size), MPR_LOC)
 #define mprAllocZeroed(size) mprSetAllocName(mprAllocMem(size, MPR_ALLOC_ZERO), MPR_LOC)
 #define mprAllocBlock(size, flags) mprSetAllocName(mprAllocMem(size, flags), MPR_LOC)
-#define mprAllocObj(type, manage) \
-    ((type*) mprSetManager( \
+#define mprAllocObj(type, manage) ((type*) mprSetManager( \
         mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO), #type "@" MPR_LOC), (MprManager) manage))
 #define mprAllocStruct(type) ((type*) mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_ZERO), #type "@" MPR_LOC))
 
@@ -1555,16 +1554,18 @@ PUBLIC void mprAddRoot(cvoid *ptr);
 /*
     Flags for mprRequestGC
  */
-#define MPR_GC_FORCE        0x1     /**< mprRequestGC flags to force a GC whether it is required or not */
-#define MPR_GC_COMPLETE     0x2     /**< mprRequestGC flags to do a complete collection (3 sweeps) */
-#define MPR_GC_NO_BLOCK     0x4     /**< mprRequestGC flags to not wait for the GC */
+#define MPR_CG_DEFAULT      0x0     /**< mprRequestGC flag to run GC if necessary. Will yield and block for GC. */
+#define MPR_GC_COMPLETE     0x1     /**< mprRequestGC flag to wait until the GC entirely complete including sweeper */
+#define MPR_GC_NO_BLOCK     0x2     /**< mprRequestGC flag and to not wait for the GC complete */
+#define MPR_GC_FORCE        0x4     /**< mprRequestGC flag to force a GC whether it is required or not */
+#if UNUSED
 #define MPR_GC_NO_YIELD     0x8     /**< mprRequestGC flag to trigger GC but not yield */
+#endif
 
 /**
     Collect garbage
-    @description Initiates garbage collection to free unreachable memory blocks. This call may return before collection 
-    is complete if garbage collection has been configured via mprCreate() to use dedicated threads for collection. 
-    A single garbage collection may not free all memory. Use mprRequestGC(MPR_GC_FORCE) to free all unused memory blocks.
+    @description Initiates garbage collection to free unreachable memory blocks.
+    Use mprRequestGC(MPR_GC_FORCE) to free all unused memory blocks.
     @param flags Flags to control the collection. Set flags to MPR_GC_FORCE to force one sweep. Set to zero
     to perform a conditional sweep where the sweep is only performed if there is sufficient garbage to warrant a collection.
     @ingroup MprMem
@@ -6217,6 +6218,7 @@ typedef struct MprThread {
 #endif
     int             stickyYield;        /**< Yielded does not auto-clear after GC */
     int             yielded;            /**< Thread has yielded to GC */
+    int             waitForGC;          /**< Yield untill sweeper is complete */
 } MprThread;
 
 
@@ -6338,9 +6340,17 @@ PUBLIC void mprSetThreadPriority(MprThread *thread, int priority);
  */
 PUBLIC int mprStartThread(MprThread *thread);
 
-#define MPR_YIELD_NO_BLOCK  0x1     /**< mprYield flag to yield but do not wait */
-#define MPR_YIELD_BLOCK     0x2     /**< mprYield flag to yield and wait until GC the next GC occurs */
-#define MPR_YIELD_STICKY    0x4     /**< mprYield flag to yield and remain yielded until reset */
+#define MPR_YIELD_DEFAULT   0x0     /**< mprYield flag to yield and if GC is required, block for GC */
+#define MPR_YIELD_COMPLETE  0x1     /**< mprYield flag to wait until the GC entirely complete including sweeper */
+#define MPR_YIELD_STICKY    0x2     /**< mprYield flag to yield and remain yielded until reset. Does not block by default. */
+#define MPR_YIELD_BLOCK     0x4     /**< mprYield flag to yield and wait until the next GC starts and resumes user threads 
+                                         regardless of whether GC is currently required. */
+#if DEPRECATED
+/* 
+    MPR_YIELD_STICKY now implies no block 
+ */
+#define MPR_YIELD_NO_BLOCK  0
+#endif
 
 /**
     Yield a thread to allow garbage collection
@@ -8724,11 +8734,10 @@ PUBLIC void mprNop(void *ptr);
 #endif
 
 #define MPR_DISABLE_GC          0x1         /**< Disable GC */
-#define MPR_MARK_THREAD         0x4         /**< Start a dedicated marker thread for garbage collection */
-#define MPR_SWEEP_THREAD        0x8         /**< Start a dedicated sweeper thread for garbage collection (unsupported) */
-#define MPR_USER_EVENTS_THREAD  0x10        /**< User will explicitly manage own mprServiceEvents calls */
-#define MPR_NO_WINDOW           0x20        /**< Don't create a windows Window */
-#define MPR_THREAD_PATTERN      (MPR_MARK_THREAD)
+#define MPR_SWEEP_THREAD        0x2         /**< Start a dedicated sweeper thread for garbage collection (unsupported) */
+#define MPR_USER_EVENTS_THREAD  0x4         /**< User will explicitly manage own mprServiceEvents calls */
+#define MPR_NO_WINDOW           0x8         /**< Don't create a windows Window */
+#define MPR_THREAD_PATTERN      (MPR_SWEEP_THREAD)
 
 /**
     Add a terminator callback

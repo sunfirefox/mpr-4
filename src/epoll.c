@@ -195,7 +195,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
         mprDoWaitRecall(ws);
         return;
     }
-    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
+    mprYield(MPR_YIELD_STICKY);
 
     if ((nevents = epoll_wait(ws->epoll, events, sizeof(events) / sizeof(struct epoll_event), timeout)) < 0) {
         if (errno != EINTR) {
@@ -228,7 +228,12 @@ static void serviceIO(MprWaitService *ws, struct epoll_event *events, int count)
             continue;
         }
         if (fd < 0 || (wp = mprGetItem(ws->handlerMap, fd)) == 0) {
-            mprError("WARNING: fd not in handler map. fd %d", fd);
+            /*
+                This can happen if a writable event has been triggered (e.g. MprCmd command stdin pipe) and the pipe is closed.
+                This thread may have waked from kevent before the pipe is closed and the wait handler removed from the map.
+
+                mprTrace(0, "WARNING: fd not in handler map. fd %d", fd);
+             */
             continue;
         }
         mask = 0;

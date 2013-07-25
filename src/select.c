@@ -209,7 +209,7 @@ PUBLIC void mprWaitForIO(MprWaitService *ws, MprTicks timeout)
     maxfd = ws->highestFd + 1;
     unlock(ws);
 
-    mprYield(MPR_YIELD_STICKY | MPR_YIELD_NO_BLOCK);
+    mprYield(MPR_YIELD_STICKY);
     rc = select(maxfd, &readMask, &writeMask, NULL, &tval);
 
     mprClearWaiting();
@@ -242,7 +242,10 @@ static void serviceIO(MprWaitService *ws, fd_set *readMask, fd_set *writeMask, i
                 continue;
             }
             if (fd < 0 || (wp = mprGetItem(ws->handlerMap, fd)) == 0) {
-                mprError("WARNING: fd not in handler map. fd %d", fd);
+                /*
+                    This can happen if a writable event has been triggered (e.g. MprCmd command stdin pipe) and the pipe is closed.
+                    This thread may have waked from kevent before the pipe is closed and the wait handler removed from the map.
+                 */
                 continue;
             }
             wp->presentMask = mask & wp->desiredMask;

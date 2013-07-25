@@ -174,8 +174,6 @@ static void manageMpr(Mpr *mpr, int flags)
  */
 PUBLIC void mprDestroy(int how)
 {
-    int         gmode;
-
     if (!(how & MPR_EXIT_DEFAULT)) {
         MPR->exitStrategy = how;
     }
@@ -192,8 +190,7 @@ PUBLIC void mprDestroy(int how)
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
-    gmode = MPR_GC_FORCE | MPR_GC_COMPLETE;
-    mprRequestGC(gmode);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
     if (how & MPR_EXIT_GRACEFUL) {
         mprWaitTillIdle(MPR->exitTimeout);
@@ -209,7 +206,7 @@ PUBLIC void mprDestroy(int how)
     mprStopSignalService();
 
     /* Final GC to run all finalizers */
-    mprRequestGC(gmode);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 
     if (how & MPR_EXIT_RESTART) {
         mprLog(2, "Restarting\n\n");
