@@ -216,7 +216,7 @@ PUBLIC bool mprTrySpinLock(MprSpin *lock)
 #elif VXWORKS
     rc = semTake(lock->cs, NO_WAIT) != OK;
 #endif
-#if BIT_DEBUG
+#if BIT_DEBUG && COSTLY
     if (rc == 0) {
         assert(lock->owner != mprGetCurrentOsThread());
         lock->owner = mprGetCurrentOsThread();
@@ -309,7 +309,7 @@ PUBLIC void mprSpinLock(MprSpin *lock)
 #endif
 
 #if USE_MPR_LOCK
-    mprLock(&lock->cs);
+    mprTryLock(&lock->cs);
 #elif MACOSX
     OSSpinLockLock(&lock->cs);
 #elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK

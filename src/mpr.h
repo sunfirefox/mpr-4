@@ -768,8 +768,6 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     Allocator debug and stats selection
     Use configure --set memoryCheck=true to enable
  */
-//  MOB
-#define BIT_MEMORY_CHECK 0
 #if BIT_MEMORY_CHECK
     #define BIT_MEMORY_DEBUG        1                   /**< Fill blocks, verifies block integrity, traces mem info. */
     #define BIT_MEMORY_STATS        1                   /**< Include memory statistics */
@@ -801,9 +799,14 @@ PUBLIC void *mprAtomicExchange(void * volatile *target, cvoid *value);
     #define BIT_MPR_ALLOC_GC_QUOTA  4096                /* Number of allocations before a GC is worthwhile */
 #endif
 #ifndef BIT_MPR_ALLOC_SCAN
-    #define BIT_MPR_ALLOC_SCAN 9                        /* Number of queues to scan for a block before triggering a GC */
+    #define BIT_MPR_ALLOC_SCAN      9                   /* Number of queues to scan for a block before triggering a GC */
 #endif
-//  MOB Above 128K will never hit the freeq
+#ifndef BIT_MPR_ALLOC_SMALL
+    #define BIT_MPR_ALLOC_SMALL     512                 /* Take care not to deplete free queues of blocks smaller than this */
+#endif
+#ifndef BIT_MPR_ALLOC_CACHE
+    #define BIT_MPR_ALLOC_CACHE     100                 /* Number of small blocks ot cache */
+#endif
 #ifndef BIT_MPR_ALLOC_MAX_REGION
     #define BIT_MPR_ALLOC_MAX_REGION (128 * 1024)       /* Memory allocation chunk size */
 #endif
@@ -905,22 +908,14 @@ typedef struct MprFreeMem {
  */
 typedef struct MprFreeQueue {
     union {
-        MprMem          blk;
-        struct {
-            //  MOB - BIG 64. Should be MprMemSize
-            //  MOB - need to move minSize out of here
-            uint        minSize;        /**< Min size of block in queue */
-            uint        count;          /**< Number of blocks on the queue */
-        } stats;
+        MprMem          blk;            /**< Unused in queue head */
     } info;
     struct MprFreeMem   *prev;          /**< Previous free block */
     struct MprFreeMem   *next;          /**< Next free block */
-    MprSpin             spin;
-#if XX
+    MprSpin             lock;           /**< Queue lock-free lock */
     MprMemSize          minSize;        /**< Min size of block in queue */
-    uint                used;           /**< Number of uses of blocks from this queue */
+    uint                demand;         /**< Demand count for blocks from this queue */
     uint                count;          /**< Number of blocks on the queue */
-#endif
 } MprFreeQueue;
 
 #define MPR_ALIGN                   (1 << BIT_MPR_ALLOC_ALIGN)
@@ -1059,6 +1054,7 @@ typedef struct MprMemStats {
     uint64          errors;                 /**< Allocation errors */
     uint64          bytesAllocated;         /**< Bytes currently allocated. Includes active and free. */
     uint64          bytesFree;              /**< Bytes currently free and retained in the heap queues */
+    uint64          cacheMemory;            /**< Try to cache at least this amount in the heap free queues  */
     uint64          redLine;                /**< Warn if allocation exceeds this level */
     uint64          maxMemory;              /**< Max memory that can be allocated */
     uint64          rss;                    /**< OS calculated resident stack size in bytes */
@@ -1069,6 +1065,8 @@ typedef struct MprMemStats {
         Extended memory stats
      */
     uint64          allocs;                 /**< Count of times a block was split Calls to allocate memory from the O/S */
+    uint64          cached;                 /**< Count of blocks that are cached rather then joined with adjacent blocks */
+    uint64          compacted;              /**< Count of blocks that are compacted during compacting sweeps */
     uint64          freed;                  /**< Bytes freed in last sweep */
     uint64          joins;                  /**< Count of times a block was joined (coalesced) with its neighbours */
     uint64          markVisited;            /**< Number of blocks examined for marking */
@@ -1124,8 +1122,8 @@ typedef struct MprHeap {
     int              mark;                  /**< Mark version */
     int              allocPolicy;           /**< Memory allocation depletion policy */
     int              chunkSize;             /**< O/S memory allocation chunk size */
+    int              compact;               /**< Next GC sweep should do a full compact */
     int              collecting;            /**< Manual GC is running */
-    int              destroying;            /**< Destroying the heap */
     int              enabled;               /**< GC is enabled */
     int              flags;                 /**< GC operational control flags */
     int              from;                  /**< Eligible mprCollectGarbage flags */
@@ -1158,13 +1156,6 @@ typedef struct MprHeap {
     @stability Internal.
  */
 PUBLIC struct Mpr *mprCreateMemService(MprManager manager, int flags);
-
-/**
-    Destroy the memory service. Called as the last thing before exiting
-    @ingroup MprMem
-    @stability Internal.
- */
-PUBLIC void mprDestroyMemService();
 
 /*
     Flags for mprAllocMem
@@ -1294,14 +1285,17 @@ PUBLIC size_t mprMemcpy(void *dest, size_t destMax, cvoid *src, size_t nbytes);
  */
 PUBLIC void *mprMemdup(cvoid *ptr, size_t size);
 
+#define MPR_MEM_DETAIL      0x1     /* Print a detailed report */
+#define MPR_MEM_COMPACT     0x2     /* Compact memory first */
+
 /**
     Print a memory usage report to stdout
     @param msg Prefix message to the report
-    @param detail If true, print free queue detail report
+    @param flags Set to MPR_MEM_DETAIL, MPR_MEM_COMPACT.
     @ingroup MprMem
     @stability Internal.
  */
-PUBLIC void mprPrintMem(cchar *msg, int detail);
+PUBLIC void mprPrintMem(cchar *msg, int flags);
 
 /**
     Reallocate a block
@@ -1558,9 +1552,7 @@ PUBLIC void mprAddRoot(cvoid *ptr);
 #define MPR_GC_COMPLETE     0x1     /**< mprRequestGC flag to wait until the GC entirely complete including sweeper */
 #define MPR_GC_NO_BLOCK     0x2     /**< mprRequestGC flag and to not wait for the GC complete */
 #define MPR_GC_FORCE        0x4     /**< mprRequestGC flag to force a GC whether it is required or not */
-#if UNUSED
-#define MPR_GC_NO_YIELD     0x8     /**< mprRequestGC flag to trigger GC but not yield */
-#endif
+#define MPR_GC_COMPACT      0x8     /**< mprRequestGC flag to coalesce and unpin all possible blocks */
 
 /**
     Collect garbage

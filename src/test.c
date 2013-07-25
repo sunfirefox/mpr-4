@@ -439,7 +439,7 @@ PUBLIC void mprReportTestResults(MprTestService *sp)
         mprPrintf("%12s Elapsed time: %5.2f seconds.\n", "[BENCHMARK]", elapsed);
     }
     if (MPR->heap->track) {
-        mprPrintMem("Memory Results", 1);
+        mprPrintMem("Memory Results", MPR_MEM_DETAIL);
     }
 }
 

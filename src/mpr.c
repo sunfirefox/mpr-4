@@ -217,7 +217,6 @@ PUBLIC void mprDestroy(int how)
     mprStopGCService();
     mprStopThreadService();
     mprStopOsService();
-    mprDestroyMemService();
 
     if (how & MPR_EXIT_RESTART) {
         mprRestart();

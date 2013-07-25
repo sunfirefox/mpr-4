@@ -9,6 +9,7 @@
 #include    "mpr.h"
 
 /********************************** Defines ***********************************/
+
 #undef GET_MEM
 #undef GET_PTR
 #define GET_MEM(ptr)                ((MprMem*) (((char*) (ptr)) - sizeof(MprMem)))
@@ -19,20 +20,8 @@
     These routines are stable and will work, lock-freeregardless of block splitting or joining.
     There is be a race where GET_NEXT will skip a block if the allocator is split a block.
  */
-//  MOB GET_NEXT, GET_REGION only ever called by sweeper
 #define GET_NEXT(mp)                ((MprMem*) ((char*) mp + mp->size))
 #define GET_REGION(mp)              ((MprRegion*) (((char*) mp) - MPR_ALLOC_ALIGN(sizeof(MprRegion))))
-
-/*
-    Remove a block from a free q. 
-    WARNING: Must be called with the freelist locked.
-    MOB - make a macro
- */
-#define UNLINK_BLOCK(mp)            if (1) { \
-                                        MprFreeMem *fp = (MprFreeMem*) mp; \
-                                        fp->prev->next = fp->next; \
-                                        fp->next->prev = fp->prev; \
-                                    } else 
 
 /*
     Memory checking and breakpoints
@@ -122,13 +111,19 @@ static int          padding[] = { 0, MPR_MANAGER_SIZE };
 
 /***************************** Forward Declarations ***************************/
 
-static void allocException(int cause, size_t size);
+static inline bool acquire(MprFreeQueue *freeq);
+static inline void acquireWait(MprFreeQueue *freeq);
 static inline int cas(size_t *target, size_t expected, size_t value);
+static inline bool claim(MprMem *mp);
+static inline void initBlock(MprMem *mp, size_t size, int first);
+static inline void release(MprFreeQueue *freeq);
+static inline void unlinkBlock(MprMem *mp);
+
+static void allocException(int cause, size_t size);
 static void dummyManager(void *ptr, int flags);
 static size_t fastMemSize();
 static void *getNextRoot();
 static void getSystemInfo();
-static inline void initBlock(MprMem *mp, size_t size, int first);
 static void invokeDestructors();
 static void markAndSweep();
 static void markRoots();
@@ -163,7 +158,6 @@ static void freeBlock(MprMem *mp);
 static int getQueueIndex(size_t size, int roundup);
 static MprMem *growHeap(size_t size);
 static void linkBlock(MprMem *mp); 
-static inline void unlinkBlock(MprMem *mp);
 static void *vmalloc(size_t size, int mode);
 static void vmfree(void *ptr, size_t size);
 
@@ -186,6 +180,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->stats.pageSize = memStats.pageSize;
     heap->stats.maxMemory = (size_t) -1;
     heap->stats.redLine = ((size_t) -1) / 100 * 95;
+    heap->stats.cacheMemory = 0;
     mprInitSpinLock(&heap->heapLock);
 
     /*
@@ -250,33 +245,6 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
     mprAddRoot(MPR);
     return MPR;
-}
-
-
-/*
-    Shutdown memory service. Run managers on all allocated blocks.
- */
-PUBLIC void mprDestroyMemService()
-{
-    volatile MprRegion  *region;
-    MprMem              *mp;
-
-    if (heap->destroying) {
-        return;
-    }
-    heap->destroying = 1;
-
-    //  MOB - move this code back into the sweeper thread.
-    if (!heap->sweeper) {
-        for (region = heap->regions; region; region = region->next) {
-            for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
-                if (mp->hasManager) {
-                    (GET_MANAGER(mp))(GET_PTR(mp), MPR_MANAGE_FREE);
-                    mp->hasManager = 0;
-                }
-            }
-        }
-    }
 }
 
 
@@ -448,7 +416,6 @@ static int initQueues()
 
     heap->freeEnd = &heap->freeq[MPR_ALLOC_NUM_GROUPS * MPR_ALLOC_NUM_BUCKETS];
     for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
-#if BIT_MEMORY_STATS && BIT_MEMORY_DEBUG
         size_t  size, groupBits, bucketBits;
         int     index, group, bucket;
         index = (int) (freeq - heap->freeq);
@@ -459,15 +426,14 @@ static int initQueues()
         bucketBits = ((size_t) bucket) << (max(0, group - 1));
 
         size = groupBits | bucketBits;
-        freeq->info.stats.minSize = (int) (size << MPR_ALIGN_SHIFT);
+        freeq->minSize = (int) (size << MPR_ALIGN_SHIFT);
 
-#if UNUSED && KEEP
+#if BIT_MEMORY_STATS && BIT_MEMORY_DEBUG && UNUSED && KEEP
         printf("Queue: %d, size %u (%x), group %d, bucket %d\n",
-            (int) (freeq - heap->freeq), freeq->info.stats.minSize, (int) size << MPR_ALIGN_SHIFT, group, bucket);
-#endif
+            (int) (freeq - heap->freeq), freeq->minSize, (int) size << MPR_ALIGN_SHIFT, group, bucket);
 #endif
         freeq->next = freeq->prev = (MprFreeMem*) freeq;
-        mprInitSpinLock(&freeq->spin);
+        mprInitSpinLock(&freeq->lock);
     }
     return 0;
 }
@@ -479,16 +445,19 @@ static int initQueues()
 static MprMem *allocMem(size_t required)
 {
     MprFreeQueue    *freeq;
+    MprFreeMem      *fp;
     MprMem          *mp, *spare;
     size_t          bucketMap, groupMap, priorBucketMap, priorGroupMap;
-    int             bucket, baseGroup, group, index, miss;
+    int             bucket, baseGroup, group, qindex, miss;
 
-    index = getQueueIndex(required, 1);
-    if (index >= 0) {
-        baseGroup = index / MPR_ALLOC_NUM_BUCKETS;
-        bucket = index % MPR_ALLOC_NUM_BUCKETS;
-        heap->weightedCount += index;
+    qindex = getQueueIndex(required, 1);
+    if (qindex >= 0) {
+        baseGroup = qindex / MPR_ALLOC_NUM_BUCKETS;
+        bucket = qindex % MPR_ALLOC_NUM_BUCKETS;
+        heap->weightedCount += qindex;
         ATOMIC_INC(requests);
+        /* Ignore races - does not need to be accurate */
+        heap->freeq[qindex].demand++;
         miss = 0;
 
         /*
@@ -506,18 +475,32 @@ static MprMem *allocMem(size_t required)
                 }
                 while (bucketMap) {
                     bucket = (int) (ffsl(bucketMap) - 1);
-                    index = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
-                    freeq = &heap->freeq[index];
+                    qindex = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
+                    freeq = &heap->freeq[qindex];
                     if (freeq->next != (MprFreeMem*) freeq) {
-                        if (mprTrySpinLock(&freeq->spin)) {
+                        /*
+                            This code is critical for speed. Inline unlinkBlock here for speed.
+                         */
+                        if (acquire(freeq)) {
                             if (freeq->next != (MprFreeMem*) freeq) {
+#if 0
+                                fp = freeq->next;
+                                fp->prev->next = fp->next;
+                                fp->next->prev = fp->prev;
+                                fp->blk.qindex = 0;
+                                fp->blk.mark = heap->mark;
+                                fp->blk.free = 0;
+                                freeq->count--;
+                                mp = (MprMem*) fp;
+                                release(freeq);
+                                mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
+#else
                                 mp = (MprMem*) freeq->next;
-                                assert(mp->qindex == index);
                                 unlinkBlock(mp);
                                 mp->mark = heap->mark;
                                 mp->free = 0;
-                                mprSpinUnlock(&freeq->spin);
-
+                                release(freeq);
+#endif
                                 if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
                                     spare = (MprMem*) ((char*) mp + required);
                                     initBlock(spare, mp->size - required, 0);
@@ -531,12 +514,13 @@ static MprMem *allocMem(size_t required)
                                 }
                                 ATOMIC_INC(reuse);
                                 return mp;
+                            } else {
+                                release(freeq);
                             }
-                            mprSpinUnlock(&freeq->spin);
-                            ATOMIC_INC(trys);
                         } else {
                             ATOMIC_INC(tryFails);
                         }
+                        ATOMIC_INC(trys);
                     }
                     priorBucketMap = bucketMap;
                     bucketMap &= ~(((size_t) 1) << bucket);
@@ -593,7 +577,7 @@ static void freeBlock(MprMem *mp)
 static int getQueueIndex(size_t size, int roundup)
 {
     size_t      usize, asize;
-    int         aligned, bucket, group, index, msb;
+    int         aligned, bucket, group, qindex, msb;
 
     assert(MPR_ALLOC_ALIGN(size) == size);
 
@@ -609,9 +593,9 @@ static int getQueueIndex(size_t size, int roundup)
     msb = fls((uint) asize) - 1;
     group = max(0, msb - MPR_ALLOC_BUCKET_SHIFT + 1);
     bucket = (asize >> max(0, group - 1)) & (MPR_ALLOC_NUM_BUCKETS - 1);
-    index = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
+    qindex = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
 
-    assert(index < (heap->freeEnd - heap->freeq));
+    assert(qindex < (heap->freeEnd - heap->freeq));
     assert(bucket < MPR_ALLOC_NUM_BUCKETS);
 
     if (roundup) {
@@ -624,11 +608,11 @@ static int getQueueIndex(size_t size, int roundup)
             size_t mask = (((size_t) 1) << (msb - MPR_ALLOC_BUCKET_SHIFT)) - 1;
             aligned = (asize & mask) == 0;
             if (!aligned) {
-                index++;
+                qindex++;
             }
         }
     }
-    return index;
+    return qindex;
 }
 
 
@@ -648,22 +632,21 @@ static void linkBlock(MprMem *mp)
     mp->qindex = getQueueIndex(mp->size, 0);
     mp->free = 1;
     mp->hasManager = 0;
+    freeq = &heap->freeq[mp->qindex];
+    fp = (MprFreeMem*) mp;
 
     /*
-        Link onto front of free queue
+        Link onto front of free queue. Must be fast!
+        MOB - but this is not lock free!!!
      */
-    freeq = &heap->freeq[mp->qindex];
-    mprSpinLock(&freeq->spin);
-    fp = (MprFreeMem*) mp;
+    acquireWait(freeq);
     fp->next = freeq->next;
     fp->prev = (MprFreeMem*) freeq;
     freeq->next->prev = fp;
     freeq->next = fp;
-#if BIT_MEMORY_STATS
-    //  MOB- count must be updated outside BIT_MEMORY_STATS
-    freeq->info.stats.count++;
-#endif
-    mprSpinUnlock(&freeq->spin);
+    freeq->count++;
+    release(freeq);
+
     mprAtomicAdd64((int64*) &heap->stats.bytesFree, mp->size);
 
     /*
@@ -680,7 +663,6 @@ static void linkBlock(MprMem *mp)
         priorBucketMap = heap->bucketMap[group];
         bucketMap = priorBucketMap | (((size_t) 1) << bucket);
     } while (!cas(&heap->bucketMap[group], priorBucketMap, bucketMap));
-    assert(heap->stats.bytesFree < (180 * 1024 * 1024));
 }
 
 
@@ -690,21 +672,15 @@ static void linkBlock(MprMem *mp)
  */
 static inline void unlinkBlock(MprMem *mp) 
 {
-    MprFreeMem  *fp;
+    MprFreeQueue    *freeq;
+    MprFreeMem      *fp;
 
     fp = (MprFreeMem*) mp;
     fp->prev->next = fp->next;
     fp->next->prev = fp->prev;
-#if BIT_MEMORY_STATS
-#if XX
-    //  MOB- count must be updated outside BIT_MEMORY_STATS
-    freeq = heap->freeq[mp->index];
-    freeq->use++;
+    assert(mp->qindex);
+    freeq = &heap->freeq[mp->qindex];
     freeq->count--;
-#else
-    heap->freeq[mp->qindex].info.stats.count--;
-#endif
-#endif
     mp->qindex = 0;
 #if BIT_MEMORY_DEBUG
     fp->next = fp->prev = NULL;
@@ -909,6 +885,7 @@ mprRequestGC(0);                    //  Request a GC if necessary. Yield and blo
 mprRequestGC(MPR_GC_FORCE);         //  Force a GC whether required or not
 mprRequestGC(MPR_GC_NO_BLOCK);      //  Request a GC but do not block. Thread must yield sometime after.
 mprRequestGC(MPR_GC_COMPLETE);      //  Request a GC and wait for it to fully complete.
+mprRequestGC(MPR_GC_COMPACT);       //  Request a fully compacting GC that will coalesce and unpin all possible blocks
 #endif
 
 /*
@@ -922,6 +899,9 @@ PUBLIC void mprRequestGC(int flags)
 {
     mprTrace(7, "DEBUG: mprRequestGC");
 
+    if (flags & MPR_GC_COMPACT) {
+        heap->compact = 1;
+    }
     if ((flags & MPR_GC_FORCE) || (heap->weightedCount > heap->newQuota)) {
         triggerGC(MPR_GC_FORCE);
     }
@@ -1023,14 +1003,44 @@ static void invokeDestructors()
 
 
 /*
+    Claim a block from its freeq for the sweeper. This removes the block from the freeq and clears the "free" bit.
+ */
+static inline bool claim(MprMem *mp)
+{
+    MprFreeQueue    *freeq;
+    int             qindex;
+
+    if ((qindex = mp->qindex) == 0) {
+        /* allocator won the race */
+        return 0;
+    }
+    freeq = &heap->freeq[qindex];
+    ATOMIC_INC(trys);
+    if (!acquire(freeq)) {
+        ATOMIC_INC(tryFails);
+        return 0;
+    }
+    if (mp->qindex != qindex) {
+        /* No on this queue. Allocator must have claimed this block */
+        release(freeq);
+        return 0;
+    }
+    unlinkBlock(mp);
+    assert(mp->free);
+    mp->free = 0;
+    release(freeq);
+    return 1;
+}
+
+
+/*
     Sweep up the garbage. The sweeper runs in parallel with the program. Dead blocks will have (MprMem.mark != heap->mark). 
 */
 static void sweep()
 {
     MprRegion       *region, *nextRegion, *prior;
-    MprFreeQueue    *queues;
+    MprFreeQueue    *freeq;
     MprMem          *mp, *next;
-    int             qindex;
 
     if (!heap->enabled) {
         mprTrace(0, "DEBUG: sweep: Abort sweep - GC disabled");
@@ -1055,46 +1065,34 @@ static void sweep()
         the front of heap->regions and so will not race with this code. This code is the only code that frees regions.
      */
     prior = NULL;
-    queues = heap->freeq;
     for (region = heap->regions; region; region = nextRegion) {
         nextRegion = region->next;
 
         for (mp = region->start; mp < region->end; mp = next) {
             next = GET_NEXT(mp);
             CHECK(mp);
+            INC(sweepVisited);
+            if (mp->free && heap->compact) {
+                if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
+                    mp->mark = !heap->mark;
+                    INC(compacted);
+                }
+            } 
             if (!mp->free && mp->mark != heap->mark) {
+                if (mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
+                    INC(cached);
+                    freeBlock(mp);
+                    continue;
+                }
                 while (next < region->end) {
                     if (next->free) {
-                        if ((qindex = next->qindex) == 0) {
-                            /* allocator won the race */
+                        if (!claim(next)) {
                             break;
                         }
-#if XX
-#define JOIN_THRESHOLD      4096
-#define JOIN_HIGH_DEMAND    8
-#define JOIN_QUEUE_MIN      8
-                        freeq = &queues[index];
-                        if (next->size < JOIN_THRESHOLD && freeq->count <= freeq->use && freeq->use > JOIN_HIGH_DEMAND) {
-                            break;
-                        }
-#endif
-                        if (!mprTrySpinLock(&queues[qindex].spin)) {
-                            ATOMIC_INC(tryFails);
-                            break;
-                        }
-                        ATOMIC_INC(trys);
-                        if (next->qindex != qindex) {
-                            /* allocator must have claimed this block */
-                            mprSpinUnlock(&queues[qindex].spin);
-                            break;
-                        }
-                        assert(next->free);
-                        unlinkBlock(next);
                         mp->size += next->size;
-                        assert(next->free);
+                        assert(!next->free);
                         SCRIBBLE_RANGE(next, MPR_ALLOC_MIN);
                         INC(joins);
-                        mprSpinUnlock(&queues[qindex].spin);
 
                     } else if (next->mark != heap->mark) {
                         assert(!next->free);
@@ -1110,7 +1108,6 @@ static void sweep()
                 }
                 freeBlock(mp);
             }
-            INC(sweepVisited);
         }
         if (region->freeable) {
             lockHeap();
@@ -1132,13 +1129,6 @@ static void sweep()
             prior = region;
         }
     }
-#if XX
-    MprFreeQueue    *freeq;
-    for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
-        freeq->use = 0;
-    }
-#endif
-
 #if BIT_MEMORY_STATS && BIT_MEMORY_DEBUG
     mprTrace(7, "GC: MARKED %,Ld/%,Ld, SWEPT %,Ld/%,Ld, freed %,Ld, bytesFree %,Ld (prior %,Ld), weightedCount %,Ld/%,Ld, " 
             "blocks %,Ld bytes %,Ld",
@@ -1150,6 +1140,10 @@ static void sweep()
         printMemReport();
         heap->printStats = 0;
     }
+    for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
+        freeq->demand /= 2;
+    }
+    heap->compact = 0;
 }
 
 
@@ -1533,11 +1527,10 @@ static void printQueueStats()
     MprFreeQueue    *freeq;
     int             i;
 
-    printf("\nFree Queue Stats\n Bucket           Size          Count          Total\n");
+    printf("\nFree Queue Stats\n Bucket           Size          Count         Demand          Total\n");
     for (i = 0, freeq = heap->freeq; freeq != heap->freeEnd; freeq++, i++) {
-        if (freeq->info.stats.count) {
-            printf("%7d %14d %14d %14d\n", i, freeq->info.stats.minSize, freeq->info.stats.count,
-                freeq->info.stats.minSize * freeq->info.stats.count);
+        if (freeq->count || freeq->demand) {
+            printf("%7d %14d %14d %14d %14d\n", i, freeq->minSize, freeq->count, freeq->demand, freeq->minSize * freeq->count);
         }
     }
 }
@@ -1625,10 +1618,9 @@ static void printGCStats()
                 regionBytes += mp->size;
             }
         }
-        printf("  Region %3d is %8d bytes, has %4d allocated using %7ld free bytes\n", regionCount, (int) region->size, 
+        printf("  Region %3d size %d bytes allocated %4d blocks with %7ld bytes available\n", regions, (int) region->size, 
             regionCount, region->size - regionBytes);
     }
-
     printf("\nGC Stats\n");
     printf("  Active:  %9d blocks, %12ld bytes\n", activeCount, activeBytes);
     printf("  Eternal: %9d blocks, %12ld bytes\n", eternalCount, eternalBytes);
@@ -1637,12 +1629,18 @@ static void printGCStats()
 #endif /* BIT_MEMORY_STATS */
 
 
-PUBLIC void mprPrintMem(cchar *msg, int detail)
+PUBLIC void mprPrintMem(cchar *msg, int flags)
 {
+    int     gflags;
+
     printf("\n%s\n", msg);
     printf("-------------\n");
-    heap->printStats = 1 + detail;
-    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
+    heap->printStats = (flags & MPR_MEM_DETAIL) ? 2 : 1;
+    gflags = MPR_GC_FORCE | MPR_GC_COMPLETE;
+    if (flags & MPR_MEM_COMPACT) {
+        gflags |= MPR_GC_COMPACT;
+    }
+    mprRequestGC(gflags);
 }
 
 
@@ -1674,8 +1672,10 @@ static void printMemReport()
     printf("  Block reuse       %14d %%\n",            percent(ap->reuse, ap->requests));
     printf("  Joins             %14d %%\n",            percent(ap->joins, ap->requests));
     printf("  Splits            %14d %%\n",            percent(ap->splits, ap->requests));
+    printf("  Cached            %14d %%\n",            percent(ap->cached, ap->requests));
+    printf("  Compacted         %14d %% (%d)\n",       percent(ap->compacted, ap->requests), (int) ap->compacted);
     printf("  Freeq failures    %14d %%\n",            percent(ap->tryFails, ap->trys + ap->tryFails));
-    printf("  Freeq             %14d %14d\n",          (int) ap->tryFails, (int) (ap->trys + ap->tryFails));
+    printf("  Freeq             %14d (%d)\n",          (int) ap->tryFails, (int) (ap->trys + ap->tryFails));
 
     printGCStats();
     if (heap->printStats > 1) {
@@ -2191,6 +2191,60 @@ static MPR_INLINE int flsl(uint word)
 }
 #endif /* !USE_FLS_ASM_X86 */
 #endif /* NEED_FLS */
+
+
+/*
+    Acquire the freeq. Note: this is only ever used by non-blocking algorithms.
+ */
+static inline bool acquire(MprFreeQueue *freeq)
+{
+#if MACOSX
+    return OSSpinLockTry(&freeq->lock.cs);
+#elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
+    return pthread_spin_trylock(&freeq->lock.cs) == 0;
+#elif BIT_UNIX_LIKE
+    return pthread_mutex_trylock(&freeq->lock.cs) == 0;
+#elif BIT_WIN_LIKE
+    return TryEnterCriticalSection(&freeq->lock.cs) != 0;
+#elif VXWORKS
+    return semTake(freeq->lock.cs, NO_WAIT) == OK;
+#else
+    #error "Operting system not supported in acquire()"
+#endif
+}
+
+
+//  MOB - remove
+static inline void acquireWait(MprFreeQueue *freeq)
+{
+#if MACOSX
+    OSSpinLockLock(&freeq->lock.cs);
+#elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
+    pthread_spin_lock(&freeq->lock.cs);
+#elif BIT_UNIX_LIKE
+    pthread_mutex_lock(&freeq->lock.cs);
+#elif BIT_WIN_LIKE
+    EnterCriticalSection(&freeq->lock.cs);
+#elif VXWORKS
+    semTake(freeq->lock.cs, WAIT_FOREVER);
+#endif
+}
+
+
+static inline void release(MprFreeQueue *freeq)
+{
+#if MACOSX
+    OSSpinLockUnlock(&freeq->lock.cs);
+#elif BIT_UNIX_LIKE && BIT_HAS_SPINLOCK
+    pthread_spin_unlock(&freeq->lock.cs);
+#elif BIT_UNIX_LIKE
+    pthread_mutex_unlock(&freeq->lock.cs);
+#elif BIT_WIN_LIKE
+    LeaveCriticalSection(&freeq->lock.cs);
+#elif VXWORKS
+    semGive(freeq->lock.cs);
+#endif
+}
 
 
 static inline int cas(size_t *target, size_t expected, size_t value)
