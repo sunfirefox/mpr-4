@@ -1105,6 +1105,10 @@ static void sweep()
 
         for (mp = region->start; mp < region->end; mp = next) {
             next = GET_NEXT(mp);
+            assert(next != mp);
+#if BIT_DEBUG
+            if (next == mp) break;
+#endif
             CHECK(mp);
             INC(sweepVisited);
             if (heap->compact && mp->free) {
