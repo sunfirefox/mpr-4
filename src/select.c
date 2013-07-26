@@ -129,7 +129,7 @@ PUBLIC int mprNotifyOn(MprWaitService *ws, MprWaitHandler *wp, int mask)
         }
         mprSetItem(ws->handlerMap, fd, mask ? wp : 0);
     }
-    mprWakeNotifier();
+    mprWakeEventService();
     unlock(ws);
     return 0;
 }

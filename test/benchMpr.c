@@ -175,7 +175,7 @@ static void doBenchmark(void *thread)
          */
         mprPrintf("Event Benchmarks\n");
         mprResetCond(app->complete);
-        count = 100000 * app->iterations;
+        count = 30000 * app->iterations;
         app->markCount = count;
         start = startMark();
         for (i = 0; i < count; i++) {
@@ -183,13 +183,14 @@ static void doBenchmark(void *thread)
         }
         mprWaitForCond(app->complete, -1);
         endMark(start, count, "Event (create|run|delete)");
-        
+
         /*
-            Test timer creation, run and delete (make a million timers!)
+            Test timer creation, run and remove
+            These create a new dispatcher and run a worker thread.
          */
         mprPrintf("Timer\n");
         mprResetCond(app->complete);
-        count = 50000 * app->iterations;
+        count = 20000 * app->iterations;
         app->markCount = count;
         start = startMark();
         for (i = 0; i < count; i++) {

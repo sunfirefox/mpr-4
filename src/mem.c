@@ -82,23 +82,38 @@
     Fast find first/last bit set
  */
 #if LINUX
-    #define NEED_FLSL 1
-    #if BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64
-        #define USE_FLSL_ASM_X86 1
+    #if BIT_MPR_ALLOC_BIG && BIT_64
+        #define NEED_FLS 1
+        #if BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64
+            #define USE_FLS_ASM_X86 1
+        #endif
+        static MPR_INLINE int fls(uint word);
+    #else
+        #define NEED_FLSL 1
+        static MPR_INLINE int flsl(uint word);
     #endif
-    static MPR_INLINE int fls(uint word);
 
 #elif BIT_WIN_LIKE
     #define NEED_FFS 1
-    #define NEED_FLS 1
     static MPR_INLINE int ffs(uint word);
-    static MPR_INLINE int fls(uint word);
+    #if BIT_MPR_ALLOC_BIG && BIT_64
+        #define NEED_FLS 1
+        static MPR_INLINE int fls(uint word);
+    #else
+        #define NEED_FLSL 1
+        static MPR_INLINE int flsl(uint word);
+    #endif
 
 #elif !BIT_BSD_LIKE
     #define NEED_FFS 1
-    #define NEED_FLS 1
     static MPR_INLINE int ffs(uint word);
-    static MPR_INLINE int fls(uint word);
+    #if BIT_MPR_ALLOC_BIG && BIT_64
+        #define NEED_FLS 1
+        static MPR_INLINE int fls(uint word);
+    #else
+        #define NEED_FLSL 1
+        static MPR_INLINE int flsl(uint word);
+    #endif
 #endif
 
 /********************************** Data **************************************/
@@ -180,7 +195,6 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->stats.pageSize = memStats.pageSize;
     heap->stats.maxMemory = (size_t) -1;
     heap->stats.redLine = ((size_t) -1) / 100 * 95;
-    heap->stats.cacheMemory = 0;
     mprInitSpinLock(&heap->heapLock);
 
     /*
@@ -207,7 +221,8 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->chunkSize = BIT_MPR_ALLOC_MAX_REGION;
     heap->stats.maxMemory = (size_t) -1;
     heap->stats.redLine = ((size_t) -1) / 100 * 95;
-    heap->newQuota = BIT_MPR_ALLOC_GC_QUOTA;
+    heap->stats.cacheMemory = BIT_MPR_ALLOC_CACHE;
+    heap->newQuota = BIT_MPR_ALLOC_QUOTA;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
 
     if (scmp(getenv("MPR_DISABLE_GC"), "1") == 0) {
@@ -413,8 +428,16 @@ PUBLIC size_t mprMemcpy(void *dest, size_t destMax, cvoid *src, size_t nbytes)
 static int initQueues() 
 {
     MprFreeQueue    *freeq;
+    int             numGroups, numQueues;
 
-    heap->freeEnd = &heap->freeq[MPR_ALLOC_NUM_GROUPS * MPR_ALLOC_NUM_BUCKETS];
+    numGroups = fls(BIT_MPR_ALLOC_MAX_REGION) - MPR_ALLOC_BUCKET_SHIFT - BIT_MPR_ALLOC_ALIGN;
+    numQueues = numGroups * MPR_ALLOC_NUM_BUCKETS;
+    if ((heap->freeq = mprVirtAlloc(numQueues * sizeof(MprFreeQueue) , MPR_MAP_READ | MPR_MAP_WRITE)) == NULL) {
+        return MPR_ERR_MEMORY;
+    }
+    heap->freeEnd = &heap->freeq[numQueues];
+    heap->numQueues = numQueues;
+    heap->numGroups = numGroups;
     for (freeq = heap->freeq; freeq != heap->freeEnd; freeq++) {
         size_t  size, groupBits, bucketBits;
         int     index, group, bucket;
@@ -428,9 +451,9 @@ static int initQueues()
         size = groupBits | bucketBits;
         freeq->minSize = (int) (size << MPR_ALIGN_SHIFT);
 
-#if BIT_MEMORY_STATS && BIT_MEMORY_DEBUG && UNUSED && KEEP
+#if (BIT_MEMORY_STATS && BIT_MEMORY_DEBUG && KEEP) || 0
         printf("Queue: %d, size %u (%x), group %d, bucket %d\n",
-            (int) (freeq - heap->freeq), freeq->minSize, (int) size << MPR_ALIGN_SHIFT, group, bucket);
+            (int) (freeq - heap->freeq), (int) freeq->minSize, (int) freeq->minSize, group, bucket);
 #endif
         freeq->next = freeq->prev = (MprFreeMem*) freeq;
         mprInitSpinLock(&freeq->lock);
@@ -466,7 +489,8 @@ static MprMem *allocMem(size_t required)
          */
         groupMap = heap->groupMap & ~((((size_t) 1) << baseGroup) - 1);
         while (groupMap) {
-            group = (int) (ffsl(groupMap) - 1);
+            /* ffs operates on ints, but to use cas(), groupMap and bucketMaps must be size_t */
+            group = ffs((int) groupMap) - 1;
             if (groupMap & ((((size_t) 1) << group))) {
                 bucketMap = heap->bucketMap[group];
                 if (baseGroup == group) {
@@ -474,16 +498,14 @@ static MprMem *allocMem(size_t required)
                     bucketMap &= ~((((size_t) 1) << bucket) - 1);
                 }
                 while (bucketMap) {
-                    bucket = (int) (ffsl(bucketMap) - 1);
+                    bucket = ffs((int) bucketMap) - 1;
                     qindex = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
                     freeq = &heap->freeq[qindex];
+                    ATOMIC_INC(trys);
                     if (freeq->next != (MprFreeMem*) freeq) {
-                        /*
-                            This code is critical for speed. Inline unlinkBlock here for speed.
-                         */
                         if (acquire(freeq)) {
                             if (freeq->next != (MprFreeMem*) freeq) {
-#if 0
+                                /* Inline unlinkBlock for speed */
                                 fp = freeq->next;
                                 fp->prev->next = fp->next;
                                 fp->next->prev = fp->prev;
@@ -494,13 +516,7 @@ static MprMem *allocMem(size_t required)
                                 mp = (MprMem*) fp;
                                 release(freeq);
                                 mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
-#else
-                                mp = (MprMem*) freeq->next;
-                                unlinkBlock(mp);
-                                mp->mark = heap->mark;
-                                mp->free = 0;
-                                release(freeq);
-#endif
+
                                 if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
                                     spare = (MprMem*) ((char*) mp + required);
                                     initBlock(spare, mp->size - required, 0);
@@ -520,7 +536,6 @@ static MprMem *allocMem(size_t required)
                         } else {
                             ATOMIC_INC(tryFails);
                         }
-                        ATOMIC_INC(trys);
                     }
                     priorBucketMap = bucketMap;
                     bucketMap &= ~(((size_t) 1) << bucket);
@@ -544,7 +559,6 @@ static void freeBlock(MprMem *mp)
 
     assert(!mp->free);
 
-    CHECK(mp);
     SCRIBBLE(mp);
     INC(swept);
     size = mp->size;
@@ -562,9 +576,6 @@ static void freeBlock(MprMem *mp)
             return;
         }
     }
-    /*
-        Return to the free list
-     */
     linkBlock(mp);
 }
 
@@ -580,7 +591,9 @@ static int getQueueIndex(size_t size, int roundup)
     int         aligned, bucket, group, qindex, msb;
 
     assert(MPR_ALLOC_ALIGN(size) == size);
-
+    if (size >= BIT_MPR_ALLOC_MAX_REGION) {
+        return -1;
+    }
     /*
         Determine the free queue based on user sizes (sans header). This permits block searches to avoid scanning the next 
         highest queue for common block sizes: eg. 1K.
@@ -590,11 +603,21 @@ static int getQueueIndex(size_t size, int roundup)
     /* 
         Find the last (most) significant bit in the block size
      */
-    msb = fls((uint) asize) - 1;
+#if BIT_MPR_ALLOC_BIG && BIT_64
+    msb = flsl(asize) - 1;
+#else
+    msb = fls((int) asize) - 1;
+#endif
     group = max(0, msb - MPR_ALLOC_BUCKET_SHIFT + 1);
     bucket = (asize >> max(0, group - 1)) & (MPR_ALLOC_NUM_BUCKETS - 1);
     qindex = (group * MPR_ALLOC_NUM_BUCKETS) + bucket;
-
+#if BIT_DEBUG
+    if (qindex >= heap->numQueues) {
+        /* Should never get here */
+        assert(qindex < heap->numQueues);
+        return -1;
+    }
+#endif
     assert(qindex < (heap->freeEnd - heap->freeq));
     assert(bucket < MPR_ALLOC_NUM_BUCKETS);
 
@@ -694,14 +717,23 @@ static inline void unlinkBlock(MprMem *mp)
  */
 static MprMem *growHeap(size_t required)
 {
-    MprRegion           *region;
-    MprMem              *mp, *spare;
-    size_t              size, rsize, spareLen;
+    MprRegion   *region;
+    MprMem      *mp, *spare;
+    size_t      size, rsize, spareLen;
 
+#if DIAGS && KEEP
+    printMemReport();
+    printQueueStats();
+#endif
     /*
-        Force a GC to run (soon)
+        Force a GC to run soon
      */
     triggerGC(MPR_GC_FORCE);
+    
+    if (required >= MPR_ALLOC_MAX) {
+        allocException(MPR_MEM_TOO_BIG, required);
+        return 0;
+    }
 
     rsize = MPR_ALLOC_ALIGN(sizeof(MprRegion));
     size = max((size_t) required + rsize, (size_t) heap->chunkSize);
@@ -1072,14 +1104,17 @@ static void sweep()
             next = GET_NEXT(mp);
             CHECK(mp);
             INC(sweepVisited);
-            if (mp->free && heap->compact) {
+            if (heap->compact && mp->free) {
                 if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
                     mp->mark = !heap->mark;
                     INC(compacted);
                 }
             } 
             if (!mp->free && mp->mark != heap->mark) {
-                if (mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
+                /*
+                    Cache small blocks provided not first block in the regions (assists to unpin regions)
+                 */
+                if (mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
                     INC(cached);
                     freeBlock(mp);
                     continue;
@@ -1585,12 +1620,6 @@ static void printGCStats()
     size_t      freeBytes, activeBytes, eternalBytes, regionBytes;
     int         regions, freeCount, activeCount, eternalCount, regionCount;
 
-#if UNUSED
-    //  MOB - better to block and get the sweeper to do the printout. That way, user code never traverses the regions!!
-    while (heap->sweeping) {
-        mprNap(1);
-    }
-#endif
     printf("\nRegion Stats\n");
     regions = 0;
     activeBytes = eternalBytes = freeBytes = 0;
@@ -1662,20 +1691,23 @@ static void printMemReport()
            percent(ap->bytesAllocated / 1024, ap->maxMemory / 1024));
         printf("  Memory redline    %14u MB (%d %%)\n",    (int) (ap->redLine / (1024 * 1024)),
            percent(ap->bytesAllocated / 1024, ap->redLine / 1024));
+        printf("  Memory cache      %14u MB (%d %%)\n",    (int) (ap->cacheMemory / (1024 * 1024)),
+           percent(ap->cacheMemory / 1024, ap->maxMemory / 1024));
     }
     printf("  Allocation errors %14d\n",               (int) ap->errors);
 
 #if BIT_MEMORY_STATS
     printf("  Memory requests   %14d\n",               (int) ap->requests);
     printf("  O/S allocations   %14d %%\n",            percent(ap->allocs, ap->requests));
-    printf("  Region unpins     %14d %%\n",            percent(ap->unpins, ap->requests));
+    printf("  Region unpins     %14d %% (%d)\n",       percent(ap->unpins, ap->requests), (int) ap->unpins);
     printf("  Block reuse       %14d %%\n",            percent(ap->reuse, ap->requests));
-    printf("  Joins             %14d %%\n",            percent(ap->joins, ap->requests));
-    printf("  Splits            %14d %%\n",            percent(ap->splits, ap->requests));
-    printf("  Cached            %14d %%\n",            percent(ap->cached, ap->requests));
+    printf("  Joins             %14d %% (%d)\n",       percent(ap->joins, ap->requests), (int) ap->joins);
+    printf("  Splits            %14d %% (%d)\n",       percent(ap->splits, ap->requests), (int) ap->splits);
+    printf("  Cached            %14d %% (%d)\n",       percent(ap->cached, ap->requests), (int) ap->cached);
     printf("  Compacted         %14d %% (%d)\n",       percent(ap->compacted, ap->requests), (int) ap->compacted);
-    printf("  Freeq failures    %14d %%\n",            percent(ap->tryFails, ap->trys + ap->tryFails));
-    printf("  Freeq             %14d (%d)\n",          (int) ap->tryFails, (int) (ap->trys + ap->tryFails));
+    printf("  Freeq failures    %14d %% (%d / %d)\n",  percent(ap->tryFails, ap->trys), (int) ap->tryFails, (int) ap->trys);
+    printf("  MprMem            %14d\n",               (int) sizeof(MprMem));
+    printf("  MprFreeMem        %14d\n",               (int) sizeof(MprFreeMem));
 
     printGCStats();
     if (heap->printStats > 1) {
@@ -1858,14 +1890,14 @@ static void allocException(int cause, size_t size)
 
     if (cause == MPR_MEM_FAIL) {
         heap->hasError = 1;
-        mprError("%s: Cannot allocate memory block of size %,d bytes.", MPR->name, size);
+        mprError("%s: Cannot allocate memory block of size %,Ld bytes.", MPR->name, size);
 
     } else if (cause == MPR_MEM_TOO_BIG) {
         heap->hasError = 1;
-        mprError("%s: Cannot allocate memory block of size %,d bytes.", MPR->name, size);
+        mprError("%s: Cannot allocate memory block of size %,Ld bytes.", MPR->name, size);
 
     } else if (cause == MPR_MEM_REDLINE) {
-        mprError("%s: Memory request for %,d bytes exceeds memory red-line.", MPR->name, size);
+        mprError("%s: Memory request for %,Ld bytes exceeds memory red-line.", MPR->name, size);
         mprPruneCache(NULL);
 
     } else if (cause == MPR_MEM_LIMIT) {
@@ -2170,7 +2202,7 @@ static MPR_INLINE int ffs(uint word)
     Find last bit set in word 
  */
 #if USE_FFS_ASM_X86
-static MPR_INLINE int flsl(uint x)
+static MPR_INLINE int fls(uint x)
 {
     long r;
 
@@ -2182,7 +2214,7 @@ static MPR_INLINE int flsl(uint x)
 }
 #else /* USE_FLS_ASM_X86 */ 
 
-static MPR_INLINE int flsl(uint word)
+static MPR_INLINE int fls(uint word)
 {
     int     b;
 
@@ -2191,6 +2223,20 @@ static MPR_INLINE int flsl(uint word)
 }
 #endif /* !USE_FLS_ASM_X86 */
 #endif /* NEED_FLS */
+
+
+#if NEED_FLSL
+/* 
+    Find last bit set in word 
+ */
+static MPR_INLINE int flsl(ulong word)
+{
+    int     b;
+
+    for (b = 0; word; word >>= 1, b++) ;
+    return b;
+}
+#endif /* NEED_FLSL */
 
 
 /*
@@ -2292,13 +2338,16 @@ PUBLIC void mprSetMemNotifier(MprMemNotifier cback)
 }
 
 
-PUBLIC void mprSetMemLimits(size_t redLine, size_t maxMemory)
+PUBLIC void mprSetMemLimits(ssize redLine, ssize maxMemory, ssize cacheMemory)
 {
     if (redLine > 0) {
         heap->stats.redLine = redLine;
     }
     if (maxMemory > 0) {
         heap->stats.maxMemory = maxMemory;
+    }
+    if (cacheMemory >= 0) {
+        heap->stats.cacheMemory = cacheMemory;
     }
 }
 
