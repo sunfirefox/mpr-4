@@ -1110,7 +1110,7 @@ static void sweep()
                 /*
                     Cache small blocks provided not first block in the regions (assists to unpin regions)
                  */
-                if (mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
+                if (!mp->first && mp->size < BIT_MPR_ALLOC_SMALL && heap->stats.bytesFree < heap->stats.cacheMemory) {
                     INC(cached);
                     freeBlock(mp);
                     continue;
