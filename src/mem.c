@@ -1783,8 +1783,8 @@ PUBLIC void mprCheckBlock(MprMem *mp)
 {
     BREAKPOINT(mp);
     if (mp->magic != MPR_ALLOC_MAGIC || mp->size == 0) {
-        mprError("Memory corruption in memory block %x (MprBlk %x, seqno %d)"
-            "This most likely happend earlier in the program execution", GET_PTR(mp), mp, mp->seqno);
+        mprError("Memory corruption in memory block %x (MprBlk %x, seqno %d)\n"
+            "This most likely happend earlier in the program execution.", GET_PTR(mp), mp, mp->seqno);
     }
 }
 
