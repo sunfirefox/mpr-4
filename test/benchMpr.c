@@ -230,7 +230,7 @@ static void testMalloc()
     count = 2000000 * app->iterations;
     pin = 0;
     mprRequestGC(MPR_GC_FORCE);
-
+    
 #if MALLOC
     /*
         malloc(1)
