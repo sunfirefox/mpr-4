@@ -420,7 +420,7 @@ static MprMem *allocMem(size_t required)
     MprFreeQueue    *freeq;
     MprFreeMem      *fp;
     MprMem          *mp, *spare;
-    size_t          *bitmap, map;
+    size_t          *bitmap, localMap;
     int             baseBindex, bindex, qindex;
 
     if ((qindex = sizetoq(required)) >= 0) {
@@ -442,14 +442,14 @@ static MprMem *allocMem(size_t required)
             Non-blocking search for a free block. If contention of any kind, simply skip the queue and try the next queue.
          */
         for (bindex = baseBindex; bindex < MPR_ALLOC_NUM_BITMAPS; bitmap++, bindex++) {
-            map = *bitmap;
+            localMap = *bitmap;
             /* Mask queues lower than the base queue */
             if (bindex == baseBindex) {
-                map &= ~((((size_t) 1) << qindex) - 1);
+                localMap &= ~((((size_t) 1) << qindex) - 1);
             }
-            while (map) {
+            while (localMap) {
 int original = qindex;
-                qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(map) - 1;
+                qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(localMap) - 1;
 assert(qindex >= original);
                 freeq = &heap->freeq[qindex];
                 ATOMIC_INC(trys);
@@ -487,16 +487,17 @@ assert(qindex >= original);
                             assert(mp->size >= required);
                             return mp;
                         } else {
+                            /* Someone beat us to the last block */
                             release(freeq);
                         }
                     } else {
                         ATOMIC_INC(tryFails);
                     }
                 }
-                clearbitmap(bitmap, qindex % MPR_ALLOC_BITMAP_BITS);
-                map = *bitmap;
+                /* Refresh the bitmap incase other threads have split useful blocks */
+                localMap = *bitmap;
                 if (bindex == baseBindex) {
-                    map &= ~((((size_t) 1) << qindex) - 1);
+                    localMap &= ~((((size_t) 1) << (qindex + 1)) - 1);
                 }
                 ATOMIC_INC(qmiss);
             }
