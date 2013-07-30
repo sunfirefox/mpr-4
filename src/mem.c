@@ -498,6 +498,7 @@ assert(qindex >= original);
                 if (bindex == baseBindex) {
                     map &= ~((((size_t) 1) << qindex) - 1);
                 }
+                ATOMIC_INC(qmiss);
             }
         }
     }
@@ -518,6 +519,8 @@ static void freeBlock(MprMem *mp)
 
 #if BIT_MEMORY_STATS
     heap->stats.freed += size;
+#endif
+#if BIT_MEMORY_DEBUG
     if (heap->track) {
         freeLocation(mp->name, size);
     }
@@ -1483,10 +1486,11 @@ static void printQueueStats()
     MprFreeQueue    *freeq;
     int             i;
 
-    printf("\nFree Queue Stats\n Bucket           Size          Count         Total\n");
+    printf("\nFree Queue Stats\n Bucket           Usize         Count         Total\n");
     for (i = 0, freeq = heap->freeq; freeq < &heap->freeq[MPR_ALLOC_NUM_QUEUES]; freeq++, i++) {
         if (freeq->count) {
-            printf("%7d %14d %14d %14d\n", i, freeq->minSize, freeq->count, freeq->minSize * freeq->count);
+            printf("%7d %14d %14d %14d\n", i, freeq->minSize - (int) sizeof(MprMem), freeq->count, 
+                freeq->minSize * freeq->count);
         }
     }
 }
