@@ -424,11 +424,12 @@ static MprMem *allocMem(size_t required)
     int             baseBindex, bindex, qindex;
 
     if ((qindex = sizetoq(required)) >= 0) {
+        freeq = &heap->freeq[qindex];
         /*
             Check if the requested size is the smallest possible size in a queue. If not the smallest, must look at the 
             next queue higher up to guarantee a block of sufficient size. This implements a Good-fit strategy.
          */
-        if (required > heap->freeq[qindex].minSize) {
+        if (required > freeq->minSize) {
             qindex++;
             assert(required < heap->freeq[qindex].minSize);
         }
@@ -448,9 +449,7 @@ static MprMem *allocMem(size_t required)
                 localMap &= ~((((size_t) 1) << qindex) - 1);
             }
             while (localMap) {
-int original = qindex;
                 qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(localMap) - 1;
-assert(qindex >= original);
                 freeq = &heap->freeq[qindex];
                 ATOMIC_INC(trys);
                 if (freeq->next != (MprFreeMem*) freeq) {
