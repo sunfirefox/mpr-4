@@ -24,6 +24,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
 
     srand((uint) time(NULL));
 
+    mprAtomicOpen();
     if ((mpr = mprCreateMemService((MprManager) manageMpr, flags)) == 0) {
         assert(mpr);
         return 0;
