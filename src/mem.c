@@ -443,11 +443,11 @@ static MprMem *allocMem(size_t required)
             Non-blocking search for a free block. If contention of any kind, simply skip the queue and try the next queue.
          */
         for (bindex = baseBindex; bindex < MPR_ALLOC_NUM_BITMAPS; bitmap++, bindex++) {
-            localMap = *bitmap;
-            /* Mask queues lower than the base queue */
-            if (bindex == baseBindex) {
-                localMap &= ~((((size_t) 1) << qindex) - 1);
-            }
+            /* 
+                Mask queues lower than the base queue. Use uint64 for 32-bit systems when qindex == 31.
+             */
+            localMap = *bitmap & (size_t) ~((((uint64) 1) << (qindex - (MPR_ALLOC_BITMAP_BITS * bindex))) - 1);
+
             while (localMap) {
                 qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(localMap) - 1;
                 freeq = &heap->freeq[qindex];
@@ -493,11 +493,10 @@ static MprMem *allocMem(size_t required)
                         ATOMIC_INC(tryFails);
                     }
                 }
-                /* Refresh the bitmap incase other threads have split useful blocks */
-                localMap = *bitmap;
-                if (bindex == baseBindex) {
-                    localMap &= ~((((size_t) 1) << (qindex + 1)) - 1);
-                }
+                /* 
+                    Refresh the bitmap incase other threads have split useful blocks. Clear all bits from the current queue down.
+                 */
+                localMap = *bitmap & (size_t) ~((((uint64) 1) << ((qindex - (MPR_ALLOC_BITMAP_BITS * bindex)) + 1)) - 1);
                 ATOMIC_INC(qmiss);
             }
         }
