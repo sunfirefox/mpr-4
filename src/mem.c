@@ -446,7 +446,7 @@ static MprMem *allocMem(size_t required)
             /* 
                 Mask queues lower than the base queue. Use uint64 for 32-bit systems when qindex == 31.
              */
-            localMap = *bitmap & (size_t) ~((((uint64) 1) << (qindex - (MPR_ALLOC_BITMAP_BITS * bindex))) - 1);
+            localMap = heap->bitmap[bindex] & ((size_t) -1 << max(0, (qindex - (MPR_ALLOC_BITMAP_BITS * bindex))));
 
             while (localMap) {
                 qindex = (bindex * MPR_ALLOC_BITMAP_BITS) + findFirstBit(localMap) - 1;
@@ -493,10 +493,8 @@ static MprMem *allocMem(size_t required)
                         ATOMIC_INC(tryFails);
                     }
                 }
-                /* 
-                    Refresh the bitmap incase other threads have split useful blocks. Clear all bits from the current queue down.
-                 */
-                localMap = *bitmap & (size_t) ~((((uint64) 1) << ((qindex - (MPR_ALLOC_BITMAP_BITS * bindex)) + 1)) - 1);
+                /* Refresh the bitmap incase other threads have split or depleted suitable queues */
+                localMap = heap->bitmap[bindex] & ((size_t) ((uint64) -1 << max(0, (qindex + 1 - (MPR_ALLOC_BITMAP_BITS * bindex)))));
                 ATOMIC_INC(qmiss);
             }
         }
