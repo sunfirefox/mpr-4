@@ -172,7 +172,7 @@ PUBLIC void mprRawLog(int level, cchar *fmt, ...)
     va_list     args;
 
     va_start(args, fmt);
-    logOutput(MPR_RAW_MSG, 0, sfmtv(fmt, args));
+    logOutput(MPR_RAW_MSG, level, sfmtv(fmt, args));
     va_end(args);
 }
 
