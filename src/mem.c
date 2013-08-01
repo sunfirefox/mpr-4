@@ -141,9 +141,9 @@ static void vmfree(void *ptr, size_t size);
     static void breakpoint(MprMem *mp);
     static void checkYielded();
     static int validBlk(MprMem *mp);
+    static void freeLocation(cchar *name, size_t size);
 #endif
 #if BIT_MPR_ALLOC_STATS
-    static void freeLocation(cchar *name, size_t size);
     static void printQueueStats();
     static void printGCStats();
 #endif
@@ -1701,7 +1701,7 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
 {
     MPR_GET_MEM(ptr)->name = name;
 
-#if BIT_MPR_ALLOC_STATS
+#if BIT_MPR_ALLOC_DEBUG
     if (heap->track) {
         MprLocationStats    *lp;
         cchar               **np;
@@ -1728,7 +1728,7 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
 
 static void freeLocation(cchar *name, size_t size)
 {
-#if BIT_MPR_ALLOC_STATS
+#if BIT_MPR_ALLOC_DEBUG
     MprLocationStats    *lp;
     int                 index, i;
 
