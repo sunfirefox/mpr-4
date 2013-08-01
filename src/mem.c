@@ -537,20 +537,18 @@ retry:
 static void freeBlock(MprMem *mp)
 {
     MprRegion   *region;
-    size_t      size;
 
     assert(!mp->free);
     SCRIBBLE(mp);
     INC(swept);
-    size = mp->size;
 
 #if BIT_MPR_ALLOC_DEBUG
     if (heap->track) {
-        freeLocation(mp->name, size);
+        freeLocation(mp->name, mp->size);
     }
 #endif
 #if BIT_MPR_ALLOC_STATS
-    heap->stats.freed += size;
+    heap->stats.freed += mp->size;
 #endif
     if (mp->first) {
         region = GET_REGION(mp);
