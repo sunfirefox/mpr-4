@@ -115,7 +115,8 @@ static void *getNextRoot();
 static void getSystemInfo();
 static MprMem *growHeap(size_t size);
 static inline size_t qtosize(int qindex);
-static inline void linkBlock(MprMem *mp); 
+static inline bool linkBlock(MprMem *mp); 
+static inline void linkSpareBlock(char *ptr, ssize size);
 static inline void initBlock(MprMem *mp, size_t size, int first);
 static int initQueues();
 static void invokeDestructors();
@@ -158,7 +159,6 @@ static void vmfree(void *ptr, size_t size);
 PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 {
     MprMem      *mp;
-    MprMem      *spare;
     MprRegion   *region;
     size_t      size, mprSize, spareSize, regionSize;
 
@@ -199,7 +199,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->stats.maxHeap = (size_t) -1;
     heap->stats.warnHeap = ((size_t) -1) / 100 * 95;
     heap->stats.cacheHeap = BIT_MPR_ALLOC_CACHE;
-    heap->stats.lowHeap = BIT_MPR_ALLOC_CACHE ?  BIT_MPR_ALLOC_CACHE / 8 : BIT_MPR_ALLOC_REGION_SIZE;
+    heap->stats.lowHeap = (BIT_MPR_ALLOC_CACHE ? BIT_MPR_ALLOC_CACHE : BIT_MPR_ALLOC_REGION_SIZE) / 8;
     heap->newQuota = BIT_MPR_ALLOC_QUOTA;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
 
@@ -231,11 +231,14 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
      */
     spareSize = size - regionSize - mprSize;
     if (spareSize > 0) {
+#if UNUSED
         spare = (MprMem*) (((char*) mp) + mprSize);
         initBlock(spare, spareSize, 0);
-        heap->regions = region;
-        SCRIBBLE(spare);
         linkBlock(spare);
+#else
+        linkSpareBlock(((char*) mp) + mprSize, spareSize);
+#endif
+        heap->regions = region;
     }
     heap->sweeperCond = mprCreateCond();
     heap->roots = mprCreateList(-1, MPR_LIST_STATIC_VALUES);
@@ -256,6 +259,7 @@ static inline void initBlock(MprMem *mp, size_t size, int first)
     SET_MAGIC(mp);
     SET_SEQ(mp);
     SET_NAME(mp, NULL);
+    CHECK(mp);
 }
 
 
@@ -422,7 +426,7 @@ static MprMem *allocMem(size_t required)
 {
     MprFreeQueue    *freeq;
     MprFreeMem      *fp;
-    MprMem          *mp, *spare;
+    MprMem          *mp;
     size_t          *bitmap, localMap;
     int             baseBindex, bindex, qindex, retryIndex;
 
@@ -473,9 +477,13 @@ retry:
                             mprAtomicAdd64((int64*) &heap->stats.bytesFree, -(int64) mp->size);
 
                             if (mp->size >= (size_t) (required + MPR_ALLOC_MIN_SPLIT)) {
+#if UNUSED
                                 spare = (MprMem*) ((char*) mp + required);
                                 initBlock(spare, mp->size - required, 0);
                                 linkBlock(spare);
+#else
+                                linkSpareBlock(((char*) mp) + required, mp->size - required);
+#endif
                                 mp->size = (MprMemSize) required;
                                 ATOMIC_INC(splits);
                             }
@@ -591,7 +599,7 @@ static inline int sizetoq(size_t size)
     Add a block to a free q. Called by user threads from allocMem and by sweeper from freeBlock.
     WARNING: Must be called with the freelist unlocked. This is the opposite of unlinkBlock.
  */
-static inline void linkBlock(MprMem *mp) 
+static inline bool linkBlock(MprMem *mp) 
 {
     MprFreeQueue    *freeq;
     MprFreeMem      *fp;
@@ -613,7 +621,7 @@ static inline void linkBlock(MprMem *mp)
         ATOMIC_INC(tryFails);
         mp->mark = !mp->mark;
         assert(!mp->free);
-        return;
+        return 0;
     }
     mp->qindex = qindex;
     mp->free = 1;
@@ -627,6 +635,7 @@ static inline void linkBlock(MprMem *mp)
     setbitmap(&heap->bitmap[mp->qindex / MPR_ALLOC_BITMAP_BITS], mp->qindex % MPR_ALLOC_BITMAP_BITS);
     release(freeq);
     mprAtomicAdd64((int64*) &heap->stats.bytesFree, size);
+    return 1;
 }
 
 
@@ -654,12 +663,43 @@ static inline void unlinkBlock(MprMem *mp)
 
 
 /*
+    This must be robust. i.e. the block spare memory must end up on the freeq
+ */
+static inline void linkSpareBlock(char *ptr, ssize size)
+{ 
+    MprMem  *mp;
+    size_t  len;
+    int     qindex;
+
+    assert(size > MPR_ALLOC_MIN);
+    mp = (MprMem*) ptr;
+    len = size;
+
+    while (size > 0) {
+        initBlock(mp, len, 0);
+        if (!linkBlock(mp)) {
+            /* Break into pieces and try lesser queue */
+            if (len > (MPR_ALLOC_MIN * 4) && (qindex = sizetoq(len)) > 0) {
+                len = MPR_ALLOC_ALIGN(len / 2);
+                len = min(size, len);
+            }
+        } else {
+            size -= len;
+            mp = (MprMem*) ((char*) mp + len);
+            len = size;
+        }
+    } 
+    assert(size == 0);
+}
+
+
+/*
     Grow the heap and return a block of the required size (unqueued)
  */
 static MprMem *growHeap(size_t required)
 {
     MprRegion   *region;
-    MprMem      *mp, *spare;
+    MprMem      *mp;
     size_t      size, rsize, spareLen;
 
 #if DIAGS && KEEP
@@ -699,14 +739,16 @@ static MprMem *growHeap(size_t required)
     lockHeap();
     if (spareLen > 0) {
         assert(spareLen >= MPR_ALLOC_MIN);
+#if UNUSED
         spare = (MprMem*) ((char*) mp + required);
         initBlock(spare, spareLen, 0);
-        CHECK(spare);
-        ATOMIC_INC(allocs);
-        linkBlock(spare);
-    } else {
-        ATOMIC_INC(allocs);
+        while (!linkBlock(spare)) {}
+#else
+        linkSpareBlock(((char*) mp) + required, spareLen);
+#endif
     }
+
+    ATOMIC_INC(allocs);
     /*
         Add region last once the mp block and possible spare are crafted
      */
