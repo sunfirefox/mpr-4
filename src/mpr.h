@@ -963,13 +963,18 @@ typedef struct MprFreeQueue {
     Should set region shift to log(BIT_MPR_ALLOC_MAX_REGION)
     We don't expect users to tinker with these
  */
-#if BIT_MPR_ALLOC_MAX_REGION == (256 * 1024)
+#if BIT_MPR_ALLOC_MAX_REGION == (128 * 1024)
+    #define BIT_MPR_ALLOC_REGION_SHIFT 18
+#elif BIT_MPR_ALLOC_MAX_REGION == (256 * 1024)
     #define BIT_MPR_ALLOC_REGION_SHIFT 19
+#elif BIT_MPR_ALLOC_MAX_REGION == (512 * 1024)
+    #define BIT_MPR_ALLOC_REGION_SHIFT 20
 #else
     #define BIT_MPR_ALLOC_REGION_SHIFT 24
 #endif
 
-#define MPR_ALLOC_NUM_QUEUES        ((19 - BIT_MPR_ALLOC_ALIGN_SHIFT - MPR_ALLOC_QBITS_SHIFT) * MPR_ALLOC_NUM_QBITS) + 1
+#define MPR_ALLOC_NUM_QUEUES        ((BIT_MPR_ALLOC_REGION_SHIFT - BIT_MPR_ALLOC_ALIGN_SHIFT - MPR_ALLOC_QBITS_SHIFT) * \
+                                        MPR_ALLOC_NUM_QBITS) + 1
 #define MPR_ALLOC_BITMAP_BITS       BITS(size_t)
 #define MPR_ALLOC_NUM_BITMAPS       ((MPR_ALLOC_NUM_QUEUES + MPR_ALLOC_BITMAP_BITS - 1) / MPR_ALLOC_BITMAP_BITS)
 

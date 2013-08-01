@@ -1033,6 +1033,12 @@ static void sweep()
 #endif
             CHECK(mp);
             INC(sweepVisited);
+            if (mp->free) {
+                if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
+                    mp->mark = !heap->mark;
+                    INC(compacted);
+                }
+            }
             if (!mp->free && mp->mark != heap->mark) {
                 /*
                     Cache small blocks provided not first block in the regions (assists to unpin regions)
@@ -1537,8 +1543,9 @@ static void printGCStats()
 {
     MprRegion   *region;
     MprMem      *mp;
-    size_t      freeBytes, activeBytes, eternalBytes, regionBytes;
-    int         regions, freeCount, activeCount, eternalCount, regionCount;
+    size_t      freeBytes, activeBytes, eternalBytes, regionBytes, available;
+    char        *tag;
+    int         regions, freeCount, activeCount, eternalCount, regionCount, empty;
 
     printf("\nRegion Stats\n");
     regions = 0;
@@ -1548,6 +1555,7 @@ static void printGCStats()
     for (region = heap->regions; region; region = region->next, regions++) {
         regionCount = 0;
         regionBytes = 0;
+        empty = 1;
 
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
             if (mp->free) {
@@ -1559,16 +1567,26 @@ static void printGCStats()
                 eternalCount++;
                 regionCount++;
                 regionBytes += mp->size;
+                empty = 0;
 
             } else {
                 activeBytes += mp->size;
                 activeCount++;
                 regionCount++;
                 regionBytes += mp->size;
+                empty = 0;
             }
         }
-        printf("  Region %3d size %d bytes allocated %4d blocks with %7ld bytes available\n", regions, (int) region->size, 
-            regionCount, region->size - regionBytes);
+        available = region->size - regionBytes - MPR_ALLOC_ALIGN(sizeof(MprRegion));
+        if (available == 0) {
+            tag = "(fully used)";
+        } else if (regionBytes == 0) {
+            tag = "(empty)";
+        } else {
+            tag = "";
+        }
+        printf("  Region %3d size %d, allocated %4d blocks, %7d bytes free %s\n", regions, (int) region->size, 
+            regionCount, (int) available, tag);
     }
     printf("\nGC Stats\n");
     printf("  Active:  %9d blocks, %12ld bytes\n", activeCount, activeBytes);
@@ -1625,6 +1643,7 @@ static void printMemReport()
     printf("  Splits            %14d %% (%d)\n",       percent(ap->splits, ap->requests), (int) ap->splits);
     printf("  Cached            %14d %% (%d)\n",       percent(ap->cached, ap->requests), (int) ap->cached);
     printf("  Qmises            %14d %% (%d)\n",       percent(ap->qmiss, ap->requests), (int) ap->qmiss);
+    printf("  Compacted         %14d %% (%d)\n",       percent(ap->compacted, ap->requests), (int) ap->compacted);
     printf("  Freeq failures    %14d %% (%d / %d)\n",  percent(ap->tryFails, ap->trys), (int) ap->tryFails, (int) ap->trys);
     printf("  MprMem            %14d\n",               (int) sizeof(MprMem));
     printf("  MprFreeMem        %14d\n",               (int) sizeof(MprFreeMem));
