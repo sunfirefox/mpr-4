@@ -85,11 +85,13 @@ PUBLIC MprThread *mprGetCurrentThread()
     int                 i;
 
     ts = MPR->threadService;
-    id = mprGetCurrentOsThread();
-    for (i = 0; i < ts->threads->length; i++) {
-        tp = mprGetItem(ts->threads, i);
-        if (tp->osThread == id) {
-            return tp;
+    if (ts && ts->threads) {
+        id = mprGetCurrentOsThread();
+        for (i = 0; i < ts->threads->length; i++) {
+            tp = mprGetItem(ts->threads, i);
+            if (tp->osThread == id) {
+                return tp;
+            }
         }
     }
     return 0;
