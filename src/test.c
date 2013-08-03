@@ -540,7 +540,6 @@ static MprTestGroup *createTestGroup(MprTestService *sp, MprTestDef *def, MprTes
         fmt(name, sizeof(name), "Test-%d", counter++);
         gp->dispatcher = mprCreateDispatcher(name);
     }
-
     gp->failures = mprCreateList(0, 0);
     if (gp->failures == 0) {
         return 0;

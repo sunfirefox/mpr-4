@@ -166,6 +166,7 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 
     if (wp->flags & MPR_WAIT_NEW_DISPATCHER) {
         dispatcher = mprCreateDispatcher("IO");
+        dispatcher->flags |= MPR_DISPATCHER_EVENT;
     } else if (wp->dispatcher) {
         dispatcher = wp->dispatcher;
     } else {
