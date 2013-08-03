@@ -12,13 +12,14 @@
 
 #define ATOMIC_COUNT    (2000)
 
-static MprMutex atomicLock;
+static MprMutex atomicMutex;
+static MprMutex *atomicLock = &atomicMutex;
 
 /************************************ Code ************************************/
 
 static int initAtomic(MprTestGroup *gp)
 {
-    mprInitLock(&atomicLock);
+    mprInitLock(atomicLock);
     return 0;
 }
 
@@ -54,7 +55,7 @@ static void testAtomicCas(MprTestGroup *gp)
     char     *ptr;
     char     *before;
 
-    mprLock(&atomicLock);
+    mprLock(atomicLock);
 
     /* Should succeed */
     ptr = 0;
@@ -67,7 +68,7 @@ static void testAtomicCas(MprTestGroup *gp)
     before = (void*) 1;
     tassert(mprAtomicCas((void**) &ptr, before, before + 1) == 0);
     tassert(ptr == 0);
-    mprUnlock(&atomicLock);
+    mprUnlock(atomicLock);
 }
 
 
