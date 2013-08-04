@@ -730,7 +730,7 @@ PUBLIC void mprAtomicBarrier();
     @ingroup MprSynch
     @stability Evolving.
  */ 
-PUBLIC void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item);
+PUBLIC void mprAtomicListInsert(void **head, void **link, void *item);
 
 /**
     Atomic Compare and Swap. This is a lock free function.
@@ -1097,7 +1097,6 @@ typedef struct MprLocationStats {
   */
 typedef struct MprMemStats {
     int             inMemException;         /**< Recursive protect */
-    int             regions;                /**< Number of allocated regions */
     uint            numCpu;                 /**< Number of CPUs */
     uint            pageSize;               /**< System page size */
     uint64          cacheHeap;              /**< Heap cache. Try to keep at least this amount in the free queues  */
@@ -1148,7 +1147,6 @@ typedef struct MprRegion {
     struct MprRegion *next;                 /**< Next region */
     MprMem           *start;                /**< Start of region data */
     MprMem           *end;                  /**< End of region data */
-    MprSpin          lock;                  /**< Region multithread lock */
     size_t           size;                  /**< Size of region including region header */
     int              freeable;              /**< Set to true when completely unused */
 } MprRegion;
@@ -1165,11 +1163,9 @@ typedef struct MprHeap {
     struct MprList   *roots;                /**< List of GC root objects */
     MprMemStats      stats;                 /**< Memory allocation statistics */
     MprMemNotifier   notifier;              /**< Memory allocation failure callback */
-    MprSpin          heapLock;              /**< Heap allocation lock */
-    MprSpin          rootLock;              /**< Root locking */
-    MprCond          *sweeperCond;          /**< Sweeper sleep cond var */
+    MprCond          *gcCond;               /**< GC sleep cond var */
     MprRegion        *regions;              /**< List of memory regions */
-    struct MprThread *sweeper;              /**< Sweeper thread */
+    struct MprThread *gc;                   /**< GC thread */
     int              mark;                  /**< Mark version */
     int              allocPolicy;           /**< Memory allocation depletion policy */
     int              regionSize;            /**< Memory allocation region size */
@@ -1189,7 +1185,6 @@ typedef struct MprHeap {
     int              priorWeightedCount;    /**< Prior weighted count after last sweep */
     int              printStats;            /**< Print diagnostic heap statistics */
     uint64           priorFree;             /**< Last sweep free memory */
-    int              rootIndex;             /**< Marker root scan index */
     int              scribble;              /**< Scribble over freed memory (slow) */
     int              sweeping;              /**< Actually sweeping objects now */
     int              track;                 /**< Track memory allocations (requires BIT_MPR_ALLOC_DEBUG) */
@@ -1379,15 +1374,6 @@ PUBLIC void mprResetMemError();
 PUBLIC void mprRevive(cvoid* ptr);
 
 /**
-    Verify all memory. This checks the integrity of all memory blocks by verifying the block headers and contents
-    of all free memory blocks. Will only do anything meaningful when the product is compiled in debug mode.
-    @ingroup MprMem
-    @internal
-    @stability Internal.
- */
-PUBLIC void mprVerifyMem();
-
-/**
     Define a memory notifier
     @description A notifier callback will be invoked for memory allocation errors for the given memory context.
     @param cback Notifier callback function
@@ -1442,16 +1428,6 @@ PUBLIC void mprSetMemPolicy(int policy);
     @stability Stable.
  */
 PUBLIC void *mprSetManager(void *ptr, MprManager manager);
-
-#if UNUSED
-/**
-    Validate a memory block and issue asserts if the memory block is not valid.
-    @param ptr Pointer to allocated memory
-    @ingroup MprMem
-    @stability Internal.
- */
-PUBLIC void mprValidateBlock(void *ptr);
-#endif
 
 /**
     Memory virtual memory into the applications address space.
@@ -1525,7 +1501,7 @@ PUBLIC void *prealloc(void *ptr, size_t size);
     #define mprSetName(ptr, name)
 #endif
 
-#define mprAlloc(size) mprSetAllocName(mprAllocMem(size, 0), MPR_LOC)
+#define mprAlloc(size) mprSetAllocName(mprAllocFast(size), MPR_LOC)
 #define mprMemdup(ptr, size) mprSetAllocName(mprMemdupMem(ptr, size), MPR_LOC)
 #define mprRealloc(ptr, size) mprSetAllocName(mprReallocMem(ptr, size), MPR_LOC)
 #define mprAllocZeroed(size) mprSetAllocName(mprAllocMem(size, MPR_ALLOC_ZERO), MPR_LOC)
@@ -1533,6 +1509,10 @@ PUBLIC void *prealloc(void *ptr, size_t size);
 #define mprAllocObj(type, manage) ((type*) mprSetManager( \
         mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_MANAGER | MPR_ALLOC_ZERO), #type "@" MPR_LOC), (MprManager) manage))
 #define mprAllocStruct(type) ((type*) mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_ZERO), #type "@" MPR_LOC))
+
+#define mprAllocObjNoZero(type, manage) ((type*) mprSetManager( \
+        mprSetAllocName(mprAllocMem(sizeof(type), MPR_ALLOC_MANAGER), #type "@" MPR_LOC), (MprManager) manage))
+#define mprAllocStructNoZero(type) ((type*) mprSetAllocName(mprAllocFast(sizeof(type)), #type "@" MPR_LOC))
 
 #if DOXYGEN
 typedef void *Type;

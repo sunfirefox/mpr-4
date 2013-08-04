@@ -36,7 +36,7 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
 {
     MprHash     *hash;
 
-    if ((hash = mprAllocObj(MprHash, manageHashTable)) == 0) {
+    if ((hash = mprAllocObjNoZero(MprHash, manageHashTable)) == 0) {
         return 0;
     }
     if (hashSize < BIT_MAX_HASH) {
@@ -45,11 +45,13 @@ PUBLIC MprHash *mprCreateHash(int hashSize, int flags)
     if ((hash->buckets = mprAllocZeroed(sizeof(MprKey*) * hashSize)) == 0) {
         return NULL;
     }
-    hash->size = hashSize;
     hash->flags = flags | MPR_OBJ_HASH;
+    hash->size = hashSize;
     hash->length = 0;
     if (!(flags & MPR_HASH_OWN)) {
         hash->mutex = mprCreateLock();
+    } else {
+        hash->mutex = 0;
     }
 #if BIT_CHAR_LEN > 1 && KEEP
     if (hash->flags & MPR_HASH_UNICODE) {
@@ -132,7 +134,7 @@ PUBLIC MprKey *mprAddKey(MprHash *hash, cvoid *key, cvoid *ptr)
     /*
         Hash entries are managed by manageHashTable
      */
-    if ((sp = mprAllocStruct(MprKey)) == 0) {
+    if ((sp = mprAllocStructNoZero(MprKey)) == 0) {
         unlock(hash);
         return 0;
     }

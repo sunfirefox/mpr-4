@@ -19,7 +19,7 @@ PUBLIC MprCond *mprCreateCond()
 {
     MprCond     *cp;
 
-    if ((cp = mprAllocObj(MprCond, manageCond)) == 0) {
+    if ((cp = mprAllocObjNoZero(MprCond, manageCond)) == 0) {
         return 0;
     }
     cp->triggered = 0;

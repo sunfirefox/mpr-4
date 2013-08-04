@@ -20,7 +20,7 @@ PUBLIC MprMutex *mprCreateLock()
 #if BIT_UNIX_LIKE
     pthread_mutexattr_t attr;
 #endif
-    if ((lock = mprAllocObj(MprMutex, manageLock)) == 0) {
+    if ((lock = mprAllocObjNoZero(MprMutex, manageLock)) == 0) {
         return 0;
     }
 #if BIT_UNIX_LIKE
@@ -119,7 +119,7 @@ PUBLIC MprSpin *mprCreateSpinLock()
 {
     MprSpin    *lock;
 
-    if ((lock = mprAllocObj(MprSpin, mprManageSpinLock)) == 0) {
+    if ((lock = mprAllocObjNoZero(MprSpin, mprManageSpinLock)) == 0) {
         return 0;
     }
     return mprInitSpinLock(lock);

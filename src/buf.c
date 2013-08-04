@@ -30,7 +30,6 @@ PUBLIC MprBuf *mprCreateBuf(ssize initialSize, ssize maxSize)
     if ((bp = mprAllocObj(MprBuf, manageBuf)) == 0) {
         return 0;
     }
-    bp->growBy = BIT_MAX_BUFFER;
     mprSetBufSize(bp, initialSize, maxSize);
     return bp;
 }

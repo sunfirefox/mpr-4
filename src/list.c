@@ -33,14 +33,19 @@ PUBLIC MprList *mprCreateList(int size, int flags)
 {
     MprList     *lp;
 
-    if ((lp = mprAllocObj(MprList, manageList)) == 0) {
+    if ((lp = mprAllocObjNoZero(MprList, manageList)) == 0) {
         return 0;
     }
-    lp->maxSize = MAXINT;
     lp->flags = flags | MPR_OBJ_LIST;
+    lp->size = 0;
+    lp->length = 0;
+    lp->maxSize = MAXINT;
     if (!(flags & MPR_LIST_STABLE)) {
         lp->mutex = mprCreateLock();
+    } else {
+        lp->mutex = 0;
     }
+    lp->items = 0;
     if (size != 0) {
         mprSetListLimits(lp, size, -1);
     }
@@ -717,7 +722,7 @@ PUBLIC MprKeyValue *mprCreateKeyPair(cchar *key, cchar *value, int flags)
 {
     MprKeyValue     *pair;
 
-    if ((pair = mprAllocObj(MprKeyValue, manageKeyValue)) == 0) {
+    if ((pair = mprAllocObjNoZero(MprKeyValue, manageKeyValue)) == 0) {
         return 0;
     }
     pair->key = sclone(key);

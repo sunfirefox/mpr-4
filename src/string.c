@@ -212,7 +212,7 @@ PUBLIC char *sclone(cchar *str)
     }
     len = slen(str);
     size = len + 1;
-    if ((ptr = mprAllocFast(size)) != 0) {
+    if ((ptr = mprAlloc(size)) != 0) {
         memcpy(ptr, str, len);
         ptr[len] = '\0';
     }

@@ -164,12 +164,13 @@ PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 /*
     Atomic list insertion. Inserts "item" at the "head" of the list. The "link" field is the next field in item.
  */
-PUBLIC void mprAtomicListInsert(void * volatile *head, volatile void **link, void *item)
+PUBLIC void mprAtomicListInsert(void **head, void **link, void *item)
 {
     do {
         *link = *head;
-    } while (mprAtomicCas(head, (void*) *link, item));
+    } while (!mprAtomicCas(head, (void*) *link, item));
 }
+
 
 /*
     @copy   default

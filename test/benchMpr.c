@@ -400,7 +400,7 @@ static void endMark(MprTime start, int count, char *msg)
 
     elapsed = mprGetElapsedTime(start);
     mprPrintf("\t%-30s\t%13.2f\t%12.2f\n", msg, elapsed * 1000.0 / count, elapsed / 1000.0);
-    mprRequestGC(MPR_GC_FORCE);
+    mprRequestGC(MPR_GC_FORCE | MPR_GC_COMPLETE);
 }
 
 
