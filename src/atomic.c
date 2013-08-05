@@ -10,13 +10,14 @@
 
 /*********************************** Local ************************************/
 
-static MprSpin  atomicSpin;
+static MprSpin  atomicSpinLock;
+static MprSpin  *atomicSpin = &atomicSpinLock;
 
 /************************************ Code ************************************/
 
 PUBLIC void mprAtomicOpen()
 {
-    mprInitSpinLock(&atomicSpin);
+    mprInitSpinLock(atomicSpin);
 }
 
 
@@ -80,13 +81,13 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
             return expected == prev;
         }
     #else
-        mprSpinLock(&atomicSpin);
+        mprSpinLock(atomicSpin);
         if (*addr == expected) {
             *addr = (void*) value;
-            mprSpinUnlock(&atomicSpin);
+            mprSpinUnlock(atomicSpin);
             return 1;
         }
-        mprSpinUnlock(&atomicSpin);
+        mprSpinUnlock(atomicSpin);
         return 0;
     #endif
 }
@@ -109,9 +110,9 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
             : "0" (value), "m" (*ptr)
             : "memory", "cc");
     #else
-        mprSpinLock(&atomicSpin);
+        mprSpinLock(atomicSpin);
         *ptr += value;
-        mprSpinUnlock(&atomicSpin);
+        mprSpinUnlock(atomicSpin);
     #endif
 }
 
@@ -131,9 +132,9 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
         : "0" (value), "m" (*ptr)
         : "memory", "cc");
 #else
-    mprSpinLock(&atomicSpin);
+    mprSpinLock(atomicSpin);
     *ptr += value;
-    mprSpinUnlock(&atomicSpin);
+    mprSpinUnlock(atomicSpin);
 #endif
 }
 
@@ -151,10 +152,10 @@ PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
 #else
     {
         void    *old;
-        mprSpinLock(&atomicSpin);
+        mprSpinLock(atomicSpin);
         old = *(void**) addr;
         *addr = (void*) value;
-        mprSpinUnlock(&atomicSpin);
+        mprSpinUnlock(atomicSpin);
         return old;
     }
 #endif
