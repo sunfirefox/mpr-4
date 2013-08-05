@@ -40,6 +40,9 @@
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
+#ifndef BIT_MPR_ALLOC_PARALLEL
+    #define BIT_MPR_ALLOC_PARALLEL 1
+#endif
 #ifndef BIT_MPR_LOGGING
     #define BIT_MPR_LOGGING 1
 #endif
@@ -69,6 +72,9 @@
 #endif
 #ifndef BIT_TITLE
     #define BIT_TITLE "Multithreaded Portable Runtime"
+#endif
+#ifndef BIT_TUNE
+    #define BIT_TUNE "size"
 #endif
 #ifndef BIT_VERSION
     #define BIT_VERSION "4.4.0"
@@ -159,6 +165,9 @@
 #endif
 #ifndef BIT_PROFILE
     #define BIT_PROFILE "static"
+#endif
+#ifndef BIT_TUNE_SIZE
+    #define BIT_TUNE_SIZE 1
 #endif
 
 /* Miscellaneous */

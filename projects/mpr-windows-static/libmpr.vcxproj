@@ -126,7 +126,6 @@
     <ClCompile Include="..\..\src\module.c" />
     <ClCompile Include="..\..\src\mpr.c" />
     <ClCompile Include="..\..\src\path.c" />
-    <ClCompile Include="..\..\src\poll.c" />
     <ClCompile Include="..\..\src\posix.c" />
     <ClCompile Include="..\..\src\printf.c" />
     <ClCompile Include="..\..\src\rom.c" />
