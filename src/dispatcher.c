@@ -116,7 +116,7 @@ static MprDispatcher *createQhead(cchar *name)
 }
 
 
-PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name)
+PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags)
 {
     MprEventService     *es;
     MprDispatcher       *dispatcher;
@@ -125,6 +125,7 @@ PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name)
     if ((dispatcher = mprAllocObj(MprDispatcher, manageDispatcher)) == 0) {
         return 0;
     }
+    dispatcher->flags = flags;
     dispatcher->service = es;
     dispatcher->name = sclone(name);
     dispatcher->cond = mprCreateCond();

@@ -98,8 +98,8 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
     mpr->waitService = mprCreateWaitService();
     mpr->socketService = mprCreateSocketService();
 
-    mpr->dispatcher = mprCreateDispatcher("main");
-    mpr->nonBlock = mprCreateDispatcher("nonblock");
+    mpr->dispatcher = mprCreateDispatcher("main", 0);
+    mpr->nonBlock = mprCreateDispatcher("nonblock", 0);
     mprSetDispatcherImmediate(mpr->nonBlock);
 
     mpr->pathEnv = sclone(getenv("PATH"));

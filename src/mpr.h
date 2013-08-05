@@ -906,7 +906,7 @@ typedef struct MprMem {
     uint        first: 1;               /**< Block is first block in region */
     uint        hasManager: 1;          /**< Has manager function. Set at block init. */
     uint        mark: 1;                /**< GC mark indicator. Toggled for each GC pass by mark() when thread yielded. */
-    uint        region: 1;              /**< Block is an entire region - never on free queues . */
+    uint        fullRegion: 1;          /**< Block is an entire region - never on free queues . */
     uint        reserved: 11;
 
 #if BIT_MPR_ALLOC_DEBUG
@@ -5602,7 +5602,7 @@ typedef struct MprEvent {
 #define MPR_DISPATCHER_IMMEDIATE    0x1 /**< Dispatcher should run using the service events thread */
 #define MPR_DISPATCHER_WAITING      0x2 /**< Dispatcher waiting for an event in mprWaitForEvent */
 #define MPR_DISPATCHER_DESTROYED    0x4 /**< Dispatcher has been destroyed */
-#define MPR_DISPATCHER_EVENT        0x8 /**< Dispatcher created in response to an event */
+#define MPR_DISPATCHER_AUTO         0x8 /**< Dispatcher was auto created in response to accept event */
 
 /**
     Event Dispatcher
@@ -5656,11 +5656,12 @@ PUBLIC void mprClearWaiting();
 /**
     Create a new event dispatcher
     @param name Useful name for debugging
+    @param flags Dispatcher flags.
     @returns a Dispatcher object that can manage events and be used with mprCreateEvent
     @ingroup MprDispatcher
     @stability Internal
  */
-PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name);
+PUBLIC MprDispatcher *mprCreateDispatcher(cchar *name, int flags);
 
 /**
     Disable a dispatcher from service events. This removes the dispatcher from any dispatcher queues and allows

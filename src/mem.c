@@ -162,7 +162,9 @@ static void vmfree(void *ptr, size_t size);
     static void breakpoint(MprMem *mp);
     static void checkYielded();
     static int validBlk(MprMem *mp);
-    static void freeLocation(cchar *name, size_t size);
+    static void freeLocation(MprMem *mp);
+#else
+    #define freeLocation(mp)
 #endif
 #if BIT_MPR_ALLOC_STATS
     static void printQueueStats();
@@ -218,7 +220,7 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
     heap->stats.maxHeap = (size_t) -1;
     heap->stats.warnHeap = ((size_t) -1) / 100 * 95;
     heap->stats.cacheHeap = BIT_MPR_ALLOC_CACHE;
-    heap->stats.lowHeap = (BIT_MPR_ALLOC_CACHE ? BIT_MPR_ALLOC_CACHE : BIT_MPR_ALLOC_REGION_SIZE) / 8;
+    heap->stats.lowHeap = max(BIT_MPR_ALLOC_CACHE / 8, BIT_MPR_ALLOC_REGION_SIZE);
     heap->workQuota = BIT_MPR_ALLOC_QUOTA;
     heap->enabled = !(heap->flags & MPR_DISABLE_GC);
 
@@ -239,7 +241,6 @@ PUBLIC Mpr *mprCreateMemService(MprManager manager, int flags)
 #endif
     heap->stats.bytesAllocated += size;
     INC(allocs);
-
     initQueues();
 
     /*
@@ -292,7 +293,7 @@ PUBLIC void *mprAllocMem(size_t usize, int flags)
     }
     mp->hasManager = (flags & MPR_ALLOC_MANAGER) ? 1 : 0;
     ptr = GET_PTR(mp);
-    if (flags & MPR_ALLOC_ZERO && !mp->region) {
+    if (flags & MPR_ALLOC_ZERO && !mp->fullRegion) {
         /* Regions are zeroed by vmalloc */
         memset(ptr, 0, GET_USIZE(mp));
     }
@@ -509,7 +510,7 @@ static MprMem *allocMem(size_t required)
                         }
                     } else {
                         ATOMIC_INC(tryFails);
-                        if (freeq->count > 1 && retryIndex < 0) {
+                        if (freeq->count > 0 && retryIndex < 0) {
                             retryIndex = qindex;
                         }
                     }
@@ -571,7 +572,7 @@ static MprMem *growHeap(size_t required)
         assert(spareLen >= MPR_ALLOC_MIN_BLOCK);
         linkSpareBlock(((char*) mp) + required, spareLen);
     } else {
-        mp->region = 1;
+        mp->fullRegion = 1;
     }
     mprAtomicListInsert((void**) &heap->regions, (void**) &region->next, region);
     ATOMIC_ADD(bytesAllocated, size);
@@ -588,19 +589,14 @@ static void freeBlock(MprMem *mp)
     assert(!mp->free);
     SCRIBBLE(mp);
     INC(swept);
-
-#if BIT_MPR_ALLOC_DEBUG
-    if (heap->track) {
-        freeLocation(mp->name, mp->size);
-    }
-#endif
+    freeLocation(mp);
 #if BIT_MPR_ALLOC_STATS
     heap->stats.freed += mp->size;
 #endif
     if (mp->first) {
         region = GET_REGION(mp);
         if (GET_NEXT(mp) >= region->end) {
-            if (mp->region || heap->stats.bytesFree >= heap->stats.cacheHeap) {
+            if (mp->fullRegion || heap->stats.bytesFree >= heap->stats.cacheHeap) {
                 region->freeable = 1;
                 return;
             }
@@ -876,7 +872,7 @@ PUBLIC void mprWakeGCService()
 static inline void triggerGC()
 {
     if (!heap->gcRequested) {
-        if (heap->flags & MPR_SWEEP_THREAD && heap->gcCond) {
+        if ((heap->flags & MPR_SWEEP_THREAD) && heap->gcCond) {
             heap->gcRequested = 1;
             mprSignalCond(heap->gcCond);
         }
@@ -989,7 +985,7 @@ static void invokeDestructors()
             /*
                 OPT - could optimize by requiring a separate flag for managers that implement destructors.
              */
-            if (mp->mark != heap->mark && !mp->free && mp->hasManager) {
+            if (mp->mark != heap->mark && !mp->free && mp->hasManager && !mp->eternal) {
                 mgr = GET_MANAGER(mp);
                 if (mgr) {
                     (mgr)(GET_PTR(mp), MPR_MANAGE_FREE);
@@ -1037,7 +1033,7 @@ static inline bool claim(MprMem *mp)
 */
 static void sweep()
 {
-    MprRegion   *region, *nextRegion, *prior;
+    MprRegion   *region, *nextRegion, *prior, *rp;
     MprMem      *mp, *next;
     int         joinBlocks;
 
@@ -1072,13 +1068,15 @@ static void sweep()
             CHECK(mp);
             INC(sweepVisited);
 
-            if (mp->free && joinBlocks) {
+            if (mp->eternal) {
+                continue;
+            } else if (mp->free && joinBlocks) {
                 if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
                     mp->mark = !heap->mark;
                     INC(compacted);
                 }
             }
-            if (!mp->free && mp->mark != heap->mark && !mp->eternal) {
+            if (!mp->free && mp->mark != heap->mark) {
                 if (joinBlocks) {
                     while (next < region->end) {
                         if (next->free) {
@@ -1086,6 +1084,7 @@ static void sweep()
                                 break;
                             }
                             mp->size += next->size;
+                            freeLocation(next);
                             assert(!next->free);
                             SCRIBBLE_RANGE(next, MPR_ALLOC_MIN_BLOCK);
                             INC(joins);
@@ -1094,6 +1093,7 @@ static void sweep()
                             assert(!next->free);
                             assert(next->qindex == 0);
                             mp->size += next->size;
+                            freeLocation(next);
                             SCRIBBLE_RANGE(next, MPR_ALLOC_MIN_BLOCK);
                             INC(joins);
 
@@ -1111,7 +1111,8 @@ static void sweep()
                 prior->next = nextRegion;
             } else {
                 if (!mprAtomicCas((void**) &heap->regions, region, nextRegion)) {
-                    for (prior = heap->regions; prior != region; prior = prior->next) { }
+                    prior = 0;
+                    for (rp = heap->regions; rp != region; prior = rp, rp = rp->next) { }
                     assert(prior);
                     if (prior) {
                         prior->next = nextRegion;
@@ -1127,7 +1128,7 @@ static void sweep()
             prior = region;
         }
     }
-#if (BIT_MPR_ALLOC_STATS && BIT_MPR_ALLOC_DEBUG)
+#if (BIT_MPR_ALLOC_STATS && BIT_MPR_ALLOC_DEBUG) && UNUSED
     printf("GC: Marked %lld / %lld, Swept %lld / %lld, freed %lld, bytesFree %lld (prior %lld)\n"
                  "    WeightedCount %d / %d, allocated blocks %lld allocated bytes %lld\n"
                  "    Unpins %lld, Collections %lld\n",
@@ -1168,7 +1169,7 @@ void *palloc(size_t size)
 {
     void    *ptr;
 
-    if ((ptr = mprAllocMem(size, 0)) != 0) {
+    if ((ptr = mprAllocFast(size)) != 0) {
         mprHold(ptr);
     }
     return ptr;
@@ -1587,26 +1588,26 @@ static void printMemReport()
         printf("  Memory redline         unlimited\n");
     } else {
         printf("  Heap max          %14u MB (%.2f %%)\n", 
-            (int) (ap->maxHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->maxHeap);
+            (int) (ap->maxHeap / (1024 * 1024)), ap->bytesAllocated * 100.0 / ap->maxHeap);
         printf("  Heap redline      %14u MB (%.2f %%)\n", 
-            (int) (ap->warnHeap / (1024 * 1024)), ap->bytesAllocated * 1.0 / ap->warnHeap);
+            (int) (ap->warnHeap / (1024 * 1024)), ap->bytesAllocated * 100.0 / ap->warnHeap);
     }
-    printf("  Heap cache        %14u MB (%.2f %%)\n",    (int) (ap->cacheHeap / (1024 * 1024)), ap->cacheHeap * 1.0 / ap->maxHeap);
+    printf("  Heap cache        %14u MB (%.2f %%)\n",    (int) (ap->cacheHeap / (1024 * 1024)), ap->cacheHeap * 100.0 / ap->maxHeap);
     printf("  Allocation errors %14d\n",               (int) ap->errors);
     printf("\n");
 
 #if BIT_MPR_ALLOC_STATS
     printf("  Memory requests   %14d\n",                (int) ap->requests);
-    printf("  Region allocs     %14.2f %% (%d)\n",      ap->allocs * 1.0 / ap->requests, (int) ap->allocs);
-    printf("  Region unpins     %14.2f %% (%d)\n",      ap->unpins * 1.0 / ap->requests, (int) ap->unpins);
-    printf("  Reuse             %14.2f %%\n",           ap->reuse * 1.0 / ap->requests);
-    printf("  Joins             %14.2f %% (%d)\n",      ap->joins * 1.0 / ap->requests, (int) ap->joins);
-    printf("  Splits            %14.2f %% (%d)\n",      ap->splits * 1.0 / ap->requests, (int) ap->splits);
-    printf("  Q races           %14.2f %% (%d)\n",      ap->qrace * 1.0 / ap->requests, (int) ap->qrace);
-    printf("  Compacted         %14.2f %% (%d)\n",      ap->compacted * 1.0 / ap->requests, (int) ap->compacted);
-    printf("  Freeq failures    %14.2f %% (%d / %d)\n", ap->tryFails * 1.0 / ap->trys, (int) ap->tryFails, (int) ap->trys);
-    printf("  Alloc retries     %14.2f %% (%d / %d)\n", ap->retries * 1.0 / ap->requests, (int) ap->retries, (int) ap->requests);
-    printf("  GC Collections    %14.2f %% (%d)\n",      ap->collections * 1.0 / ap->requests, (int) ap->collections);
+    printf("  Region allocs     %14.2f %% (%d)\n",      ap->allocs * 100.0 / ap->requests, (int) ap->allocs);
+    printf("  Region unpins     %14.2f %% (%d)\n",      ap->unpins * 100.0 / ap->requests, (int) ap->unpins);
+    printf("  Reuse             %14.2f %%\n",           ap->reuse * 100.0 / ap->requests);
+    printf("  Joins             %14.2f %% (%d)\n",      ap->joins * 100.0 / ap->requests, (int) ap->joins);
+    printf("  Splits            %14.2f %% (%d)\n",      ap->splits * 100.0 / ap->requests, (int) ap->splits);
+    printf("  Q races           %14.2f %% (%d)\n",      ap->qrace * 100.0 / ap->requests, (int) ap->qrace);
+    printf("  Compacted         %14.2f %% (%d)\n",      ap->compacted * 100.0 / ap->requests, (int) ap->compacted);
+    printf("  Freeq failures    %14.2f %% (%d / %d)\n", ap->tryFails * 100.0 / ap->trys, (int) ap->tryFails, (int) ap->trys);
+    printf("  Alloc retries     %14.2f %% (%d / %d)\n", ap->retries * 100.0 / ap->requests, (int) ap->retries, (int) ap->requests);
+    printf("  GC Collections    %14.2f %% (%d)\n",      ap->collections * 100.0 / ap->requests, (int) ap->collections);
     printf("  MprMem size       %14d\n",                (int) sizeof(MprMem));
     printf("  MprFreeMem size   %14d\n",                (int) sizeof(MprFreeMem));
 
@@ -1650,6 +1651,7 @@ static void breakpoint(MprMem *mp)
 }
 
 
+#if BIT_MPR_ALLOC_DEBUG
 /*
     Called to set the memory block name when doing an allocation
  */
@@ -1657,10 +1659,9 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
 {
     MPR_GET_MEM(ptr)->name = name;
 
-#if BIT_MPR_ALLOC_DEBUG
     if (heap->track) {
         MprLocationStats    *lp;
-        cchar               **np;
+        cchar               **np, *n;
         int                 index;
         if (name == 0) {
             name = "";
@@ -1668,7 +1669,8 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
         index = shash(name, strlen(name)) % MPR_TRACK_HASH;
         lp = &heap->stats.locations[index];
         for (np = lp->names; np <= &lp->names[MPR_TRACK_NAMES]; np++) {
-            if (*np == 0 || *np == name || strcmp(*np, name) == 0) {
+            n = *np;
+            if (n == 0 || n == name || strcmp(n, name) == 0) {
                 break;
             }
         }
@@ -1677,43 +1679,46 @@ PUBLIC void *mprSetAllocName(void *ptr, cchar *name)
         }
         lp->count += GET_MEM(ptr)->size;
     }
-#endif
     return ptr;
 }
 
 
-static void freeLocation(cchar *name, size_t size)
+static void freeLocation(MprMem *mp)
 {
-#if BIT_MPR_ALLOC_DEBUG
     MprLocationStats    *lp;
+    cchar               *name;
     int                 index, i;
 
+    if (!heap->track) {
+        return;
+    }
+    name = mp->name;
     if (name == 0) {
         name = "";
     }
     index = shash(name, strlen(name)) % MPR_TRACK_HASH;
     lp = &heap->stats.locations[index];
-    lp->count -= size;
-    if (lp->count <= 0) {
+    if (lp->count >= mp->size) {
+        lp->count -= mp->size;
+    } else {
+        lp->count = 0;
+    }
+    if (lp->count == 0) {
         for (i = 0; i < MPR_TRACK_NAMES; i++) {
             lp->names[i] = 0;
         }
     }
-#endif
 }
+#endif
 
 
 PUBLIC void *mprSetName(void *ptr, cchar *name) 
 {
-#if BIT_MPR_ALLOC_STATS
     MprMem  *mp = GET_MEM(ptr);
     if (mp->name) {
-        freeLocation(mp->name, mp->size);
+        freeLocation(mp);
         mprSetAllocName(ptr, name);
     }
-#else
-    MPR_GET_MEM(ptr)->name = name;
-#endif
     return ptr;
 }
 
@@ -1723,7 +1728,6 @@ PUBLIC void *mprCopyName(void *dest, void *src)
     return mprSetName(dest, mprGetName(src));
 }
 #endif
-
 
 /********************************************* Misc ***************************************************/
 
