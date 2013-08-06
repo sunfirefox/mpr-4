@@ -33,13 +33,6 @@ Bit.load({
             manager: 'manager',     /* Enable watch-dog manager */
             threadStack: 0,         /* Use the system default stack size */
             tracing: true,          /* Enable logging of mprTrace and assert() */
-
-            /*
-                Memory allocator tuning.
-             */
-            alloc: {
-                parallel: true,     /* Run sweeper in parallel */
-            },
         },
         tune: 'size',
     },
