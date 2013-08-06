@@ -58,9 +58,6 @@
 #ifndef BIT_HAS_UNNAMED_UNIONS
     #define BIT_HAS_UNNAMED_UNIONS 1
 #endif
-#ifndef BIT_MPR_ALLOC_PARALLEL
-    #define BIT_MPR_ALLOC_PARALLEL 1
-#endif
 #ifndef BIT_MPR_LOGGING
     #define BIT_MPR_LOGGING 1
 #endif
