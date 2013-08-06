@@ -1068,8 +1068,10 @@ static void sweep()
             INC(sweepVisited);
 
             if (mp->eternal) {
+                assert(!region->freeable);
                 continue;
-            } else if (mp->free && joinBlocks) {
+            } 
+            if (mp->free && joinBlocks) {
                 if (next < region->end && !next->free && next->mark != heap->mark && claim(mp)) {
                     mp->mark = !heap->mark;
                     INC(compacted);
@@ -1077,7 +1079,7 @@ static void sweep()
             }
             if (!mp->free && mp->mark != heap->mark) {
                 if (joinBlocks) {
-                    while (next < region->end) {
+                    while (next < region->end && !next->eternal) {
                         if (next->free) {
                             if (!claim(next)) {
                                 break;
@@ -1168,7 +1170,7 @@ void *palloc(size_t size)
 {
     void    *ptr;
 
-    if ((ptr = mprAllocFast(size)) != 0) {
+    if ((ptr = mprAllocZeroed(size)) != 0) {
         mprHold(ptr);
     }
     return ptr;
@@ -1179,21 +1181,30 @@ void *palloc(size_t size)
     Normal free. Note: this must not be called with a block allocated via "malloc".
     No harm in calling this on a block allocated with mprAlloc and not "palloc".
  */
-void pfree(void *ptr)
+PUBLIC void pfree(void *ptr)
 {
     if (ptr) {
         mprRelease(ptr);
+
     }
 }
 
 
-void *prealloc(void *ptr, size_t size)
+PUBLIC void *prealloc(void *ptr, size_t size)
 {
-    mprRelease(ptr);
+    if (ptr) {
+        mprRelease(ptr);
+    }
     if ((ptr =  mprRealloc(ptr, size)) != 0) {
         mprHold(ptr);
     }
     return ptr;
+}
+
+
+PUBLIC size_t psize(void *ptr)
+{
+    return mprGetBlockSize(ptr);
 }
 
 
