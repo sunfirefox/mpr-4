@@ -294,8 +294,6 @@ PUBLIC int mprStartThread(MprThread *tp)
 
 PUBLIC MprOsThread mprGetCurrentOsThread()
 {
-    //  MOB - LINUX gettid
-    //  MOB - MACOSX thread_selfid (64 bits)
 #if BIT_UNIX_LIKE
     return (MprOsThread) pthread_self();
 #elif BIT_WIN_LIKE

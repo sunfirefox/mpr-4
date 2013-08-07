@@ -179,13 +179,11 @@ PUBLIC void mprQueueIOEvent(MprWaitHandler *wp)
 }
 
 
-//  MOB - why use this rather than calling directly?
 static void ioEvent(void *data, MprEvent *event)
 {
     assert(event);
     assert(event->handler);
 
-    //  MOB - why do we zero here?
     event->handler->event = 0;
     event->handler->proc(data, event);
 }

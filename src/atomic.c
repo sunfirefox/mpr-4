@@ -36,8 +36,9 @@ PUBLIC void mprAtomicBarrier()
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_PPC)
         asm volatile ("sync" : : : "memory");
     #else
-        //  TODO - can do better
-        getpid();
+        if (mprTrySpinLock(atomicSpin)) {
+            mprSpinUnlock(atomicSpin);
+        }
     #endif
 #if FUTURE && KEEP
     asm volatile ("lock; add %eax,0");
