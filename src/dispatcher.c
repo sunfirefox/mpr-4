@@ -237,7 +237,6 @@ PUBLIC int mprServiceEvents(MprTicks timeout, int flags)
 
             } else if (mprStartWorker((MprWorkerProc) dispatchEventsWorker, dp) < 0) {
                 queueDispatcher(es->pendingQ, dp);
-                es->pendingCount++;
                 continue;
             }
             if (justOne) {
@@ -555,8 +554,6 @@ static MprDispatcher *getNextReadyDispatcher(MprEventService *es)
     lock(es);
     if (pendingQ->next != pendingQ && mprAvailableWorkers() > 0) {
         dispatcher = pendingQ->next;
-        dispatcher->service->pendingCount--;
-        assert(dispatcher->service->pendingCount >= 0);
 
     } else if (readyQ->next == readyQ) {
         /*
