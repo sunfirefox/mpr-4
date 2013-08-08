@@ -499,7 +499,7 @@ PUBLIC int mprStartCmd(MprCmd *cmd, int argc, cchar **argv, cchar **envp, int fl
         cmd->requiredEof++;
     }
     if (addCmdHandlers(cmd) < 0) {
-        mprError("Cannot open command handlers - insufficient I/O handles");
+        mprTrace(4, "Cannot open command handlers - insufficient I/O handles");
         return MPR_ERR_CANT_OPEN;
     }
     rc = startProcess(cmd);
