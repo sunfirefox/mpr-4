@@ -346,7 +346,7 @@ PUBLIC int mprStartEventsThread()
 
 static void serviceEventsThread(void *data, MprThread *tp)
 {
-    mprLog(MPR_CONFIG, "Service thread started");
+    mprLog(MPR_INFO, "Service thread started");
     if (!(MPR->flags & MPR_NO_WINDOW)) {
         mprInitWindow();
     }
