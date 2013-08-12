@@ -109,6 +109,7 @@ PUBLIC Mpr *mprCreate(int argc, char **argv, int flags)
             mprInitWindow();
         }
     } else {
+        mprRunDispatcher(mpr->dispatcher);
         mprStartEventsThread();
     }
     mprStartGCService();
