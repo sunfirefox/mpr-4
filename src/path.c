@@ -24,7 +24,7 @@
 
 /************************************* Code ***********************************/
 
-static MPR_INLINE bool isSep(MprFileSystem *fs, int c) 
+static BIT_INLINE bool isSep(MprFileSystem *fs, int c) 
 {
     char    *separators;
 
@@ -37,7 +37,7 @@ static MPR_INLINE bool isSep(MprFileSystem *fs, int c)
 }
 
 
-static MPR_INLINE bool hasDrive(MprFileSystem *fs, cchar *path) 
+static BIT_INLINE bool hasDrive(MprFileSystem *fs, cchar *path) 
 {
     char    *cp, *endDrive;
 
@@ -60,7 +60,7 @@ static MPR_INLINE bool hasDrive(MprFileSystem *fs, cchar *path)
     This means the path portion after an optional drive specifier must begin with a directory speparator charcter.
     Cygwin returns true for "/abc" and "C:/abc".
  */
-static MPR_INLINE bool isAbsPath(MprFileSystem *fs, cchar *path) 
+static BIT_INLINE bool isAbsPath(MprFileSystem *fs, cchar *path) 
 {
     char    *cp, *endDrive;
 
@@ -95,7 +95,7 @@ static MPR_INLINE bool isAbsPath(MprFileSystem *fs, cchar *path)
     On windows, this means it must have a drive specifier.
     On cygwin, this means it must not have a drive specifier.
  */
-static MPR_INLINE bool isFullPath(MprFileSystem *fs, cchar *path) 
+static BIT_INLINE bool isFullPath(MprFileSystem *fs, cchar *path) 
 {
     assert(fs);
     assert(path);
@@ -124,7 +124,7 @@ static MPR_INLINE bool isFullPath(MprFileSystem *fs, cchar *path)
 /*
     Return true if the directory is the root directory on a file system
  */
-static MPR_INLINE bool isRoot(MprFileSystem *fs, cchar *path) 
+static BIT_INLINE bool isRoot(MprFileSystem *fs, cchar *path) 
 {
     char    *cp;
 
@@ -138,7 +138,7 @@ static MPR_INLINE bool isRoot(MprFileSystem *fs, cchar *path)
 }
 
 
-static MPR_INLINE char *lastSep(MprFileSystem *fs, cchar *path) 
+static BIT_INLINE char *lastSep(MprFileSystem *fs, cchar *path) 
 {
     char    *cp;
 
