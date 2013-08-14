@@ -101,6 +101,7 @@
   
   <ItemGroup>
     <ClCompile Include="..\..\test\testArgv.c" />
+    <ClCompile Include="..\..\test\testAtomic.c" />
     <ClCompile Include="..\..\test\testBuf.c" />
     <ClCompile Include="..\..\test\testCmd.c" />
     <ClCompile Include="..\..\test\testCond.c" />

@@ -25,6 +25,9 @@
 #ifndef BIT_DISCOVER
     #define BIT_DISCOVER "doxygen,dsi,man,man2html,md5,ssl,utest"
 #endif
+#ifndef BIT_HAS_ATOMIC
+    #define BIT_HAS_ATOMIC 1
+#endif
 #ifndef BIT_HAS_DOUBLE_BRACES
     #define BIT_HAS_DOUBLE_BRACES 0
 #endif

@@ -73,28 +73,27 @@ static void testAtomicCas(MprTestGroup *gp)
 
 static void testAtomicBarrier(MprTestGroup *gp)
 {
-    static int  a = 0;
-    static int  b = 0;
-    int         i;
+    static int64  a = 0;
+    static int64  b = 0;
+    int           i;
 
     /*
         Only one writer to a+b, but many readers below
         Assert: a >= b at all times.
      */
-    mprLock(&atomicLock);
-    for (i = 0; i < ATOMIC_COUNT; i++) {
-        a = a + 1;
-        mprAtomicBarrier();
-        b = b + 1;
+    if (mprTryLock(&atomicLock)) {
+        for (i = 0; i < ATOMIC_COUNT; i++) {
+            b = b + 1;
+            mprAtomicBarrier();
+            a = b + 1;
+        }
     }
-    b = 0;
-    mprAtomicBarrier();
-    a = 0;
-    mprUnlock(&atomicLock);
+
     /*
         Many readers checking values
      */
     for (i = 0; i < ATOMIC_COUNT; i++) {
+        mprAtomicBarrier();
         assert(a >= b);
     }
 }
