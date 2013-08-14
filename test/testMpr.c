@@ -12,6 +12,7 @@
 
 extern MprTestDef testAlloc;
 extern MprTestDef testArgv;
+extern MprTestDef testAtomic;
 extern MprTestDef testBuf;
 extern MprTestDef testEvent;
 extern MprTestDef testCmd;
@@ -30,6 +31,7 @@ static MprTestDef *testGroups[] =
 {
     &testAlloc,
     &testArgv,
+    &testAtomic,
     &testBuf,
     &testCond,
     &testCmd,

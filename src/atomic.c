@@ -4,10 +4,6 @@
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
-//  MOB - MEM MODEL
-//  ARM
-//  UNIT TESTS
-
 /*********************************** Includes *********************************/
 
 #include    "mpr.h"
@@ -40,7 +36,7 @@ PUBLIC void mprAtomicBarrier()
         MemoryBarrier();
 
     #elif BIT_HAS_ATOMIC
-        __atomic_thread_fence(&x, __ATOMIC_SEQ_CST);
+        __atomic_thread_fence(__ATOMIC_SEQ_CST);
 
     #elif BIT_HAS_SYNC
         __sync_synchronize();
@@ -80,7 +76,7 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
     #elif BIT_HAS_ATOMIC
 //  MOB - check this
         void *localExpected = expected;
-        return __atomic_compare_exchange(addr, localExpected, value, 0, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+        return __atomic_compare_exchange(addr, &localExpected, (void**) &value, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 
     #elif BIT_HAS_SYNC_CAS
         return __sync_bool_compare_and_swap(addr, expected, value);
@@ -128,7 +124,8 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
         InterlockedExchangeAdd(ptr, value);
 
     #elif BIT_HAS_ATOMIC
-        __atomic_add_fetch(ptr, value, __ATOMIC_RELAXED);
+        //  MOB - could use __ATOMIC_RELAXED
+        __atomic_add_fetch(ptr, value, __ATOMIC_SEQ_CST);
 
     #elif VXWORKS && _VX_ATOMIC_INIT
         vxAtomicAdd(ptr, value);
@@ -158,7 +155,8 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
         InterlockedExchangeAdd64(ptr, value);
     
     #elif BIT_HAS_ATOMIC
-        __atomic_add_fetch(ptr, value, __ATOMIC_RELAXED);
+        //  MOB - could use __ATOMIC_RELAXED
+        __atomic_add_fetch(ptr, value, __ATOMIC_SEQ_CST);
 
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86)
         asm volatile ("lock; xaddl %0,%1"
@@ -180,6 +178,7 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
 }
 
 
+#if UNUSED
 PUBLIC void *mprAtomicExchange(void *volatile *addr, cvoid *value)
 {
     #if MACOSX
@@ -191,7 +190,7 @@ PUBLIC void *mprAtomicExchange(void *volatile *addr, cvoid *value)
         return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
     
     #elif BIT_HAS_ATOMIC
-        __atomic_exchange_n(addr, value, __ATOMIC_RELAXED);
+        __atomic_exchange_n(addr, value, __ATOMIC_SEQ_CST);
 
     #elif BIT_HAS_SYNC
         return __sync_lock_test_and_set(addr, (void*) value);
@@ -205,6 +204,7 @@ PUBLIC void *mprAtomicExchange(void *volatile *addr, cvoid *value)
         return old;
     #endif
 }
+#endif
 
 
 /*
