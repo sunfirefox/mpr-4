@@ -4,6 +4,10 @@
     Copyright (c) All Rights Reserved. See details at the end of the file.
  */
 
+//  MOB - MEM MODEL
+//  ARM
+//  UNIT TESTS
+
 /*********************************** Includes *********************************/
 
 #include    "mpr.h"
@@ -21,28 +25,40 @@ PUBLIC void mprAtomicOpen()
 }
 
 
+/*
+    Full memory barrier
+ */
 PUBLIC void mprAtomicBarrier()
 {
-    #ifdef VX_MEM_BARRIER_RW
-        VX_MEM_BARRIER_RW();
-    #elif MACOSX
+    #if MACOSX
         OSMemoryBarrier();
+
+    #elif defined(VX_MEM_BARRIER_RW)
+        VX_MEM_BARRIER_RW();
+
     #elif BIT_WIN_LIKE
         MemoryBarrier();
+
+    #elif BIT_HAS_ATOMIC
+        __atomic_thread_fence(&x, __ATOMIC_SEQ_CST);
+
     #elif BIT_HAS_SYNC
         __sync_synchronize();
+
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
         asm volatile ("mfence" : : : "memory");
+
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_PPC)
         asm volatile ("sync" : : : "memory");
+
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_ARM) && FUTURE
+        asm volatile ("isync" : : : "memory");
+
     #else
         if (mprTrySpinLock(atomicSpin)) {
             mprSpinUnlock(atomicSpin);
         }
     #endif
-#if FUTURE && KEEP
-    asm volatile ("lock; add %eax,0");
-#endif
 }
 
 
@@ -53,34 +69,40 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
 {
     #if MACOSX
         return OSAtomicCompareAndSwapPtrBarrier(expected, (void*) value, (void*) addr);
-    #elif BIT_WIN_LIKE
-        {
-            void *prev;
-            prev = InterlockedCompareExchangePointer(addr, (void*) value, expected);
-            return expected == prev;
-        }
-    #elif BIT_HAS_SYNC_CAS
-        return __sync_bool_compare_and_swap(addr, expected, value);
+
     #elif VXWORKS && _VX_ATOMIC_INIT && !BIT_64
         /* vxCas operates with integer values */
         return vxCas((atomic_t*) addr, (atomicVal_t) expected, (atomicVal_t) value);
-    #elif BIT_CPU_ARCH == BIT_CPU_X86
-        {
-            void *prev;
-            asm volatile ("lock; cmpxchgl %2, %1"
-                : "=a" (prev), "=m" (*addr)
-                : "r" (value), "m" (*addr), "0" (expected));
+
+    #elif BIT_WIN_LIKE
+        return InterlockedCompareExchangePointer(addr, (void*) value, expected) == expected;
+
+    #elif BIT_HAS_ATOMIC
+//  MOB - check this
+        void *localExpected = expected;
+        return __atomic_compare_exchange(addr, localExpected, value, 0, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+
+    #elif BIT_HAS_SYNC_CAS
+        return __sync_bool_compare_and_swap(addr, expected, value);
+
+
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86)
+        void *prev;
+        asm volatile ("lock; cmpxchgl %2, %1"
+            : "=a" (prev), "=m" (*addr)
+            : "r" (value), "m" (*addr), "0" (expected));
+        return expected == prev;
+
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X64)
+        void *prev;
+        asm volatile ("lock; cmpxchgq %q2, %1"
+            : "=a" (prev), "=m" (*addr)
+            : "r" (value), "m" (*addr),
+              "0" (expected));
             return expected == prev;
-        }
-    #elif BIT_CPU_ARCH == BIT_CPU_X64
-        {
-            void *prev;
-            asm volatile ("lock; cmpxchgq %q2, %1"
-                : "=a" (prev), "=m" (*addr)
-                : "r" (value), "m" (*addr),
-                  "0" (expected));
-            return expected == prev;
-        }
+
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_ARM) && FUTURE
+
     #else
         mprSpinLock(atomicSpin);
         if (*addr == expected) {
@@ -101,19 +123,25 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
 {
     #if MACOSX
         OSAtomicAdd32(value, ptr);
+
     #elif BIT_WIN_LIKE
         InterlockedExchangeAdd(ptr, value);
+
+    #elif BIT_HAS_ATOMIC
+        __atomic_add_fetch(ptr, value, __ATOMIC_RELAXED);
+
     #elif VXWORKS && _VX_ATOMIC_INIT
         vxAtomicAdd(ptr, value);
-    #elif (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64) && FUTURE
-        asm volatile ("lock; xaddl %0,%1"
-            : "=r" (value), "=m" (*ptr)
-            : "0" (value), "m" (*ptr)
-            : "memory", "cc");
+
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
+        asm volatile("lock; addl %1,%0"
+             : "+m" (*ptr)
+             : "ir" (value));
     #else
         mprSpinLock(atomicSpin);
         *ptr += value;
         mprSpinUnlock(atomicSpin);
+
     #endif
 }
 
@@ -123,43 +151,59 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
  */
 PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
 {
-#if MACOSX
-    OSAtomicAdd64(value, ptr);
-#elif BIT_WIN_LIKE && BIT_64
-    InterlockedExchangeAdd64(ptr, value);
-#elif BIT_UNIX_LIKE && FUTURE
-    asm volatile ("lock; xaddl %0,%1"
-        : "=r" (value), "=m" (*ptr)
-        : "0" (value), "m" (*ptr)
-        : "memory", "cc");
-#else
-    mprSpinLock(atomicSpin);
-    *ptr += value;
-    mprSpinUnlock(atomicSpin);
-#endif
+    #if MACOSX
+        OSAtomicAdd64(value, ptr);
+    
+    #elif BIT_WIN_LIKE && BIT_64
+        InterlockedExchangeAdd64(ptr, value);
+    
+    #elif BIT_HAS_ATOMIC
+        __atomic_add_fetch(ptr, value, __ATOMIC_RELAXED);
+
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86)
+        asm volatile ("lock; xaddl %0,%1"
+            : "=r" (value), "=m" (*ptr)
+            : "0" (value), "m" (*ptr)
+            : "memory", "cc");
+    
+    #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X64)
+        asm volatile("lock; addq %1,%0"
+             : "=m" (*ptr)
+             : "er" (value), "m" (*ptr));
+
+    #else
+        mprSpinLock(atomicSpin);
+        *ptr += value;
+        mprSpinUnlock(atomicSpin);
+    
+    #endif
 }
 
 
-PUBLIC void *mprAtomicExchange(void * volatile *addr, cvoid *value)
+PUBLIC void *mprAtomicExchange(void *volatile *addr, cvoid *value)
 {
-#if MACOSX
-    void *old = *(void**) addr;
-    OSAtomicCompareAndSwapPtrBarrier(old, (void*) value, addr);
-    return old;
-#elif BIT_WIN_LIKE
-    return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
-#elif BIT_HAS_SYNC
-    return __sync_lock_test_and_set(addr, (void*) value);
-#else
-    {
+    #if MACOSX
+        void *old = *(void**) addr;
+        OSAtomicCompareAndSwapPtrBarrier(old, (void*) value, addr);
+        return old;
+    
+    #elif BIT_WIN_LIKE
+        return (void*) InterlockedExchange((volatile LONG*) addr, (LONG) value);
+    
+    #elif BIT_HAS_ATOMIC
+        __atomic_exchange_n(addr, value, __ATOMIC_RELAXED);
+
+    #elif BIT_HAS_SYNC
+        return __sync_lock_test_and_set(addr, (void*) value);
+    
+    #else
         void    *old;
         mprSpinLock(atomicSpin);
         old = *(void**) addr;
         *addr = (void*) value;
         mprSpinUnlock(atomicSpin);
         return old;
-    }
-#endif
+    #endif
 }
 
 
