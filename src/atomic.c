@@ -74,13 +74,11 @@ PUBLIC int mprAtomicCas(void * volatile *addr, void *expected, cvoid *value)
         return InterlockedCompareExchangePointer(addr, (void*) value, expected) == expected;
 
     #elif BIT_HAS_ATOMIC
-//  MOB - check this
         void *localExpected = expected;
         return __atomic_compare_exchange(addr, &localExpected, (void**) &value, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 
     #elif BIT_HAS_SYNC_CAS
         return __sync_bool_compare_and_swap(addr, expected, value);
-
 
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86)
         void *prev;
@@ -124,8 +122,11 @@ PUBLIC void mprAtomicAdd(volatile int *ptr, int value)
         InterlockedExchangeAdd(ptr, value);
 
     #elif BIT_HAS_ATOMIC
-        //  MOB - could use __ATOMIC_RELAXED
+        //  OPT - could use __ATOMIC_RELAXED
         __atomic_add_fetch(ptr, value, __ATOMIC_SEQ_CST);
+
+    #elif BIT_HAS_SYNC_CAS
+        __sync_add_and_fetch(ptr, value);
 
     #elif VXWORKS && _VX_ATOMIC_INIT
         vxAtomicAdd(ptr, value);
@@ -155,8 +156,11 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
         InterlockedExchangeAdd64(ptr, value);
     
     #elif BIT_HAS_ATOMIC
-        //  MOB - could use __ATOMIC_RELAXED
+        //  OPT - could use __ATOMIC_RELAXED
         __atomic_add_fetch(ptr, value, __ATOMIC_SEQ_CST);
+
+    #elif BIT_HAS_SYNC_CAS
+        __sync_add_and_fetch(ptr, value);
 
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86)
         asm volatile ("lock; xaddl %0,%1"
