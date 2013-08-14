@@ -30,7 +30,7 @@ static void testAtomicAdd(MprTestGroup *gp)
     for (i = 0; i < ATOMIC_COUNT; i++) {
         before = number;
         mprAtomicAdd(&number, 1);
-        assert(number > before);
+        tassert(number > before);
     }
 }
 
@@ -44,7 +44,7 @@ static void testAtomicAdd64(MprTestGroup *gp)
     for (i = 0; i < ATOMIC_COUNT; i++) {
         before = number;
         mprAtomicAdd64(&number, 1);
-        assert(number > before);
+        tassert(number > before);
     }
 }
 
@@ -59,14 +59,14 @@ static void testAtomicCas(MprTestGroup *gp)
     /* Should succeed */
     ptr = 0;
     before = ptr;
-    assert(mprAtomicCas((void**) &ptr, before, before + 1) == 1);
-    assert(ptr == (void*) 1);
+    tassert(mprAtomicCas((void**) &ptr, before, before + 1) == 1);
+    tassert(ptr == (void*) 1);
 
     /* Should fail */
     ptr = 0;
     before = (void*) 1;
-    assert(mprAtomicCas((void**) &ptr, before, before + 1) == 0);
-    assert(ptr == 0);
+    tassert(mprAtomicCas((void**) &ptr, before, before + 1) == 0);
+    tassert(ptr == 0);
     mprUnlock(&atomicLock);
 }
 
@@ -94,7 +94,7 @@ static void testAtomicBarrier(MprTestGroup *gp)
      */
     for (i = 0; i < ATOMIC_COUNT; i++) {
         mprAtomicBarrier();
-        assert(a >= b);
+        tassert(a >= b);
     }
 }
 
