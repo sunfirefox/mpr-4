@@ -90,7 +90,8 @@ static MprSocket *openServer(MprTestGroup *gp, cchar *host)
         return 0;
     }
     for (port = 9175; port < 9250; port++) {
-        if (mprListenOnSocket(sp, host, port, MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD) >= 0) {
+        if (mprListenOnSocket(sp, host, port, MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD) != SOCKET_ERROR) {
+            assert(sp->fd != SOCKET_ERROR);
             ts->port = port;
             mprAddSocketHandler(sp, MPR_SOCKET_READABLE, NULL, (MprEventProc) acceptFn, gp, 0);
             return sp;

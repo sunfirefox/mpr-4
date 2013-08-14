@@ -266,6 +266,7 @@ PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
     resetSocket(sp);
 
     sp->ip = sclone(ip);
+    sp->fd = INVALID_SOCKET;
     sp->port = port;
     sp->flags = (flags & (MPR_SOCKET_BROADCAST | MPR_SOCKET_DATAGRAM | MPR_SOCKET_BLOCK |
          MPR_SOCKET_NOREUSE | MPR_SOCKET_NODELAY | MPR_SOCKET_THREAD));
@@ -283,6 +284,7 @@ PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
     }
     if ((sp->fd = (int) socket(family, datagram ? SOCK_DGRAM: SOCK_STREAM, protocol)) == SOCKET_ERROR) {
         unlock(sp);
+        assert(sp->fd == INVALID_SOCKET);
         return SOCKET_ERROR;
     }
 
@@ -346,7 +348,7 @@ PUBLIC Socket mprListenOnSocket(MprSocket *sp, cchar *ip, int port, int flags)
             closesocket(sp->fd);
             sp->fd = INVALID_SOCKET;
             unlock(sp);
-            return MPR_ERR_CANT_OPEN;
+            return SOCKET_ERROR;
         }
     }
 
