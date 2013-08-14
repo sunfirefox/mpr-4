@@ -87,6 +87,7 @@ static void testAtomicBarrier(MprTestGroup *gp)
             mprAtomicBarrier();
             a = b + 1;
         }
+        mprUnlock(&atomicLock);
     }
 
     /*
