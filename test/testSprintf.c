@@ -111,7 +111,7 @@ static void testTypeOptions(MprTestGroup *gp)
     fmt(buf, sizeof(buf), "%x", 0xffffffff);
     tassert(strcmp(buf, "ffffffff") == 0);
 
-    fmt(buf, sizeof(buf), "%X", (int64) 0xffffffff);
+    fmt(buf, sizeof(buf), "%LX", (int64) 0xffffffff);
     tassert(strcmp(buf, "FFFFFFFF") == 0);
 }
 
