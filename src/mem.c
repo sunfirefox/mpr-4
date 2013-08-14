@@ -1308,8 +1308,8 @@ PUBLIC void mprYield(int flags)
     }
     if (!tp->stickyYield) {
         tp->yielded = 0;
+        assert(!heap->marking);
     }
-    assert(!heap->marking);
 }
 
 
