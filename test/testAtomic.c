@@ -67,6 +67,7 @@ static void testAtomicCas(MprTestGroup *gp)
     before = (void*) 1;
     assert(mprAtomicCas((void**) &ptr, before, before + 1) == 0);
     assert(ptr == 0);
+    mprUnlock(&atomicLock);
 }
 
 
