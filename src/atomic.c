@@ -155,11 +155,11 @@ PUBLIC void mprAtomicAdd64(volatile int64 *ptr, int64 value)
     #elif BIT_WIN_LIKE && BIT_64
         InterlockedExchangeAdd64(ptr, value);
     
-    #elif BIT_HAS_ATOMIC && (BIT_64 || BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
+    #elif BIT_HAS_ATOMIC64 && (BIT_64 || BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
         //  OPT - could use __ATOMIC_RELAXED
         __atomic_add_fetch(ptr, value, __ATOMIC_SEQ_CST);
 
-    #elif BIT_HAS_SYNC_CAS && (BIT_64 || BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
+    #elif BIT_HAS_SYNC64 && (BIT_64 || BIT_CPU_ARCH == BIT_CPU_X86 || BIT_CPU_ARCH == BIT_CPU_X64)
         __sync_add_and_fetch(ptr, value);
 
     #elif __GNUC__ && (BIT_CPU_ARCH == BIT_CPU_X86)
