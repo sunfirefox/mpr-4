@@ -191,6 +191,10 @@ static int localTime(struct tm *timep, MprTime time);
 static MprTime makeTime(struct tm *tp);
 static void validateTime(struct tm *tm, struct tm *defaults);
 
+#if !MACOSX && !CLOCK_MONOTONIC_RAW && !CLOCK_MONOTONIC && !(BIT_WIN_LIKE && _WIN32_WINNT >= 0x0600)
+static MprSpin ticksSpin;
+#endif
+
 /************************************ Code ************************************/
 /*
     Initialize the time service
@@ -354,18 +358,26 @@ PUBLIC MprTicks mprGetTicks()
     static MprTime lastTicks;
     static MprTime adjustTicks = 0;
     MprTime     result, diff;
+
     if (lastTicks == 0) {
+        /* This will happen at init time when single threaded */
         lastTicks = mprGetTime();
+        mprInitSpinLock(&ticksSpin);
     }
+    mprSpinLock(&ticksSpin);
     result = mprGetTime() + adjustTicks;
-    /*
-        Handle time reversals. Don't handle jumps forward. Sorry.
-     */
     if ((diff = (result - lastTicks)) < 0) {
-        adjustTicks += diff;
-        result -= diff;
+        /*
+            Handle time reversals. Don't handle jumps forward. Sorry.
+         */
+        result = mprGetTime() + adjustTicks;
+        if ((diff = (result - lastTicks)) < 0) {
+            adjustTicks += diff;
+            result -= diff;
+        }
     }
     lastTicks = result;
+    mprSpinUnlock(&ticksSpin);
     return result;
 #endif
 }
