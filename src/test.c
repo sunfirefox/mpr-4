@@ -8,6 +8,7 @@
 
 #include    "mpr.h"
 
+#if BIT_MPR_TEST
 /***************************** Forward Declarations ***************************/
 
 static void     adjustFailedCount(int adj);
@@ -998,6 +999,7 @@ static int setLogging(char *logSpec)
     return 0;
 }
 
+#endif /* BIT_MPR_TEST */
 
 /*
     @copy   default
