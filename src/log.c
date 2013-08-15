@@ -290,9 +290,9 @@ PUBLIC void mprAssert(cchar *loc, cchar *msg)
     }
     mprTrace(0, "%s", buf);
     mprBreakpoint();
-#if WATSON_PAUSE
-    printf("Stop for WATSON\n");
-    mprNap(60 * 1000);
+#if BIT_DEBUG_WATSON
+    fprintf(stderr, "Pause for debugger to attach\n");
+    mprSleep(24 * 3600 * 1000);
 #endif
 #endif
 }
