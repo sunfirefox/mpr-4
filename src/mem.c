@@ -988,9 +988,11 @@ PUBLIC void mprResetYield()
             tp->yielded = 0;
             unlock(ts->threads);
             mprYield(0);
+            assert(!tp->yielded);
+        } else {
+            tp->yielded = 0;
+            unlock(ts->threads);
         }
-        tp->yielded = 0;
-        unlock(ts->threads);
     }
     assert(!tp->yielded);
 }
