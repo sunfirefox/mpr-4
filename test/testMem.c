@@ -39,20 +39,16 @@ static void testBasicAlloc(MprTestGroup *gp)
 
 }
 
-static int when = 0;
-
 static void testBigAlloc(MprTestGroup *gp)
 {
     void    *mp;
     ssize  len;
     
-if (when) {
-    mprPrintMem("Before big alloc", 1);
-}
     len = 8 * 1024 * 1024;
     mp = mprAlloc(len);
     tassert(mp != 0);
     memset(mp, 0, len);    
+    mprRequestGC(0);
 }
 
 
