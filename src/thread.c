@@ -32,7 +32,7 @@ PUBLIC MprThreadService *mprCreateThreadService()
     if ((ts = mprAllocObj(MprThreadService, manageThreadService)) == 0) {
         return 0;
     }
-    if ((ts->cond = mprCreateCond()) == 0) {
+    if ((ts->pauseThreads = mprCreateCond()) == 0) {
         return 0;
     }
     if ((ts->threads = mprCreateList(-1, 0)) == 0) {
@@ -63,7 +63,7 @@ static void manageThreadService(MprThreadService *ts, int flags)
     if (flags & MPR_MANAGE_MARK) {
         mprMark(ts->threads);
         mprMark(ts->mainThread);
-        mprMark(ts->cond);
+        mprMark(ts->pauseThreads);
 
     } else if (flags & MPR_MANAGE_FREE) {
         mprStopThreadService();
