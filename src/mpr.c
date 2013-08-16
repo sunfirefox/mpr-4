@@ -188,7 +188,6 @@ PUBLIC void mprDestroy(int how)
         }
         exit(0);
     }
-    mprYield(MPR_YIELD_STICKY);
     if (MPR->state < MPR_STOPPING) {
         mprTerminate(how, -1);
     }
