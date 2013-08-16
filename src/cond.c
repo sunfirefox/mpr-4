@@ -73,7 +73,6 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
     struct timeval      current;
     int                 usec;
 #endif
-
     /*
         Avoid doing a mprGetTicks() if timeout is < 0
      */
@@ -133,15 +132,17 @@ PUBLIC int mprWaitForCond(MprCond *cp, MprTicks timeout)
 
 #elif BIT_UNIX_LIKE
         /*
-            NOTE: pthread_cond_timedwait can return 0 (MAC OS X and Linux). The pthread_cond_wait routines will 
-            atomically unlock the mutex before sleeping and will relock on awakening.
+            The pthread_cond_wait routines will atomically unlock the mutex before sleeping and will relock on awakening.
+            WARNING: pthreads may do spurious wakeups without being triggered
          */
         if (!cp->triggered) {
-            if (now) {
-                rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
-            } else {
-                rc = pthread_cond_wait(&cp->cv, &cp->mutex->cs);
-            }
+            do {
+                if (now) {
+                    rc = pthread_cond_timedwait(&cp->cv, &cp->mutex->cs,  &waitTill);
+                } else {
+                    rc = pthread_cond_wait(&cp->cv, &cp->mutex->cs);
+                }
+            } while ((rc == 0 || rc == EAGAIN) && !cp->triggered);
             if (rc == ETIMEDOUT) {
                 rc = MPR_ERR_TIMEOUT;
             } else if (rc == EAGAIN) {
