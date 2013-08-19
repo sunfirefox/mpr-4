@@ -1186,6 +1186,7 @@ static void invokeDestructors()
 
     for (region = heap->regions; region; region = region->next) {
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
+            assert(mp->size > 0);
             /*
                 OPT - could optimize by requiring a separate flag for managers that implement destructors.
              */
@@ -1270,6 +1271,7 @@ static void sweep()
         joinBlocks = heap->stats.bytesFree >= heap->stats.cacheHeap;
 
         for (mp = region->start; mp < region->end; mp = next) {
+            assert(mp->size > 0);
             next = GET_NEXT(mp);
             assert(next != mp);
             CHECK(mp);
@@ -1554,6 +1556,7 @@ static void printGCStats()
         empty = 1;
 
         for (mp = region->start; mp < region->end; mp = GET_NEXT(mp)) {
+            assert(mp->size > 0);
             if (mp->free) {
                 freeBytes += mp->size;
                 freeCount++;
