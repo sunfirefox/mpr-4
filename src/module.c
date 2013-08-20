@@ -226,7 +226,7 @@ PUBLIC cchar *mprGetModuleSearchPath()
  */
 PUBLIC int mprLoadModule(MprModule *mp)
 {
-#if BIT_HAS_DYN_LOAD
+#if BIT_HAS_DYN_LOAD && !BIT_STATIC
     assert(mp);
 
     if (mprLoadNativeModule(mp) < 0) {
@@ -247,7 +247,7 @@ PUBLIC int mprUnloadModule(MprModule *mp)
     if (mprStopModule(mp) < 0) {
         return MPR_ERR_NOT_READY;
     }
-#if BIT_HAS_DYN_LOAD
+#if BIT_HAS_DYN_LOAD && !BIT_STATIC
     if (mp->handle) {
         if (mprUnloadNativeModule(mp) != 0) {
             mprError("Cannot unload module %s", mp->name);
