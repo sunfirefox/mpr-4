@@ -552,14 +552,6 @@ PUBLIC char *mprPrintfCore(char *buf, ssize maxsize, cchar *spec, va_list args)
 
             case 'X':
                 fmt.flags |= SPRINTF_UPPER_CASE;
-#if UNUSED
-#if BIT_64
-                fmt.flags &= ~(SPRINTF_SHORT|SPRINTF_LONG);
-                fmt.flags |= SPRINTF_INT64;
-#else
-                fmt.flags &= ~(SPRINTF_INT64);
-#endif
-#endif
                 /*  Fall through  */
             case 'o':
             case 'x':

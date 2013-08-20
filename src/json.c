@@ -269,11 +269,14 @@ static int setValue(MprJson *jp, MprObj *obj, int index, cchar *key, cchar *valu
 }
 
 
+/*
+    Returns a stable list
+ */
 static MprObj *makeObj(MprJson *jp, bool list)
 {
     MprHash     *hash;
 
-    if ((hash = mprCreateHash(0, 0)) == 0) {
+    if ((hash = mprCreateHash(0, MPR_HASH_STABLE)) == 0) {
         return 0;
     }
     if (list) {

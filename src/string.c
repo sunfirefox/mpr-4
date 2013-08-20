@@ -934,6 +934,7 @@ PUBLIC char *stemplate(cchar *str, MprHash *keys)
 
 /*
     String to list. This parses the string into space separated arguments. Single and double quotes are supported.
+    This returns a stable list.
  */
 PUBLIC MprList *stolist(cchar *src)
 {
@@ -941,7 +942,7 @@ PUBLIC MprList *stolist(cchar *src)
     cchar       *start;
     int         quote;
 
-    list = mprCreateList(0, 0);
+    list = mprCreateList(0, MPR_LIST_STABLE);
     while (src && *src != '\0') {
         while (isspace((uchar) *src)) {
             src++;
