@@ -132,8 +132,10 @@ static int acceptFn(MprTestGroup *gp, MprEvent *event)
     TestSocket      *ts;
 
     ts = (TestSocket*) gp->data;
+    /*
+        Windows can return NULL with EAGAIN
+     */
     sp = mprAcceptSocket(ts->server);
-    tassert(sp != NULL);
     if (sp) {
         tassert(sp->fd >= 0);
         ts->accepted = sp;
